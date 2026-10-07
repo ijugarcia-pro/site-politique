@@ -1,0 +1,155 @@
+/* Charte « Le 578e siège » (maquette V5) : Fredoka pour les titres, Nunito pour le texte,
+   violet #7C4DFF ; pour #2F7BFF, contre #FF6A3D, abstention #FFC531, absent #DFE3EB. */
+
+:root {
+  color-scheme: light;
+  --police-titre: 'Fredoka Variable', 'Fredoka', system-ui, sans-serif;
+  --police-texte: 'Nunito Variable', 'Nunito', system-ui, sans-serif;
+
+  --violet: #7C4DFF;
+  --violet-fonce: #5B33D6;
+  --violet-encre: #3D1FA8;
+  --violet-pale: #D9CCFF;
+  --violet-voile: #F3EFFF;
+
+  --pour: #2F7BFF;
+  --contre: #FF6A3D;
+  --abstention: #FFC531;
+  --absent: #DFE3EB;
+  /* Non-votant ≠ absent : présent mais sans prendre part au vote (présidence de séance…). */
+  --non-votant: #9AA1B2;
+
+  --texte: #1F2433;
+  --texte-doux: #3A4152;
+  --gris: #5A6275;
+  --gris-legende: #6B7385;
+  --bord: #E3E6EE;
+  --bord-leger: #ECEEF3;
+  --fond: #FFFFFF;
+  --fond-doux: #F5F6FA;
+  --jaune-pale: #FFF1CC;
+  --jaune-encre: #8A5200;
+
+  --rayon: 22px;
+  --rayon-petit: 14px;
+  --gouttiere: clamp(16px, 3vw, 40px);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font: 17px/1.55 var(--police-texte);
+}
+
+h1, h2, h3 {
+  font-family: var(--police-titre);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+h1 { font-size: clamp(28px, 3vw, 36px); font-weight: 700; }
+h2 { font-size: clamp(21px, 2vw, 24px); font-weight: 700; }
+h3 { font-size: 19px; font-weight: 600; }
+
+a { color: var(--violet-fonce); }
+a:hover { color: var(--violet-encre); }
+
+:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.visuellement-cache {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px var(--gouttiere) 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sous-titre { margin: 6px 0 0; color: var(--gris); font-size: 16px; }
+
+.carte {
+  border: 2px solid var(--bord);
+  border-radius: var(--rayon);
+  box-shadow: 0 5px 0 var(--bord);
+  padding: clamp(18px, 2.4vw, 28px);
+  background: var(--fond);
+}
+
+.puce {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--violet-voile);
+  color: var(--violet-fonce);
+}
+.puce::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.encart {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--jaune-pale);
+  color: var(--jaune-encre);
+  font-size: 16px;
+}
+.encart strong { color: var(--texte); }
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--rayon-petit);
+  background: var(--fond);
+  border: 2px solid var(--bord);
+  box-shadow: 0 4px 0 var(--bord);
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--violet-fonce);
+  text-decoration: none;
+}
+.bouton:hover { background: var(--fond-doux); }
+
+.tableau { overflow-x: auto; border: 2px solid var(--bord); border-radius: var(--rayon-petit); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--bord-leger); }
+th { font-weight: 700; color: var(--gris); background: var(--fond-doux); }
+td.nombre, th.nombre { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr:last-child td { border-bottom: 0; }
+
+.ok { color: #1F7A45; font-weight: 700; }
+.alerte { color: #B23A0E; font-weight: 700; }

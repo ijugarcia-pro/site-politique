@@ -1,0 +1,56 @@
+---
+// Un scrutin réel : titre officiel, date, résultat, décompte et hémicycle siège par siège.
+import Hemicycle from './Hemicycle.astro';
+import { dateLisible, majuscule, type Scrutin } from '../lib/donnees.ts';
+
+interface Props {
+  scrutin: Scrutin;
+  niveau?: 'h2' | 'h3';
+}
+
+const { scrutin: s, niveau = 'h2' } = Astro.props;
+const Titre = niveau;
+const adopte = s.sort.toLowerCase().startsWith('adopt');
+---
+<article class="carte scrutin">
+  <div class="tete">
+    <span class="puce">Vote solennel · n° {s.numero}</span>
+    <span class="date">{dateLisible(s.date)}</span>
+  </div>
+  <Titre class="titre">{majuscule(s.titre)}</Titre>
+  <div class="resultat">
+    <span class:list={['sort', adopte ? 'adopte' : 'rejete']}>{majuscule(s.sort)}</span>
+    <span class="chiffres">
+      <span><strong>{s.decompte.pour}</strong> pour</span>
+      <span><strong>{s.decompte.contre}</strong> contre</span>
+      <span><strong>{s.decompte.abstention}</strong> abstention{s.decompte.abstention > 1 ? 's' : ''}</span>
+    </span>
+  </div>
+  <Hemicycle sieges={s.sieges} groupes={s.groupes} mode="vote"
+    titre={`Hémicycle du scrutin n° ${s.numero}`} />
+  <p class="source">
+    <a href={s.lien}>Voir le scrutin n° {s.numero} sur le site de l'Assemblée nationale</a>
+  </p>
+</article>
+
+<style>
+  .scrutin { display: flex; flex-direction: column; gap: 14px; }
+  .tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+    gap: 8px 12px; }
+  .date { color: var(--gris); font-size: 15px; }
+  .titre { font-size: clamp(20px, 2.2vw, 26px); font-weight: 600; line-height: 1.25; }
+  .resultat { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .sort {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-family: var(--police-titre);
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+  }
+  .adopte { background: #1C5FD9; }
+  .rejete { background: #C2410C; }
+  .chiffres { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--texte-doux); }
+  .chiffres strong { color: var(--texte); font-family: var(--police-titre); font-size: 18px; }
+  .source { margin: 0; font-size: 15px; }
+</style>

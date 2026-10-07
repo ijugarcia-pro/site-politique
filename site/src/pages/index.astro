@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import CarteScrutin from '../components/CarteScrutin.astro';
+import { solennels } from '../lib/donnees.ts';
+
+const [dernier] = solennels();
+if (!dernier) throw new Error('Aucun vote solennel exporté');
+---
+<Base titre="Le 578e siège"
+  description="Les votes de l'Assemblée nationale rendus accessibles : chaque semaine, tranche 3 vrais votes avant les députés.">
+  <div>
+    <h1>Cette semaine à l'Assemblée</h1>
+    <p class="sous-titre">Il reste un siège libre à l'Assemblée : le tien.</p>
+  </div>
+
+  <div class="encart" role="note">
+    <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true" style="flex: none">
+      <rect x="6" y="12" width="16" height="9" rx="3" fill="#FFC531"></rect>
+      <rect x="9" y="5" width="10" height="8" rx="3" fill="#FFC531"></rect>
+    </svg>
+    <p style="margin: 0">
+      <strong>Site en construction.</strong> Bientôt, chaque semaine, tu trancheras 3 vrais votes
+      avant les députés, puis tu découvriras leur verdict. En attendant, voici le dernier vote
+      solennel, tel que l'Assemblée l'a publié.
+    </p>
+  </div>
+
+  <section aria-labelledby="dernier-vote">
+    <h2 id="dernier-vote" class="visuellement-cache">Le dernier vote solennel</h2>
+    <CarteScrutin scrutin={dernier} niveau="h3" />
+  </section>
+
+  <p><a class="bouton" href="/explorer/">Voir les derniers votes solennels</a></p>
+</Base>

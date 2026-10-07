@@ -6,7 +6,7 @@ Usage :
 Lit data/site.duckdb, data/controles/resultat.json (pipeline/checks.py) et
 data/sources/etat.json (pipeline/ingest.py). Produit, à chaque build autorisé :
     export/etat.json   données publiques, sans aucune donnée personnelle
-    export/etat.html   page autonome qui les affiche (servie par le site à partir de t17)
+    export/etat.html   page autonome qui les affiche (le site, lui, rend /etat/ depuis etat.json)
 """
 
 from __future__ import annotations

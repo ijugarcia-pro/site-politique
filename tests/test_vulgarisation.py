@@ -147,6 +147,17 @@ def test_controle_vocabulaire_ignore_les_extraits():
     assert controle_vocabulaire(extrait).reussi
 
 
+def test_controle_vocabulaire_sans_faux_positifs_observes_dans_l_essai():
+    # Essai du 7 octobre 2026 : « rendez-vous » (scrutin 8419) et « communauté historique »,
+    # mot du texte constitutionnel lui-même (scrutin 7454).
+    assert controle_vocabulaire(fiche(concretement="Le texte ajoute un rendez-vous de "
+                                                   "dépistage pour les enfants de six ans.")).reussi
+    historique = fiche(concretement="Le texte reconnaît la communauté historique et culturelle "
+                                    "de la Corse dans la Constitution.")
+    assert not controle_vocabulaire(historique).reussi
+    assert controle_vocabulaire(historique, "sa communauté historique, linguistique").reussi
+
+
 def test_nombres_ignore_les_numeros_d_article_et_les_separateurs():
     assert nombres("une aide de 4 500 euros, article 12, le 1er janvier 2027") == {"4500",
                                                                                      "2027"}

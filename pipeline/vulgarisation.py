@@ -364,16 +364,23 @@ VOCABULAIRE_INTERDIT = [
     "rassemblement national", "republicains", "socialistes", "ecologistes", "communistes",
     "majorite presidentielle", "nous", "notre", "nos", "vous", "votre", "vos", "tu", "tes",
 ]
-_INTERDIT = re.compile(r"\b(" + "|".join(re.escape(m) for m in VOCABULAIRE_INTERDIT) + r")\b")
+# Mots entiers seulement : « rendez-vous » ne contient pas « vous ».
+_INTERDIT = re.compile(
+    r"(?<![\w-])(" + "|".join(re.escape(m) for m in VOCABULAIRE_INTERDIT) + r")(?![\w-])"
+)
 
 
-def controle_vocabulaire(fiche: dict) -> Controle:
-    """5. Aucun mot de jugement, aucune étiquette politique, aucune adresse au lecteur."""
+def controle_vocabulaire(fiche: dict, texte_vote: str = "") -> Controle:
+    """5. Aucun mot de jugement, aucune étiquette politique, aucune adresse au lecteur.
+
+    Un mot que le texte voté emploie lui-même est permis : la Constitution peut parler de
+    « communauté historique », la fiche aussi."""
+    permis = set(_INTERDIT.findall(normaliser(texte_vote)))
     erreurs = []
     for nom, cle, valeur in _champs(fiche):
         if cle == "extrait":  # recopié du texte : il peut contenir n'importe quel mot
             continue
-        for mot in sorted(set(_INTERDIT.findall(normaliser(valeur)))):
+        for mot in sorted(set(_INTERDIT.findall(normaliser(valeur))) - permis):
             erreurs.append(f"{nom} : mot à éviter « {mot} »")
     return Controle(5, "vocabulaire neutre", not erreurs, erreurs)
 
@@ -433,7 +440,7 @@ def controles_locaux(sortie: str, texte: dict[str, str], expose: str | None
         controle_longueurs(fiche),
         controle_articles(fiche, texte),
         controle_question(fiche),
-        controle_vocabulaire(fiche),
+        controle_vocabulaire(fiche, "\n".join(texte.values())),
         controle_chiffres(fiche, sources),
     ], fiche
 

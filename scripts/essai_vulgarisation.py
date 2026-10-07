@@ -49,6 +49,8 @@ SORTIE = RACINE / "data" / "mesures" / "vulgarisation" / "essai.json"
 RAPPORT = RACINE / "docs" / "vulgarisation-essai.md"
 DEBUT_RELECTURE = "<!-- relecture:debut -->"
 FIN_RELECTURE = "<!-- relecture:fin -->"
+DEBUT_CONSTATS = "<!-- constats:debut -->"
+FIN_CONSTATS = "<!-- constats:fin -->"
 
 MODELE = "claude-opus-5-5"
 EFFORT = "high"
@@ -253,14 +255,20 @@ def section_fiche(r: dict) -> list[str]:
     return lignes
 
 
+def conserve(ancien: str, debut: str, fin: str, defaut: str) -> str:
+    """Section écrite à la main, reprise telle quelle d'une génération à l'autre."""
+    if debut in ancien and fin in ancien:
+        return ancien[ancien.index(debut): ancien.index(fin) + len(fin)]
+    return defaut
+
+
 def ecrire_rapport(donnees: dict) -> None:
     resultats = donnees["resultats"]
-    relecture = grille(resultats)
-    if RAPPORT.exists():
-        ancien = RAPPORT.read_text(encoding="utf-8")
-        if DEBUT_RELECTURE in ancien and FIN_RELECTURE in ancien:
-            debut = ancien.index(DEBUT_RELECTURE)
-            relecture = ancien[debut: ancien.index(FIN_RELECTURE) + len(FIN_RELECTURE)]
+    ancien = RAPPORT.read_text(encoding="utf-8") if RAPPORT.exists() else ""
+    relecture = conserve(ancien, DEBUT_RELECTURE, FIN_RELECTURE, grille(resultats))
+    constats = conserve(ancien, DEBUT_CONSTATS, FIN_CONSTATS,
+                        f"{DEBUT_CONSTATS}\n_À rédiger après lecture des résultats._\n"
+                        f"{FIN_CONSTATS}")
     publiees = sum(1 for r in resultats if r["fiche"])
     total = sum(cout_total(r) for r in resultats)
     moyen = total / len(resultats) if resultats else 0
@@ -270,10 +278,14 @@ def ecrire_rapport(donnees: dict) -> None:
         f"Généré le {donnees['genere_le']} par `uv run python -m scripts.essai_vulgarisation` "
         f"(modèle `{donnees['modele']}`, effort `{donnees['effort']}`). Sorties brutes : "
         "`data/mesures/vulgarisation/essai.json`. Contrôles : `docs/vulgarisation-controles.md`. "
-        "Tout est régénéré, sauf la section de relecture.",
+        "Tout est régénéré, sauf les sections « Constats » et « Relecture ».",
         "",
         "Fiches **générées automatiquement à partir du texte officiel**, à relire avant toute "
         "publication.",
+        "",
+        "## Constats",
+        "",
+        constats,
         "",
         relecture,
         "",

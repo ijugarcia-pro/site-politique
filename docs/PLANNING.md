@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (intégration au dépôt ; t02 faite, t03 livrée en attente de fusion). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02 et t04 faites ; relevé de t03 démarré). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -35,9 +35,9 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 
 ### Phase 0 — Faisabilité data (S1–S3, 5 → 25 oct. 2026)
 - [x] t01 🤝 Dépôt GitHub + session d'initialisation *(fait le 7 oct. 2026)*
-- [x] t02 🤖 Inventaire des fichiers open data *(fait le 7 oct. 2026 ; PR #1 en relecture)*
-- [ ] t03 🤖 Mesure du délai de publication (action horaire) *(livrée le 7 oct. 2026 en PR #2 ; le relevé démarre à la fusion, critère de fin : 3 semaines de fonctionnement)*
-- [ ] t04 👤 Vérifier que la mesure tourne
+- [x] t02 🤖 Inventaire des fichiers open data *(fait le 7 oct. 2026 ; PR #1 fusionnée)*
+- [ ] t03 🤖 Mesure du délai de publication (action horaire) *(livrée le 7 oct. 2026, PR #2 fusionnée ; relevé démarré le 7 oct., à cocher après 3 semaines sans intervention, vers le 28 oct.)*
+- [x] t04 👤 Vérifier que la mesure tourne *(fait le 7 oct. 2026 par Claude Code, à la demande de Julien)*
 - [ ] t05 👤 Clé API Anthropic plafonnée + secret GitHub
 - [ ] t06 🤖 Test du rattachement vote → texte sur 100 scrutins
 - [ ] t07 🤖 Prototype de vulgarisation sur 5 textes
@@ -189,11 +189,12 @@ site/          le site (Astro), créé en phase 2
   6. Tests pytest sur la logique de détection (jeux de données factices).
 - **Livrable :** `data/mesures/delai.csv` + `.github/workflows/mesure-delai.yml` + script de synthèse.
 - **Critère de fin :** premier passage de l'action vert ; `delai.csv` existe ; le workflow tourne trois semaines sans intervention.
-- **Réalisé (7 oct.) :** les noms diffèrent de la fiche : `.github/workflows/delai-publication.yml`, `scripts/mesurer_delai_publication.py`, et les mesures dans `data/mesures/delai_publication/` (`scrutins.csv` tient lieu de `delai.csv`, plus `versions.csv` et `etat.json`). La synthèse est générée dans `docs/delai-publication.md`. L'heure d'un vote n'est pas publiée : le délai est encadré par le début et la fin prévue de la séance, lus dans l'agenda, et calculé dans la synthèse plutôt que dans le CSV. Chaque scrutin est daté par la date de modification de la première version de l'archive qui le contient, et non par l'heure du relevé. Les tests utilisent un serveur simulé. **Reste à faire :** fusionner les PR #1 et #2 (les tâches planifiées ne tournent que sur `main`), constater un premier passage vert (t04), puis 3 semaines de relevé.
+- **Réalisé (7 oct.) :** les noms diffèrent de la fiche : `.github/workflows/delai-publication.yml`, `scripts/mesurer_delai_publication.py`, et les mesures dans `data/mesures/delai_publication/` (`scrutins.csv` tient lieu de `delai.csv`, plus `versions.csv` et `etat.json`). La synthèse est générée dans `docs/delai-publication.md`. L'heure d'un vote n'est pas publiée : le délai est encadré par le début et la fin prévue de la séance, lus dans l'agenda, et calculé dans la synthèse plutôt que dans le CSV. Chaque scrutin est daté par la date de modification de la première version de l'archive qui le contient, et non par l'heure du relevé. Les tests utilisent un serveur simulé. **Reste à faire :** 3 semaines de relevé sans intervention (PR #1 et #2 fusionnées le 7 oct., premier passage vert : voir t04).
 
 ### t04 👤 Vérifier que la mesure tourne — S1, 15 min
 - Onglet *Actions* du dépôt : le premier passage est vert et `data/mesures/delai.csv` existe.
 - **Claude Code prépare** : un court message récapitulatif avec le lien direct vers l'onglet Actions et ce qu'on doit y voir.
+- **Réalisé (7 oct.) :** fait par Claude Code à la demande de Julien. PR #1 puis #2 fusionnées dans `main`. Premier passage lancé à la main (run 37614612426) : vert. Il pose la référence (archive du 7 oct. à 10 h 26 GMT, scrutins 1 à 8 560) et le bot a commité `data/mesures/delai_publication/` et `docs/delai-publication.md`. Le relevé tourne ensuite seul à la minute 7 de chaque heure : https://github.com/ijugarcia-pro/site-politique/actions/workflows/delai-publication.yml
 
 ### t05 👤 Clé API Anthropic plafonnée — S2, 20 min
 - Console Anthropic : créer une nouvelle clé, plafond de dépense mensuel bas (10 € suffisent au début). Dans GitHub : *Settings → Secrets → Actions → `ANTHROPIC_API_KEY`.*

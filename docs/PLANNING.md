@@ -50,7 +50,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents *(fait le 7 oct. 2026)*
 - [x] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build *(fait le 7 oct. 2026)*
 - [x] t14 🤖 Page « État des données » *(fait le 7 oct. 2026 ; en ligne avec le site, t17)*
-- [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée
+- [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée *(préparée le 7 oct. 2026 : grille dans `docs/verification-scrutins.md`)*
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
 - [ ] t16 👤 Compte Cloudflare (sous-domaine gratuit)
@@ -277,6 +277,7 @@ site/          le site (Astro), créé en phase 2
 - Comparer le décompte et 5 votes nominatifs par scrutin avec la page officielle du scrutin sur le site de l'Assemblée.
 - **Claude Code prépare** : 5 scrutins tirés au hasard avec le lien officiel, le décompte attendu et 5 votes nominatifs à contrôler, dans un tableau prêt à cocher.
 - **Si un écart :** retour en t12, on ne passe pas à la phase 2.
+- **Préparé (7 oct.) :** `docs/verification-scrutins.md`, généré par `uv run python -m scripts.preparer_verification_scrutins`. Il propose 5 scrutins variés (un solennel, un amendement, un avec mise au point, un récent, un de 2024). Pour chacun : le lien officiel, le décompte attendu et 5 votes à contrôler (pour, contre, abstention ou non-votant, absent, et un dissident ou une mise au point). Claude Code n'a pas pu faire de contrôle préalable : le site de l'Assemblée renvoyait des erreurs 502 le 7 octobre en fin d'après-midi.
 
 ---
 

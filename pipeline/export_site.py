@@ -9,6 +9,7 @@ Lit data/site.duckdb (pipeline/normalize.py) et produit, à chaque build autoris
                                        plus ancien
     export/site/scrutins/{uid}.json    chacun de ces votes, siège par siège, avec le parcours
                                        de son texte
+puis les députés et la recherche par code postal (pipeline/export_deputes.py).
 
 Un vote a sa page s'il est solennel, ou s'il porte sur l'ensemble d'un texte, une partie de
 budget, une résolution ou une motion de censure : les votes que « Ce que ça change » pourra
@@ -34,6 +35,8 @@ from datetime import date
 from pathlib import Path
 
 import duckdb
+
+from pipeline import export_deputes
 
 RACINE = Path(__file__).resolve().parent.parent
 BASE = RACINE / "data" / "site.duckdb"
@@ -291,7 +294,8 @@ def main() -> int:
     if index:
         print(f"{len(index)} votes avec une page, dont {sum(s['solennel'] for s in index)} "
               f"solennels ; le plus récent : n° {index[0]['numero']} du {index[0]['date']}.")
-    return 0
+    # Les députés et la recherche par code postal (t19), sur les mêmes votes.
+    return export_deputes.main([s["uid"] for s in index])
 
 
 if __name__ == "__main__":

@@ -51,12 +51,12 @@ Les noms doivent être écrits exactement ainsi.
 ### 6. Vérification
 En début de t17, Claude Code vérifie que les deux secrets existent (`gh secret list`, qui affiche les noms et jamais les valeurs). Rien d'autre à faire côté Julien.
 
-## Ce que fera t17 (pour mémoire)
+## Ce que fait le déploiement (livré en t17)
 
-- **Site** : Astro, sortie statique dans `site/dist/`. Commande de build : `npm ci && npm run build`, lancée dans `site/`. Node : la version LTS en cours (Node 24 en octobre 2026), à confirmer à l'installation d'Astro.
-- **Données** : le pipeline écrit ses JSON dans `export/`, copiés dans le site avant le build.
-- **Création du projet**, une seule fois : `wrangler pages project create <nom> --production-branch main`.
-- **Déploiement** : une étape ajoutée à `.github/workflows/nuit.yml` après les contrôles, avec la condition `if: steps.controles.outcome == 'success'`, via l'action officielle `cloudflare/wrangler-action` : `pages deploy site/dist --project-name=<nom> --branch=main`.
+- **Site** : Astro, sortie statique dans `site/dist/`. Commande de build : `npm ci && npm test && npm run build`, lancée dans `site/`, avec Node 24.
+- **Données** : le pipeline écrit ses JSON dans `export/` ; le site les lit au build et échoue s'ils manquent.
+- **Création du projet**, au premier passage seulement : `wrangler pages project create le578esiege --production-branch main`.
+- **Déploiement** : une étape de `.github/workflows/nuit.yml`, après les contrôles et la construction du site : `wrangler pages deploy site/dist --project-name le578esiege --branch main` (wrangler 4.148.0, lancé par `npx`).
 
 ## Limites de l'offre gratuite (doc Cloudflare, 8 oct. 2026)
 

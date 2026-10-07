@@ -1,13 +1,21 @@
 name: Pipeline de nuit
 
-# Chaque nuit : récupérer les sources qui ont changé (t11). Les étapes suivantes (normaliser,
-# contrôler, calculer, exporter, déployer : t12 et suivantes) ne tourneront que si une empreinte
-# a changé. Un échec garde la dernière version publiée. Minute 11 plutôt que l'heure pile : le
-# planificateur de GitHub est saturé en début d'heure et y saute des passages.
+# Chaque nuit : récupérer les sources qui ont changé (t11), puis normaliser, contrôler, exporter,
+# construire le site et l'envoyer à Cloudflare Pages (t12 à t17), seulement si une empreinte a
+# changé. Un lancement à la main ou une modification du site ou du pipeline sur main reconstruit
+# tout, même sans nouvelle donnée. Un échec des contrôles ne publie rien : la version en ligne
+# reste la dernière valide. Minute 11 plutôt que l'heure pile : le planificateur de GitHub est
+# saturé en début d'heure et y saute des passages.
 on:
   schedule:
     - cron: "11 6 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "pipeline/**"
+      - ".github/workflows/nuit.yml"
 
 permissions:
   contents: write
@@ -16,6 +24,10 @@ permissions:
 concurrency:
   group: pipeline-nuit
   cancel-in-progress: false
+
+env:
+  PROJET_PAGES: le578esiege
+  WRANGLER: wrangler@4.148.0
 
 jobs:
   nuit:
@@ -38,19 +50,24 @@ jobs:
         run: uv run python -m pipeline.ingest
 
       - name: Normalisation (11 tables DuckDB)
-        if: steps.ingestion.outputs.changement == 'true'
+        if: steps.ingestion.outputs.changement == 'true' || github.event_name != 'schedule'
         run: uv run python -m pipeline.normalize
 
       - name: Contrôles (6 règles ; un échec bloquant arrête le build)
         id: controles
-        if: steps.ingestion.outputs.changement == 'true'
+        if: steps.ingestion.outputs.changement == 'true' || github.event_name != 'schedule'
         run: uv run python -m pipeline.checks
 
+      # Tout ce qui suit jusqu'au déploiement porte la condition « contrôles réussis » :
+      # un build arrêté ne publie rien.
       - name: Page « État des données »
         if: steps.controles.outcome == 'success'
         run: uv run python -m pipeline.etat
 
-      # Jusqu'au déploiement du site (t16, t17), l'export est gardé comme artefact.
+      - name: Export des données du site
+        if: steps.controles.outcome == 'success'
+        run: uv run python -m pipeline.export_site
+
       - name: Garder l'export du build
         if: steps.controles.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -59,9 +76,35 @@ jobs:
           path: export/
           retention-days: 14
 
-      # t17 et suivantes (calculs, export des scrutins, déploiement) s'insèrent ici, avec la
-      # condition : if: steps.controles.outcome == 'success'
-      # Un build arrêté ne publie donc rien : la version en ligne reste la dernière valide.
+      - uses: actions/setup-node@v4
+        if: steps.controles.outcome == 'success'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Construction du site (Astro)
+        id: site
+        if: steps.controles.outcome == 'success'
+        working-directory: site
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - name: Déploiement sur Cloudflare Pages
+        if: steps.site.outcome == 'success' && github.ref == 'refs/heads/main'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Le projet est créé au premier passage (téléversement direct, docs/decisions.md).
+          if ! npx --yes "$WRANGLER" pages project list | grep -qw "$PROJET_PAGES"; then
+            npx --yes "$WRANGLER" pages project create "$PROJET_PAGES" --production-branch main
+          fi
+          npx --yes "$WRANGLER" pages deploy site/dist --project-name "$PROJET_PAGES" \
+            --branch main --commit-hash "$GITHUB_SHA" --commit-message "Build $GITHUB_RUN_ID" \
+            --commit-dirty=true
 
       - name: Garder les sources pour la nuit suivante
         if: always() && steps.ingestion.outputs.telecharge == 'true'

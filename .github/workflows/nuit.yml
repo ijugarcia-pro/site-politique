@@ -71,7 +71,7 @@ jobs:
           key: sources-${{ github.run_id }}
 
       - name: Archiver les nouvelles versions (30 jours)
-        if: steps.ingestion.outputs.changement == 'true'
+        if: always() && steps.ingestion.outputs.changement == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: sources-${{ github.run_id }}

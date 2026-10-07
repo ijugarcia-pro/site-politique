@@ -25,27 +25,24 @@ import csv
 import dataclasses
 import json
 import random
-import re
 import sys
-import zipfile
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 
-from pipeline.an import champ, liste, val
+from pipeline.an import champ, val
+from pipeline.an import documents as lire_archive
 from pipeline.rattachement import (
     CATEGORIES,
-    Amendement,
     Index,
     Resultat,
     analyser_libelle,
     categorie,
-    coeur,
+    charger_index,
     combiner,
     methode_actes,
     methode_libelle,
     methode_seance,
-    normaliser,
 )
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -64,9 +61,6 @@ ARCHIVES = {
     "agenda": "Agenda.json.zip",
     "amendements": "Amendements.json.zip",
 }
-# Types de document dont le titre désigne le texte voté (et non un rapport ou un avis).
-TYPES_TEXTE = {"PION", "PRJL", "PNRE", "RION", "ACIN"}
-ACTE_DEBAT_AN = re.compile(r"^(AN\w*-DEBATS|CMP-DEBATS-AN)")
 METHODES = {"A": "actes du dossier", "B": "libellé", "C": "séance (agenda)",
             "combinee": "combinaison"}
 
@@ -95,11 +89,8 @@ def documents(nom_archive: str):
     chemin = RAW / nom_archive
     if not chemin.exists():
         sys.exit(f"Archive absente : {chemin}. Lancer d'abord "
-                 "`uv run python -m scripts.inventaire_open_data`.")
-    with zipfile.ZipFile(chemin) as archive:
-        for nom in archive.namelist():
-            if nom.endswith(".json"):
-                yield nom, json.loads(archive.read(nom))
+                 "`uv run python -m pipeline.ingest`.")
+    yield from lire_archive(chemin)
 
 
 def charger_scrutins() -> list[dict]:
@@ -118,80 +109,6 @@ def charger_scrutins() -> list[dict]:
             "categorie": categorie(s["titre"], code),
         })
     return sorted(scrutins, key=lambda s: s["numero"])
-
-
-def actes(noeud):
-    for acte in liste(noeud):
-        yield acte
-        yield from actes(champ(acte, "actesLegislatifs", "acteLegislatif"))
-
-
-def charger_dossiers(index: Index) -> dict[str, str]:
-    """Remplit les index A et B (titres) ; renvoie le titre de chaque dossier."""
-    titres_dossiers = {}
-    for _, doc in documents(ARCHIVES["dossiers"]):
-        if "dossierParlementaire" in doc:
-            dossier = doc["dossierParlementaire"]
-            uid = dossier["uid"]
-            titre = champ(dossier, "titreDossier", "titre") or ""
-            titres_dossiers[uid] = titre
-            if titre:
-                index.titres.setdefault(coeur(titre), set()).add(uid)
-            procedure = normaliser(champ(dossier, "procedureParlementaire", "libelle"))
-            for nature in ("organique", "constitutionnelle"):
-                if nature in procedure:
-                    index.natures[uid] = nature
-            for acte in actes(champ(dossier, "actesLegislatifs", "acteLegislatif")):
-                for vote in liste(champ(acte, "voteRefs", "voteRef")):
-                    index.actes.setdefault(vote, set()).add(uid)
-                if ACTE_DEBAT_AN.match(acte.get("codeActe") or ""):
-                    jours = index.debats.setdefault(uid, set())
-                    if val(acte.get("dateActe")):
-                        jours.add(acte["dateActe"][:10])
-        else:
-            document = doc["document"]
-            dossier = document.get("dossierRef")
-            if not dossier or champ(document, "classification", "type", "code") not in TYPES_TEXTE:
-                continue
-            titre = champ(document, "titres", "titrePrincipal")
-            if titre:
-                index.titres.setdefault(coeur(titre), set()).add(dossier)
-            depot = champ(document, "cycleDeVie", "chrono", "dateDepot")
-            if depot and depot[:10] < index.premier_depot.get(dossier, "9999"):
-                index.premier_depot[dossier] = depot[:10]
-    index.titres.pop("", None)
-    return titres_dossiers
-
-
-def charger_agenda(index: Index) -> None:
-    for _, doc in documents(ARCHIVES["agenda"]):
-        reunion = doc["reunion"]
-        for point in liste(champ(reunion, "ODJ", "pointsODJ", "pointODJ")):
-            for dossier in liste(champ(point, "dossiersLegislatifsRefs", "dossierRef")):
-                index.seances.setdefault(reunion["uid"], set()).add(dossier)
-
-
-def charger_amendements(index: Index) -> None:
-    """Amendements examinés en séance publique (préfixe AN), rangés par numéro."""
-    for nom, doc in documents(ARCHIVES["amendements"]):
-        a = doc["amendement"]
-        if champ(a, "identification", "prefixeOrganeExamen") != "AN":
-            continue
-        numero = re.match(r"(?:[IV]+-)?(\d+)", champ(a, "identification", "numeroLong") or "")
-        dossier = nom.split("/")[1]
-        if not numero or dossier == "incorrect_data":
-            continue
-        date_sort = val(champ(a, "cycleDeVie", "dateSort"))
-        index.amendements.setdefault(int(numero.group(1)), []).append(Amendement(
-            uid=a["uid"],
-            numero=int(numero.group(1)),
-            dossier=dossier,
-            texte=val(a.get("texteLegislatifRef")),
-            seance=val(a.get("seanceDiscussionRef")),
-            date_sort=date_sort[:10] if date_sort else None,
-            signataires=normaliser(champ(a, "signataires", "libelle")),
-            article=champ(a, "pointeurFragmentTexte", "division", "titre"),
-        ))
 
 
 # --- Mesure -----------------------------------------------------------------------------------
@@ -515,11 +432,9 @@ def main() -> None:
     args = parser.parse_args()
 
     print("Lecture des archives", flush=True)
-    index = Index()
     scrutins = charger_scrutins()
-    titres = charger_dossiers(index)
-    charger_agenda(index)
-    charger_amendements(index)
+    index, titres = charger_index(RAW / ARCHIVES["dossiers"], RAW / ARCHIVES["agenda"],
+                                  RAW / ARCHIVES["amendements"])
     print("Rattachement", flush=True)
     rattacher(scrutins, index)
 

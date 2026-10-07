@@ -28,7 +28,7 @@ from pathlib import Path
 import httpx
 import openpyxl
 
-from pipeline.an import champ, est_nil, liste, sans_cache, val
+from pipeline.an import champ, documents, est_nil, liste, sans_cache, val
 from pipeline.sources import SOURCES, nom_fichier
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -277,13 +277,6 @@ def decrire(chemin: Path) -> dict:
 
 
 # --- Mesures ciblées sur les règles du projet ------------------------------------------------
-
-
-def documents(chemin: Path, prefixe: str):
-    with zipfile.ZipFile(chemin) as archive:
-        for nom in archive.namelist():
-            if nom.startswith(prefixe) and nom.endswith(".json"):
-                yield nom, json.loads(archive.read(nom))
 
 
 def ids_archive(chemin: Path, prefixe: str) -> set[str]:

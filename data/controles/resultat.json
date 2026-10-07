@@ -1,0 +1,57 @@
+{
+ "controle_le": "2026-10-07T15:41:53+00:00",
+ "build_arrete": false,
+ "controles": [
+  {
+   "numero": 1,
+   "nom": "partition",
+   "reussi": true,
+   "bloquant": false,
+   "details": []
+  },
+  {
+   "numero": 2,
+   "nom": "totaux",
+   "reussi": false,
+   "bloquant": false,
+   "details": [
+    "n° 1 : totaux : non-votants 21 au lieu de 10"
+   ]
+  },
+  {
+   "numero": 3,
+   "nom": "effectifs",
+   "reussi": true,
+   "bloquant": true,
+   "details": []
+  },
+  {
+   "numero": 4,
+   "nom": "non-régression",
+   "reussi": true,
+   "bloquant": true,
+   "details": []
+  },
+  {
+   "numero": 5,
+   "nom": "schéma",
+   "reussi": true,
+   "bloquant": true,
+   "details": []
+  },
+  {
+   "numero": 6,
+   "nom": "fraîcheur",
+   "reussi": true,
+   "bloquant": false,
+   "details": []
+  }
+ ],
+ "scrutins_mis_de_cote": [
+  {
+   "uid": "VTANR5L17V1",
+   "numero": 1,
+   "raison": "totaux : non-votants 21 au lieu de 10"
+  }
+ ]
+}

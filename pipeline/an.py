@@ -8,7 +8,11 @@ Les JSON de l'Assemblée sont convertis depuis du XML :
 
 from __future__ import annotations
 
+import json
 import uuid
+import zipfile
+from collections.abc import Iterator
+from pathlib import Path
 
 REPOSITORY = "https://data.assemblee-nationale.fr/static/openData/repository/17/"
 URL_SCRUTINS = REPOSITORY + "loi/scrutins/Scrutins.json.zip"
@@ -44,3 +48,11 @@ def champ(objet, *cles):
             return None
         objet = val(objet.get(cle))
     return objet
+
+
+def documents(chemin: Path, prefixe: str = "") -> Iterator[tuple[str, dict]]:
+    """Chaque fichier JSON d'une archive zip de l'Assemblée : (nom dans l'archive, contenu)."""
+    with zipfile.ZipFile(chemin) as archive:
+        for nom in archive.namelist():
+            if nom.startswith(prefixe) and nom.endswith(".json"):
+                yield nom, json.loads(archive.read(nom))

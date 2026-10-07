@@ -13,3 +13,19 @@ jobs:
       - run: uv sync
       - run: uv run ruff check .
       - run: uv run pytest
+
+  # Le site ne se construit qu'avec les données du pipeline (nuit.yml) ; ici, ses tests seuls.
+  site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm test

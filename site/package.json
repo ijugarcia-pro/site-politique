@@ -1,0 +1,19 @@
+{
+  "name": "le-578e-siege",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test \"src/lib/*.test.ts\""
+  },
+  "dependencies": {
+    "@fontsource-variable/fredoka": "5.3.0",
+    "@fontsource-variable/nunito": "5.3.0",
+    "astro": "7.3.7"
+  }
+}

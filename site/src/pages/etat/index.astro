@@ -1,0 +1,89 @@
+---
+// Page « État des données » (t14) : ce que le site sait, d'où ça vient, ce qui a été mis de côté.
+import Base from '../../layouts/Base.astro';
+import { dateLisible, etat } from '../../lib/donnees.ts';
+
+const e = etat();
+const d = e.dernier_scrutin;
+const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+---
+<Base titre="État des données"
+  description="Ce que le site sait, d'où viennent les données, et ce qui a été mis de côté.">
+  <div>
+    <h1>État des données</h1>
+    <p class="sous-titre">
+      Mis à jour le {dateLisible(e.genere_le)}, à partir de l'open data de l'Assemblée nationale.
+    </p>
+  </div>
+
+  <div class="cartes">
+    <div class="carte"><strong>{e.scrutins.publies}</strong><small>scrutins publiés sur {e.scrutins.total}</small></div>
+    <div class="carte"><strong>n° {d.numero}</strong><small>dernier scrutin intégré, du {dateLisible(d.date)}</small></div>
+    <div class="carte"><strong>{e.deputes_en_exercice}</strong><small>députés en exercice</small></div>
+    <div class="carte"><strong>{e.scrutins.mis_de_cote}</strong><small>scrutin(s) mis de côté</small></div>
+  </div>
+
+  <section>
+    <h2>Dernier scrutin intégré</h2>
+    <p>Scrutin n° {d.numero} du {dateLisible(d.date)} : {d.titre}</p>
+  </section>
+
+  <section>
+    <h2>Scrutins mis de côté</h2>
+    <p>Un scrutin dont le décompte ne tombe pas juste n'est pas publié ; les autres le sont.</p>
+    <div class="tableau"><table>
+      <thead><tr><th scope="col">N°</th><th scope="col">Raison</th></tr></thead>
+      <tbody>
+        {e.scrutins_mis_de_cote.length === 0
+          ? <tr><td colspan="2">Aucun scrutin mis de côté.</td></tr>
+          : e.scrutins_mis_de_cote.map((s) => <tr><td>{s.numero}</td><td>{s.raison}</td></tr>)}
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Contrôles du dernier build</h2>
+    <div class="tableau"><table>
+      <thead><tr><th scope="col">N°</th><th scope="col">Contrôle</th><th scope="col">Résultat</th><th scope="col">Détail</th></tr></thead>
+      <tbody>
+        {e.controles.map((c) => (
+          <tr>
+            <td>{c.numero}</td>
+            <td>{majuscule(c.nom)}</td>
+            <td>{c.reussi ? <span class="ok">réussi</span>
+              : <span class="alerte">{c.bloquant ? 'échec' : 'signalé'}</span>}</td>
+            <td>{c.details.slice(0, 3).join(' ; ') || '—'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Sources</h2>
+    <div class="tableau"><table>
+      <thead><tr><th scope="col">Source</th><th scope="col">Version utilisée</th><th scope="col">Récupération</th></tr></thead>
+      <tbody>
+        {e.sources.map((s) => (
+          <tr>
+            <td><a href={s.url}>{s.nom}</a><br /><small>{s.producteur} · {s.licence}</small></td>
+            <td>{dateLisible(s.version)}</td>
+            <td>{s.echecs_consecutifs === 0 ? <span class="ok">à jour</span>
+              : <span class="alerte">{s.echecs_consecutifs} échec(s) d'affilée</span>}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table></div>
+  </section>
+
+  <p>Les mêmes informations, en JSON : <a href="/etat/etat.json">etat.json</a>.</p>
+</Base>
+
+<style>
+  section { display: flex; flex-direction: column; gap: 12px; }
+  section p { margin: 0; }
+  .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+  .cartes strong { display: block; font-family: var(--police-titre); font-size: 28px; }
+  .cartes small { color: var(--gris); font-size: 15px; }
+  td small { color: var(--gris); }
+</style>

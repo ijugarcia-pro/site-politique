@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import Hemicycle from '../components/Hemicycle.astro';
+import { composition, dateLisible } from '../lib/donnees.ts';
+
+const compo = composition();
+const occupes = compo.sieges.filter((s) => !s.vacant).length;
+const vacants = compo.sieges.length - occupes;
+---
+<Base titre="Mon hémicycle" onglet="hemicycle"
+  description="La composition de l'Assemblée nationale aujourd'hui, siège par siège.">
+  <div>
+    <h1>Mon hémicycle</h1>
+    <p class="sous-titre">
+      Bientôt, tes réponses à de vrais votes dessineront ici ton hémicycle : les députés qui
+      votent comme toi, ton jumeau parmi les 577, et la précision de ton résultat.
+    </p>
+  </div>
+
+  <section class="carte" aria-labelledby="aujourdhui">
+    <h2 id="aujourdhui">L'Assemblée aujourd'hui</h2>
+    <p class="sous-titre">
+      {`${occupes} députés en exercice le ${dateLisible(compo.date)}, dans ${compo.groupes.length} groupes`}{vacants > 0 && `, et ${vacants} siège${vacants > 1 ? 's' : ''} vacant${vacants > 1 ? 's' : ''}`}.
+      Les groupes sont rangés dans l'ordre de leurs places dans la salle, d'après les numéros de
+      siège officiels ; les non-inscrits, dispersés dans la salle, sont regroupés à droite.
+    </p>
+    <div style="margin-top: 18px">
+      <Hemicycle sieges={compo.sieges} groupes={compo.groupes} mode="composition"
+        titre="Composition de l'Assemblée nationale" />
+    </div>
+  </section>
+</Base>

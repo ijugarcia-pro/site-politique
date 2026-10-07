@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (t17 livrée : site Astro, charte V5, hémicycle sur les vraies données, déploiement branché, en attente de fusion ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -53,8 +53,8 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée *(fait le 8 oct. 2026 : aucun écart, porte franchie)*
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
-- [ ] t16 👤 Compte Cloudflare (sous-domaine gratuit)
-- [ ] t17 🤖 Site Astro + design system 578e siège
+- [x] t16 👤 Compte Cloudflare (sous-domaine gratuit) *(fait le 8 oct. 2026 ; site : le578esiege.pages.dev)*
+- [ ] t17 🤖 Site Astro + design system 578e siège *(livrée le 8 oct. 2026, branche `deploiement-cloudflare` ; à cocher après fusion et premier déploiement vert)*
 - [ ] t18 🤖 Page vote branchée sur les vrais scrutins
 - [ ] t19 🤖 Fiche député + recherche par code postal
 - [ ] t20 👤 Valider les 10 votes du quiz d'entrée
@@ -290,11 +290,14 @@ site/          le site (Astro), créé en phase 2
 ### t16 👤 Cloudflare Pages (sous-domaine gratuit) — S6, 30 min
 - Créer le compte Cloudflare (offre gratuite) et relier Pages au dépôt GitHub. Le site est servi sur le sous-domaine gratuit `*.pages.dev`. Un nom de domaine coûte une dizaine d'euros par an : pas d'achat sans décision de Julien (zéro euro).
 - **Claude Code prépare** : les paramètres de build exacts (commande, dossier de sortie, version de Node).
+- **Préparé (8 oct.) :** `docs/deploiement-cloudflare.md`, instructions pas à pas (compte, nom du site, identifiant du compte, clé d'API limitée à Pages, deux secrets GitHub). **Écart à la fiche :** pas de liaison de Pages au dépôt. Les données sont produites dans GitHub Actions et ne sont pas versionnées : le pipeline de nuit construit le site et l'envoie à Cloudflare (téléversement direct), seulement si les contrôles passent (docs/decisions.md). Le projet Pages sera créé en t17 par `wrangler`. **Reste pour Julien :** les étapes 1 à 5 du document, puis donner le nom du site retenu en début de t17. **Critère de fin :** les secrets `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` existent dans le dépôt (vérifiés par `gh secret list`).
+- **Réalisé (8 oct.) :** Julien a créé le compte et les deux secrets, vérifiés par `gh secret list`. Nom du site retenu : `le578esiege` (https://le578esiege.pages.dev). Julien avait aussi créé chez Cloudflare un projet relié au dépôt, dont le build échouait faute de site ; il le supprime, puisque le site est envoyé par GitHub Actions.
 
 ### t17 🤖 Site Astro et design system — S6, 2 sessions
 - **Dépend de :** t15, t16.
 - **À faire :** initialiser `site/` (Astro, site statique). Tokens de la maquette V5 (polices, couleurs § 1). Composant **Hemicycle** : 577 sièges, groupes dans l'ordre officiel, dissidents cerclés, accessible (étiquettes, navigation clavier, contraste). Navigation à 3 onglets. Déploiement Cloudflare Pages.
 - **Critère de fin :** un build propre, déployé, avec un hémicycle rendu depuis de vraies données.
+- **Réalisé (8 oct.) :** en une session au lieu de deux. Données : `pipeline/export_site.py` produit `export/site/composition.json` (l'Assemblée du jour : 569 députés, 8 sièges vacants, 12 groupes) et `export/site/scrutins-solennels.json` (les 6 derniers votes solennels publiés, siège par siège, avec dissidents et mises au point), testé dans `tests/test_export_site.py` (5 tests). Site : `site/` (Astro 7.3.7, statique), charte V5 dans `site/src/styles/global.css`, polices servies par le site, en-tête à 3 onglets (`site/src/layouts/Base.astro`), composant `site/src/components/Hemicycle.astro` (577 sièges, groupes dans l'ordre des places, dissidents cerclés, clavier, tableau par groupe), géométrie testée avec `node --test` (`site/src/lib/*.test.ts`). Pages : Cette semaine (dernier vote solennel), Mon hémicycle (composition du jour, en attendant le quiz de t21), Explorer (6 derniers votes solennels), État des données (t14, désormais rendue par Astro), page 404. Vérifié dans le navigateur, sur ordinateur et à 375 px : rendu, clavier, aucun débordement horizontal. Déploiement : `nuit.yml` construit et envoie le site après les contrôles (chaque nuit si une source a changé, et à chaque modification de `site/` ou `pipeline/` sur `main`) ; le projet Cloudflare est créé au premier passage. `ci.yml` lance aussi les tests du site. Décisions : `docs/decisions.md` (deux entrées du 8 oct.). **Reste :** fusionner la branche dans `main`, ce qui lance le premier déploiement ; vérifier https://le578esiege.pages.dev, puis cocher. **Non vérifié :** le déploiement lui-même (la clé n'existe que dans GitHub), et l'ordre LIOT / SOC face au schéma officiel (à voir en t22).
 
 ### t18 🤖 Page vote branchée sur les vrais scrutins — S7, 2 sessions
 - **Dépend de :** t17.

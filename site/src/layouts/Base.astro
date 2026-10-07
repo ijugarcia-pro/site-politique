@@ -1,0 +1,160 @@
+---
+// Mise en page commune : en-tête avec les 3 onglets (Cette semaine · Mon hémicycle · Explorer),
+// contenu, pied de page avec les sources. Polices servies par le site (aucun appel à Google).
+import '@fontsource-variable/fredoka/wght.css';
+import '@fontsource-variable/nunito/wght.css';
+import '../styles/global.css';
+
+interface Props {
+  titre: string;
+  description: string;
+  onglet?: 'semaine' | 'hemicycle' | 'explorer';
+}
+
+const { titre, description, onglet } = Astro.props;
+const ONGLETS = [
+  { id: 'semaine', href: '/', label: 'Cette semaine', icone: 'M3 5h14v12H3zM3 9h14M7 3v4M13 3v4' },
+  { id: 'hemicycle', href: '/hemicycle/', label: 'Mon hémicycle',
+    icone: 'M2 16a8 8 0 0 1 16 0M6 16a4 4 0 0 1 8 0' },
+  { id: 'explorer', href: '/explorer/', label: 'Explorer',
+    icone: 'M9 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM13.5 13.5L18 18' },
+];
+const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e siège`;
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titreComplet}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="evitement" href="#contenu">Aller au contenu</a>
+    <header class="entete">
+      <a class="logo" href="/" aria-label="Le 578e siège, accueil">
+        <svg width="40" height="24" viewBox="0 0 40 24" aria-hidden="true">
+          <circle cx="5" cy="20" r="3.2" fill="#C9CFDA"></circle>
+          <circle cx="9" cy="11" r="3.2" fill="#C9CFDA"></circle>
+          <circle cx="17" cy="5" r="3.2" fill="#C9CFDA"></circle>
+          <circle cx="26" cy="5" r="3.2" fill="#C9CFDA"></circle>
+          <circle cx="33" cy="11" r="3.2" fill="#C9CFDA"></circle>
+          <circle cx="36" cy="20" r="3.8" fill="#7C4DFF"></circle>
+        </svg>
+        <span>578<sup>e</sup> siège</span>
+      </a>
+      <nav aria-label="Navigation principale">
+        <ul>
+          {ONGLETS.map((o) => (
+            <li>
+              <a href={o.href} aria-current={o.id === onglet ? 'page' : undefined}>
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d={o.icone} fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span>{o.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+    <main id="contenu" class="page">
+      <slot />
+    </main>
+    <footer class="pied">
+      <p>
+        Données : <a href="https://data.assemblee-nationale.fr/">open data de l'Assemblée
+        nationale</a> (17<sup>e</sup> législature, Licence ouverte), retraitées chaque
+        nuit. <a href="/etat/">État des données</a>.
+      </p>
+      <p>Aucun commentaire politique : seulement des votes réels et leurs décomptes.</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .evitement {
+    position: absolute;
+    left: 12px;
+    top: -60px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: var(--violet);
+    color: #fff;
+    z-index: 20;
+  }
+  .evitement:focus { top: 12px; }
+
+  .entete {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 12px var(--gouttiere);
+    background: var(--fond);
+    border-bottom: 2px solid var(--bord-leger);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--texte);
+    font-family: var(--police-titre);
+    font-weight: 700;
+    font-size: 23px;
+  }
+  .logo sup { font-size: 13px; }
+  nav { margin: 0 auto; }
+  nav ul {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 5px;
+    list-style: none;
+    border-radius: 18px;
+    background: var(--fond-doux);
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 14px;
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--gris);
+    text-decoration: none;
+  }
+  nav a:hover { background: var(--fond); color: var(--violet-fonce); }
+  nav a[aria-current='page'] {
+    background: var(--fond);
+    color: var(--violet-fonce);
+    box-shadow: 0 3px 0 var(--bord);
+  }
+  @media (max-width: 640px) {
+    .entete { position: static; justify-content: center; }
+    nav { width: 100%; }
+    nav ul { justify-content: space-between; }
+    nav li { flex: 1; }
+    nav a { flex-direction: column; gap: 2px; padding: 6px 4px; font-size: 13px;
+      justify-content: center; text-align: center; }
+  }
+
+  .pied {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px var(--gouttiere) 40px;
+    border-top: 2px solid var(--bord-leger);
+    color: var(--gris);
+    font-size: 15px;
+  }
+  .pied p { margin: 0 0 6px; }
+</style>

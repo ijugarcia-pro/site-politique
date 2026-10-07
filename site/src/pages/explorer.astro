@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import CarteScrutin from '../components/CarteScrutin.astro';
+import { solennels } from '../lib/donnees.ts';
+
+const scrutins = solennels();
+---
+<Base titre="Explorer" onglet="explorer"
+  description="Les derniers votes solennels de l'Assemblée nationale, député par député.">
+  <div>
+    <h1>Explorer les votes</h1>
+    <p class="sous-titre">
+      Les {scrutins.length} derniers votes solennels, siège par siège. La recherche par thème,
+      par député et par code postal arrive bientôt.
+    </p>
+  </div>
+  <div class="liste">
+    {scrutins.map((s) => <CarteScrutin scrutin={s} />)}
+  </div>
+</Base>
+
+<style>
+  .liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+    gap: 24px; }
+</style>

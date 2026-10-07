@@ -93,6 +93,14 @@ const [jour, mois] = dateLisible(dernier.date).split(' ');
           Bientôt, tes réponses y dessineront ta place.
         </span>
       </a>
+      <a class="carte-lien" href="/deputes/" data-mon-depute hidden>
+        <span class="carte-tete"><span class="carte-titre" data-titre-depute>Ton député</span><span class="discret" data-groupe-depute></span></span>
+        <span class="depute-choisi">
+          <span class="avatar-depute" aria-hidden="true" data-ini-depute></span>
+          <span><span class="nom-depute" data-nom-depute></span><span class="discret" data-circo-depute></span></span>
+        </span>
+        <span class="carte-texte">Ses votes, sa participation, et ses votes face aux tiens →</span>
+      </a>
       <form class="carte" action="/deputes/" method="get" data-carte-depute>
         <span class="carte-titre">Ton député</span>
         <p class="carte-texte">Retrouve qui te représente, et ce qu'il a voté.</p>
@@ -108,11 +116,32 @@ const [jour, mois] = dateLisible(dernier.date).split(' ');
 </Base>
 
 <script>
-  import { reponses } from '../lib/navigateur.ts';
+  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { libelleCirco } from '../lib/geo.ts';
 
   const n = Object.keys(reponses()).length;
   const nb = document.querySelector<HTMLElement>('[data-nb-reponses]');
   if (nb) nb.textContent = `${n} vote${n > 1 ? 's' : ''} tranché${n > 1 ? 's' : ''}`;
+
+  // Le député choisi par le visiteur, lu dans la liste publique des députés.
+  const uid = deputeChoisi();
+  if (uid) {
+    fetch('/donnees/deputes.json').then((r) => r.json()).then((liste: { u: string; n: string;
+      g: string | null; c: string; d: string }[]) => {
+      const d = liste.find((x) => x.u === uid);
+      if (!d) return;
+      const carte = document.querySelector<HTMLAnchorElement>('[data-mon-depute]')!;
+      carte.href = `/deputes/${d.u}/`;
+      const [prenom, ...reste] = d.n.split(' ');
+      carte.querySelector('[data-ini-depute]')!.textContent =
+        (prenom.charAt(0) + (reste.at(-1) ?? '').charAt(0)).toUpperCase();
+      carte.querySelector('[data-nom-depute]')!.textContent = d.n;
+      carte.querySelector('[data-groupe-depute]')!.textContent = d.g ?? '';
+      carte.querySelector('[data-circo-depute]')!.textContent = `${libelleCirco(d.c)} · ${d.d}`;
+      carte.hidden = false;
+      document.querySelector<HTMLElement>('[data-carte-depute]')!.hidden = true;
+    }).catch(() => {});
+  }
 </script>
 
 <style>
@@ -271,6 +300,14 @@ const [jour, mois] = dateLisible(dernier.date).split(' ');
   .carte-titre { font-family: var(--police-titre); font-weight: 700; font-size: 20px; }
   .discret { font-size: 13px; color: var(--gris); }
   .carte-texte { margin: 0; font-size: 15px; color: var(--texte-doux); }
+  .depute-choisi { display: flex; align-items: center; gap: 12px; }
+  .depute-choisi > span:last-child { display: flex; flex-direction: column; }
+  .avatar-depute {
+    flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;
+    border-radius: 50%; background: var(--violet-voile); color: var(--violet-fonce);
+    font-family: var(--police-titre); font-weight: 700; font-size: 17px;
+  }
+  .nom-depute { font-family: var(--police-titre); font-weight: 600; font-size: 18px; }
   .cp { display: flex; gap: 8px; }
   .cp input {
     flex: 1;

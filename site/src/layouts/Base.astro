@@ -71,6 +71,17 @@ const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e s
       </p>
       <p>Aucun commentaire politique : seulement des votes réels et leurs décomptes.</p>
     </footer>
+    <script>
+      // Les formulaires « code postal » mènent à /deputes/#cp=… : le fragment n'est jamais
+      // envoyé au serveur. Sans JavaScript, ils passent par ?cp=, que la page efface.
+      for (const form of document.querySelectorAll<HTMLFormElement>('form[action="/deputes/"]')) {
+        form.addEventListener('submit', (ev) => {
+          ev.preventDefault();
+          const cp = String(new FormData(form).get('cp') ?? '').trim();
+          location.href = `/deputes/#cp=${encodeURIComponent(cp)}`;
+        });
+      }
+    </script>
   </body>
 </html>
 

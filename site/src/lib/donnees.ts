@@ -1,6 +1,6 @@
 // Lecture, au build, des JSON produits par le pipeline (export/). Rien n'est inventé ici :
 // si un fichier manque, le build échoue, et rien n'est publié.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const EXPORT = process.env.EXPORT_DIR ?? resolve(process.cwd(), '..', 'export');
@@ -137,3 +137,90 @@ export function dateLisible(iso: string | null): string {
 
 /** Les titres officiels commencent par une minuscule (« l'ensemble du projet de loi… »). */
 export const majuscule = (texte: string) => texte.charAt(0).toUpperCase() + texte.slice(1);
+
+/** Un député de la législature (export/site/deputes.json). */
+export interface Depute {
+  uid: string;
+  civilite: string | null;
+  prenom: string;
+  nom: string;
+  tri: string;
+  departement: string;
+  num_departement: string;
+  num_circo: number;
+  circo: string;
+  en_exercice: boolean;
+  debut: string;
+  fin: string | null;
+  cause_fin: string | null;
+  place: number | null;
+  groupe: string | null;
+  sigle: string | null;
+  groupe_libelle: string | null;
+}
+
+export interface Chiffres {
+  scrutins: number;
+  pour: number;
+  contre: number;
+  abstention: number;
+  non_votant: number;
+  absent: number;
+  contre_groupe: number;
+}
+
+/** La fiche d'un député (export/site/deputes/{uid}.json). */
+export interface FicheDepute extends Depute {
+  lien: string;
+  mandats: { debut: string; fin: string | null; cause_fin: string | null; circo: string }[];
+  groupes: { uid: string; sigle: string; libelle: string; debut: string; fin: string | null }[];
+  chiffres: { tous: Chiffres; solennels: Chiffres };
+  votes: { uid: string; numero: number; vote: Position; groupe: string | null;
+    position_groupe: string | null; dissident?: boolean; mise_au_point?: string }[];
+}
+
+export const deputes = () => lire<Depute[]>('site/deputes.json', EXPORT_SITE);
+export const ficheDepute = (uid: string) =>
+  lire<FicheDepute>(`site/deputes/${uid}.json`, EXPORT_SITE);
+export const lienDepute = (d: { uid: string }) => `/deputes/${d.uid}/`;
+
+/** Les fichiers d'un sous-dossier de l'export (cp/, contours/), ou aucun s'il manque : la
+ *  recherche par code postal est facultative. */
+export function fichiersExport(sousDossier: string): string[] {
+  const dossier = resolve(EXPORT, 'site', sousDossier);
+  if (!existsSync(dossier)) return [];
+  return readdirSync(dossier).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
+}
+
+export const lireExport = (chemin: string) => readFileSync(resolve(EXPORT, 'site', chemin), 'utf-8');
+
+/** « Prénom Nom ». */
+export const nomComplet = (d: { prenom: string; nom: string }) => `${d.prenom} ${d.nom}`;
+
+export interface Reperes {
+  participation: number;
+  solennels: number;
+  contreGroupe: number;
+}
+
+let reperes: Reperes | null = null;
+
+/** Les médianes des députés en exercice, pour situer les chiffres d'une fiche : sur tous les
+ *  scrutins, peu de députés votent les amendements, et un taux seul induirait en erreur.
+ *  Calculées une fois par build. */
+export function medianes(): Reperes {
+  if (reperes) return reperes;
+  const mediane = (xs: number[]) => {
+    const t = [...xs].sort((a, b) => a - b);
+    const m = Math.floor(t.length / 2);
+    return t.length % 2 ? t[m] : (t[m - 1] + t[m]) / 2;
+  };
+  const part = (c: Chiffres) => (c.scrutins ? (100 * (c.pour + c.contre + c.abstention)) / c.scrutins : 0);
+  const fiches = deputes().filter((d) => d.en_exercice).map((d) => ficheDepute(d.uid));
+  reperes = {
+    participation: Math.round(mediane(fiches.map((f) => part(f.chiffres.tous)))),
+    solennels: Math.round(mediane(fiches.map((f) => part(f.chiffres.solennels)))),
+    contreGroupe: Math.round(mediane(fiches.map((f) => f.chiffres.tous.contre_groupe))),
+  };
+  return reperes;
+}

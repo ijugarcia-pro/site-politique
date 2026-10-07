@@ -109,7 +109,7 @@ const resume = mode === 'vote' && censure
     tabindex="0"
     role="application"
     aria-roledescription="hémicycle"
-    aria-label={`${titre}. ${resume}. Flèches gauche et droite : siège par siège ; haut et bas : groupe par groupe.`}
+    aria-label={`${titre}. ${resume}. Flèches gauche et droite : siège par siège ; haut et bas : groupe par groupe ; Entrée : la fiche du député.`}
   >
     <svg viewBox={`0 -24 ${LARGEUR} ${HAUTEUR + 24}`} aria-hidden="true">
       {etiquettes && (
@@ -166,7 +166,7 @@ const resume = mode === 'vote' && censure
   <div class="repere" hidden><span class="repere-texte"></span></div>
   </div>
   <p class="info" aria-live="polite">
-    Survole ou touche un siège, ou sélectionne l'hémicycle et utilise les flèches du clavier.
+    Survole ou touche un siège pour voir son député, ou sélectionne l'hémicycle et utilise les flèches du clavier.
   </p>
   {mode === 'vote' && censure ? (
     <ul class="legende" aria-label="Légende">
@@ -258,6 +258,7 @@ const resume = mode === 'vote' && censure
       figure.querySelector('[data-annonces]')!.textContent ?? '[]');
     let actuel = -1;
 
+    let epingle = false;
     const montrer = (i: number) => {
       actuel = Math.max(0, Math.min(sieges.length - 1, i));
       const s = sieges[actuel];
@@ -265,6 +266,12 @@ const resume = mode === 'vote' && censure
       curseur.setAttribute('cy', s.getAttribute('cy')!);
       curseur.classList.add('visible');
       info.textContent = `Siège ${actuel + 1} sur ${sieges.length} : ${annonces[actuel][0]}`;
+      if (s.dataset.d) {
+        const lien = document.createElement('a');
+        lien.href = `/deputes/${s.dataset.d}/`;
+        lien.textContent = 'Voir sa fiche';
+        info.append(' · ', lien);
+      }
     };
     const groupeSuivant = (sens: 1 | -1) => {
       const g = annonces[Math.max(actuel, 0)][1];
@@ -285,6 +292,10 @@ const resume = mode === 'vote' && censure
         ArrowUp: () => groupeSuivant(-1),
         Home: () => montrer(0),
         End: () => montrer(sieges.length - 1),
+        Enter: () => {
+          const d = sieges[actuel]?.dataset.d;
+          if (d) location.href = `/deputes/${d}/`;
+        },
       };
       const action = touches[e.key];
       if (action) {
@@ -347,8 +358,19 @@ const resume = mode === 'vote' && censure
     for (const b of boutons) b.addEventListener('click', () => filtrer(b.dataset.filtre ?? ''));
     zone.addEventListener('pointerover', (e) => {
       const cible = e.target as Element;
+      if (!epingle && cible instanceof SVGCircleElement && cible.classList.contains('siege')) {
+        montrer(Number(cible.dataset.i));
+      }
+    });
+    // Un clic (ou un toucher) épingle le siège : la ligne d'information garde son député et le
+    // lien vers sa fiche ; un clic ailleurs dans l'hémicycle libère.
+    zone.addEventListener('click', (e) => {
+      const cible = e.target as Element;
       if (cible instanceof SVGCircleElement && cible.classList.contains('siege')) {
         montrer(Number(cible.dataset.i));
+        epingle = true;
+      } else {
+        epingle = false;
       }
     });
   }

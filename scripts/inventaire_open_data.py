@@ -1,8 +1,8 @@
 """Inventaire des fichiers open data : téléchargement dans data/raw/ puis description.
 
 Usage :
-    uv run python scripts/inventaire_open_data.py            # télécharge puis inventorie
-    uv run python scripts/inventaire_open_data.py --hors-ligne  # inventorie les fichiers présents
+    uv run python -m scripts.inventaire_open_data               # télécharge puis inventorie
+    uv run python -m scripts.inventaire_open_data --hors-ligne  # inventorie les fichiers présents
 
 Produit :
     data/mesures/inventaire_open_data.json  (mesure versionnée, lisible par machine)
@@ -27,6 +27,8 @@ from pathlib import Path
 
 import httpx
 import openpyxl
+
+from pipeline.an import champ, est_nil, liste, sans_cache, val
 
 RACINE = Path(__file__).resolve().parent.parent
 RAW = RACINE / "data" / "raw"
@@ -129,11 +131,6 @@ def nom_fichier(source: dict) -> str:
     return source.get("fichier") or source["url"].rsplit("/", 1)[-1]
 
 
-def sans_cache(url: str) -> str:
-    """Ajoute un paramètre unique : le cache de data.assemblee-nationale.fr garde 4 h sinon."""
-    return f"{url}{'&' if '?' in url else '?'}t={time.time_ns()}"
-
-
 def telecharger(client: httpx.Client, source: dict) -> dict:
     """Télécharge la source si la version distante a changé ; renvoie ses métadonnées."""
     chemin = RAW / nom_fichier(source)
@@ -184,35 +181,7 @@ def telecharger(client: httpx.Client, source: dict) -> dict:
     return meta
 
 
-# --- Lecture des JSON issus du XML de l'Assemblée -------------------------------------------
-# Conversion XML → JSON : une valeur nulle peut valoir None ou {"@xsi:nil": "true"}, et un
-# élément répété est un objet quand il n'y en a qu'un, une liste sinon.
-
-
-def est_nil(valeur) -> bool:
-    return isinstance(valeur, dict) and valeur.get("@xsi:nil") == "true"
-
-
-def val(valeur):
-    """Valeur utile, ou None pour les deux formes de nul."""
-    return None if valeur is None or est_nil(valeur) else valeur
-
-
-def liste(valeur) -> list:
-    """Normalise un élément répétable en liste."""
-    valeur = val(valeur)
-    if valeur is None:
-        return []
-    return valeur if isinstance(valeur, list) else [valeur]
-
-
-def champ(objet, *cles):
-    """Descend dans un objet par clés successives ; None dès qu'un maillon manque."""
-    for cle in cles:
-        if not isinstance(objet, dict):
-            return None
-        objet = val(objet.get(cle))
-    return objet
+# --- Lecture des archives ---------------------------------------------------------------------
 
 
 def motif(nom: str) -> str:
@@ -935,7 +904,7 @@ def ecrire_rapport(inventaire: dict) -> None:
     lignes = [
         "# Inventaire des fichiers open data",
         "",
-        f"Généré le {inventaire['genere_le']} par `uv run python scripts/inventaire_open_data.py`. "
+        f"Généré le {inventaire['genere_le']} par `uv run python -m scripts.inventaire_open_data`. "
         "Tout ce document est régénéré, sauf la section « Constats ». "
         "Mesures complètes : `data/mesures/inventaire_open_data.json`.",
         "",

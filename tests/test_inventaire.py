@@ -1,29 +1,4 @@
-import importlib.util
-from pathlib import Path
-
-CHEMIN = Path(__file__).resolve().parent.parent / "scripts" / "inventaire_open_data.py"
-spec = importlib.util.spec_from_file_location("inventaire_open_data", CHEMIN)
-inventaire = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(inventaire)
-
-
-def test_val_traite_les_deux_formes_de_nul():
-    assert inventaire.val(None) is None
-    assert inventaire.val({"@xsi:nil": "true"}) is None
-    assert inventaire.val("17") == "17"
-
-
-def test_liste_normalise_objet_unique_et_liste():
-    assert inventaire.liste(None) == []
-    assert inventaire.liste({"@xsi:nil": "true"}) == []
-    assert inventaire.liste({"acteurRef": "PA1"}) == [{"acteurRef": "PA1"}]
-    assert inventaire.liste([{"acteurRef": "PA1"}]) == [{"acteurRef": "PA1"}]
-
-
-def test_champ_s_arrete_au_premier_maillon_absent():
-    doc = {"objet": {"dossierLegislatif": None}}
-    assert inventaire.champ(doc, "objet", "dossierLegislatif", "dossierRef") is None
-    assert inventaire.champ({"a": {"b": "x"}}, "a", "b") == "x"
+from scripts import inventaire_open_data as inventaire
 
 
 def test_motif_remplace_les_identifiants():

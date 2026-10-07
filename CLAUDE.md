@@ -30,14 +30,24 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 - scripts/ : scripts ponctuels d'exploration et de mesure
 - data/raw/ : archives téléchargées (non versionnées)
 - data/mesures/ : mesures versionnées (délai de publication…)
-- docs/ : décisions, rapports, inventaires
+- docs/ : décisions, rapports, inventaires, planning (docs/PLANNING.md)
 - tests/ : tests pytest
 - site/ : le site (Astro), créé plus tard
 
+## Planning
+docs/PLANNING.md est la source de vérité : il dit quoi faire, dans quel ordre, et quand une tâche est terminée.
+- **En début de session**, toujours le relire, en plus de ce fichier et de docs/decisions.md. Repère dans le § 2 la tâche à faire, vérifie que ses dépendances sont cochées, puis lis sa fiche (« À faire », livrable, critère de fin, « Ne pas faire »). Si on te demande « la suite », c'est la première tâche non cochée dont les dépendances sont faites ; s'il s'agit d'une tâche 👤 de Julien, prépare-la (voir la fiche) plutôt que de la sauter. Ne passe jamais une porte ◆ sans accord explicite de Julien.
+- **En fin de session**, toujours le mettre à jour, avant le commit final :
+  - cocher la tâche dans le § 2, avec la date, ou noter son état si elle n'est pas finie (par exemple : livrée, en attente de fusion) ;
+  - ajouter dans sa fiche une ligne « Réalisé (date) » : livrables réels et chemins s'ils diffèrent de la fiche, écarts au critère de fin, ce qui reste à faire ;
+  - corriger la date de « Dernière mise à jour » en tête du fichier, et les sections de référence (§ 4) si la réalité a changé ;
+  - puis résumer à Julien : fait, échoué, non vérifié, tâche suivante.
+- Ne réécris pas les fiches des tâches à venir de ton propre chef : signale les incohérences à Julien.
+
 ## Façon de travailler
-- Une tâche du planning = une session. Commence par relire ce fichier et docs/decisions.md.
+- Une tâche du planning = une session. Commence par relire ce fichier, docs/decisions.md et docs/PLANNING.md.
 - Tout le pipeline est testé avec pytest ; ne jamais publier des données qui échouent aux contrôles.
-- Commandes : `uv sync` pour installer, `uv run pytest` pour tester, `uv run ruff check .` pour le style.
+- Commandes : `uv sync` pour installer, `uv run pytest` pour tester, `uv run ruff check .` pour le style, `uv run python -m scripts.<nom>` pour lancer un script.
 - Textes en français, ton neutre et factuel. Toute donnée de maquette doit être marquée comme illustrative.
 - Une décision structurante prise en session = une entrée datée dans docs/decisions.md.
 - Avant d'installer quoi que ce soit hors du projet (outil global, service payant), demande-moi.

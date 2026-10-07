@@ -1,0 +1,132 @@
+---
+// Un vote dans une liste (Explorer, accueil) : étiquette, titre officiel, date, barre pour /
+// contre et verdict. Toute la ligne mène à la page du vote.
+import { dateLisible, lienVote, majuscule, type ResumeScrutin } from '../lib/donnees.ts';
+import { FAMILLES, famille, normaliser, verdict } from '../lib/votes.ts';
+
+interface Props {
+  vote: ResumeScrutin;
+  /** Ce que la ligne met en avant à droite : le verdict (par défaut), les votes contre leur
+   *  groupe, ou la marge. */
+  accent?: 'verdict' | 'dissidents' | 'marge';
+  niveau?: 'h2' | 'h3';
+}
+
+const { vote: v, accent = 'verdict', niveau = 'h3' } = Astro.props;
+const Titre = niveau;
+const f = famille(v);
+const d = v.decompte;
+const exprimes = d.pour + d.contre;
+const partPour = exprimes ? (100 * d.pour) / exprimes : 0;
+const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
+---
+<li class="ligne" data-famille={f} data-solennel={v.solennel ? '1' : undefined}
+  data-recherche={recherche}>
+  <a href={lienVote(v)}>
+    <span class="haut">
+      <span class:list={['etiquette', `e-${f}`, { solennel: v.solennel }]}>
+        {v.solennel && f !== 'censure' ? 'Solennel' : FAMILLES[f]}
+      </span>
+      <span class="date">{dateLisible(v.date)}</span>
+    </span>
+    <Titre class="titre">{majuscule(v.titre).replace(/\.$/, '')}</Titre>
+    <span class="bas">
+      {v.motion_censure ? (
+        <span class="mini mini-censure" aria-hidden="true">
+          <span style={`width: ${(100 * d.pour) / (v.requis ?? 289)}%`}></span>
+        </span>
+      ) : (
+        <span class="mini" aria-hidden="true">
+          <span style={`width: ${partPour.toFixed(1)}%`}></span>
+        </span>
+      )}
+      {accent === 'dissidents' ? (
+        <span class="accent violet">{v.dissidents} contre leur groupe</span>
+      ) : accent === 'marge' && v.voix_pour_inverser ? (
+        <span class="accent violet">à {v.voix_pour_inverser} voix près</span>
+      ) : (
+        <span class="accent sombre">
+          {verdict(v)} · {v.motion_censure ? `${d.pour} / ${v.requis}` : `${d.pour}–${d.contre}`}
+        </span>
+      )}
+    </span>
+  </a>
+</li>
+
+<style>
+  .ligne { border-top: 2px solid var(--bord-leger); }
+  .ligne a {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr) 132px 168px;
+    grid-template-areas: 'haut titre mini accent';
+    gap: 6px 16px;
+    align-items: center;
+    min-height: 64px;
+    padding: 10px 10px;
+    border-radius: 14px;
+    color: inherit;
+    text-decoration: none;
+  }
+  .ligne a:hover { background: var(--fond-doux); }
+  .ligne a:hover .titre { color: var(--violet-fonce); }
+  .haut { grid-area: haut; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .bas { display: contents; }
+  .etiquette {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--fond-doux);
+    color: var(--texte-doux);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .etiquette.solennel { background: var(--violet-voile); color: var(--violet-fonce); }
+  .e-censure { background: #FFE6DA; color: #9C3207; }
+  .e-budget { background: #FFF1CC; color: var(--jaune-encre); }
+  .date { font-size: 13px; color: var(--gris); }
+  .titre {
+    grid-area: titre;
+    margin: 0;
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mini {
+    grid-area: mini;
+    display: flex;
+    height: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--contre);
+  }
+  .mini span { background: var(--pour); }
+  .mini-censure { background: var(--absent); }
+  .accent {
+    grid-area: accent;
+    justify-self: end;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .sombre { background: var(--texte); color: #fff; }
+  .violet { background: var(--violet-voile); color: var(--violet-fonce); }
+  @media (max-width: 760px) {
+    .ligne a {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'haut haut' 'titre titre' 'mini accent';
+      gap: 8px 12px;
+      padding: 12px 6px;
+    }
+    .haut { flex-direction: row; align-items: center; gap: 10px; }
+  }
+</style>

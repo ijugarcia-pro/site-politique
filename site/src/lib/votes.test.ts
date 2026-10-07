@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { barre, bascule, ligneGroupe, marge, nature, partExprimes, verdict,
+import { barre, bascule, famille, ligneGroupe, marge, nature, normaliser, partExprimes, verdict,
   type Chiffres } from './votes.ts';
 
 const decompte = { pour: 351, contre: 179, abstention: 7, non_votant: 2, absent: 38 };
@@ -63,4 +63,11 @@ test('barre et ligne d’un groupe', () => {
   assert.deepEqual(barre(d, 0), { pour: 0, abstention: 0, contre: 0 });
   assert.equal(ligneGroupe(d), '10 pour · 5 contre · 2 abst.');
   assert.equal(ligneGroupe({ ...d, abstention: 0 }), '10 pour · 5 contre');
+});
+
+test('familles de votes et recherche sans accents', () => {
+  assert.equal(famille(adopteSolennel), 'texte');
+  assert.equal(famille({ categorie: 'partie', motion_censure: false }), 'budget');
+  assert.equal(famille({ categorie: 'motion de censure', motion_censure: true }), 'censure');
+  assert.equal(normaliser("L'Aide à mourir — État"), 'l aide a mourir etat');
 });

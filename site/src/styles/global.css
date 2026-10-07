@@ -153,3 +153,6 @@ tbody tr:last-child td { border-bottom: 0; }
 
 .ok { color: #1F7A45; font-weight: 700; }
 .alerte { color: #B23A0E; font-weight: 700; }
+
+/* L'attribut hidden l'emporte toujours, même sur un composant qui fixe son display. */
+[hidden] { display: none !important; }

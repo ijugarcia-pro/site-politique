@@ -106,3 +106,25 @@ export function ligneGroupe(decompte: Chiffres['decompte']): string {
   if (decompte.abstention) morceaux.push(pluriel(decompte.abstention, 'abst.', 'abst.'));
   return morceaux.join(' · ');
 }
+
+/** Les familles de votes, pour l'étiquette courte et les filtres d'Explorer. */
+export type Famille = 'texte' | 'budget' | 'resolution' | 'declaration' | 'censure';
+
+export function famille(s: Pick<Chiffres, 'categorie' | 'motion_censure'>): Famille {
+  if (s.motion_censure) return 'censure';
+  const familles: Record<string, Famille> = {
+    partie: 'budget', 'résolution': 'resolution', 'déclaration': 'declaration',
+  };
+  return familles[s.categorie] ?? 'texte';
+}
+
+export const FAMILLES: Record<Famille, string> = {
+  texte: 'Texte', budget: 'Budget', resolution: 'Résolution', declaration: 'Déclaration',
+  censure: 'Censure',
+};
+
+/** Texte comparable pour la recherche : minuscules, sans accents ni ponctuation. */
+export function normaliser(texte: string): string {
+  return texte.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+}

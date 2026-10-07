@@ -1,0 +1,37 @@
+name: Mesure du délai de publication
+
+# Relevé horaire de l'archive des scrutins (question ouverte 1). Les mesures ne sont commitées
+# que lorsqu'une nouvelle version de l'archive apparaît.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: delai-publication
+  cancel-in-progress: false
+
+jobs:
+  mesurer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run python -m scripts.mesurer_delai_publication
+      - name: Enregistrer les mesures
+        run: |
+          if [ -z "$(git status --porcelain -- data/mesures/delai_publication docs/delai-publication.md)" ]; then
+            echo "Rien de nouveau."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/mesures/delai_publication docs/delai-publication.md
+          git commit -m "Délai de publication : nouvelle version de l'archive des scrutins"
+          git pull --rebase
+          git push

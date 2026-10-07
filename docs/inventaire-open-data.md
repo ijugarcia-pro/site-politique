@@ -1,6 +1,6 @@
 # Inventaire des fichiers open data
 
-Généré le 2026-10-07T11:13:48+00:00 par `uv run python scripts/inventaire_open_data.py`. Tout ce document est régénéré, sauf la section « Constats ». Mesures complètes : `data/mesures/inventaire_open_data.json`.
+Généré le 2026-10-07T11:15:07+00:00 par `uv run python -m scripts.inventaire_open_data`. Tout ce document est régénéré, sauf la section « Constats ». Mesures complètes : `data/mesures/inventaire_open_data.json`.
 
 ## Constats
 

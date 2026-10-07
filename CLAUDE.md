@@ -37,7 +37,7 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 ## Façon de travailler
 - Une tâche du planning = une session. Commence par relire ce fichier et docs/decisions.md.
 - Tout le pipeline est testé avec pytest ; ne jamais publier des données qui échouent aux contrôles.
-- Commandes : `uv sync` pour installer, `uv run pytest` pour tester, `uv run ruff check .` pour le style.
+- Commandes : `uv sync` pour installer, `uv run pytest` pour tester, `uv run ruff check .` pour le style, `uv run python -m scripts.<nom>` pour lancer un script.
 - Textes en français, ton neutre et factuel. Toute donnée de maquette doit être marquée comme illustrative.
 - Une décision structurante prise en session = une entrée datée dans docs/decisions.md.
 - Avant d'installer quoi que ce soit hors du projet (outil global, service payant), demande-moi.

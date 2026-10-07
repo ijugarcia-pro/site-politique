@@ -1,0 +1,21 @@
+# Les 7 contrôles de vulgarisation
+
+Figés le 7 octobre 2026 (t07). Une fiche (question, « Concrètement », 3 cartes « Ce que ça change ») n'est publiée que si elle passe les 7 contrôles. En cas d'échec, une seule nouvelle tentative est demandée, avec la liste des erreurs. Si elle échoue aussi, c'est le **repli** : le vote est affiché sans cartes, avec l'objet officiel et le lien vers le texte. Toute fiche publiée porte la mention « Résumé généré automatiquement à partir du texte officiel », avec un lien vers chaque article cité.
+
+Code : `pipeline/vulgarisation.py`, tests : `tests/test_vulgarisation.py`. Les contrôles 1 à 6 sont faits sans appel réseau. Le 7e repose sur une relecture automatique séparée, qui ne voit que la fiche, les articles cités et l'exposé des motifs.
+
+| N° | Contrôle | Règle exacte | Pourquoi |
+|---|---|---|---|
+| 1 | **Format** | La sortie est un objet JSON avec `question`, `concretement` et exactement 3 `cartes`. Chaque carte a un `titre`, un `texte`, un `article` et un `extrait`, tous non vides. | Le site lit ce fichier tel quel. |
+| 2 | **Longueurs** | En caractères : question de 20 à 150, « Concrètement » de 40 à 300, titre de carte de 5 à 60, texte de carte de 40 à 240, extrait de 15 à 220. | Une fiche se lit en moins d'une minute, sur téléphone. |
+| 3 | **Article réel** | L'`article` de chaque carte existe dans le texte voté (« Article 1er » = « article premier »). Son `extrait` figure mot pour mot dans cet article, à la casse, aux accents, aux apostrophes et aux espaces près. | Chaque carte doit renvoyer à un article vérifiable. C'est la garde principale contre l'invention. |
+| 4 | **Question fermée** | La question finit par « ? » et n'en contient qu'un. Elle ne commence pas par un mot interrogatif ouvert (comment, pourquoi, quel, combien, où, qui, que…). Elle ne propose pas d'alternative (« ou bien », « ou plutôt », « ou non »). | On y répond par oui ou par non, et « oui » veut dire voter pour le texte. |
+| 5 | **Vocabulaire neutre** | Hors extraits, aucun mot d'une liste fermée : jugements (« historique », « scandaleux », « enfin », « courageux », « dangereux », « heureusement »…), étiquettes politiques (« gauche », « droite », noms de partis), adresse au lecteur (« nous », « vous », « tu »…). | Le site ne prend jamais parti. La liste reste courte pour éviter les faux positifs ; les cas subtils relèvent du contrôle 7. |
+| 6 | **Chiffres** | Hors extraits, tout nombre écrit en chiffres figure aussi en chiffres dans le texte voté ou l'exposé des motifs (« 4 500 » = « 4500 »). Les numéros d'articles sont ignorés. | Aucun chiffre ne doit être inventé ni calculé. |
+| 7 | **Fidélité** | Une relecture automatique séparée juge chaque élément (question, « Concrètement », chaque carte). Elle doit le trouver **fidèle** : il ne dit rien que les articles ne prévoient pas, n'en déforme pas la portée, ne présente pas les objectifs des auteurs comme des faits. Elle doit aussi le trouver **neutre**. Il faut les 5 éléments jugés, tous fidèles et neutres. | Couvre ce qu'une règle ne peut pas voir : contresens, exagération, cohérence avec l'exposé des motifs. |
+
+## Ce que les contrôles ne garantissent pas
+
+- **Le choix des 3 mesures.** Rien ne vérifie que ce sont les plus importantes du texte. La relecture humaine (t08, puis t29) le juge.
+- **Le contrôle 7 n'est pas infaillible** : c'est un modèle qui en relit un autre. Les signalements des utilisateurs (t28 : 3 signalements → retrait) restent le filet final.
+- **Texte de commission mixte paritaire** : il ne contient que les articles restés en discussion. Les cartes ne peuvent donc citer que ces articles, même si le vote porte sur l'ensemble du texte (voir docs/vulgarisation-essai.md).

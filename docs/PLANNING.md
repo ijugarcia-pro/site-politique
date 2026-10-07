@@ -195,6 +195,7 @@ site/          le site (Astro), créé en phase 2
 - Onglet *Actions* du dépôt : le premier passage est vert et `data/mesures/delai.csv` existe.
 - **Claude Code prépare** : un court message récapitulatif avec le lien direct vers l'onglet Actions et ce qu'on doit y voir.
 - **Réalisé (7 oct.) :** fait par Claude Code à la demande de Julien. PR #1 puis #2 fusionnées dans `main`. Premier passage lancé à la main (run 37614612426) : vert. Il pose la référence (archive du 7 oct. à 10 h 26 GMT, scrutins 1 à 8 560) et le bot a commité `data/mesures/delai_publication/` et `docs/delai-publication.md`. Le relevé tourne ensuite seul à la minute 7 de chaque heure : https://github.com/ijugarcia-pro/site-politique/actions/workflows/delai-publication.yml
+- **Incident (7 oct.) :** GitHub n'a déclenché aucun passage programmé à la minute 7 (12 h 07, 13 h 07, 14 h 07 UTC), alors que le workflow était actif. Le cron est déplacé à la minute 23 (branche `normalisation`). À vérifier : des passages programmés doivent apparaître dans l'onglet Actions. Les 3 semaines de relevé ne partent que du premier passage programmé réussi.
 
 ### t05 👤 Clé API Anthropic plafonnée — S2, 20 min
 - Console Anthropic : créer une nouvelle clé, plafond de dépense mensuel bas (10 € suffisent au début). Dans GitHub : *Settings → Secrets → Actions → `ANTHROPIC_API_KEY`.*

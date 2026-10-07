@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02 et t04 faites ; relevé de t03 démarré). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 et t06 faites ; relevé de t03 démarré). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -39,7 +39,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t03 🤖 Mesure du délai de publication (action horaire) *(livrée le 7 oct. 2026, PR #2 fusionnée ; relevé démarré le 7 oct., à cocher après 3 semaines sans intervention, vers le 28 oct.)*
 - [x] t04 👤 Vérifier que la mesure tourne *(fait le 7 oct. 2026 par Claude Code, à la demande de Julien)*
 - [ ] t05 👤 Clé API Anthropic plafonnée + secret GitHub
-- [ ] t06 🤖 Test du rattachement vote → texte sur 100 scrutins
+- [x] t06 🤖 Test du rattachement vote → texte sur 100 scrutins *(fait le 7 oct. 2026 ; branche locale, en attente de push et de fusion)*
 - [ ] t07 🤖 Prototype de vulgarisation sur 5 textes
 - [ ] t08 👤 Relire les 5 fiches vulgarisées
 - [ ] t09 🤖 Rapport de faisabilité
@@ -123,7 +123,7 @@ Site statique (Astro). Calculs personnels (accord, groupe le plus proche, jumeau
 - Dissident : vote opposé à la position majoritaire de son groupe ; jamais pour les non-inscrits ; une abstention n'est pas une dissidence.
 - Voix pour inverser un résultat : `P − R + 1` si adopté, `R − P` si rejeté (P = voix pour, R = suffrages requis publiés avec le scrutin).
 - Jumeau : classement par accord lissé `(m+2)/(n+4)` (m = votes identiques, n = votes en commun), affiché à partir de **10 votes en commun**. Précision V1 : `1 − e^(−n/20)` (fiable vers 25 votes).
-- Lien scrutin → dossier législatif : point fragile, à mesurer (t06) avant de s'appuyer dessus.
+- Lien scrutin → dossier législatif : mesuré en t06, fiable à 99,8 % en combinant amendement retrouvé, actes du dossier, titre du texte et agenda (`pipeline/rattachement.py`, docs/rattachement.md). Ne pas utiliser `objet.dossierLegislatif` du scrutin (un tiers seulement, parfois faux).
 
 ### 4.4 Les 11 tables DuckDB
 `depute, mandat, groupe, appartenance, scrutin, vote, position_groupe, dossier, etape, vote_prevu, contenu`.
@@ -209,6 +209,7 @@ site/          le site (Astro), créé en phase 2
   4. Vérifier à la main un échantillon des rattachements « réussis » pour détecter les faux positifs.
 - **Livrable :** `docs/rattachement.md` + script reproductible.
 - **Critère de fin :** taux chiffrés par méthode et type ; liste des échecs ; recommandation (quels types de scrutins peuvent avoir « Ce que ça change », lesquels non).
+- **Réalisé (7 oct.) :** `docs/rattachement.md`, généré par `uv run python -m scripts.mesurer_rattachement`. La logique réutilisable est dans `pipeline/rattachement.py`, testée dans `tests/test_rattachement.py`. Les mesures sont dans `data/mesures/rattachement/` : `echantillon.csv` (les 100 scrutins), `verification.csv` (vérification à la main) et `synthese.json`. Trois méthodes au lieu de deux : (a) les actes du dossier ; (b) le libellé, où l'amendement est retrouvé dans l'archive des amendements, sinon le titre du texte est comparé aux textes déposés ; (c) l'agenda de la séance. S'y ajoute leur combinaison. Résultat : 99,8 % des 8 560 scrutins rattachés (97 sur 100 dans l'échantillon), aucun faux positif sur 97 vérifications à la main, un seul désaccord avec le dossier déclaré par l'Assemblée, qui est une erreur de l'open data, vérifiée sur le site officiel (scrutin 6758). La vérification à la main compare les titres et les textes de chaque dossier ; un seul scrutin a été contrôlé sur assemblee-nationale.fr. Recommandation : « Ce que ça change » pour l'ensemble d'un texte, une partie de budget ou une résolution ; pour un article, à trancher en t07 ; non pour les amendements, les motions et les votes sans texte. Reste pour t07 : passer du dossier au texte précis examiné (piste notée dans le rapport).
 
 ### t07 🤖 Prototype de vulgarisation — S2, 1 session
 - **Dépend de :** t05, t06.

@@ -49,3 +49,8 @@
 - Décision : le code commun vit dans `pipeline/` (d'abord `pipeline/an.py` : lecture des JSON de l'Assemblée et URL anti-cache). Les scripts se lancent avec `uv run python -m scripts.<nom>`, et pytest ajoute la racine du projet au chemin d'import.
 - Raison : éviter de recopier les règles de lecture entre scripts et pipeline, et les tester une seule fois.
 - Conséquence : un nouveau script importe `pipeline.*` au lieu de redéfinir ces fonctions.
+
+## 2026-10-07 · Rattachement d'un scrutin à son dossier : trois méthodes combinées
+- Décision : un scrutin est rattaché à son dossier législatif par `pipeline/rattachement.py`, dans cet ordre : l'amendement retrouvé dans l'archive des amendements (numéro, séance ou date, auteur), puis les actes du dossier qui citent le scrutin, puis le titre du texte cité dans le libellé, puis l'agenda de la séance. Le champ `objet.dossierLegislatif` du scrutin n'est pas utilisé. L'agenda seul ne rattache jamais une déclaration du Gouvernement ni une motion de censure.
+- Raison : mesure de t06 sur les 8 560 scrutins. La combinaison rattache 99,8 % des scrutins, sans faux positif sur 97 vérifications à la main. Le champ déclaré n'est rempli que pour un tiers des scrutins, et il contient au moins une erreur (scrutin 6758).
+- Conséquence : « Ce que ça change » est réservé aux votes sur l'ensemble d'un texte, une partie de budget ou une résolution, et, avec prudence, à un article (à trancher en t07). Ni les amendements, ni les motions de procédure, ni les votes sans texte n'en reçoivent en V1. Le pipeline peut publier sans l'archive des amendements (99,4 % de rattachement). Voir docs/rattachement.md.

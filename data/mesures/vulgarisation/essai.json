@@ -1,0 +1,765 @@
+{
+ "genere_le": "2026-10-07T13:25:56+00:00",
+ "modele": "claude-opus-5-5",
+ "effort": "high",
+ "resultats": [
+  {
+   "statut": "repli (sans cartes)",
+   "fiche": null,
+   "essais": [
+    {
+     "tentative": 1,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein de la République ?\",\"concretement\":\"Le texte modifie la Constitution pour donner à la Corse un statut d'autonomie. La Collectivité de Corse pourra être autorisée à adapter des lois nationales et à fixer elle-même certaines règles dans ses domaines de compétence.\",\"cartes\":[{\"titre\":\"Un statut d'autonomie pour la Corse\",\"texte\":\"La Constitution reconnaît à la Corse un statut d'autonomie au sein de la République. Ce statut tient compte de son insularité méditerranéenne et de sa communauté historique, linguistique et culturelle.\",\"article\":\"Article unique\",\"extrait\":\"La Corse est dotée d’un statut d’autonomie au sein de la République, qui tient compte de ses intérêts propres, liés à son insularité méditerranéenne\"},{\"titre\":\"Des règles fixées par la Collectivité de Corse\",\"texte\":\"Une loi organique (loi qui complète la Constitution) pourra autoriser la Collectivité de Corse à fixer ses propres règles dans ses domaines de compétence, sous le contrôle du Conseil d'État et du Conseil constitutionnel.\",\"article\":\"Article unique\",\"extrait\":\"La Collectivité de Corse peut également être habilitée à fixer les normes dans les matières où s’exercent ses compétences, dans les conditions et sous les réserves prévues par la loi organique.\"},{\"titre\":\"Une consultation possible des électeurs corses\",\"texte\":\"Les électeurs inscrits sur les listes électorales de Corse pourront être consultés sur le projet de statut, après avis de l'Assemblée de Corse. Les règles de cette consultation seront fixées par décret.\",\"article\":\"Article unique\",\"extrait\":\"Les électeurs inscrits sur les listes électorales de Corse peuvent être consultés sur le projet de statut, après avis de l’assemblée délibérante\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 6695,
+      "jetons_sortie": 2091,
+      "cout": 0.0686,
+      "id": "msg_011Cfnwt15UJoU4d9ZxqNxKL"
+     },
+     "relecture": null,
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": false,
+       "erreurs": [
+        "carte 1, texte : mot à éviter « historique »"
+       ]
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein de la République ?",
+      "concretement": "Le texte modifie la Constitution pour donner à la Corse un statut d'autonomie. La Collectivité de Corse pourra être autorisée à adapter des lois nationales et à fixer elle-même certaines règles dans ses domaines de compétence.",
+      "cartes": [
+       {
+        "titre": "Un statut d'autonomie pour la Corse",
+        "texte": "La Constitution reconnaît à la Corse un statut d'autonomie au sein de la République. Ce statut tient compte de son insularité méditerranéenne et de sa communauté historique, linguistique et culturelle.",
+        "article": "Article unique",
+        "extrait": "La Corse est dotée d’un statut d’autonomie au sein de la République, qui tient compte de ses intérêts propres, liés à son insularité méditerranéenne"
+       },
+       {
+        "titre": "Des règles fixées par la Collectivité de Corse",
+        "texte": "Une loi organique (loi qui complète la Constitution) pourra autoriser la Collectivité de Corse à fixer ses propres règles dans ses domaines de compétence, sous le contrôle du Conseil d'État et du Conseil constitutionnel.",
+        "article": "Article unique",
+        "extrait": "La Collectivité de Corse peut également être habilitée à fixer les normes dans les matières où s’exercent ses compétences, dans les conditions et sous les réserves prévues par la loi organique."
+       },
+       {
+        "titre": "Une consultation possible des électeurs corses",
+        "texte": "Les électeurs inscrits sur les listes électorales de Corse pourront être consultés sur le projet de statut, après avis de l'Assemblée de Corse. Les règles de cette consultation seront fixées par décret.",
+        "article": "Article unique",
+        "extrait": "Les électeurs inscrits sur les listes électorales de Corse peuvent être consultés sur le projet de statut, après avis de l’assemblée délibérante"
+       }
+      ]
+     }
+    },
+    {
+     "tentative": 2,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein de la République ?\",\"concretement\":\"Le texte modifie la Constitution pour donner à la Corse un statut d'autonomie. Sous conditions, la Collectivité de Corse pourra adapter des lois nationales ou fixer ses propres règles dans certains domaines.\",\"cartes\":[{\"titre\":\"Un statut d'autonomie dans la Constitution\",\"texte\":\"Un nouvel article de la Constitution donne à la Corse un statut d'autonomie. Ce statut tient compte de ses intérêts propres, liés à son insularité et à sa communauté de langue et de culture.\",\"article\":\"Article unique\",\"extrait\":\"La Corse est dotée d’un statut d’autonomie au sein de la République, qui tient compte de ses intérêts propres, liés à son insularité méditerranéenne\"},{\"titre\":\"Des règles fixées par la Collectivité de Corse\",\"texte\":\"La Collectivité de Corse pourra être autorisée à fixer elle-même des règles dans ses domaines de compétence. Une loi spéciale, dite organique, en fixe les conditions et les limites.\",\"article\":\"Article unique\",\"extrait\":\"La Collectivité de Corse peut également être habilitée à fixer les normes dans les matières où s’exercent ses compétences, dans les conditions et sous les réserves prévues par la loi organique.\"},{\"titre\":\"Une consultation des électeurs de Corse\",\"texte\":\"Les électeurs inscrits sur les listes électorales de Corse peuvent être consultés sur le projet de statut. Les règles de cette consultation sont fixées par un décret du Gouvernement.\",\"article\":\"Article unique\",\"extrait\":\"Les électeurs inscrits sur les listes électorales de Corse peuvent être consultés sur le projet de statut, après avis de l’assemblée délibérante\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 6744,
+      "jetons_sortie": 1898,
+      "cout": 0.0649,
+      "id": "msg_011CfnwuXfztvkAx4aRy6eiN"
+     },
+     "relecture": {
+      "sortie": "{\"elements\":[{\"element\":\"question\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"concretement\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 1\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 2\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 3\",\"fidele\":false,\"neutre\":true,\"probleme\":\"Le texte de la carte omet deux garanties prévues : la consultation intervient après avis de l'assemblée délibérante de Corse, et ses conditions sont fixées par un décret en Conseil d'État délibéré en conseil des ministres, pas par un simple « décret du Gouvernement ».\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 6635,
+      "jetons_sortie": 1305,
+      "cout": 0.0526,
+      "id": "msg_011CfnwvqKvA5FpvjnqwoeG4"
+     },
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 7,
+       "nom": "fidélité",
+       "reussi": false,
+       "erreurs": [
+        "carte 3 : non fidèle — Le texte de la carte omet deux garanties prévues : la consultation intervient après avis de l'assemblée délibérante de Corse, et ses conditions sont fixées par un décret en Conseil d'État délibéré en conseil des ministres, pas par un simple « décret du Gouvernement »."
+       ]
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein de la République ?",
+      "concretement": "Le texte modifie la Constitution pour donner à la Corse un statut d'autonomie. Sous conditions, la Collectivité de Corse pourra adapter des lois nationales ou fixer ses propres règles dans certains domaines.",
+      "cartes": [
+       {
+        "titre": "Un statut d'autonomie dans la Constitution",
+        "texte": "Un nouvel article de la Constitution donne à la Corse un statut d'autonomie. Ce statut tient compte de ses intérêts propres, liés à son insularité et à sa communauté de langue et de culture.",
+        "article": "Article unique",
+        "extrait": "La Corse est dotée d’un statut d’autonomie au sein de la République, qui tient compte de ses intérêts propres, liés à son insularité méditerranéenne"
+       },
+       {
+        "titre": "Des règles fixées par la Collectivité de Corse",
+        "texte": "La Collectivité de Corse pourra être autorisée à fixer elle-même des règles dans ses domaines de compétence. Une loi spéciale, dite organique, en fixe les conditions et les limites.",
+        "article": "Article unique",
+        "extrait": "La Collectivité de Corse peut également être habilitée à fixer les normes dans les matières où s’exercent ses compétences, dans les conditions et sous les réserves prévues par la loi organique."
+       },
+       {
+        "titre": "Une consultation des électeurs de Corse",
+        "texte": "Les électeurs inscrits sur les listes électorales de Corse peuvent être consultés sur le projet de statut. Les règles de cette consultation sont fixées par un décret du Gouvernement.",
+        "article": "Article unique",
+        "extrait": "Les électeurs inscrits sur les listes électorales de Corse peuvent être consultés sur le projet de statut, après avis de l’assemblée délibérante"
+       }
+      ]
+     }
+    }
+   ],
+   "choix": {
+    "scrutin": "VTANR5L17V7454",
+    "numero": 7454,
+    "date": "2026-06-23",
+    "theme": "institutions",
+    "titre": "l'ensemble du projet de loi constitutionnelle pour une Corse autonome au sein de la République (première lecture)",
+    "dossier": "DLR5L17N54218",
+    "texte_vote": "PRJLANR5L17B2697",
+    "texte_depose": "PRJLANR5L17B2697"
+   },
+   "nb_articles": 1
+  },
+  {
+   "statut": "publiée",
+   "fiche": {
+    "question": "Faut-il présumer que les policiers et gendarmes qui utilisent leur arme dans les cas prévus par la loi ont agi en légitime défense ?",
+    "concretement": "Le texte prévoit qu'un policier ou un gendarme qui tire avec son arme dans les cas déjà autorisés par la loi est considéré d'office comme ayant agi en légitime défense (une situation où l'usage de la force n'est pas puni), sauf si l'enquête prouve le contraire.",
+    "cartes": [
+     {
+      "titre": "Une légitime défense présumée pour les agents armés",
+      "texte": "Les policiers nationaux, les policiers municipaux et les gendarmes qui utilisent leur arme sont considérés d'office comme ayant agi en légitime défense. Ils n'ont pas à démontrer eux-mêmes qu'ils étaient dans cette situation.",
+      "article": "Article unique",
+      "extrait": "Est présumé avoir agi en état de légitime défense, l’agent de la police nationale ou municipale ainsi que le militaire de la gendarmerie nationale"
+     },
+     {
+      "titre": "Seulement dans les cas où tirer est déjà permis",
+      "texte": "La présomption ne vaut que si l'arme est utilisée dans les situations déjà prévues par deux articles du code de la sécurité intérieure, qui fixent quand ces agents peuvent faire usage de leur arme.",
+      "article": "Article unique",
+      "extrait": "qui a fait usage de son arme dans les conditions prévues par les articles L. 435‑1 et L. 511‑5‑1 du code de la sécurité intérieure."
+     },
+     {
+      "titre": "L'enquête peut écarter la présomption",
+      "texte": "Si l'enquête judiciaire montre que l'arme a été utilisée de façon nettement disproportionnée, ou sans nécessité absolue, l'agent n'est plus présumé avoir agi en légitime défense.",
+      "article": "Article unique",
+      "extrait": "peut être renversée si l’enquête judiciaire démontre une utilisation des armes manifestement disproportionnée ou contraire au principe de nécessité absolue établi par la loi."
+     }
+    ]
+   },
+   "essais": [
+    {
+     "tentative": 1,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il présumer que les policiers et gendarmes qui utilisent leur arme dans les cas prévus par la loi ont agi en légitime défense ?\",\"concretement\":\"Le texte prévoit qu'un policier ou un gendarme qui tire avec son arme dans les cas déjà autorisés par la loi est considéré d'office comme ayant agi en légitime défense (une situation où l'usage de la force n'est pas puni), sauf si l'enquête prouve le contraire.\",\"cartes\":[{\"titre\":\"Une légitime défense présumée pour les agents armés\",\"texte\":\"Les policiers nationaux, les policiers municipaux et les gendarmes qui utilisent leur arme sont considérés d'office comme ayant agi en légitime défense. Ils n'ont pas à démontrer eux-mêmes qu'ils étaient dans cette situation.\",\"article\":\"Article unique\",\"extrait\":\"Est présumé avoir agi en état de légitime défense, l’agent de la police nationale ou municipale ainsi que le militaire de la gendarmerie nationale\"},{\"titre\":\"Seulement dans les cas où tirer est déjà permis\",\"texte\":\"La présomption ne vaut que si l'arme est utilisée dans les situations déjà prévues par deux articles du code de la sécurité intérieure, qui fixent quand ces agents peuvent faire usage de leur arme.\",\"article\":\"Article unique\",\"extrait\":\"qui a fait usage de son arme dans les conditions prévues par les articles L. 435‑1 et L. 511‑5‑1 du code de la sécurité intérieure.\"},{\"titre\":\"L'enquête peut écarter la présomption\",\"texte\":\"Si l'enquête judiciaire montre que l'arme a été utilisée de façon nettement disproportionnée, ou sans nécessité absolue, l'agent n'est plus présumé avoir agi en légitime défense.\",\"article\":\"Article unique\",\"extrait\":\"peut être renversée si l’enquête judiciaire démontre une utilisation des armes manifestement disproportionnée ou contraire au principe de nécessité absolue établi par la loi.\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 3008,
+      "jetons_sortie": 1765,
+      "cout": 0.0473,
+      "id": "msg_011CfnwwrY7yucUBrbZsxJJD"
+     },
+     "relecture": {
+      "sortie": "{\"elements\":[{\"element\":\"question\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"concretement\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 1\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 2\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 3\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 2995,
+      "jetons_sortie": 1075,
+      "cout": 0.0335,
+      "id": "msg_011Cfnwy2BqeDsDRaJC7md1o"
+     },
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 7,
+       "nom": "fidélité",
+       "reussi": true,
+       "erreurs": []
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il présumer que les policiers et gendarmes qui utilisent leur arme dans les cas prévus par la loi ont agi en légitime défense ?",
+      "concretement": "Le texte prévoit qu'un policier ou un gendarme qui tire avec son arme dans les cas déjà autorisés par la loi est considéré d'office comme ayant agi en légitime défense (une situation où l'usage de la force n'est pas puni), sauf si l'enquête prouve le contraire.",
+      "cartes": [
+       {
+        "titre": "Une légitime défense présumée pour les agents armés",
+        "texte": "Les policiers nationaux, les policiers municipaux et les gendarmes qui utilisent leur arme sont considérés d'office comme ayant agi en légitime défense. Ils n'ont pas à démontrer eux-mêmes qu'ils étaient dans cette situation.",
+        "article": "Article unique",
+        "extrait": "Est présumé avoir agi en état de légitime défense, l’agent de la police nationale ou municipale ainsi que le militaire de la gendarmerie nationale"
+       },
+       {
+        "titre": "Seulement dans les cas où tirer est déjà permis",
+        "texte": "La présomption ne vaut que si l'arme est utilisée dans les situations déjà prévues par deux articles du code de la sécurité intérieure, qui fixent quand ces agents peuvent faire usage de leur arme.",
+        "article": "Article unique",
+        "extrait": "qui a fait usage de son arme dans les conditions prévues par les articles L. 435‑1 et L. 511‑5‑1 du code de la sécurité intérieure."
+       },
+       {
+        "titre": "L'enquête peut écarter la présomption",
+        "texte": "Si l'enquête judiciaire montre que l'arme a été utilisée de façon nettement disproportionnée, ou sans nécessité absolue, l'agent n'est plus présumé avoir agi en légitime défense.",
+        "article": "Article unique",
+        "extrait": "peut être renversée si l’enquête judiciaire démontre une utilisation des armes manifestement disproportionnée ou contraire au principe de nécessité absolue établi par la loi."
+       }
+      ]
+     }
+    }
+   ],
+   "choix": {
+    "scrutin": "VTANR5L17V7987",
+    "numero": 7987,
+    "date": "2026-07-07",
+    "theme": "sécurité",
+    "titre": "l'ensemble de la proposition de loi visant à reconnaître une présomption de légitime défense pour les forces de l'ordre, dans l'exercice de leurs fonctions (première lecture)",
+    "dossier": "DLR5L17N51037",
+    "texte_vote": "PIONANR5L17B0691",
+    "texte_depose": "PIONANR5L17B0691"
+   },
+   "nb_articles": 1
+  },
+  {
+   "statut": "publiée",
+   "fiche": {
+    "question": "Faut-il remplacer les contrats de concession des grands barrages par un droit d'exploitation de soixante-dix ans accordé aux exploitants actuels ?",
+    "concretement": "Le texte met fin aux contrats par lesquels l'État confie l'exploitation des barrages de plus de 4 500 kilowatts. Les exploitants actuels peuvent les garder contre paiement, et EDF doit mettre aux enchères une partie de sa production.",
+    "cartes": [
+     {
+      "titre": "Un droit d'exploitation de soixante-dix ans",
+      "texte": "Les entreprises qui exploitent aujourd'hui les grands barrages obtiennent le droit de continuer à les utiliser pendant soixante-dix ans. Ce droit ne peut être cédé à une autre entreprise qu'avec l'accord de l'État.",
+      "article": "Article 2",
+      "extrait": "est attribué pour une durée de soixante‑dix ans aux titulaires de ces contrats dans les conditions prévues à l’article 5."
+     },
+     {
+      "titre": "EDF doit vendre une part de sa production aux enchères",
+      "texte": "Pendant vingt ans, EDF doit proposer à d'autres entreprises, par des enchères, une part de sa production, d'abord équivalente à 6 gigawatts, puis revue tous les cinq ans. Les acheteurs ne gèrent pas les barrages.",
+      "article": "Article 12",
+      "extrait": "Initialement fixée à 6 gigawatts, la capacité hydroélectrique virtuelle mise à la disposition de tiers est fixée, tous les cinq ans, par un arrêté du ministre chargé de l’énergie"
+     },
+     {
+      "titre": "Une redevance liée au bénéfice des exploitants",
+      "texte": "Les exploitants des grands barrages paient chaque année à l'État une redevance calculée sur l'électricité produite et le bénéfice par mégawattheure : plus ce bénéfice est élevé, plus le taux appliqué est fort.",
+      "article": "Article 8",
+      "extrait": "Le barème applique un taux croissant à ce rapport, établi par décret en Conseil d’État pour chacune des tranches suivantes :"
+     }
+    ]
+   },
+   "essais": [
+    {
+     "tentative": 1,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il remplacer les contrats de concession des grands barrages par un droit d'exploitation de soixante-dix ans accordé aux exploitants actuels ?\",\"concretement\":\"Le texte met fin aux contrats par lesquels l'État confie l'exploitation des barrages de plus de 4 500 kilowatts. Les exploitants actuels peuvent les garder contre paiement, et EDF doit mettre aux enchères une partie de sa production.\",\"cartes\":[{\"titre\":\"Un droit d'exploitation de soixante-dix ans\",\"texte\":\"Les entreprises qui exploitent aujourd'hui les grands barrages obtiennent le droit de continuer à les utiliser pendant soixante-dix ans. Ce droit ne peut être cédé à une autre entreprise qu'avec l'accord de l'État.\",\"article\":\"Article 2\",\"extrait\":\"est attribué pour une durée de soixante‑dix ans aux titulaires de ces contrats dans les conditions prévues à l’article 5.\"},{\"titre\":\"EDF doit vendre une part de sa production aux enchères\",\"texte\":\"Pendant vingt ans, EDF doit proposer à d'autres entreprises, par des enchères, une part de sa production, d'abord équivalente à 6 gigawatts, puis revue tous les cinq ans. Les acheteurs ne gèrent pas les barrages.\",\"article\":\"Article 12\",\"extrait\":\"Initialement fixée à 6 gigawatts, la capacité hydroélectrique virtuelle mise à la disposition de tiers est fixée, tous les cinq ans, par un arrêté du ministre chargé de l’énergie\"},{\"titre\":\"Une redevance liée au bénéfice des exploitants\",\"texte\":\"Les exploitants des grands barrages paient chaque année à l'État une redevance calculée sur l'électricité produite et le bénéfice par mégawattheure : plus ce bénéfice est élevé, plus le taux appliqué est fort.\",\"article\":\"Article 8\",\"extrait\":\"Le barème applique un taux croissant à ce rapport, établi par décret en Conseil d’État pour chacune des tranches suivantes :\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 46188,
+      "jetons_sortie": 2873,
+      "cout": 0.2422,
+      "id": "msg_011Cfnwyx7neMtPZa6LfAw2G"
+     },
+     "relecture": {
+      "sortie": "{\"elements\":[{\"element\":\"question\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"concretement\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 1\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 2\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 3\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 27801,
+      "jetons_sortie": 1052,
+      "cout": 0.1322,
+      "id": "msg_011Cfnx1ze9sNpenJaXhvmpp"
+     },
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 7,
+       "nom": "fidélité",
+       "reussi": true,
+       "erreurs": []
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il remplacer les contrats de concession des grands barrages par un droit d'exploitation de soixante-dix ans accordé aux exploitants actuels ?",
+      "concretement": "Le texte met fin aux contrats par lesquels l'État confie l'exploitation des barrages de plus de 4 500 kilowatts. Les exploitants actuels peuvent les garder contre paiement, et EDF doit mettre aux enchères une partie de sa production.",
+      "cartes": [
+       {
+        "titre": "Un droit d'exploitation de soixante-dix ans",
+        "texte": "Les entreprises qui exploitent aujourd'hui les grands barrages obtiennent le droit de continuer à les utiliser pendant soixante-dix ans. Ce droit ne peut être cédé à une autre entreprise qu'avec l'accord de l'État.",
+        "article": "Article 2",
+        "extrait": "est attribué pour une durée de soixante‑dix ans aux titulaires de ces contrats dans les conditions prévues à l’article 5."
+       },
+       {
+        "titre": "EDF doit vendre une part de sa production aux enchères",
+        "texte": "Pendant vingt ans, EDF doit proposer à d'autres entreprises, par des enchères, une part de sa production, d'abord équivalente à 6 gigawatts, puis revue tous les cinq ans. Les acheteurs ne gèrent pas les barrages.",
+        "article": "Article 12",
+        "extrait": "Initialement fixée à 6 gigawatts, la capacité hydroélectrique virtuelle mise à la disposition de tiers est fixée, tous les cinq ans, par un arrêté du ministre chargé de l’énergie"
+       },
+       {
+        "titre": "Une redevance liée au bénéfice des exploitants",
+        "texte": "Les exploitants des grands barrages paient chaque année à l'État une redevance calculée sur l'électricité produite et le bénéfice par mégawattheure : plus ce bénéfice est élevé, plus le taux appliqué est fort.",
+        "article": "Article 8",
+        "extrait": "Le barème applique un taux croissant à ce rapport, établi par décret en Conseil d’État pour chacune des tranches suivantes :"
+       }
+      ]
+     }
+    }
+   ],
+   "choix": {
+    "scrutin": "VTANR5L17V7409",
+    "numero": 7409,
+    "date": "2026-06-17",
+    "theme": "énergie",
+    "titre": "l'ensemble de la proposition de loi visant à relancer les investissements dans le secteur de l'hydroélectricité pour contribuer à la transition énergétique (texte de la commission mixte paritaire)",
+    "dossier": "DLR5L17N53530",
+    "texte_vote": "PIONANR5L17BTC2856",
+    "texte_depose": "PIONANR5L17B2334"
+   },
+   "nb_articles": 17
+  },
+  {
+   "statut": "publiée",
+   "fiche": {
+    "question": "Faut-il interdire les réseaux sociaux aux moins de quinze ans et le téléphone portable dans les lycées ?",
+    "concretement": "Le texte interdit l'accès aux réseaux sociaux aux moins de quinze ans, étend aux lycées l'interdiction du téléphone portable et ajoute la propagande pour des moyens de se donner la mort aux contenus que les sites doivent combattre.",
+    "cartes": [
+     {
+      "titre": "Réseaux sociaux interdits aux moins de quinze ans",
+      "texte": "À partir du 1er septembre 2026, les moins de quinze ans ne peuvent plus accéder aux réseaux sociaux. Les comptes créés avant cette date sont concernés quatre mois plus tard. Les encyclopédies en ligne et les sites éducatifs sont exclus.",
+      "article": "Article 1er",
+      "extrait": "L’accès à un service de réseaux sociaux en ligne fourni par une plateforme en ligne est interdit aux mineurs de quinze ans."
+     },
+     {
+      "titre": "Téléphone portable interdit au lycée",
+      "texte": "Dès la rentrée 2026-2027, l'interdiction du téléphone portable, qui s'applique déjà dans les écoles et les collèges, s'étend aux lycées. Le règlement intérieur de chaque établissement fixe les modalités et les exceptions.",
+      "article": "Article 6",
+      "extrait": "les mots : « et les collèges » sont remplacés par les mots : « , les collèges et les lycées »"
+     },
+     {
+      "titre": "Propagande pour le suicide ciblée en ligne",
+      "texte": "La propagande ou la publicité pour des moyens de se donner la mort s'ajoute aux contenus que les hébergeurs de sites doivent aider à combattre. Un juge peut aussi suspendre le compte en ligne d'une personne condamnée pour ce délit.",
+      "article": "Article 2",
+      "extrait": "Au premier alinéa du A du IV de l’article 6 de la loi n° 2004‑575 du 21 juin 2004 pour la confiance dans l’économie numérique, après la référence : « 223‑13, », est insérée la référence : « 223‑14, »"
+     }
+    ]
+   },
+   "essais": [
+    {
+     "tentative": 1,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il interdire les réseaux sociaux aux moins de quinze ans et le téléphone portable dans les lycées ?\",\"concretement\":\"Le texte interdit l'accès aux réseaux sociaux aux moins de quinze ans, étend aux lycées l'interdiction du téléphone portable et ajoute la propagande pour des moyens de se donner la mort aux contenus que les sites doivent combattre.\",\"cartes\":[{\"titre\":\"Réseaux sociaux interdits aux moins de quinze ans\",\"texte\":\"À partir du 1er septembre 2026, les moins de quinze ans ne peuvent plus accéder aux réseaux sociaux. Les comptes créés avant cette date sont concernés quatre mois plus tard. Les encyclopédies en ligne et les sites éducatifs sont exclus.\",\"article\":\"Article 1er\",\"extrait\":\"L’accès à un service de réseaux sociaux en ligne fourni par une plateforme en ligne est interdit aux mineurs de quinze ans.\"},{\"titre\":\"Téléphone portable interdit au lycée\",\"texte\":\"Dès la rentrée 2026-2027, l'interdiction du téléphone portable, qui s'applique déjà dans les écoles et les collèges, s'étend aux lycées. Le règlement intérieur de chaque établissement fixe les modalités et les exceptions.\",\"article\":\"Article 6\",\"extrait\":\"les mots : « et les collèges » sont remplacés par les mots : « , les collèges et les lycées »\"},{\"titre\":\"Propagande pour le suicide ciblée en ligne\",\"texte\":\"La propagande ou la publicité pour des moyens de se donner la mort s'ajoute aux contenus que les hébergeurs de sites doivent aider à combattre. Un juge peut aussi suspendre le compte en ligne d'une personne condamnée pour ce délit.\",\"article\":\"Article 2\",\"extrait\":\"Au premier alinéa du A du IV de l’article 6 de la loi n° 2004‑575 du 21 juin 2004 pour la confiance dans l’économie numérique, après la référence : « 223‑13, », est insérée la référence : « 223‑14, »\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 8876,
+      "jetons_sortie": 2344,
+      "cout": 0.0824,
+      "id": "msg_011Cfnx5V2HWWDaKhHWLqJQf"
+     },
+     "relecture": {
+      "sortie": "{\"elements\":[{\"element\":\"question\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"concretement\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 1\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 2\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 3\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 8885,
+      "jetons_sortie": 1227,
+      "cout": 0.0601,
+      "id": "msg_011Cfnx74q46VeReZkwzphaK"
+     },
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 7,
+       "nom": "fidélité",
+       "reussi": true,
+       "erreurs": []
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il interdire les réseaux sociaux aux moins de quinze ans et le téléphone portable dans les lycées ?",
+      "concretement": "Le texte interdit l'accès aux réseaux sociaux aux moins de quinze ans, étend aux lycées l'interdiction du téléphone portable et ajoute la propagande pour des moyens de se donner la mort aux contenus que les sites doivent combattre.",
+      "cartes": [
+       {
+        "titre": "Réseaux sociaux interdits aux moins de quinze ans",
+        "texte": "À partir du 1er septembre 2026, les moins de quinze ans ne peuvent plus accéder aux réseaux sociaux. Les comptes créés avant cette date sont concernés quatre mois plus tard. Les encyclopédies en ligne et les sites éducatifs sont exclus.",
+        "article": "Article 1er",
+        "extrait": "L’accès à un service de réseaux sociaux en ligne fourni par une plateforme en ligne est interdit aux mineurs de quinze ans."
+       },
+       {
+        "titre": "Téléphone portable interdit au lycée",
+        "texte": "Dès la rentrée 2026-2027, l'interdiction du téléphone portable, qui s'applique déjà dans les écoles et les collèges, s'étend aux lycées. Le règlement intérieur de chaque établissement fixe les modalités et les exceptions.",
+        "article": "Article 6",
+        "extrait": "les mots : « et les collèges » sont remplacés par les mots : « , les collèges et les lycées »"
+       },
+       {
+        "titre": "Propagande pour le suicide ciblée en ligne",
+        "texte": "La propagande ou la publicité pour des moyens de se donner la mort s'ajoute aux contenus que les hébergeurs de sites doivent aider à combattre. Un juge peut aussi suspendre le compte en ligne d'une personne condamnée pour ce délit.",
+        "article": "Article 2",
+        "extrait": "Au premier alinéa du A du IV de l’article 6 de la loi n° 2004‑575 du 21 juin 2004 pour la confiance dans l’économie numérique, après la référence : « 223‑13, », est insérée la référence : « 223‑14, »"
+       }
+      ]
+     }
+    }
+   ],
+   "choix": {
+    "scrutin": "VTANR5L17V8431",
+    "numero": 8431,
+    "date": "2026-07-21",
+    "theme": "numérique",
+    "titre": "l'ensemble de la proposition de loi visant à protéger les mineurs des risques auxquels les expose l'utilisation des réseaux sociaux (texte de la commission mixte paritaire)",
+    "dossier": "DLR5L17N53187",
+    "texte_vote": "PIONANR5L17BTC3069",
+    "texte_depose": "PIONANR5L17B2107"
+   },
+   "nb_articles": 3
+  },
+  {
+   "statut": "repli (sans cartes)",
+   "fiche": null,
+   "essais": [
+    {
+     "tentative": 1,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il doter la France d'une stratégie nationale contre les maladies du cœur et des vaisseaux, avec des dépistages renforcés ?\",\"concretement\":\"Le texte charge l'État de fixer une stratégie nationale contre les maladies du cœur, des vaisseaux et du cerveau (infarctus, AVC…). Il ajoute des dépistages chez l'enfant, l'adulte et au travail, et autorise pharmaciens et kinés à mesurer la tension.\",\"cartes\":[{\"titre\":\"Un dépistage proposé aux adultes\",\"texte\":\"Lors des rendez-vous de prévention déjà prévus pour les adultes, un dépistage de ces maladies est proposé. Il comprend un examen médical et des analyses, et tient compte des risques propres aux femmes.\",\"article\":\"Article 1er\",\"extrait\":\"Un dépistage des maladies cardio‑neuro‑vasculaires et des maladies cardiaques structurelles est proposé à l’assuré lors des rendez‑vous de prévention\"},{\"titre\":\"Un dépistage pour les enfants vers six ans\",\"texte\":\"Chaque enfant passe, dans l'année de ses six ans, un rendez-vous de dépistage chez un médecin formé, notamment du cholestérol héréditaire. Les parents peuvent refuser ; c'est noté dans le carnet de santé.\",\"article\":\"Article 1er\",\"extrait\":\"Un rendez‑vous de dépistage précoce des maladies cardio‑neuro‑vasculaires, notamment de l’hypercholestérolémie familiale, est réalisé dans l’année qui suit le sixième anniversaire de l’enfant\"},{\"titre\":\"De la prévention au travail\",\"texte\":\"Les services de santé au travail organisent chaque année des actions sur les facteurs de risque. Lors d'une visite chez le médecin du travail, un dépistage de ces maladies est proposé au salarié.\",\"article\":\"Article 2\",\"extrait\":\"Un dépistage précoce des maladies cardio‑neuro‑vasculaires et des maladies cardiaques structurelles est proposé au travailleur lors de cet examen.\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 10013,
+      "jetons_sortie": 2158,
+      "cout": 0.0832,
+      "id": "msg_011Cfnx83WTCRjDZowucKGm7"
+     },
+     "relecture": null,
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": false,
+       "erreurs": [
+        "carte 1, texte : mot à éviter « vous »",
+        "carte 2, texte : mot à éviter « vous »"
+       ]
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il doter la France d'une stratégie nationale contre les maladies du cœur et des vaisseaux, avec des dépistages renforcés ?",
+      "concretement": "Le texte charge l'État de fixer une stratégie nationale contre les maladies du cœur, des vaisseaux et du cerveau (infarctus, AVC…). Il ajoute des dépistages chez l'enfant, l'adulte et au travail, et autorise pharmaciens et kinés à mesurer la tension.",
+      "cartes": [
+       {
+        "titre": "Un dépistage proposé aux adultes",
+        "texte": "Lors des rendez-vous de prévention déjà prévus pour les adultes, un dépistage de ces maladies est proposé. Il comprend un examen médical et des analyses, et tient compte des risques propres aux femmes.",
+        "article": "Article 1er",
+        "extrait": "Un dépistage des maladies cardio‑neuro‑vasculaires et des maladies cardiaques structurelles est proposé à l’assuré lors des rendez‑vous de prévention"
+       },
+       {
+        "titre": "Un dépistage pour les enfants vers six ans",
+        "texte": "Chaque enfant passe, dans l'année de ses six ans, un rendez-vous de dépistage chez un médecin formé, notamment du cholestérol héréditaire. Les parents peuvent refuser ; c'est noté dans le carnet de santé.",
+        "article": "Article 1er",
+        "extrait": "Un rendez‑vous de dépistage précoce des maladies cardio‑neuro‑vasculaires, notamment de l’hypercholestérolémie familiale, est réalisé dans l’année qui suit le sixième anniversaire de l’enfant"
+       },
+       {
+        "titre": "De la prévention au travail",
+        "texte": "Les services de santé au travail organisent chaque année des actions sur les facteurs de risque. Lors d'une visite chez le médecin du travail, un dépistage de ces maladies est proposé au salarié.",
+        "article": "Article 2",
+        "extrait": "Un dépistage précoce des maladies cardio‑neuro‑vasculaires et des maladies cardiaques structurelles est proposé au travailleur lors de cet examen."
+       }
+      ]
+     }
+    },
+    {
+     "tentative": 2,
+     "redaction": {
+      "sortie": "{\"question\":\"Faut-il doter la France d’une stratégie nationale contre les maladies du cœur et des vaisseaux et renforcer leur dépistage ?\",\"concretement\":\"Le texte charge l’État de fixer une stratégie contre les maladies cardio-neuro-vasculaires (cœur, vaisseaux, cerveau) et ajoute des dépistages et des actions d’information pour les enfants, les salariés et les adultes lors des bilans de prévention.\",\"cartes\":[{\"titre\":\"Une stratégie nationale fixée par l’État\",\"texte\":\"L’État doit fixer une stratégie sur plusieurs années, avec chercheurs, soignants et patients, sur la prévention, le dépistage et les soins. Elle vise à réduire les inégalités sociales et territoriales.\",\"article\":\"Article 1er\",\"extrait\":\"L’État conduit une politique de lutte contre les maladies cardio‑neuro‑vasculaires et leurs facteurs de risques. Il arrête une stratégie nationale pluriannuelle\"},{\"titre\":\"Un dépistage pour les enfants de six ans\",\"texte\":\"Un dépistage, notamment d’un excès de cholestérol d’origine familiale, est fait chez l’enfant dans l’année qui suit ses six ans, par un médecin formé. Les parents peuvent refuser ; c’est noté dans le carnet de santé.\",\"article\":\"Article 1er\",\"extrait\":\"est réalisé dans l’année qui suit le sixième anniversaire de l’enfant par un médecin spécialement formé\"},{\"titre\":\"Un dépistage proposé lors de la visite au travail\",\"texte\":\"Lors de la visite médicale au travail, un dépistage de ces maladies est proposé au salarié. Les services de santé au travail mènent aussi chaque année des actions d’information sur les facteurs de risque.\",\"article\":\"Article 2\",\"extrait\":\"Un dépistage précoce des maladies cardio‑neuro‑vasculaires et des maladies cardiaques structurelles est proposé au travailleur lors de cet examen.\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 10082,
+      "jetons_sortie": 2544,
+      "cout": 0.0912,
+      "id": "msg_011Cfnx9Sy8SciFuv96q7VmJ"
+     },
+     "relecture": {
+      "sortie": "{\"elements\":[{\"element\":\"question\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"concretement\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 1\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 2\",\"fidele\":true,\"neutre\":true,\"probleme\":\"\"},{\"element\":\"carte 3\",\"fidele\":false,\"neutre\":true,\"probleme\":\"Le dépistage n'est pas proposé à chaque visite médicale au travail : l'article le rattache à « cet examen » de l'article L. 4624-2-2 (la visite de mi-carrière), alors que la carte laisse croire qu'il concerne toute visite.\"}]}",
+      "stop_reason": "end_turn",
+      "modele": "claude-opus-5-5",
+      "jetons_entree": 7656,
+      "jetons_sortie": 1506,
+      "cout": 0.0607,
+      "id": "msg_011CfnxB5vtuypA34ajdtZke"
+     },
+     "controles": [
+      {
+       "numero": 1,
+       "nom": "format",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 2,
+       "nom": "longueurs",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 3,
+       "nom": "articles",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 4,
+       "nom": "question fermée",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 5,
+       "nom": "vocabulaire neutre",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 6,
+       "nom": "chiffres",
+       "reussi": true,
+       "erreurs": []
+      },
+      {
+       "numero": 7,
+       "nom": "fidélité",
+       "reussi": false,
+       "erreurs": [
+        "carte 3 : non fidèle — Le dépistage n'est pas proposé à chaque visite médicale au travail : l'article le rattache à « cet examen » de l'article L. 4624-2-2 (la visite de mi-carrière), alors que la carte laisse croire qu'il concerne toute visite."
+       ]
+      }
+     ],
+     "fiche": {
+      "question": "Faut-il doter la France d’une stratégie nationale contre les maladies du cœur et des vaisseaux et renforcer leur dépistage ?",
+      "concretement": "Le texte charge l’État de fixer une stratégie contre les maladies cardio-neuro-vasculaires (cœur, vaisseaux, cerveau) et ajoute des dépistages et des actions d’information pour les enfants, les salariés et les adultes lors des bilans de prévention.",
+      "cartes": [
+       {
+        "titre": "Une stratégie nationale fixée par l’État",
+        "texte": "L’État doit fixer une stratégie sur plusieurs années, avec chercheurs, soignants et patients, sur la prévention, le dépistage et les soins. Elle vise à réduire les inégalités sociales et territoriales.",
+        "article": "Article 1er",
+        "extrait": "L’État conduit une politique de lutte contre les maladies cardio‑neuro‑vasculaires et leurs facteurs de risques. Il arrête une stratégie nationale pluriannuelle"
+       },
+       {
+        "titre": "Un dépistage pour les enfants de six ans",
+        "texte": "Un dépistage, notamment d’un excès de cholestérol d’origine familiale, est fait chez l’enfant dans l’année qui suit ses six ans, par un médecin formé. Les parents peuvent refuser ; c’est noté dans le carnet de santé.",
+        "article": "Article 1er",
+        "extrait": "est réalisé dans l’année qui suit le sixième anniversaire de l’enfant par un médecin spécialement formé"
+       },
+       {
+        "titre": "Un dépistage proposé lors de la visite au travail",
+        "texte": "Lors de la visite médicale au travail, un dépistage de ces maladies est proposé au salarié. Les services de santé au travail mènent aussi chaque année des actions d’information sur les facteurs de risque.",
+        "article": "Article 2",
+        "extrait": "Un dépistage précoce des maladies cardio‑neuro‑vasculaires et des maladies cardiaques structurelles est proposé au travailleur lors de cet examen."
+       }
+      ]
+     }
+    }
+   ],
+   "choix": {
+    "scrutin": "VTANR5L17V8419",
+    "numero": 8419,
+    "date": "2026-07-20",
+    "theme": "santé",
+    "titre": "l'ensemble de la proposition de loi visant à doter la France d'une stratégie nationale de lutte contre les maladies cardio-neuro-vasculaires (texte de la commission mixte paritaire)",
+    "dossier": "DLR5L17N53426",
+    "texte_vote": "PIONANR5L17BTC2995",
+    "texte_depose": "PIONANR5L17B2309"
+   },
+   "nb_articles": 5
+  }
+ ]
+}

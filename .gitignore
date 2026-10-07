@@ -20,3 +20,6 @@ node_modules/
 
 # Divers
 .DS_Store
+
+# Fichiers exportés pour le site (régénérés à chaque build)
+export/

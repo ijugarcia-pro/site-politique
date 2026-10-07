@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10, t12 et t13 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -49,7 +49,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t11 🤖 Ingestion de nuit et archives avec empreinte *(livrée le 7 oct. 2026 ; à cocher après deux nuits sans intervention)*
 - [x] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents *(fait le 7 oct. 2026)*
 - [x] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build *(fait le 7 oct. 2026)*
-- [ ] t14 🤖 Page « État des données »
+- [x] t14 🤖 Page « État des données » *(fait le 7 oct. 2026 ; en ligne avec le site, t17)*
 - [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
@@ -271,6 +271,7 @@ site/          le site (Astro), créé en phase 2
 ### t14 🤖 Page « État des données » — S5, 1 session
 - **Dépend de :** t13.
 - **À faire :** `etat.json` à chaque build (dernière mise à jour, dernier scrutin intégré, scrutins mis de côté avec la raison) + page HTML simple qui l'affiche.
+- **Réalisé (7 oct.) :** `pipeline/etat.py` produit `export/etat.json` et `export/etat.html` après chaque build autorisé : dernière mise à jour, dernier scrutin intégré, scrutins publiés et mis de côté avec leur raison, résultat des 6 contrôles, version et état de chaque source. Le dossier `export/` n'est pas versionné. Tests : `tests/test_etat.py` (4 tests, dont l'échappement des titres). La page reprend la charte V5 (Fredoka, Nunito, violet) et le mode sombre. Branchée dans `nuit.yml` ; l'export est gardé 14 jours comme artefact en attendant le déploiement (t16, t17). Dépendance ajoutée : `tzdata`, pour l'heure de Paris sous Windows.
 
 ### t15 👤 ◆ Vérifier 5 scrutins au hasard — S5, 45 min
 - Comparer le décompte et 5 votes nominatifs par scrutin avec la page officielle du scrutin sur le site de l'Assemblée.

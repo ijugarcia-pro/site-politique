@@ -1,0 +1,43 @@
+name: Essai de vulgarisation
+
+# Prototype de vulgarisation sur 5 textes (t07) : appels payants à l'API Anthropic, plafonnés à
+# 2,50 $ par le script. Se lance à la main, ou quand le fichier de demande change sur la branche
+# de l'essai ; jamais à chaque commit.
+on:
+  workflow_dispatch:
+  push:
+    branches: [vulgarisation-essai]
+    paths: [data/mesures/vulgarisation/demande.txt]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vulgarisation-essai
+  cancel-in-progress: false
+
+jobs:
+  essai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run python -m scripts.essai_vulgarisation
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Enregistrer les résultats
+        # Même si l'essai s'arrête en route : ce qui a été payé est gardé.
+        if: always()
+        run: |
+          if [ -z "$(git status --porcelain -- data/mesures/vulgarisation docs/vulgarisation-essai.md)" ]; then
+            echo "Aucun résultat."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/mesures/vulgarisation docs/vulgarisation-essai.md
+          git commit -m "Essai de vulgarisation : résultats"
+          git pull --rebase
+          git push

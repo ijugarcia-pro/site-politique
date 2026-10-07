@@ -1,0 +1,2096 @@
+{
+ "recommandes": [
+  988,
+  1303,
+  1308,
+  4758,
+  6184,
+  7409,
+  7454,
+  7987,
+  8280,
+  8431
+ ],
+ "candidats": [
+  {
+   "question": "Faut-il permettre aux adultes atteints d'une maladie grave et incurable en phase avancée de demander une aide à mourir ?",
+   "theme": "Santé et fin de vie",
+   "uid": "VTANR5L17V8280",
+   "numero": 8280,
+   "date": "2026-07-15",
+   "titre": "l'ensemble de la proposition de loi relative au droit à l'aide à mourir (lecture définitive).",
+   "dossier": "Fin de vie",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 291,
+    "contre": 241,
+    "abstention": 29
+   },
+   "voix_pour_inverser": 25,
+   "dissidents": 85,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 12,
+     "contre": 106,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 5,
+     "contre": 41,
+     "abstention": 2,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 2,
+     "abstention": 3,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 16,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 4,
+     "abstention": 6,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 8,
+     "abstention": 4,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "pour",
+     "pour": 61,
+     "contre": 2,
+     "abstention": 3,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 17,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 64,
+     "contre": 18,
+     "abstention": 9,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "pour",
+     "pour": 33,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 38
+    },
+    "NI": {
+     "position": "contre",
+     "pour": 3,
+     "contre": 7,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 16,
+     "contre": 18,
+     "abstention": 1,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein de la République ?",
+   "theme": "Institutions",
+   "uid": "VTANR5L17V7454",
+   "numero": 7454,
+   "date": "2026-06-23",
+   "titre": "l'ensemble du projet de loi constitutionnelle pour une Corse autonome au sein de la République (première lecture).",
+   "dossier": "Projet de loi constitutionnelle pour une Corse autonome au sein de la République",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 271,
+    "contre": 202,
+    "abstention": 64
+   },
+   "voix_pour_inverser": 35,
+   "dissidents": 20,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 120,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 34,
+     "abstention": 10,
+     "membres": 48
+    },
+    "GDR": {
+     "position": null,
+     "pour": 6,
+     "contre": 6,
+     "abstention": 2,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 25,
+     "contre": 0,
+     "abstention": 11,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 41,
+     "contre": 5,
+     "abstention": 19,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 21,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "pour",
+     "pour": 60,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 17,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 66,
+     "contre": 5,
+     "abstention": 11,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "pour",
+     "pour": 27,
+     "contre": 5,
+     "abstention": 4,
+     "membres": 38
+    },
+    "NI": {
+     "position": "contre",
+     "pour": 2,
+     "contre": 6,
+     "abstention": 1,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 22,
+     "contre": 0,
+     "abstention": 6,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il étendre le scrutin de liste paritaire aux communes de moins de 1 000 habitants ?",
+   "theme": "Institutions",
+   "uid": "VTANR5L17V1303",
+   "numero": 1303,
+   "date": "2025-04-07",
+   "titre": "l'ensemble de la proposition de loi visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité (deuxième lecture).",
+   "dossier": "Renforcement de la parité dans les fonctions électives et exécutives du bloc communal",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 206,
+    "contre": 181,
+    "abstention": 25
+   },
+   "voix_pour_inverser": 13,
+   "dissidents": 9,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 116,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 2,
+     "contre": 41,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 1,
+     "abstention": 2,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 4,
+     "contre": 8,
+     "abstention": 3,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 9,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 94
+    },
+    "ECOS": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 4,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 18,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "question": "Faut-il reporter au plus tard à juin 2026 les élections provinciales en Nouvelle-Calédonie ?",
+   "theme": "Outre-mer",
+   "uid": "VTANR5L17V3182",
+   "numero": 3182,
+   "date": "2025-10-28",
+   "titre": "l'ensemble de la proposition de loi organique visant à reporter le renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie afin de permettre la poursuite de la discussion en vue d'un accord consensuel sur l'avenir institutionnel de la Nouvelle-Calédonie (texte de la commission mixte paritaire).",
+   "dossier": "Proposition de loi organique visant à reporter le renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie pour permettre la mise en oeuvre de l'accord du 12 juillet 2025",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 279,
+    "contre": 247,
+    "abstention": 9
+   },
+   "voix_pour_inverser": 16,
+   "dissidents": 12,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 116,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 43,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 50
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 17,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 34,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 56,
+     "contre": 4,
+     "abstention": 6,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 6,
+     "abstention": 2,
+     "membres": 22
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 66,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 82,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 92
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 35,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il exiger, à Mayotte, que les deux parents d'un enfant y résident régulièrement depuis un an pour qu'il puisse devenir français ?",
+   "theme": "Outre-mer",
+   "uid": "VTANR5L17V1308",
+   "numero": 1308,
+   "date": "2025-04-08",
+   "titre": "l'ensemble de la proposition de loi visant à renforcer les conditions d'accès à la nationalité française à Mayotte (texte de la commission mixte paritaire).",
+   "dossier": "Renforcer les conditions d'accès à la nationalité française à Mayotte",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 339,
+    "contre": 174,
+    "abstention": 11
+   },
+   "voix_pour_inverser": 83,
+   "dissidents": 1,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 122,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 47,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 30,
+     "contre": 1,
+     "abstention": 3,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 61,
+     "abstention": 3,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 65,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 15,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 73,
+     "contre": 0,
+     "abstention": 4,
+     "membres": 94
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 32,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "question": "Faut-il présumer que les policiers et gendarmes qui utilisent leur arme dans les cas prévus par la loi ont agi en légitime défense ?",
+   "theme": "Sécurité et justice",
+   "uid": "VTANR5L17V7987",
+   "numero": 7987,
+   "date": "2026-07-07",
+   "titre": "l'ensemble de la proposition de loi visant à reconnaître une présomption de légitime défense pour les forces de l'ordre, dans l'exercice de leurs fonctions (première lecture).",
+   "dossier": "Reconnaître une présomption de légitime défense pour les forces de l'ordre, dans l'exercice de leurs fonctions",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 313,
+    "contre": 199,
+    "abstention": 5
+   },
+   "voix_pour_inverser": 57,
+   "dissidents": 21,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 122,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 48,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 17,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 28,
+     "contre": 1,
+     "abstention": 5,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 62,
+     "abstention": 0,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 9,
+     "contre": 8,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 69,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 55,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 29,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il sanctionner davantage les parents de mineurs délinquants et juger plus vite les mineurs de 16 ans et plus ?",
+   "theme": "Sécurité et justice",
+   "uid": "VTANR5L17V1624",
+   "numero": 1624,
+   "date": "2025-05-13",
+   "titre": "l'ensemble de la proposition de loi visant à renforcer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents (texte de la commission mixte paritaire).",
+   "dossier": "Restaurer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 341,
+    "contre": 187,
+    "abstention": 8
+   },
+   "voix_pour_inverser": 77,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 119,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 45,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 62,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 6,
+     "abstention": 3,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 67,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 80,
+     "contre": 1,
+     "abstention": 4,
+     "membres": 94
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 36,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "question": "Faut-il pouvoir retenir jusqu'à 210 jours avant leur expulsion les étrangers condamnés pour des faits graves ?",
+   "theme": "Immigration",
+   "uid": "VTANR5L17V2958",
+   "numero": 2958,
+   "date": "2025-07-08",
+   "titre": "l'ensemble de la proposition de loi visant à faciliter le maintien en rétention des personnes condamnées pour des faits d’une particulière gravité et présentant de forts risques de récidive (première lecture).",
+   "dossier": "Proposition de loi visant à faciliter le maintien en rétention des personnes condamnées pour des faits d’une particulière gravité et présentant de forts risques de récidive",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 303,
+    "contre": 168,
+    "abstention": 1
+   },
+   "voix_pour_inverser": 68,
+   "dissidents": 2,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 108,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 48,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 25,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 59,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 58,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 61,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 93
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 33,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 24,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il renforcer la formation, la prévention et les sanctions contre l'antisémitisme et le racisme dans les universités ?",
+   "theme": "Éducation",
+   "uid": "VTANR5L17V2880",
+   "numero": 2880,
+   "date": "2025-07-02",
+   "titre": "l'ensemble de la proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur (texte de la commission mixte paritaire).",
+   "dossier": "Proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 366,
+    "contre": 88,
+    "abstention": 7
+   },
+   "voix_pour_inverser": 139,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 117,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 40,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 3,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 23,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 65,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 79,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 93
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 4,
+     "contre": 11,
+     "abstention": 7,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il interdire les réseaux sociaux aux moins de quinze ans et le téléphone portable dans les lycées ?",
+   "theme": "Numérique",
+   "uid": "VTANR5L17V8431",
+   "numero": 8431,
+   "date": "2026-07-21",
+   "titre": "l'ensemble de la proposition de loi visant à protéger les mineurs des risques auxquels les expose l'utilisation des réseaux sociaux (texte de la commission mixte paritaire).",
+   "dossier": "Protéger les mineurs des risques auxquels les expose l’utilisation des réseaux sociaux",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 279,
+    "contre": 81,
+    "abstention": 66
+   },
+   "voix_pour_inverser": 99,
+   "dissidents": 16,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 14,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 40,
+     "contre": 0,
+     "abstention": 3,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 3,
+     "abstention": 5,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 1,
+     "abstention": 2,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 30,
+     "contre": 0,
+     "abstention": 28,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 22,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 63,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 5,
+     "abstention": 4,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 83,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 7,
+     "abstention": 7,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 33,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il remplacer les contrats de concession des grands barrages par un droit d'exploitation de soixante-dix ans accordé aux exploitants actuels ?",
+   "theme": "Énergie",
+   "uid": "VTANR5L17V7409",
+   "numero": 7409,
+   "date": "2026-06-17",
+   "titre": "l'ensemble de la proposition de loi visant à relancer les investissements dans le secteur de l'hydroélectricité pour contribuer à la transition énergétique (texte de la commission mixte paritaire).",
+   "dossier": "Relancer les investissements dans le secteur de l’hydroélectricité pour contribuer à la transition énergétique",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 290,
+    "contre": 59,
+    "abstention": 116
+   },
+   "voix_pour_inverser": 116,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 84,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 36,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 60,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 18,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 59,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 75,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 32,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 34,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il adopter cette programmation nationale de l'énergie et du climat, avec ses objectifs de production nucléaire et renouvelable ?",
+   "theme": "Énergie",
+   "uid": "VTANR5L17V2653",
+   "numero": 2653,
+   "date": "2025-06-24",
+   "titre": "l'ensemble de la proposition de loi portant programmation nationale pour l'énergie et le climat pour les années 2025 à 2035 (première lecture).",
+   "dossier": "Programmation nationale et simplification normative dans le secteur économique de l’énergie",
+   "sort": "rejeté",
+   "solennel": true,
+   "decompte": {
+    "pour": 142,
+    "contre": 377,
+    "abstention": 47
+   },
+   "voix_pour_inverser": 118,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 122,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "abstention",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 46,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 36,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 66,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 23,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 71,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 90,
+     "abstention": 1,
+     "membres": 93
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 37,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "contre",
+     "pour": 2,
+     "contre": 7,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 34,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il assouplir les règles imposées aux agriculteurs, notamment en permettant des dérogations à l'interdiction des néonicotinoïdes ?",
+   "theme": "Agriculture",
+   "uid": "VTANR5L17V2957",
+   "numero": 2957,
+   "date": "2025-07-08",
+   "titre": "l'ensemble de la proposition de loi visant à lever les contraintes à l'exercice du métier d'agriculteur (texte de la commission mixte paritaire).",
+   "dossier": "Proposition de loi visant à lever les contraintes à l’exercice du métier d’agriculteur",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 316,
+    "contre": 223,
+    "abstention": 25
+   },
+   "voix_pour_inverser": 47,
+   "dissidents": 29,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 119,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 47,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 17,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 9,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 65,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 12,
+     "contre": 3,
+     "abstention": 6,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 71,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 64,
+     "contre": 14,
+     "abstention": 10,
+     "membres": 93
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 38,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 3,
+     "abstention": 1,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 3,
+     "abstention": 4,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il prolonger jusqu'en 2028 l'obligation pour les supermarchés de revendre l'alimentation au moins 10 % au-dessus de son prix d'achat ?",
+   "theme": "Économie",
+   "uid": "VTANR5L17V1319",
+   "numero": 1319,
+   "date": "2025-04-09",
+   "titre": "l’ensemble de la proposition de loi visant à renforcer la stabilité économique et la compétitivité du secteur agroalimentaire (texte de la commission mixte paritaire).",
+   "dossier": "Renforcer la stabilité économique et la compétitivité du secteur agroalimentaire",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 284,
+    "contre": 169,
+    "abstention": 43
+   },
+   "voix_pour_inverser": 58,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 100,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 43,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 63,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 22,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 65,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 8,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 86,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 94
+    },
+    "ECOS": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 33,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "question": "Faut-il adopter ce texte de simplification de la vie économique, qui supprime notamment les zones à faibles émissions ?",
+   "theme": "Économie",
+   "uid": "VTANR5L17V6184",
+   "numero": 6184,
+   "date": "2026-04-14",
+   "titre": "l'ensemble du projet de loi de simplification de la vie économique (texte de la commission mixte paritaire).",
+   "dossier": "Projet de loi de simplification de la vie économique",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 275,
+    "contre": 225,
+    "abstention": 30
+   },
+   "voix_pour_inverser": 25,
+   "dissidents": 33,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 118,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 121
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 43,
+     "contre": 0,
+     "abstention": 3,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 25,
+     "contre": 2,
+     "abstention": 2,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 67,
+     "abstention": 1,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 9,
+     "contre": 4,
+     "abstention": 4,
+     "membres": 22
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 68,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 25,
+     "contre": 30,
+     "abstention": 19,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 38,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il donner plus de moyens d'enquête et d'échange d'informations aux services qui luttent contre les fraudes sociales et fiscales ?",
+   "theme": "Économie",
+   "uid": "VTANR5L17V6319",
+   "numero": 6319,
+   "date": "2026-05-05",
+   "titre": "l'ensemble du projet de loi relatif à la lutte contre les fraudes sociales et fiscales (texte de la commission mixte paritaire).",
+   "dossier": "Projet de loi relatif à la lutte contre les fraudes sociales et fiscales",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 335,
+    "contre": 182,
+    "abstention": 5
+   },
+   "voix_pour_inverser": 77,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 109,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 48,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 16,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 34,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 64,
+     "abstention": 1,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 7,
+     "abstention": 4,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 60,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 79,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 34,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 33,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il adopter le budget 2026 de la Sécurité sociale, qui suspend notamment le recul de l'âge légal de départ à la retraite ?",
+   "theme": "Budget",
+   "uid": "VTANR5L17V4758",
+   "numero": 4758,
+   "date": "2025-12-16",
+   "titre": "l'ensemble du projet de loi de financement de la sécurité sociale pour 2026 (lecture définitive).",
+   "dossier": "Projet de loi de financement de la sécurité sociale pour 2026",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 247,
+    "contre": 232,
+    "abstention": 90
+   },
+   "voix_pour_inverser": 8,
+   "dissidents": 1,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 123,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "abstention",
+     "pour": 18,
+     "contre": 3,
+     "abstention": 28,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 10,
+     "abstention": 2,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 36,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 64,
+     "contre": 0,
+     "abstention": 5,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 22
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 69,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 16,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 91,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "abstention",
+     "pour": 2,
+     "contre": 9,
+     "abstention": 27,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 9,
+     "contre": 0,
+     "abstention": 25,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il adopter la partie recettes du budget de l'État pour 2025, telle que modifiée par les députés ?",
+   "theme": "Budget",
+   "uid": "VTANR5L17V438",
+   "numero": 438,
+   "date": "2024-11-12",
+   "titre": "la première partie du projet de loi de finances pour 2025 (première lecture).",
+   "dossier": "Projet de loi de finances pour 2025",
+   "sort": "rejeté",
+   "solennel": true,
+   "decompte": {
+    "pour": 192,
+    "contre": 362,
+    "abstention": 19
+   },
+   "voix_pour_inverser": 86,
+   "dissidents": 1,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 125,
+     "abstention": 0,
+     "membres": 125
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 47,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 36,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 66,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 12,
+     "abstention": 11,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "pour",
+     "pour": 71,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 16,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 87,
+     "abstention": 4,
+     "membres": 94
+    },
+    "ECOS": {
+     "position": "pour",
+     "pour": 37,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 38
+    },
+    "NI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 5,
+     "abstention": 3,
+     "membres": 8
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 34,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "question": "Faut-il ajouter 36 milliards d'euros de ressources aux armées pour les années 2026 à 2030 ?",
+   "theme": "Défense",
+   "uid": "VTANR5L17V7905",
+   "numero": 7905,
+   "date": "2026-07-01",
+   "titre": "l'ensemble du projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense (texte de la commission mixte paritaire).",
+   "dossier": "Projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 375,
+    "contre": 113,
+    "abstention": 2
+   },
+   "voix_pour_inverser": 131,
+   "dissidents": 2,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 97,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 44,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 14,
+     "abstention": 1,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 46,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 62,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 86,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "ECOS": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 36,
+     "abstention": 1,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "question": "Faut-il appeler l'Union européenne et ses alliés à accroître leur soutien politique, économique et militaire à l'Ukraine ?",
+   "theme": "International",
+   "uid": "VTANR5L17V988",
+   "numero": 988,
+   "date": "2025-03-12",
+   "titre": "l'article unique de la proposition de résolution européenne appelant au renforcement du soutien à l'Ukraine.",
+   "dossier": "Renforcement du soutien à l'Ukraine",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 288,
+    "contre": 54,
+    "abstention": 132
+   },
+   "voix_pour_inverser": 117,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 114,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 28,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 9,
+     "abstention": 3,
+     "membres": 17
+    },
+    "DEM": {
+     "position": "pour",
+     "pour": 36,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 46,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 23,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI-NFP": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 45,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDDPLR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 12,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 81,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 94
+    },
+    "ECOS": {
+     "position": "pour",
+     "pour": 34,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 33,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  }
+ ]
+}

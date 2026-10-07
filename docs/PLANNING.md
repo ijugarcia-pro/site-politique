@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (t20 préparée : 20 votes candidats dans docs/quiz-candidats.md, en attente du choix de Julien ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -57,7 +57,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t17 🤖 Site Astro + design system 578e siège *(fait le 8 oct. 2026 ; en ligne sur https://le578esiege.pages.dev, PR #7 fusionnée)*
 - [ ] t18 🤖 Page vote branchée sur les vrais scrutins *(livrée le 8 oct. 2026, branche `page-vote` ; à cocher après fusion et déploiement vert)*
 - [ ] t19 🤖 Fiche député + recherche par code postal *(livrée le 8 oct. 2026, branche `page-vote` ; à cocher après fusion et déploiement vert)*
-- [ ] t20 👤 Valider les 10 votes du quiz d'entrée
+- [ ] t20 👤 Valider les 10 votes du quiz d'entrée *(préparée le 8 oct. 2026 : docs/quiz-candidats.md ; en attente du choix de Julien)*
 - [ ] t21 🤖 Quiz d'entrée, résultat, jumeau, stories
 - [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone)
 
@@ -313,6 +313,7 @@ site/          le site (Astro), créé en phase 2
 
 ### t20 👤 Valider les 10 votes du quiz d'entrée — S7, 30 min
 - **Claude Code prépare** : 20 scrutins solennels qui divisent, sur des thèmes variés (économie, société, environnement, justice, international…), chacun avec la question formulée neutralement et l'écart entre groupes. Julien en retient 10. C'est le **seul choix éditorial fixe** du site.
+- **Préparé (8 oct.) :** `docs/quiz-candidats.md`, généré par `uv run python -m scripts.preparer_quiz` (données : `data/mesures/quiz/candidats.json`, tests : `tests/test_preparer_quiz.py`). 20 scrutins solennels qui divisent, un par texte (lecture finale), sur 13 thèmes. Chaque question est rédigée d'après le texte voté, lu sur le site de l'Assemblée (dernier texte de l'Assemblée avant le scrutin), et passe les contrôles 2, 4 et 5 des fiches ; 4 questions reprennent les fiches de t07 déjà relues par Julien. Pour chaque vote : résultat, position et décompte de chaque groupe, votes contre leur groupe, ce qui a été vérifié et les réserves. Deux candidats sont marqués « À éviter » (programmation de l'énergie, partie recettes du budget 2025) : le texte réellement voté, modifié en séance, n'a pas pu être relu. Proposition calculée de 10 votes (n° 988, 1303, 1308, 4758, 6184, 7409, 7454, 7987, 8280, 8431) : 9 thèmes, chaque paire de groupes séparée au moins une fois, 53 paires sur 55 au moins deux fois (DEM / EPR et DEM / LIOT une seule fois). Écartés pendant la préparation : l'assurance chômage (article unique trop technique), le narcotrafic et les JO 2030 (mesures phares absentes du texte final ou question double). **Reste pour Julien :** cocher 10 votes (ou donner les numéros en session) et corriger les questions s'il le souhaite ; le choix sera alors figé pour t21.
 
 ### t21 🤖 Quiz d'entrée, résultat, jumeau, stories — S8, 2 sessions
 - **Dépend de :** t20.

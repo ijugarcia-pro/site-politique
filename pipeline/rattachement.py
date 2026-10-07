@@ -7,8 +7,8 @@ Trois méthodes indépendantes, puis une combinaison :
   du texte (« du projet de loi … ») aux titres des textes déposés ;
 - C, la séance : l'ordre du jour de la séance du scrutin (agenda) ne cite qu'un dossier.
 
-Ce module ne fait aucune lecture de fichier : il travaille sur des index construits par l'appelant
-(voir scripts/mesurer_rattachement.py), ce qui permet de le tester sur des données factices.
+Les méthodes travaillent sur un index (Index), ce qui permet de les tester sur des données
+factices ; charger_index le construit depuis les archives de l'Assemblée.
 """
 
 from __future__ import annotations
@@ -18,6 +18,9 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
+from pathlib import Path
+
+from pipeline.an import champ, documents, liste, val
 
 # --- Normalisation des libellés ---------------------------------------------------------------
 
@@ -366,3 +369,96 @@ def combiner(actes: Resultat, libelle: Resultat, seance: Resultat,
         if len(commun) == 1:
             return Resultat(commun, f"{nom1} ∩ {nom2} · recoupement")
     return Resultat(set(), "aucune méthode ne conclut")
+
+
+# --- Construction de l'index depuis les archives ----------------------------------------------
+
+# Types de document dont le titre désigne le texte voté (et non un rapport ou un avis).
+TYPES_TEXTE = {"PION", "PRJL", "PNRE", "RION", "ACIN"}
+ACTE_DEBAT_AN = re.compile(r"^(AN\w*-DEBATS|CMP-DEBATS-AN)")
+
+
+def actes(noeud):
+    for acte in liste(noeud):
+        yield acte
+        yield from actes(champ(acte, "actesLegislatifs", "acteLegislatif"))
+
+
+def _charger_dossiers(chemin: Path, index: Index) -> dict[str, str]:
+    """Remplit les index A et B (titres) ; renvoie le titre de chaque dossier."""
+    titres_dossiers = {}
+    for _, doc in documents(chemin):
+        if "dossierParlementaire" in doc:
+            dossier = doc["dossierParlementaire"]
+            uid = dossier["uid"]
+            titre = champ(dossier, "titreDossier", "titre") or ""
+            titres_dossiers[uid] = titre
+            if titre:
+                index.titres.setdefault(coeur(titre), set()).add(uid)
+            procedure = normaliser(champ(dossier, "procedureParlementaire", "libelle"))
+            for nature in ("organique", "constitutionnelle"):
+                if nature in procedure:
+                    index.natures[uid] = nature
+            for acte in actes(champ(dossier, "actesLegislatifs", "acteLegislatif")):
+                for vote in liste(champ(acte, "voteRefs", "voteRef")):
+                    index.actes.setdefault(vote, set()).add(uid)
+                if ACTE_DEBAT_AN.match(acte.get("codeActe") or ""):
+                    jours = index.debats.setdefault(uid, set())
+                    if val(acte.get("dateActe")):
+                        jours.add(acte["dateActe"][:10])
+        else:
+            document = doc["document"]
+            dossier = document.get("dossierRef")
+            if not dossier or champ(document, "classification", "type", "code") not in TYPES_TEXTE:
+                continue
+            titre = champ(document, "titres", "titrePrincipal")
+            if titre:
+                index.titres.setdefault(coeur(titre), set()).add(dossier)
+            depot = champ(document, "cycleDeVie", "chrono", "dateDepot")
+            if depot and depot[:10] < index.premier_depot.get(dossier, "9999"):
+                index.premier_depot[dossier] = depot[:10]
+    index.titres.pop("", None)
+    return titres_dossiers
+
+
+def _charger_agenda(chemin: Path, index: Index) -> None:
+    for _, doc in documents(chemin):
+        reunion = doc["reunion"]
+        for point in liste(champ(reunion, "ODJ", "pointsODJ", "pointODJ")):
+            for dossier in liste(champ(point, "dossiersLegislatifsRefs", "dossierRef")):
+                index.seances.setdefault(reunion["uid"], set()).add(dossier)
+
+
+def _charger_amendements(chemin: Path, index: Index) -> None:
+    """Amendements examinés en séance publique (préfixe AN), rangés par numéro."""
+    for nom, doc in documents(chemin):
+        a = doc["amendement"]
+        if champ(a, "identification", "prefixeOrganeExamen") != "AN":
+            continue
+        numero = re.match(r"(?:[IV]+-)?(\d+)", champ(a, "identification", "numeroLong") or "")
+        dossier = nom.split("/")[1]
+        if not numero or dossier == "incorrect_data":
+            continue
+        date_sort = val(champ(a, "cycleDeVie", "dateSort"))
+        index.amendements.setdefault(int(numero.group(1)), []).append(Amendement(
+            uid=a["uid"],
+            numero=int(numero.group(1)),
+            dossier=dossier,
+            texte=val(a.get("texteLegislatifRef")),
+            seance=val(a.get("seanceDiscussionRef")),
+            date_sort=date_sort[:10] if date_sort else None,
+            signataires=normaliser(champ(a, "signataires", "libelle")),
+            article=champ(a, "pointeurFragmentTexte", "division", "titre"),
+        ))
+
+
+def charger_index(dossiers: Path, agenda: Path, amendements: Path | None = None
+                  ) -> tuple[Index, dict[str, str]]:
+    """Index des trois méthodes, et titre de chaque dossier. Sans archive des amendements
+    (absente ou None), la méthode B se rabat sur le titre du texte (99,4 % au lieu de 99,8 %)."""
+    index = Index()
+    titres = _charger_dossiers(dossiers, index)
+    _charger_agenda(agenda, index)
+    if amendements is not None and amendements.exists():
+        _charger_amendements(amendements, index)
+    return index, titres

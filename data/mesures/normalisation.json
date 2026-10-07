@@ -1,0 +1,115 @@
+{
+ "lignes": {
+  "depute": 649,
+  "mandat": 678,
+  "groupe": 14,
+  "appartenance": 1400,
+  "scrutin": 8560,
+  "vote": 4931986,
+  "position_groupe": 102720,
+  "dossier": 3235,
+  "etape": 27473,
+  "vote_prevu": 48,
+  "contenu": 0
+ },
+ "scrutins": 8560,
+ "ecarts_partition_totaux": [
+  {
+   "uid": "VTANR5L17V1",
+   "numero": 1,
+   "raisons": [
+    "totaux : non-votants 21 au lieu de 10"
+   ]
+  }
+ ],
+ "positions": [
+  [
+   "absent",
+   3647153
+  ],
+  [
+   "contre",
+   626264
+  ],
+  [
+   "pour",
+   562804
+  ],
+  [
+   "abstention",
+   72232
+  ],
+  [
+   "non_votant",
+   23533
+  ]
+ ],
+ "cases_sans_groupe": 0,
+ "dissidents": [
+  20375,
+  626
+ ],
+ "mises_au_point": 2594,
+ "scrutins_rattaches": 8546,
+ "position_groupe_vs_publiee": [
+  [
+   "accord",
+   88317
+  ],
+  [
+   "aucune voix exprimée",
+   9239
+  ],
+  [
+   "désaccord",
+   3092
+  ],
+  [
+   "égalité",
+   1926
+  ]
+ ],
+ "effectif_vs_publie": [
+  [
+   0,
+   101222
+  ],
+  [
+   -1,
+   525
+  ],
+  [
+   1,
+   514
+  ],
+  [
+   -3,
+   105
+  ],
+  [
+   -7,
+   57
+  ],
+  [
+   -2,
+   57
+  ],
+  [
+   15,
+   40
+  ],
+  [
+   14,
+   17
+  ],
+  [
+   -8,
+   16
+  ],
+  [
+   18,
+   16
+  ]
+ ],
+ "votes_prevus_a_venir": 5
+}

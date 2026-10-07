@@ -37,8 +37,12 @@ jobs:
         id: ingestion
         run: uv run python -m pipeline.ingest
 
-      # t12 et suivantes s'insèrent ici, avec la condition :
-      #   if: steps.ingestion.outputs.changement == 'true'
+      - name: Normalisation (11 tables DuckDB)
+        if: steps.ingestion.outputs.changement == 'true'
+        run: uv run python -m pipeline.normalize
+
+      # t13 et suivantes (contrôles, calculs, export, déploiement) s'insèrent ici, avec la même
+      # condition.
 
       - name: Garder les sources pour la nuit suivante
         if: always() && steps.ingestion.outputs.telecharge == 'true'

@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10 et t12 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -47,7 +47,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 
 ### Phase 1 — Socle data (S4–S5, 26 oct. → 8 nov.)
 - [ ] t11 🤖 Ingestion de nuit et archives avec empreinte *(livrée le 7 oct. 2026 ; à cocher après deux nuits sans intervention)*
-- [ ] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents
+- [x] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents *(fait le 7 oct. 2026)*
 - [ ] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build
 - [ ] t14 🤖 Page « État des données »
 - [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée
@@ -259,6 +259,7 @@ site/          le site (Astro), créé en phase 2
 - **Tests obligatoires :** (1) **partition** : une case par député et par scrutin ; (2) **totaux** égaux au décompte officiel ; (3) cas de motions de censure et de mises au point ; (4) député ayant changé de groupe en cours de législature.
 - **Livrable :** `pipeline/normalize.py` + `data/site.duckdb` (non versionné).
 - **Critère de fin :** 100 % des scrutins passent partition et totaux, ou sont listés avec leur raison.
+- **Réalisé (7 oct.) :** en une session au lieu de deux. `pipeline/normalize.py` produit `data/site.duckdb` (non versionné) en 47 s : 649 députés, 678 mandats, 8 560 scrutins, 4 931 986 cases de vote. Rapport : `docs/normalisation.md` et `data/mesures/normalisation.json`. Tests : `tests/test_normalize.py` (10 tests : partition, totaux, motion de censure, mise au point, changement de groupe, suppléant, PO0, dissidents). **8 559 scrutins sur 8 560 passent la partition et les totaux.** Le seul écart est le n° 1, une motion de censure : 21 non-votants listés pour 10 publiés, cause non élucidée, écart déjà relevé par l'inventaire. Choix de méthode : prise de fonction plutôt que `dateDebut` ; position des groupes recalculée, car la position publiée n'est pas fiable (docs/decisions.md). La lecture des archives et l'index du rattachement sont désormais partagés (`pipeline/an.py`, `pipeline/rattachement.charger_index`). La normalisation est branchée dans `nuit.yml` : elle tourne si une source a changé.
 
 ### t13 🤖 Les 6 contrôles et l'arrêt du build — S5, 1 session
 - **Dépend de :** t12.

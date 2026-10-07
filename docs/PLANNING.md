@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10 et t12 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10, t12 et t13 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -48,7 +48,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 ### Phase 1 — Socle data (S4–S5, 26 oct. → 8 nov.)
 - [ ] t11 🤖 Ingestion de nuit et archives avec empreinte *(livrée le 7 oct. 2026 ; à cocher après deux nuits sans intervention)*
 - [x] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents *(fait le 7 oct. 2026)*
-- [ ] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build
+- [x] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build *(fait le 7 oct. 2026)*
 - [ ] t14 🤖 Page « État des données »
 - [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée
 
@@ -266,6 +266,7 @@ site/          le site (Astro), créé en phase 2
 - **Dépend de :** t12.
 - **À faire :** `pipeline/checks.py` (§ 4.5). Scrutin en échec partition / totaux → mis de côté sans bloquer les autres. Échec d'effectifs, de non-régression ou de schéma → build arrêté, dernière version conservée, **issue GitHub automatique**.
 - **Tests :** un cas d'échec pour chaque contrôle, et la bonne réaction du pipeline.
+- **Réalisé (7 oct.) :** `pipeline/checks.py` et `tests/test_checks.py` (10 tests : un cas d'échec par contrôle et sa réaction, dont dérogation, disparition, archive illisible). Les définitions sont dans `docs/decisions.md`. Branché dans `nuit.yml` après la normalisation. Un échec bloquant fait échouer le job (rien n'est publié) et ouvre une issue « Pipeline de nuit : contrôles en échec ». La référence de non-régression est `data/controles/publies.json`, versionnée et commitée par le bot ; `data/controles/resultat.json` servira à t14. Sur les vraies données, les 6 contrôles prennent 8 s : tous passent, sauf les totaux du scrutin n° 1, mis de côté. Les effectifs AMO30 et AMO10 concordent exactement. La fraîcheur n'arrête pas le build, puisque le § 4.5 ne le prévoit pas.
 
 ### t14 🤖 Page « État des données » — S5, 1 session
 - **Dépend de :** t13.

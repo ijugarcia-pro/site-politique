@@ -41,8 +41,14 @@ jobs:
         if: steps.ingestion.outputs.changement == 'true'
         run: uv run python -m pipeline.normalize
 
-      # t13 et suivantes (contrôles, calculs, export, déploiement) s'insèrent ici, avec la même
-      # condition.
+      - name: Contrôles (6 règles ; un échec bloquant arrête le build)
+        id: controles
+        if: steps.ingestion.outputs.changement == 'true'
+        run: uv run python -m pipeline.checks
+
+      # t14 et suivantes (calculs, export, déploiement) s'insèrent ici, avec la condition :
+      #   if: steps.controles.outcome == 'success'
+      # Un build arrêté ne publie donc rien : la version en ligne reste la dernière valide.
 
       - name: Garder les sources pour la nuit suivante
         if: always() && steps.ingestion.outputs.telecharge == 'true'
@@ -62,14 +68,14 @@ jobs:
       - name: Enregistrer l'état des sources
         if: always()
         run: |
-          if [ -z "$(git status --porcelain -- data/sources)" ]; then
+          if [ -z "$(git status --porcelain -- data/sources data/controles)" ]; then
             echo "État inchangé."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sources
-          git commit -m "Ingestion de nuit : état des sources"
+          git add data/sources data/controles
+          git commit -m "Pipeline de nuit : état des sources et contrôles"
           git pull --rebase
           git push
 
@@ -84,4 +90,17 @@ jobs:
             gh issue comment "$ouverte" --body-file data/raw/alerte.md
           else
             gh issue create --title "$titre" --body-file data/raw/alerte.md
+          fi
+
+      - name: Alerter si les contrôles arrêtent le build ou signalent une archive trop ancienne
+        if: always() && hashFiles('data/raw/alerte_controles.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          titre="Pipeline de nuit : contrôles en échec"
+          ouverte=$(gh issue list --state open --search "\"$titre\" in:title" --json number --jq '.[0].number')
+          if [ -n "$ouverte" ]; then
+            gh issue comment "$ouverte" --body-file data/raw/alerte_controles.md
+          else
+            gh issue create --title "$titre" --body-file data/raw/alerte_controles.md
           fi

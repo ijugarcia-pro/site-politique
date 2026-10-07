@@ -81,9 +81,8 @@ def scrutin(numero, date, groupes, decompte, type_vote="SPO", sort="adopté",
     }}
 
 
-@pytest.fixture(scope="module")
-def base(tmp_path_factory):
-    raw = tmp_path_factory.mktemp("raw")
+def construire_raw(raw):
+    """Fausses archives au format de l'Assemblée, partagées avec tests/test_checks.py."""
     ecrire_zip(raw / fichier("historique_mandats"), {
         # PA1 change de groupe le 1er avril 2025 ; il préside A (deux mandats GP).
         "json/acteur/PA1.json": acteur("PA1", "Un", [
@@ -156,6 +155,17 @@ def base(tmp_path_factory):
         "uid": "RU1", "@xsi:type": "seance_type", "timeStampDebut":
         "2099-01-13T15:00:00.000+01:00", "cycleDeVie": {"etat": "Confirmé"},
         "ODJ": {"pointsODJ": {"pointODJ": [point, annule]}}}}})
+    # Liste des députés en exercice (AMO10), cohérente avec l'historique.
+    actifs = {"PA1": B, "PA2": A, "PA3": A, "PA5": B, "PA6": NI}
+    ecrire_zip(raw / fichier("deputes_actifs"), {
+        f"json/acteur/{pa}.json": acteur(pa, pa, [mandat_groupe(pa, groupe, "2024-07-18")])
+        for pa, groupe in actifs.items()})
+
+
+@pytest.fixture(scope="module")
+def base(tmp_path_factory):
+    raw = tmp_path_factory.mktemp("raw")
+    construire_raw(raw)
     con = normalize.normaliser(raw, raw / "site.duckdb", fiches=raw / "fiches")
     yield con
     con.close()

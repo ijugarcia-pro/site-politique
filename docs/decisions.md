@@ -85,3 +85,14 @@
 - Raison : mesures de t12 sur les 8 560 scrutins (docs/normalisation.md). Avec `dateDebut`, les suppléants seraient comptés dès l'élection de juillet 2024, d'où jusqu'à 637 députés en exercice. Avec la prise de fonction, aucun votant n'est hors mandat, et 8 559 scrutins sur 8 560 passent partition et totaux. La position publiée contredit parfois le décompte publié lui-même (2 pour et 17 contre donnent « pour » au scrutin 3008). Elle vaut aussi « pour » quand personne n'a voté.
 - Conséquence : les effectifs de groupe publiés ne servent pas de référence stricte. Ils comptent les nouveaux députés avec retard et gardent les groupes dissous ; le contrôle des effectifs de t13 devra tolérer ces écarts documentés.
 
+## 2026-10-07 · Les 6 contrôles : définitions retenues
+- Décision (`pipeline/checks.py`) :
+  - (1) partition et (2) totaux sont jugés par scrutin ; un échec met le scrutin de côté, sans arrêter le build ;
+  - (3) les effectifs sont vérifiés entre deux sources de l'Assemblée : jamais plus de 577 députés ni moins de 540 en exercice, et aujourd'hui les mêmes députés et les mêmes groupes dans l'historique (AMO30) et dans la liste des députés en exercice (AMO10). La ventilation publiée des scrutins n'est pas une référence ;
+  - (4) la non-régression compare l'empreinte de chaque scrutin publié (sort, et position de chaque député) à la référence versionnée `data/controles/publies.json`. Une disparition, une modification ou un scrutin publié puis mis de côté arrête le build, sauf dérogation écrite par Julien dans `data/controles/derogations.json` ;
+  - (5) le schéma exige, dans chaque document des sources requises, les chemins dont le pipeline dépend ;
+  - (6) la fraîcheur exige une archive des scrutins de moins de 72 h. Son échec lève une alerte, sans arrêter le build, car le planning ne prévoit pas d'arrêt pour elle.
+  Un échec de (3), (4) ou (5) arrête le build et ouvre une issue GitHub.
+- Raison : des contrôles qui ne déclenchent pas de fausse alerte sur les écarts connus de la ventilation publiée (docs/normalisation.md), mais qui arrêtent tout ce qui changerait un résultat déjà publié.
+- Conséquence : tant que le site n'est pas déployé (t17), « publié » veut dire « passé aux contrôles ». La référence est remplacée à chaque build autorisé.
+

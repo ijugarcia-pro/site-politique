@@ -92,6 +92,10 @@ def main() -> int:
         "Les groupes indiqués sont ceux de la date du vote. Les sigles de la page officielle "
         "peuvent différer (groupes renommés ou dissous depuis).",
         "",
+        "« Dissident » n'apparaît pas sur la page officielle : c'est notre calcul (vote pour "
+        "quand la majorité de son groupe vote contre, ou l'inverse). Pour le vérifier, comparer "
+        "les nombres de pour et de contre de son groupe sur la page.",
+        "",
     ]
     for i, (famille, uid) in enumerate(tirer(con, hasard), 1):
         numero, date, titre, sort, pour, contre, abst, nv = con.execute(

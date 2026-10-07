@@ -33,9 +33,14 @@ def base(tmp_path):
     con.execute("CREATE TABLE appartenance (depute_uid VARCHAR, groupe_uid VARCHAR, "
                 "debut DATE, fin DATE)")
     con.execute("""CREATE TABLE scrutin (uid VARCHAR, numero INTEGER, date DATE, titre VARCHAR,
-        sort VARCHAR, type_vote VARCHAR, solennel BOOLEAN, motion_censure BOOLEAN,
-        requis INTEGER, voix_pour_inverser INTEGER, pour_publie INTEGER, contre_publie INTEGER,
-        abstentions_publiees INTEGER, non_votants_publies INTEGER)""")
+        sort VARCHAR, type_vote VARCHAR, categorie VARCHAR, solennel BOOLEAN,
+        motion_censure BOOLEAN, requis INTEGER, voix_pour_inverser INTEGER,
+        pour_publie INTEGER, contre_publie INTEGER, abstentions_publiees INTEGER,
+        non_votants_publies INTEGER, dossier_uid VARCHAR)""")
+    con.execute("CREATE TABLE dossier (uid VARCHAR, titre VARCHAR, chemin_an VARCHAR, "
+                "procedure VARCHAR)")
+    con.execute("CREATE TABLE etape (dossier_uid VARCHAR, ordre INTEGER, code VARCHAR, "
+                "parent_uid VARCHAR, date DATE, scrutins VARCHAR)")
     con.execute("""CREATE TABLE vote (scrutin_uid VARCHAR, depute_uid VARCHAR, position VARCHAR,
         groupe_uid VARCHAR, dissident BOOLEAN, position_mise_au_point VARCHAR)""")
     con.execute("CREATE TABLE position_groupe (scrutin_uid VARCHAR, groupe_uid VARCHAR, "
@@ -52,13 +57,33 @@ def base(tmp_path):
         (DISSOUS, "DIS", "Groupe dissous", "#333333", "3"),
         (NI, "NI", "Non inscrit", "#444444", "99"),
     ])
-    con.executemany("INSERT INTO scrutin VALUES (?, ?, ?, ?, 'adopté', 'SPS', ?, ?, 2, 1, "
-                    "3, 1, 0, 0)", [
-                        ("VT10", 10, "2025-01-15", "un vote solennel ancien", True, False),
-                        ("VT11", 11, "2025-03-01", "un vote ordinaire", False, False),
-                        ("VT12", 12, "2025-03-02", "une motion de censure", True, True),
-                        ("VT13", 13, "2025-03-03", "le dernier vote solennel", True, False),
+    con.executemany("INSERT INTO scrutin VALUES (?, ?, ?, ?, 'adopté', ?, ?, ?, ?, 2, 1, "
+                    "3, 1, 0, 0, ?)", [
+                        ("VT10", 10, "2025-01-15", "l'ensemble du projet de loi", "SPS",
+                         "ensemble", True, False, "DL1"),
+                        ("VT11", 11, "2025-03-01", "l'amendement n° 4", "SPO", "amendement",
+                         False, False, "DL1"),
+                        ("VT12", 12, "2025-03-02", "la motion de censure", "MOC",
+                         "motion de censure", False, True, None),
+                        ("VT13", 13, "2025-03-03", "le dernier vote solennel", "SPS",
+                         "ensemble", True, False, None),
+                        ("VT14", 14, "2025-03-04", "l'ensemble d'une proposition de loi",
+                         "SPO", "ensemble", False, False, "DL2"),
                     ])
+    con.execute("INSERT INTO dossier VALUES ('DL1', 'Projet de loi exemple', 'exemple', "
+                "'Projet de loi ordinaire'), ('DL2', 'Proposition sans parcours', NULL, NULL)")
+    # Parcours de DL1 : première lecture à l'Assemblée (le vote 10), puis au Sénat, puis une
+    # étape « Travaux » qui n'est pas une étape du texte.
+    con.executemany("INSERT INTO etape VALUES ('DL1', ?, ?, ?, ?, ?)", [
+        (0, "AN1", None, None, None),
+        (1, "AN1-DEPOT", "x", "2024-12-01", None),
+        (2, "AN1-DEBATS-DEC", "x", "2025-01-15", "VT10"),
+        (3, "SN1", None, None, None),
+        (4, "SN1-DEPOT", "x", "2025-01-20", None),
+        (5, "SN1-DEBATS-DEC", "x", "2025-02-10", None),
+        (6, "AN20", None, None, None),
+        (7, "AN20-RAPPORT", "x", "2025-02-11", None),
+    ])
     con.executemany("INSERT INTO vote VALUES ('VT10', ?, ?, ?, ?, ?)", [
         ("PA1", "pour", GAUCHE, False, None),
         ("PA2", "contre", GAUCHE, True, "pour"),
@@ -82,7 +107,7 @@ def test_ordre_des_groupes_suit_les_places_non_inscrits_a_la_fin(base):
 
 def test_composition_577_sieges_groupes_contigus(base, tmp_path):
     donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1))
-    compo = donnees["composition.json"]
+    compo = donnees["composition"]
     sieges = compo["sieges"]
     assert len(sieges) == export_site.SIEGES
     assert sum(bool(s.get("vacant")) for s in sieges) == export_site.SIEGES - 5
@@ -96,16 +121,34 @@ def test_composition_577_sieges_groupes_contigus(base, tmp_path):
     assert json.loads((tmp_path / "export" / "composition.json").read_text("utf-8")) == compo
 
 
+def test_pages_des_votes_et_index(base, tmp_path):
+    export = tmp_path / "export"
+    (export / "scrutins").mkdir(parents=True)
+    (export / "scrutins" / "VT99.json").write_text("{}", encoding="utf-8")
+    (export / "scrutins-solennels.json").write_text("[]", encoding="utf-8")
+    donnees = export_site.exporter(base, export, date(2025, 6, 1))
+    # Solennels, ensembles et motions de censure ; pas l'amendement ; le plus récent d'abord.
+    assert [s["numero"] for s in donnees["index"]] == [14, 13, 12, 10]
+    # Les fichiers d'un build précédent disparaissent.
+    assert sorted(p.name for p in (export / "scrutins").iterdir()) == [
+        "VT10.json", "VT12.json", "VT13.json", "VT14.json"]
+    assert not (export / "scrutins-solennels.json").exists()
+    index = json.loads((export / "scrutins.json").read_text("utf-8"))
+    assert index == donnees["index"]
+    assert index[-1]["dossier"] == "Projet de loi exemple"
+    assert "sieges" not in index[-1] and index[-1]["dissidents"] == 1
+
+
 def test_scrutin_siege_par_siege(base, tmp_path):
-    donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1))
-    scrutins = donnees["scrutins-solennels.json"]
-    # Ni vote ordinaire, ni motion de censure ; le plus récent d'abord.
-    assert [s["numero"] for s in scrutins] == [13, 10]
-    s = scrutins[1]
+    export = tmp_path / "export"
+    export_site.exporter(base, export, date(2025, 6, 1))
+    s = json.loads((export / "scrutins" / "VT10.json").read_text("utf-8"))
     assert s["decompte"] == {"pour": 2, "contre": 1, "abstention": 1, "non_votant": 0,
                              "absent": 1}
     assert s["lien"] == "https://www.assemblee-nationale.fr/dyn/17/scrutins/10"
+    assert s["categorie"] == "ensemble" and s["dissidents"] == 1
     occupes = [x for x in s["sieges"] if not x.get("vacant")]
+    assert len(s["sieges"]) == export_site.SIEGES
     # À la date du vote, David siégeait encore dans le groupe dissous.
     assert [(x["depute"], x["groupe"]) for x in occupes][2] == ("PA4", DISSOUS)
     bruno = next(x for x in occupes if x["depute"] == "PA2")
@@ -116,9 +159,28 @@ def test_scrutin_siege_par_siege(base, tmp_path):
     assert gauche["position"] == "pour"
 
 
+def test_parcours_du_texte(base, tmp_path):
+    donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1))
+    par_numero = {s["numero"]: s for s in donnees["scrutins"]}
+    dossier = par_numero[10]["dossier"]
+    assert dossier["lien"] == "https://www.assemblee-nationale.fr/dyn/17/dossiers/exemple"
+    # L'étape « Travaux » (AN20) n'est pas une étape du texte.
+    assert dossier["parcours"] == [
+        {"code": "AN1", "libelle": "Première lecture à l'Assemblée", "debut": "2024-12-01",
+         "fin": "2025-01-15", "ce_vote": True},
+        {"code": "SN1", "libelle": "Première lecture au Sénat", "debut": "2025-01-20",
+         "fin": "2025-02-10", "ce_vote": False},
+    ]
+    # Dossier sans chemin ni étapes : le lien passe par l'identifiant.
+    assert par_numero[14]["dossier"]["lien"].endswith("/dossiers/DL2")
+    assert par_numero[14]["dossier"]["parcours"] == []
+    # Vote sans dossier (motion de censure, déclaration…).
+    assert par_numero[12]["dossier"] is None
+
+
 def test_scrutins_mis_de_cote_exclus(base, tmp_path):
     donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1), {"VT13"})
-    assert [s["numero"] for s in donnees["scrutins-solennels.json"]] == [10]
+    assert [s["numero"] for s in donnees["index"]] == [14, 12, 10]
 
 
 def test_trop_de_deputes_refuse():

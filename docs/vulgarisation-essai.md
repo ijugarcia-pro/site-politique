@@ -42,36 +42,36 @@ Lecture de l'essai du 7 octobre 2026, lancé par le workflow « Essai de vulgari
 Pour chaque fiche, cocher (remplacer `[ ]` par `[x]`) ce qui est vrai, et noter toute remarque en dessous. Ouvrir le texte voté (lien sous chaque fiche) pour vérifier les articles cités.
 
 **Scrutin 7454 · institutions**
-- [ ] Juste : chaque carte dit bien ce que prévoit l'article cité
-- [ ] Neutre : rien ne pousse à voter pour ou contre
-- [ ] Compréhensible par quelqu'un qui ne suit pas la politique
+- [x] Juste : chaque carte dit bien ce que prévoit l'article cité
+- [x] Neutre : rien ne pousse à voter pour ou contre
+- [x] Compréhensible par quelqu'un qui ne suit pas la politique
 - Remarques :
 
 **Scrutin 7987 · sécurité**
-- [ ] Juste : chaque carte dit bien ce que prévoit l'article cité
-- [ ] Neutre : rien ne pousse à voter pour ou contre
-- [ ] Compréhensible par quelqu'un qui ne suit pas la politique
+- [x] Juste : chaque carte dit bien ce que prévoit l'article cité
+- [x] Neutre : rien ne pousse à voter pour ou contre
+- [x] Compréhensible par quelqu'un qui ne suit pas la politique
 - Remarques :
 
 **Scrutin 7409 · énergie**
-- [ ] Juste : chaque carte dit bien ce que prévoit l'article cité
-- [ ] Neutre : rien ne pousse à voter pour ou contre
-- [ ] Compréhensible par quelqu'un qui ne suit pas la politique
+- [x] Juste : chaque carte dit bien ce que prévoit l'article cité
+- [x] Neutre : rien ne pousse à voter pour ou contre
+- [x] Compréhensible par quelqu'un qui ne suit pas la politique
 - Remarques :
 
 **Scrutin 8431 · numérique**
-- [ ] Juste : chaque carte dit bien ce que prévoit l'article cité
-- [ ] Neutre : rien ne pousse à voter pour ou contre
-- [ ] Compréhensible par quelqu'un qui ne suit pas la politique
+- [x] Juste : chaque carte dit bien ce que prévoit l'article cité
+- [x] Neutre : rien ne pousse à voter pour ou contre
+- [x] Compréhensible par quelqu'un qui ne suit pas la politique
 - Remarques :
 
 **Scrutin 8419 · santé**
-- [ ] Juste : chaque carte dit bien ce que prévoit l'article cité
-- [ ] Neutre : rien ne pousse à voter pour ou contre
-- [ ] Compréhensible par quelqu'un qui ne suit pas la politique
+- [x] Juste : chaque carte dit bien ce que prévoit l'article cité
+- [x] Neutre : rien ne pousse à voter pour ou contre
+- [x] Compréhensible par quelqu'un qui ne suit pas la politique
 - Remarques :
 
-**Remarques générales** :
+**Remarques générales** : relecture faite par Julien le 7 octobre 2026. En session, il a répondu « tout est bon pour moi », sans remarque. Les cases ont été cochées par Claude Code d'après cette réponse. Sans objection de sa part, une question peut réunir plusieurs mesures quand le vote porte sur l'ensemble (cas du scrutin 8431).
 
 <!-- relecture:fin -->
 

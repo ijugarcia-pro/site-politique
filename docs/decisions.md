@@ -65,3 +65,8 @@
 - Raison : budget nul. La relecture humaine hebdomadaire est en outre plus sûre qu'une publication automatique.
 - Conséquence : cette décision remplace « Vulgarisation automatique avec contrôles » et la partie « API » de l'entrée précédente. Le workflow de l'essai et la dépendance `anthropic` sont supprimés. Le secret `ANTHROPIC_API_KEY` n'a plus d'usage et peut être révoqué. Une semaine sans session, les votes de la semaine s'affichent sans cartes (repli) : la séance reste automatique, seules les cartes en dépendent. Le planning est revu en conséquence : t27, t28, t29, t36, t16 et le principe 10.
 
+## 2026-10-07 · Périmètre : un projet portfolio centré sur les données et le site
+- Décision (Julien) : le projet est d'abord un projet de portfolio, sans vocation d'utilité publique pour l'instant. On se concentre sur les jeux de données, la normalisation et le build du site. Les fonctions centrées sur l'utilisateur sont reportées : comptes, suivis, e-mails, alertes, récap du dimanche, signalements, duel. Par défaut, quand personne n'intervient, le site montre les derniers votes, sans cartes si aucune fiche n'est validée. Le dépôt GitHub devient public.
+- Raison : temps limité et budget nul. Les e-mails demanderaient en outre un nom de domaine payant (question ouverte 4).
+- Conséquence : t30 à t33 et la partie « signalements » de t28 sont marquées reportées dans le planning, sans être supprimées. Supabase et Brevo ne sont pas mis en place. Un dépôt public dispose de minutes GitHub Actions illimitées et gratuites.
+

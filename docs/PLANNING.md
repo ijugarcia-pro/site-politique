@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t07 faites ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t08 faites ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -41,7 +41,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t05 👤 Clé API Anthropic plafonnée + secret GitHub *(fait le 7 oct. 2026 par Julien ; sans usage depuis le passage à zéro euro, clé à révoquer)*
 - [x] t06 🤖 Test du rattachement vote → texte sur 100 scrutins *(fait le 7 oct. 2026 ; branche locale, en attente de push et de fusion)*
 - [x] t07 🤖 Prototype de vulgarisation sur 5 textes *(fait le 7 oct. 2026 ; branche `vulgarisation-essai` poussée, en attente de PR et de fusion)*
-- [ ] t08 👤 Relire les 5 fiches vulgarisées
+- [x] t08 👤 Relire les 5 fiches vulgarisées *(fait le 7 oct. 2026 : « tout est bon »)*
 - [ ] t09 🤖 Rapport de faisabilité
 - [ ] t10 👤 ◆ Décision Go / No-go et formule du verdict
 
@@ -69,14 +69,14 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 
 ### Phase 4 — Vulgarisation hebdomadaire (S11–S12, 14 → 27 déc.)
 - [ ] t27 🤖 Session hebdomadaire de rédaction dans Claude Code, 7 contrôles, repli sans cartes
-- [ ] t28 🤖 Thèmes, signalements, retrait automatique
+- [ ] t28 🤖 Thèmes, signalements, retrait automatique *(signalements reportés : décision du 7 oct.)*
 - [ ] t29 👤 Bilan des 10 premières fiches validées
 
 ### Phase 5 — Le service (S13–S15, 28 déc. → 17 janv. 2027)
-- [ ] t30 👤 Projet Supabase + expéditeur Brevo
-- [ ] t31 🤖 Comptes facultatifs, lois et députés suivis
-- [ ] t32 🤖 Alertes d'étape et récap du dimanche
-- [ ] t33 🤖 Le duel entre amis
+- [ ] t30 👤 Projet Supabase + expéditeur Brevo *(reportée : décision du 7 oct.)*
+- [ ] t31 🤖 Comptes facultatifs, lois et députés suivis *(reportée)*
+- [ ] t32 🤖 Alertes d'étape et récap du dimanche *(reportée)*
+- [ ] t33 🤖 Le duel entre amis *(reportée)*
 - [ ] t34 🤖 « Comment c'est calculé », mentions légales, confidentialité (brouillons)
 - [ ] t35 👤 Valider mentions légales et confidentialité
 - [ ] t36 🤖 Audience sans cookies, accessibilité, performance, SEO
@@ -225,6 +225,7 @@ site/          le site (Astro), créé en phase 2
 
 ### t08 👤 Relire les 5 fiches vulgarisées — S2, 45 min
 - Pour chacune : juste par rapport au texte ? neutre ? compréhensible par quelqu'un qui ne suit pas la politique ? Remarques notées en bas de `docs/vulgarisation-essai.md`.
+- **Réalisé (7 oct.) :** Julien a relu les 5 fiches et répondu en session « tout est bon pour moi », sans remarque. Claude Code a coché la grille d'après cette réponse.
 - **Claude Code prépare** : une grille de relecture courte (3 cases à cocher par fiche) en tête du fichier.
 
 ### t09 🤖 Rapport de faisabilité — S3, 1 session
@@ -360,6 +361,8 @@ site/          le site (Astro), créé en phase 2
 ## 10. Phase 5 — Le service (S13–S15)
 
 **Objectif.** Les mécaniques de rétention et de confiance : comptes facultatifs, alertes, duel, pages légales, audience et accessibilité. **Sortie : t35 + t36.**
+
+*(Décision du 7 octobre 2026 : projet portfolio, fonctions centrées sur l'utilisateur reportées. t30 à t33 ne sont pas à faire pour l'instant ; t34 à t36 restent, sans la partie comptes.)*
 
 ### t30 👤 Supabase + Brevo — S13, 45 min
 - Créer le projet Supabase (**région Europe**, offre gratuite). Dans Brevo (offre gratuite), authentifier l'expéditeur. *(À revoir : sans nom de domaine — t16, zéro euro —, l'authentification SPF/DKIM n'est pas possible ; voir docs/questions-ouvertes.md.)* Ajouter les clés en secrets GitHub (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `BREVO_API_KEY`).

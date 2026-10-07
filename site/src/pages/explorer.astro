@@ -1,9 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import CarteScrutin from '../components/CarteScrutin.astro';
-import { solennels } from '../lib/donnees.ts';
+import { scrutin, scrutins as index } from '../lib/donnees.ts';
 
-const scrutins = solennels();
+const scrutins = index().filter((r) => r.solennel).slice(0, 6).map((r) => scrutin(r.uid));
 ---
 <Base titre="Explorer" onglet="explorer"
   description="Les derniers votes solennels de l'Assemblée nationale, député par député.">

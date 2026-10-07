@@ -1,9 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import CarteScrutin from '../components/CarteScrutin.astro';
-import { solennels } from '../lib/donnees.ts';
+import { scrutin, scrutins as index } from '../lib/donnees.ts';
 
-const [dernier] = solennels();
+const dernier = scrutin(index().find((r) => r.solennel)!.uid);
 if (!dernier) throw new Error('Aucun vote solennel exporté');
 ---
 <Base titre="Le 578e siège"

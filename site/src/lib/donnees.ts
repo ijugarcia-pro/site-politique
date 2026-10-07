@@ -44,20 +44,46 @@ export interface Composition {
   sieges: Siege[];
 }
 
-export interface Scrutin {
+/** Une grande étape du parcours d'un texte (lecture, commission mixte paritaire…). */
+export interface Etape {
+  code: string;
+  libelle: string;
+  debut: string | null;
+  fin: string | null;
+  ce_vote: boolean;
+}
+
+export interface Dossier {
+  uid: string;
+  titre: string;
+  procedure: string | null;
+  lien: string;
+  parcours: Etape[];
+}
+
+/** L'entrée d'un vote dans l'index (export/site/scrutins.json). */
+export interface ResumeScrutin {
   uid: string;
   numero: number;
   date: string;
   titre: string;
   sort: string;
-  type_vote: string;
+  categorie: string;
   solennel: boolean;
   motion_censure: boolean;
   decompte: Decompte;
-  publie: { pour: number; contre: number; abstention: number; non_votant: number };
   requis: number | null;
   voix_pour_inverser: number | null;
+  dissidents: number;
+  dossier: string | null;
+}
+
+/** Un vote complet (export/site/scrutins/{uid}.json). */
+export interface Scrutin extends Omit<ResumeScrutin, 'dossier'> {
+  type_vote: string;
+  publie: { pour: number; contre: number; abstention: number; non_votant: number };
   lien: string;
+  dossier: Dossier | null;
   groupes: Groupe[];
   sieges: Siege[];
 }
@@ -79,7 +105,11 @@ export interface Etat {
 const EXPORT_SITE = 'uv run python -m pipeline.export_site';
 
 export const composition = () => lire<Composition>('site/composition.json', EXPORT_SITE);
-export const solennels = () => lire<Scrutin[]>('site/scrutins-solennels.json', EXPORT_SITE);
+/** Les votes qui ont une page, du plus récent au plus ancien. */
+export const scrutins = () => lire<ResumeScrutin[]>('site/scrutins.json', EXPORT_SITE);
+export const scrutin = (uid: string) => lire<Scrutin>(`site/scrutins/${uid}.json`, EXPORT_SITE);
+/** Adresse de la page d'un vote : son numéro, comme sur le site de l'Assemblée. */
+export const lienVote = (s: { numero: number }) => `/votes/${s.numero}/`;
 export const etat = () => lire<Etat>('etat.json', 'uv run python -m pipeline.etat');
 
 export const LIBELLES: Record<Position, string> = {

@@ -6,6 +6,8 @@
 // - « composition » : les groupes en deux gris alternés, sans couleur partisane.
 // Accessibilité : un résumé et le détail par groupe dans un tableau ; au clavier, la zone se
 // parcourt avec les flèches (← → siège, ↑ ↓ groupe, Début, Fin) et chaque siège est annoncé.
+// En mode vote, des filtres (`filtres`) éclairent les votes contre le groupe, ou le siège du
+// député choisi par le visiteur (gardé dans son navigateur : lib/navigateur.ts).
 import { etiquette, HAUTEUR, LARGEUR, places, RAYON_SIEGE, SIEGES } from '../lib/hemicycle.ts';
 import { LIBELLES, type Groupe, type Position, type Siege } from '../lib/donnees.ts';
 
@@ -15,9 +17,17 @@ interface Props {
   mode: 'vote' | 'composition';
   titre: string;
   etiquettes?: boolean;
+  filtres?: boolean;
+  /** Le tableau par groupe sous le dessin ; une page qui détaille déjà les groupes peut
+   *  s'en passer (son détail doit alors rester lisible par un lecteur d'écran). */
+  detail?: boolean;
+  /** Motion de censure : seuls les « pour » sont publiés ; les autres n'ont pas voté la
+   *  censure, ce qui ne veut pas dire qu'ils étaient absents. */
+  censure?: boolean;
 }
 
-const { sieges, groupes, mode, titre, etiquettes = true } = Astro.props;
+const { sieges, groupes, mode, titre, etiquettes = true, filtres = false, detail = true,
+  censure = false } = Astro.props;
 if (sieges.length !== SIEGES) {
   throw new Error(`Hémicycle « ${titre} » : ${sieges.length} sièges au lieu de ${SIEGES}`);
 }
@@ -25,6 +35,9 @@ if (sieges.length !== SIEGES) {
 const liste = places();
 const rang = new Map(groupes.map((g, i) => [g.uid, i]));
 const sigle = new Map(groupes.map((g) => [g.uid, g.sigle]));
+const LIBELLES_VOTE: Record<Position, string> = censure
+  ? { ...LIBELLES, pour: 'pour la censure', absent: "n'a pas voté la censure" }
+  : LIBELLES;
 const COULEURS: Record<Position, string> = {
   pour: 'var(--pour)', contre: 'var(--contre)', abstention: 'var(--abstention)',
   absent: 'var(--absent)', non_votant: 'var(--non-votant)',
@@ -51,13 +64,13 @@ const libelles = etendues.map(({ g, debut, fin }) => {
   return { texte: g.sigle, ...etiquette(liste, debut, fin, decale ? 20 : 0) };
 });
 
-// Ce que la zone annonce pour chaque siège : [texte, indice du groupe].
-const annonces = sieges.map((s, i) => {
-  const numero = `Siège ${i + 1} sur ${SIEGES}`;
-  if (s.vacant) return [`${numero} : vacant`, -1];
-  const morceaux = [`${numero} : ${s.nom}`, sigle.get(s.groupe ?? '') ?? ''];
+// Ce que la zone annonce pour chaque siège : [texte, indice du groupe]. Le numéro du siège
+// (« Siège 12 sur 577 : ») est ajouté par le script, pour alléger la page.
+const annonces = sieges.map((s) => {
+  if (s.vacant) return ['vacant', -1];
+  const morceaux = [s.nom, sigle.get(s.groupe ?? '') ?? ''];
   if (mode === 'vote' && s.vote) {
-    morceaux.push(LIBELLES[s.vote]);
+    morceaux.push(LIBELLES_VOTE[s.vote]);
     if (s.dissident) morceaux.push('vote contraire à la majorité de son groupe');
     if (s.mise_au_point) {
       morceaux.push(`mise au point : ${LIBELLES[s.mise_au_point as Position] ?? s.mise_au_point}`);
@@ -70,7 +83,9 @@ const decompte = (cle: Position) => sieges.filter((s) => s.vote === cle).length;
 const occupes = sieges.filter((s) => !s.vacant).length;
 const dissidents = sieges.filter((s) => s.dissident).length;
 const nombre = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
-const resume = mode === 'vote'
+const resume = mode === 'vote' && censure
+  ? `${decompte('pour')} voix pour la censure ; les autres députés ne l'ont pas votée`
+  : mode === 'vote'
   ? `${decompte('pour')} pour, ${decompte('contre')} contre, `
     + `${nombre(decompte('abstention'), 'abstention')}, `
     + `${nombre(decompte('non_votant'), 'non-votant')}, ${nombre(decompte('absent'), 'absent')}`
@@ -79,6 +94,16 @@ const resume = mode === 'vote'
     + (SIEGES - occupes ? `, ${nombre(SIEGES - occupes, 'siège')} vacant${SIEGES - occupes > 1 ? 's' : ''}` : '');
 ---
 <figure class="hemicycle" data-hemicycle>
+  {filtres && mode === 'vote' && (
+    <div class="filtres" role="group" aria-label="Éclairer l'hémicycle">
+      <button type="button" data-filtre="" aria-pressed="true">Tous</button>
+      {dissidents > 0 && (
+        <button type="button" data-filtre="dissidents" aria-pressed="false">Contre leur groupe</button>
+      )}
+      <button type="button" data-filtre="depute" aria-pressed="false">Ton député</button>
+    </div>
+  )}
+  <div class="cadre">
   <div
     class="zone"
     tabindex="0"
@@ -104,8 +129,9 @@ const resume = mode === 'vote'
                 r={(RAYON_SIEGE + 2.6).toFixed(1)}></circle>
             )}
             <circle
-              class:list={['siege', { vacant: s.vacant }]}
+              class:list={['siege', { vacant: s.vacant, dissident: s.dissident && mode === 'vote' }]}
               data-i={i}
+              data-d={s.depute}
               cx={liste[i].x.toFixed(1)}
               cy={liste[i].y.toFixed(1)}
               r={s.dissident && mode === 'vote' ? RAYON_SIEGE - 1 : RAYON_SIEGE}
@@ -116,7 +142,12 @@ const resume = mode === 'vote'
       </g>
       <circle class="curseur" r={RAYON_SIEGE + 5} cx="-50" cy="-50"></circle>
       <g class="centre">
-        {mode === 'vote' ? (
+        {mode === 'vote' && censure ? (
+          <>
+            <text x="500" y="440" text-anchor="middle" class="centre-chiffres">{decompte('pour')}</text>
+            <text x="500" y="478" text-anchor="middle" class="centre-legende">pour la censure</text>
+          </>
+        ) : mode === 'vote' ? (
           <>
             <text x="500" y="440" text-anchor="middle" class="centre-chiffres">
               {decompte('pour')} – {decompte('contre')}
@@ -132,10 +163,18 @@ const resume = mode === 'vote'
       </g>
     </svg>
   </div>
+  <div class="repere" hidden><span class="repere-texte"></span></div>
+  </div>
   <p class="info" aria-live="polite">
     Survole ou touche un siège, ou sélectionne l'hémicycle et utilise les flèches du clavier.
   </p>
-  {mode === 'vote' ? (
+  {mode === 'vote' && censure ? (
+    <ul class="legende" aria-label="Légende">
+      <li><span style="background: var(--pour)"></span>Pour la censure</li>
+      <li><span style="background: var(--absent)"></span>Ne l'ont pas votée</li>
+      <li><span style="background: var(--non-votant)"></span>Non-votant</li>
+    </ul>
+  ) : mode === 'vote' ? (
     <ul class="legende" aria-label="Légende">
       <li><span style="background: var(--pour)"></span>Pour</li>
       <li><span style="background: var(--contre)"></span>Contre</li>
@@ -152,7 +191,7 @@ const resume = mode === 'vote'
       {SIEGES - occupes > 0 && <li><span class="vide"></span>Vacants {SIEGES - occupes}</li>}
     </ul>
   )}
-  <details class="detail">
+  {detail && (<details class="detail">
     <summary>Le détail groupe par groupe</summary>
     <div class="tableau">
       <table>
@@ -201,13 +240,15 @@ const resume = mode === 'vote'
         est pas un.
       </p>
     )}
-  </details>
+  </details>)}
   <script type="application/json" data-annonces set:html={JSON.stringify(annonces).replace(/</g, '\\u003c')}></script>
 </figure>
 
 <script>
   // Parcours au clavier et au survol. Sans JavaScript, le dessin, le résumé et le tableau
   // restent complets.
+  import { deputeChoisi } from '../lib/navigateur.ts';
+
   for (const figure of document.querySelectorAll<HTMLElement>('[data-hemicycle]')) {
     const zone = figure.querySelector<HTMLElement>('.zone')!;
     const info = figure.querySelector<HTMLElement>('.info')!;
@@ -223,7 +264,7 @@ const resume = mode === 'vote'
       curseur.setAttribute('cx', s.getAttribute('cx')!);
       curseur.setAttribute('cy', s.getAttribute('cy')!);
       curseur.classList.add('visible');
-      info.textContent = annonces[actuel][0];
+      info.textContent = `Siège ${actuel + 1} sur ${sieges.length} : ${annonces[actuel][0]}`;
     };
     const groupeSuivant = (sens: 1 | -1) => {
       const g = annonces[Math.max(actuel, 0)][1];
@@ -252,6 +293,58 @@ const resume = mode === 'vote'
       }
     });
     zone.addEventListener('focus', () => { if (actuel < 0) montrer(0); });
+
+    // Filtres : « Tous », « Contre leur groupe », « Ton député ».
+    const cadre = figure.querySelector<HTMLElement>('.cadre')!;
+    const repere = figure.querySelector<HTMLElement>('.repere')!;
+    const texteRepere = figure.querySelector<HTMLElement>('.repere-texte')!;
+    const boutons = [...figure.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
+    const consigne = info.textContent ?? '';
+    const placerRepere = (siege: SVGCircleElement | undefined, texte: string) => {
+      if (!siege) { repere.hidden = true; return; }
+      const boite = siege.ownerSVGElement!.viewBox.baseVal;
+      const x = (Number(siege.getAttribute('cx')) - boite.x) / boite.width;
+      const y = (Number(siege.getAttribute('cy')) - boite.y) / boite.height;
+      repere.style.left = `${(x * 100).toFixed(2)}%`;
+      repere.style.top = `${(y * 100).toFixed(2)}%`;
+      repere.classList.toggle('a-droite', x > 0.75);
+      repere.classList.toggle('a-gauche', x < 0.25);
+      texteRepere.textContent = texte;
+      repere.hidden = false;
+    };
+    const filtrer = (filtre: string) => {
+      for (const b of boutons) b.setAttribute('aria-pressed', String(b.dataset.filtre === filtre));
+      cadre.dataset.filtre = filtre;
+      for (const s of sieges) s.classList.remove('choisi');
+      placerRepere(undefined, '');
+      if (filtre === 'dissidents') {
+        const n = sieges.filter((s) => s.classList.contains('dissident')).length;
+        info.textContent = n > 1
+          ? `${n} députés ont voté contre la majorité de leur groupe.`
+          : '1 député a voté contre la majorité de son groupe.';
+      } else if (filtre === 'depute') {
+        const uid = deputeChoisi();
+        const siege = uid ? sieges.find((s) => s.dataset.d === uid) : undefined;
+        if (!uid) {
+          info.textContent = "Tu n'as pas encore choisi ton député. ";
+          const lien = document.createElement('a');
+          lien.href = '/deputes/';
+          lien.textContent = 'Trouve-le avec ton code postal';
+          info.append(lien, '.');
+        } else if (!siege) {
+          info.textContent = "Ton député ne siégeait pas à l'Assemblée lors de ce vote.";
+        } else {
+          siege.classList.add('choisi');
+          const texte = annonces[Number(siege.dataset.i)][0];
+          info.textContent = `Ton député : ${texte}`;
+          const [nom, , vote] = texte.split(' · ');
+          placerRepere(siege, vote ? `${nom} · ${vote}` : nom);
+        }
+      } else {
+        info.textContent = consigne;
+      }
+    };
+    for (const b of boutons) b.addEventListener('click', () => filtrer(b.dataset.filtre ?? ''));
     zone.addEventListener('pointerover', (e) => {
       const cible = e.target as Element;
       if (cible instanceof SVGCircleElement && cible.classList.contains('siege')) {
@@ -263,6 +356,62 @@ const resume = mode === 'vote'
 
 <style>
   .hemicycle { margin: 0; }
+  .cadre { position: relative; }
+  .filtres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 18px auto;
+    padding: 4px;
+    border-radius: 14px;
+    background: var(--fond);
+    border: 2px solid var(--bord);
+  }
+  .filtres button {
+    min-height: 40px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--gris);
+    cursor: pointer;
+  }
+  .filtres button:hover { color: var(--violet-fonce); background: var(--fond-doux); }
+  .filtres button[aria-pressed='true'] { background: var(--violet); color: #fff; }
+  .cadre[data-filtre='dissidents'] .siege:not(.dissident),
+  .cadre[data-filtre='depute'] .siege:not(.choisi),
+  .cadre[data-filtre='depute'] .cercle-dissident { opacity: 0.16; }
+  .siege { transition: opacity 0.15s; }
+  .siege.choisi { stroke: var(--texte); stroke-width: 2.5; }
+  .repere {
+    position: absolute;
+    z-index: 2;
+    transform: translate(-50%, calc(-100% - 12px));
+    pointer-events: none;
+  }
+  .repere.a-droite { transform: translate(-88%, calc(-100% - 12px)); }
+  .repere.a-gauche { transform: translate(-12%, calc(-100% - 12px)); }
+  .repere-texte {
+    display: block;
+    padding: 4px 10px;
+    border-radius: 10px;
+    background: var(--texte);
+    color: #fff;
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  @media (max-width: 600px) {
+    .filtres { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; width: 100%; margin: 0 0 14px; }
+    .filtres button { padding: 4px 6px; font-size: 13px; line-height: 1.1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .siege { transition: none; } }
   .zone { border-radius: 16px; touch-action: manipulation; }
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .etiquettes text {

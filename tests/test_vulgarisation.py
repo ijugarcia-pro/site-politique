@@ -1,5 +1,4 @@
 import json
-from types import SimpleNamespace
 
 from pipeline.vulgarisation import (
     articles,
@@ -12,7 +11,6 @@ from pipeline.vulgarisation import (
     controle_relecture,
     controle_vocabulaire,
     controles_locaux,
-    cout,
     expose_des_motifs,
     message_redaction,
     message_relecture,
@@ -183,72 +181,21 @@ def test_controle_relecture():
     assert not controle_relecture(None).reussi
 
 
-def test_cout_au_tarif_public():
-    assert cout("claude-opus-5-5", 1_000_000, 100_000) == 6.0
-
-
-# --- Circuit complet, avec une fausse API -----------------------------------------------------
-
-
-class FausseAPI:
-    """Rend les sorties prévues, dans l'ordre, et note chaque appel."""
-
-    def __init__(self, sorties):
-        self.sorties = list(sorties)
-        self.appels = []
-        self.beta = SimpleNamespace(messages=SimpleNamespace(create=self.create))
-
-    def create(self, **parametres):
-        self.appels.append(parametres)
-        sortie = self.sorties.pop(0)
-        return SimpleNamespace(
-            stop_reason="refusal" if sortie is None else "end_turn",
-            content=[] if sortie is None else [SimpleNamespace(type="text", text=sortie)],
-            usage=SimpleNamespace(input_tokens=1000, output_tokens=200),
-            model="claude-opus-5-5", id="msg_test",
-        )
-
-
-RELECTURE_OK = json.dumps({"elements": [
-    {"element": e, "fidele": True, "neutre": True, "probleme": ""}
-    for e in ("question", "concretement", "carte 1", "carte 2", "carte 3")]})
-CHOIX = {"titre": "l'ensemble de la proposition de loi sur les ruches"}
-
-
-def test_vulgariser_publie_une_fiche_qui_passe_les_sept_controles():
-    api = FausseAPI([json.dumps(fiche()), RELECTURE_OK])
-    resultat = essai.vulgariser(api, CHOIX, TEXTE, "Exposé.")
-    assert resultat["statut"] == "publiée"
-    assert len(api.appels) == 2
-    appel = api.appels[0]
-    assert appel["model"] == "claude-opus-5-5"
-    assert appel["output_config"]["format"]["type"] == "json_schema"
-    assert appel["fallbacks"] == "default"
-    assert essai.cout_total(resultat) == round(2 * cout("claude-opus-5-5", 1000, 200), 4)
-
-
-def test_vulgariser_retente_une_fois_avec_les_erreurs_puis_publie():
-    mauvaise = fiche(question="Pourquoi aider les ruches déclarées ?")
-    api = FausseAPI([json.dumps(mauvaise), json.dumps(fiche()), RELECTURE_OK])
-    resultat = essai.vulgariser(api, CHOIX, TEXTE, None)
-    assert resultat["statut"] == "publiée"
-    assert len(resultat["essais"]) == 2
-    assert "question est ouverte" in api.appels[1]["messages"][0]["content"]
-
-
-def test_vulgariser_replie_sans_cartes_apres_deux_echecs():
-    api = FausseAPI([None, "pas du json"])  # un refus, puis une sortie invalide
-    resultat = essai.vulgariser(api, CHOIX, TEXTE, None)
-    assert resultat["statut"] == "repli (sans cartes)"
-    assert resultat["fiche"] is None
-    assert len(api.appels) == 2  # pas de relecture d'une fiche invalide
+# --- Rapport de l'essai (t07) ----------------------------------------------------------------
 
 
 def test_rapport_conserve_la_relecture_de_julien(tmp_path, monkeypatch):
     monkeypatch.setattr(essai, "RAPPORT", tmp_path / "essai.md")
-    resultat = essai.vulgariser(FausseAPI([json.dumps(fiche()), RELECTURE_OK]), CHOIX, TEXTE,
-                                None)
-    resultat |= {"choix": {**essai.SELECTION[0]}, "nb_articles": 2}
+    appel = {"cout": 0.05, "jetons_entree": 1000, "jetons_sortie": 200}
+    resultat = {
+        "statut": "publiée", "fiche": fiche(), "nb_articles": 2,
+        "choix": {"numero": 7987, "theme": "sécurité", "date": "2026-07-07",
+                  "titre": "l'ensemble de la proposition de loi", "texte_vote": "PIONANR5L17B0691",
+                  "texte_depose": "PIONANR5L17B0691"},
+        "essais": [{"tentative": 1, "redaction": appel, "relecture": appel, "fiche": fiche(),
+                    "controles": [{"numero": n, "reussi": True, "erreurs": []}
+                                  for n in range(1, 8)]}],
+    }
     donnees = {"genere_le": "2026-10-07", "modele": "claude-opus-5-5", "effort": "high",
                "resultats": [resultat]}
     essai.ecrire_rapport(donnees)

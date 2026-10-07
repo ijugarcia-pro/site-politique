@@ -27,7 +27,7 @@ Lecture de l'essai du 7 octobre 2026, lancé par le workflow « Essai de vulgari
 
 **Coût**
 - 1,02 $ pour l'essai (environ 0,95 €), soit 0,20 $ par texte, nouvelle tentative et relecture comprises. La réflexion du modèle est comptée dans les jetons de sortie.
-- Projection : environ 2 $ par mois pour les quelque 10 textes entiers votés chaque mois, 0,57 $ pour les seuls scrutins solennels. Il reste environ 3 € de crédit. Cela suffit pour t27 et t29, mais pas pour une année de production : il faudra recharger le compte avant le lancement.
+- **Décision du 7 octobre 2026 : zéro euro.** Ce coût, même faible (environ 2 $ par mois projetés), n'est pas acceptable pour le projet. L'essai ne sera pas reconduit avec l'API. Les fiches seront rédigées dans la session Claude Code hebdomadaire de Julien, qui les valide (voir docs/decisions.md et t27). Les consignes, le schéma et les 7 contrôles de cet essai restent ceux de la session.
 
 **Critère de fin de t07**
 - Les 5 fiches sont lisibles ci-dessous. Pour les 2 replis, c'est la dernière version, marquée comme non publiée.
@@ -79,7 +79,7 @@ Pour chaque fiche, cocher (remplacer `[ ]` par `[x]`) ce qui est vrai, et noter 
 
 - Fiches publiables (7 contrôles passés) : **3 sur 5**.
 - Coût de l'essai : **1.02 $** au tarif public de `claude-opus-5-5`, soit 0.204 $ par texte en moyenne, nouvelles tentatives et relecture comprises.
-- Projection : environ 10 textes entiers votés par mois (3 en scrutin solennel), soit **2.03 $ par mois** pour tous, ou 0.57 $ pour les seuls solennels. Avec le cache par empreinte du texte, un texte inchangé n'est jamais revulgarisé.
+- Essai unique : depuis le 7 octobre 2026, le projet ne fait plus aucun appel payant (voir docs/decisions.md).
 
 | Scrutin | Thème | Statut | Tentatives | Jetons entrée | Jetons sortie | Coût |
 |---|---|---|---|---|---|---|

@@ -1,175 +1,32 @@
-"""Prototype de vulgarisation sur 5 textes votés en scrutin solennel (tâche t07).
+"""Rapport de l'essai de vulgarisation sur 5 textes (tâche t07, 7 octobre 2026).
 
 Usage :
-    uv run python -m scripts.essai_vulgarisation               # appelle l'API (payant)
-    uv run python -m scripts.essai_vulgarisation --hors-ligne  # régénère le rapport seul
+    uv run python -m scripts.essai_vulgarisation
 
-Pour chaque texte : télécharge le texte voté et le texte déposé (pour l'exposé des motifs) sur
-assemblee-nationale.fr, demande une fiche à l'API Anthropic, la passe aux 7 contrôles de
-docs/vulgarisation-controles.md (le 7e par une relecture automatique séparée), retente une fois
-en cas d'échec avec la liste des erreurs, puis replie (vote sans cartes) si l'échec persiste.
-La clé est lue dans ANTHROPIC_API_KEY (secret GitHub, jamais dans le dépôt). L'essai s'arrête
-dès que le coût cumulé dépasse le plafond (--plafond, en dollars).
+L'essai a été fait une seule fois, avec l'API Anthropic depuis GitHub Actions (1,02 $). Le
+7 octobre 2026, le projet est passé à zéro euro : plus aucun appel payant. Les fiches sont
+désormais rédigées dans une session Claude Code hebdomadaire (voir docs/decisions.md). Ce script
+ne fait plus que régénérer le rapport à partir des résultats enregistrés.
 
-Produit :
-    data/mesures/vulgarisation/essai.json  sorties brutes, contrôles, jetons et coût
-    docs/vulgarisation-essai.md            rapport (la grille de relecture de t08 est conservée)
+Lit :     data/mesures/vulgarisation/essai.json  (sorties brutes, contrôles, jetons, coût)
+Produit : docs/vulgarisation-essai.md  (sections Constats et Relecture conservées)
 """
 
 from __future__ import annotations
 
-import argparse
 import json
 import sys
-import time
-from datetime import UTC, datetime
 from pathlib import Path
 
-import httpx
-
-from pipeline.vulgarisation import (
-    CONSIGNES,
-    CONSIGNES_RELECTURE,
-    SCHEMA_FICHE,
-    SCHEMA_RELECTURE,
-    URL_DOCUMENT,
-    articles,
-    controle_relecture,
-    controles_locaux,
-    cout,
-    expose_des_motifs,
-    message_redaction,
-    message_relecture,
-    texte_du_html,
-)
+from pipeline.vulgarisation import URL_DOCUMENT
 
 RACINE = Path(__file__).resolve().parent.parent
-CACHE = RACINE / "data" / "raw" / "textes"
 SORTIE = RACINE / "data" / "mesures" / "vulgarisation" / "essai.json"
 RAPPORT = RACINE / "docs" / "vulgarisation-essai.md"
 DEBUT_RELECTURE = "<!-- relecture:debut -->"
 FIN_RELECTURE = "<!-- relecture:fin -->"
 DEBUT_CONSTATS = "<!-- constats:debut -->"
 FIN_CONSTATS = "<!-- constats:fin -->"
-
-MODELE = "claude-opus-5-5"
-EFFORT = "high"
-MAX_TOKENS = 16000
-BETA_REPLI = "server-side-fallback-2026-07-01"
-TENTATIVES = 2
-
-# Cinq textes récents, votés en scrutin solennel, de thèmes variés. Le texte voté est le dernier
-# texte de l'Assemblée déposé avant le scrutin pour cette lecture : texte de la commission (BTC),
-# texte de la commission mixte paritaire, ou texte déposé quand la commission n'en a pas établi.
-# L'exposé des motifs vient du texte déposé en premier.
-SELECTION = [
-    {"scrutin": "VTANR5L17V7454", "numero": 7454, "date": "2026-06-23", "theme": "institutions",
-     "titre": "l'ensemble du projet de loi constitutionnelle pour une Corse autonome au sein de "
-              "la République (première lecture)",
-     "dossier": "DLR5L17N54218", "texte_vote": "PRJLANR5L17B2697",
-     "texte_depose": "PRJLANR5L17B2697"},
-    {"scrutin": "VTANR5L17V7987", "numero": 7987, "date": "2026-07-07", "theme": "sécurité",
-     "titre": "l'ensemble de la proposition de loi visant à reconnaître une présomption de "
-              "légitime défense pour les forces de l'ordre, dans l'exercice de leurs fonctions "
-              "(première lecture)",
-     "dossier": "DLR5L17N51037", "texte_vote": "PIONANR5L17B0691",
-     "texte_depose": "PIONANR5L17B0691"},
-    {"scrutin": "VTANR5L17V7409", "numero": 7409, "date": "2026-06-17", "theme": "énergie",
-     "titre": "l'ensemble de la proposition de loi visant à relancer les investissements dans le "
-              "secteur de l'hydroélectricité pour contribuer à la transition énergétique (texte "
-              "de la commission mixte paritaire)",
-     "dossier": "DLR5L17N53530", "texte_vote": "PIONANR5L17BTC2856",
-     "texte_depose": "PIONANR5L17B2334"},
-    {"scrutin": "VTANR5L17V8431", "numero": 8431, "date": "2026-07-21", "theme": "numérique",
-     "titre": "l'ensemble de la proposition de loi visant à protéger les mineurs des risques "
-              "auxquels les expose l'utilisation des réseaux sociaux (texte de la commission "
-              "mixte paritaire)",
-     "dossier": "DLR5L17N53187", "texte_vote": "PIONANR5L17BTC3069",
-     "texte_depose": "PIONANR5L17B2107"},
-    {"scrutin": "VTANR5L17V8419", "numero": 8419, "date": "2026-07-20", "theme": "santé",
-     "titre": "l'ensemble de la proposition de loi visant à doter la France d'une stratégie "
-              "nationale de lutte contre les maladies cardio-neuro-vasculaires (texte de la "
-              "commission mixte paritaire)",
-     "dossier": "DLR5L17N53426", "texte_vote": "PIONANR5L17BTC2995",
-     "texte_depose": "PIONANR5L17B2309"},
-]
-
-# Pour la projection : 239 scrutins sur un texte entier (ensemble, partie, résolution) en
-# 24 mois de 17e législature, dont 67 solennels (docs/rattachement.md).
-TEXTES_PAR_MOIS = 239 / 24
-SOLENNELS_PAR_MOIS = 67 / 24
-
-
-# --- Textes -----------------------------------------------------------------------------------
-
-
-def document(client: httpx.Client, uid: str) -> str:
-    """Texte brut d'un document de l'Assemblée, mis en cache dans data/raw/textes/."""
-    CACHE.mkdir(parents=True, exist_ok=True)
-    chemin = CACHE / f"{uid}.html"
-    if not chemin.exists():
-        for tentative in range(3):
-            try:
-                reponse = client.get(URL_DOCUMENT.format(uid=uid))
-                reponse.raise_for_status()
-                break
-            except httpx.HTTPError:
-                if tentative == 2:
-                    raise
-                time.sleep(10)
-        chemin.write_bytes(reponse.content)
-    return texte_du_html(chemin.read_text(encoding="utf-8"))
-
-
-# --- API --------------------------------------------------------------------------------------
-
-
-def appeler(api, consignes: str, message: str, schema: dict) -> dict:
-    """Un appel à l'API, avec sortie JSON imposée. Renvoie la sortie et les jetons consommés."""
-    reponse = api.beta.messages.create(
-        model=MODELE,
-        max_tokens=MAX_TOKENS,
-        system=consignes,
-        messages=[{"role": "user", "content": message}],
-        output_config={"effort": EFFORT, "format": {"type": "json_schema", "schema": schema}},
-        betas=[BETA_REPLI],
-        fallbacks="default",
-    )
-    texte = None
-    if reponse.stop_reason != "refusal":
-        texte = next((b.text for b in reponse.content if b.type == "text"), None)
-    usage = reponse.usage
-    return {
-        "sortie": texte,
-        "stop_reason": reponse.stop_reason,
-        "modele": reponse.model,
-        "jetons_entree": usage.input_tokens,
-        "jetons_sortie": usage.output_tokens,
-        "cout": round(cout(MODELE, usage.input_tokens, usage.output_tokens), 4),
-        "id": reponse.id,
-    }
-
-
-def vulgariser(api, choix: dict, texte: dict[str, str], expose: str | None) -> dict:
-    """Rédaction, contrôles, relecture ; une nouvelle tentative au plus ; sinon repli."""
-    essais, erreurs = [], None
-    for numero in range(1, TENTATIVES + 1):
-        redaction = appeler(api, CONSIGNES, message_redaction(choix["titre"], expose, texte,
-                                                              erreurs), SCHEMA_FICHE)
-        essai = {"tentative": numero, "redaction": redaction, "relecture": None}
-        controles, fiche = controles_locaux(redaction["sortie"] or "", texte, expose)
-        if fiche is not None and all(c.reussi for c in controles):
-            relecture = appeler(api, CONSIGNES_RELECTURE, message_relecture(fiche, texte, expose),
-                                SCHEMA_RELECTURE)
-            essai["relecture"] = relecture
-            controles.append(controle_relecture(relecture["sortie"]))
-        essai["controles"] = [c.__dict__ for c in controles]
-        essai["fiche"] = fiche
-        essais.append(essai)
-        if len(controles) == 7 and all(c.reussi for c in controles):
-            return {"statut": "publiée", "fiche": fiche, "essais": essais}
-        erreurs = [e for c in controles for e in c.erreurs]
-    return {"statut": "repli (sans cartes)", "fiche": None, "essais": essais}
 
 
 def cout_total(resultat: dict) -> float:
@@ -294,10 +151,8 @@ def ecrire_rapport(donnees: dict) -> None:
         f"- Fiches publiables (7 contrôles passés) : **{publiees} sur {len(resultats)}**.",
         f"- Coût de l'essai : **{total:.2f} $** au tarif public de `{donnees['modele']}`, soit "
         f"{moyen:.3f} $ par texte en moyenne, nouvelles tentatives et relecture comprises.",
-        f"- Projection : environ {TEXTES_PAR_MOIS:.0f} textes entiers votés par mois "
-        f"({SOLENNELS_PAR_MOIS:.0f} en scrutin solennel), soit **{TEXTES_PAR_MOIS * moyen:.2f} $ "
-        f"par mois** pour tous, ou {SOLENNELS_PAR_MOIS * moyen:.2f} $ pour les seuls solennels. "
-        "Avec le cache par empreinte du texte, un texte inchangé n'est jamais revulgarisé.",
+        "- Essai unique : depuis le 7 octobre 2026, le projet ne fait plus aucun appel payant "
+        "(voir docs/decisions.md).",
         "",
         "| Scrutin | Thème | Statut | Tentatives | Jetons entrée | Jetons sortie | Coût |",
         "|---|---|---|---|---|---|---|",
@@ -318,48 +173,8 @@ def ecrire_rapport(donnees: dict) -> None:
 
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--hors-ligne", action="store_true",
-                        help="régénérer le rapport depuis essai.json, sans appel")
-    parser.add_argument("--plafond", type=float, default=2.5,
-                        help="coût cumulé (dollars) au-delà duquel l'essai s'arrête")
-    args = parser.parse_args()
-
-    if args.hors_ligne:
-        ecrire_rapport(json.loads(SORTIE.read_text(encoding="utf-8")))
-        print(f"Écrit : {RAPPORT.relative_to(RACINE)}")
-        return
-
-    import anthropic  # seulement pour l'appel réel
-
-    api = anthropic.Anthropic()
-    resultats, depense = [], 0.0
-    try:
-        with httpx.Client(follow_redirects=True, timeout=httpx.Timeout(60, read=180)) as web:
-            for choix in SELECTION:
-                if depense >= args.plafond:
-                    print(f"Plafond de {args.plafond} $ atteint : arrêt avant {choix['numero']}.")
-                    break
-                texte = articles(document(web, choix["texte_vote"]))
-                expose = expose_des_motifs(document(web, choix["texte_depose"]))
-                print(f"Scrutin {choix['numero']} : {len(texte)} articles", flush=True)
-                resultat = vulgariser(api, choix, texte, expose)
-                resultat["choix"] = choix
-                resultat["nb_articles"] = len(texte)
-                resultats.append(resultat)
-                depense += cout_total(resultat)
-                print(f"  {resultat['statut']} · {cout_total(resultat):.3f} $ "
-                      f"(cumul {depense:.3f} $)", flush=True)
-    finally:
-        # Même interrompu, l'essai garde ce qui a déjà été payé.
-        if resultats:
-            donnees = {"genere_le": datetime.now(UTC).isoformat(timespec="seconds"),
-                       "modele": MODELE, "effort": EFFORT, "resultats": resultats}
-            SORTIE.parent.mkdir(parents=True, exist_ok=True)
-            SORTIE.write_text(json.dumps(donnees, indent=1, ensure_ascii=False) + "\n",
-                              encoding="utf-8")
-            ecrire_rapport(donnees)
-            print(f"Écrit : {SORTIE.relative_to(RACINE)} et {RAPPORT.relative_to(RACINE)}")
+    ecrire_rapport(json.loads(SORTIE.read_text(encoding="utf-8")))
+    print(f"Écrit : {RAPPORT.relative_to(RACINE)}")
 
 
 if __name__ == "__main__":

@@ -2,10 +2,11 @@
 
 Une fiche vulgarisée contient une question fermée, une phrase « Concrètement » et trois cartes
 « Ce que ça change », chacune rattachée à un article du texte voté par un extrait recopié mot pour
-mot. Elle n'est publiée que si elle passe les 7 contrôles décrits dans
-docs/vulgarisation-controles.md. Les six premiers sont faits ici, sans appel réseau ; le
-septième (fidélité) est rendu par une relecture automatique séparée, dont ce module fournit les
-consignes et le schéma.
+mot. Elle est rédigée pendant la session Claude Code hebdomadaire de Julien (aucun appel payant :
+voir docs/decisions.md), selon CONSIGNES. Elle n'est publiée que si elle passe les 7 contrôles de
+docs/vulgarisation-controles.md, puis la validation de Julien. Les six premiers contrôles sont
+faits ici, sans réseau ; le septième (fidélité) est une relecture séparée, faite par un agent qui
+ne voit que la fiche, les articles cités et l'exposé des motifs (CONSIGNES_RELECTURE).
 """
 
 from __future__ import annotations
@@ -443,14 +444,3 @@ def controles_locaux(sortie: str, texte: dict[str, str], expose: str | None
         controle_vocabulaire(fiche, "\n".join(texte.values())),
         controle_chiffres(fiche, sources),
     ], fiche
-
-
-# --- Coût -------------------------------------------------------------------------------------
-
-# Claude Opus 5.5, tarif public au 25 septembre 2026, en dollars par million de jetons.
-PRIX = {"claude-opus-5-5": {"entree": 4.00, "sortie": 20.00}}
-
-
-def cout(modele: str, jetons_entree: int, jetons_sortie: int) -> float:
-    prix = PRIX[modele]
-    return (jetons_entree * prix["entree"] + jetons_sortie * prix["sortie"]) / 1_000_000

@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10 faites, go pour la phase 1 ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -46,7 +46,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t10 👤 ◆ Décision Go / No-go et formule du verdict *(go le 7 oct. 2026 ; formule du verdict à trancher vers le 28 oct., « verdict du matin » par défaut)*
 
 ### Phase 1 — Socle data (S4–S5, 26 oct. → 8 nov.)
-- [ ] t11 🤖 Ingestion de nuit et archives avec empreinte
+- [ ] t11 🤖 Ingestion de nuit et archives avec empreinte *(livrée le 7 oct. 2026 ; à cocher après deux nuits sans intervention)*
 - [ ] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents
 - [ ] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build
 - [ ] t14 🤖 Page « État des données »
@@ -251,6 +251,7 @@ site/          le site (Astro), créé en phase 2
 - **À faire :** `pipeline/ingest.py` + `.github/workflows/nuit.yml` (cron 6 h UTC). Télécharge les archives, calcule leur **empreinte** (hash), s'arrête si rien n'a changé, sinon archive les bruts datés. Gestion propre des échecs réseau (nouvelles tentatives, alerte si > N échecs).
 - **Tests :** empreinte identique → arrêt ; empreinte différente → archivage ; téléchargement en échec.
 - **Critère de fin :** deux nuits d'affilée sans intervention ; rien ne se recalcule si rien n'a changé.
+- **Réalisé (7 oct.) :** `pipeline/ingest.py`, `pipeline/sources.py` (liste des sources, partagée avec l'inventaire), `.github/workflows/nuit.yml` (6 h 11 UTC plutôt que 6 h pile), `tests/test_ingest.py` (8 tests sur un serveur simulé). L'état versionné est dans `data/sources/etat.json`. Les fichiers bruts passent par le cache de GitHub Actions et sont archivés 30 jours comme artefacts : rien de lourd dans le dépôt. Vérifié en local sur les vrais serveurs : 1re passe, 9 sources et 420 Mo en 6 min 30 ; 2e passe, tout est inchangé en 1 s, sans téléchargement. Une alerte (issue GitHub) est levée après 3 nuits d'échec. **Reste :** fusion dans `main`, premier passage manuel, puis deux nuits sans intervention. À surveiller : le planificateur de GitHub n'a encore déclenché aucun passage horaire de t03.
 
 ### t12 🤖 Les 11 tables DuckDB — S4, 2 sessions
 - **Dépend de :** t11.

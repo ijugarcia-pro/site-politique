@@ -75,3 +75,8 @@
 - Raison : docs/faisabilite.md. Le rattachement et la vulgarisation sont validés ; le délai ne touche que l'écran Verdict (t25, phase 3).
 - Conséquence : t03 continue son relevé jusqu'au 28 octobre, et docs/faisabilite.md sera complété à cette date.
 
+## 2026-10-07 · Ingestion de nuit : état versionné, fichiers bruts hors du dépôt
+- Décision : `pipeline/ingest.py` tient l'état des sources dans `data/sources/etat.json`, versionné : empreinte SHA-256, date de modification, nuits d'échec d'affilée. Les fichiers bruts (environ 420 Mo) ne sont jamais versionnés. Ils passent d'une nuit à l'autre par le cache de GitHub Actions, et chaque nouvelle version est archivée 30 jours comme artefact du workflow. Une requête HEAD suffit à voir qu'une source n'a pas changé. Une archive régénérée à l'identique (même empreinte) n'est pas un changement. Une source requise en échec arrête le build et laisse la version publiée en ligne ; une source facultative (amendements, données géographiques) ne bloque rien. Au bout de 3 nuits d'échec d'affilée, une issue GitHub est ouverte.
+- Raison : principe « pas d'usine à gaz ». Pas de stockage externe, et tout reste gratuit puisque le dépôt est public. L'empreinte, plutôt que la date, évite de tout recalculer quand l'Assemblée régénère une archive sans la modifier.
+- Conséquence : la liste des sources vit dans `pipeline/sources.py`, partagée avec l'inventaire. Le workflow `nuit.yml` tourne à 6 h 11 UTC et n'enchaîne les étapes suivantes (t12 et après) que si une empreinte a changé.
+

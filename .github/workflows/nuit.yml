@@ -1,0 +1,83 @@
+name: Pipeline de nuit
+
+# Chaque nuit : récupérer les sources qui ont changé (t11). Les étapes suivantes (normaliser,
+# contrôler, calculer, exporter, déployer : t12 et suivantes) ne tourneront que si une empreinte
+# a changé. Un échec garde la dernière version publiée. Minute 11 plutôt que l'heure pile : le
+# planificateur de GitHub est saturé en début d'heure et y saute des passages.
+on:
+  schedule:
+    - cron: "11 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: pipeline-nuit
+  cancel-in-progress: false
+
+jobs:
+  nuit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+
+      - name: Reprendre les sources de la nuit précédente
+        uses: actions/cache/restore@v4
+        with:
+          path: data/raw
+          key: sources-${{ github.run_id }}
+          restore-keys: sources-
+
+      - name: Ingestion
+        id: ingestion
+        run: uv run python -m pipeline.ingest
+
+      # t12 et suivantes s'insèrent ici, avec la condition :
+      #   if: steps.ingestion.outputs.changement == 'true'
+
+      - name: Garder les sources pour la nuit suivante
+        if: always() && steps.ingestion.outputs.telecharge == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: data/raw
+          key: sources-${{ github.run_id }}
+
+      - name: Archiver les nouvelles versions (30 jours)
+        if: steps.ingestion.outputs.changement == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sources-${{ github.run_id }}
+          path: ${{ steps.ingestion.outputs.fichiers }}
+          retention-days: 30
+
+      - name: Enregistrer l'état des sources
+        if: always()
+        run: |
+          if [ -z "$(git status --porcelain -- data/sources)" ]; then
+            echo "État inchangé."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sources
+          git commit -m "Ingestion de nuit : état des sources"
+          git pull --rebase
+          git push
+
+      - name: Alerter si une source échoue depuis plusieurs nuits
+        if: always() && hashFiles('data/raw/alerte.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          titre="Ingestion de nuit : une source échoue depuis plusieurs nuits"
+          ouverte=$(gh issue list --state open --search "\"$titre\" in:title" --json number --jq '.[0].number')
+          if [ -n "$ouverte" ]; then
+            gh issue comment "$ouverte" --body-file data/raw/alerte.md
+          else
+            gh issue create --title "$titre" --body-file data/raw/alerte.md
+          fi

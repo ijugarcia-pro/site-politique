@@ -29,3 +29,8 @@
 - Décision : la question, « Concrètement » et les 3 cartes « Ce que ça change » sont rédigées par l'API Anthropic et publiées seulement si les 7 contrôles passent.
 - Raison : vulgariser à l'échelle sans publier de texte inexact ou partisan.
 - Conséquence : si un contrôle échoue, le vote est affiché sans cartes.
+
+## 2026-10-07 · Lecture défensive des JSON de l'Assemblée
+- Décision : l'appartenance d'un député à un groupe à la date d'un vote vient toujours des mandats GP (AMO30), jamais du `organeRef` de la ventilation du scrutin. Tout élément répétable est normalisé en liste, et les deux formes de nul (`null`, `{"@xsi:nil": "true"}`) sont traitées comme absentes.
+- Raison : l'inventaire du 7 octobre 2026 a trouvé 14 scrutins dont les votes sont classés sous un organe `PO0` qui n'existe pas. Il a aussi montré que les listes à un seul élément deviennent des objets, et que les présidents de groupe ont deux mandats GP en cours (dédoublonnage par député).
+- Conséquence : le pipeline reprend ces règles et les teste. Voir docs/inventaire-open-data.md.

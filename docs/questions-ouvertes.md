@@ -1,4 +1,5 @@
 # Questions ouvertes (phase 0)
 
-1. **Délai de publication.** Quel délai sépare un scrutin de sa présence dans l'archive open data ? Il conditionne la formule du verdict : « dès la publication » ou « le verdict du matin ».
-2. **Rattachement scrutin → texte de loi.** Avec quelle fiabilité peut-on rattacher un scrutin à son texte de loi ? Il conditionne la section « Ce que ça change ».
+1. **Délai de publication.** Quel délai sépare un scrutin de sa présence dans l'archive open data ? Il conditionne la formule du verdict : « dès la publication » ou « le verdict du matin ». Premier indice (inventaire du 7 octobre 2026) : l'archive régénérée dans la nuit contenait les scrutins de la veille.
+2. **Rattachement scrutin → texte de loi.** Avec quelle fiabilité peut-on rattacher un scrutin à son texte de loi ? Il conditionne la section « Ce que ça change ». Premier indice (inventaire) : le champ `objet.dossierLegislatif` n'est renseigné que pour 30 scrutins solennels sur 72 ; l'agenda (points « Vote solennel » avec dossier) est à explorer.
+3. **Code postal → circonscription.** Aucune table officielle récente ne relie communes et circonscriptions : la seule trouvée date de 2017 (découpage communal de 2017), 118 communes y sont partagées entre plusieurs circonscriptions et les contours n'en couvrent que 559 sur 577. Faut-il passer par une jointure géographique avec les adresses, par une mise à jour de la table de 2017 via le Code officiel géographique, ou demander à l'utilisateur de choisir sa circonscription quand il y a ambiguïté ?

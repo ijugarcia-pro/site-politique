@@ -46,8 +46,21 @@ jobs:
         if: steps.ingestion.outputs.changement == 'true'
         run: uv run python -m pipeline.checks
 
-      # t14 et suivantes (calculs, export, déploiement) s'insèrent ici, avec la condition :
-      #   if: steps.controles.outcome == 'success'
+      - name: Page « État des données »
+        if: steps.controles.outcome == 'success'
+        run: uv run python -m pipeline.etat
+
+      # Jusqu'au déploiement du site (t16, t17), l'export est gardé comme artefact.
+      - name: Garder l'export du build
+        if: steps.controles.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-${{ github.run_id }}
+          path: export/
+          retention-days: 14
+
+      # t17 et suivantes (calculs, export des scrutins, déploiement) s'insèrent ici, avec la
+      # condition : if: steps.controles.outcome == 'success'
       # Un build arrêté ne publie donc rien : la version en ligne reste la dernière valide.
 
       - name: Garder les sources pour la nuit suivante
@@ -58,7 +71,7 @@ jobs:
           key: sources-${{ github.run_id }}
 
       - name: Archiver les nouvelles versions (30 jours)
-        if: steps.ingestion.outputs.changement == 'true'
+        if: always() && steps.ingestion.outputs.changement == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: sources-${{ github.run_id }}

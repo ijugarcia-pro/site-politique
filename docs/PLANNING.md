@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10, t12 et t13 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -49,8 +49,8 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t11 🤖 Ingestion de nuit et archives avec empreinte *(livrée le 7 oct. 2026 ; à cocher après deux nuits sans intervention)*
 - [x] t12 🤖 Les 11 tables DuckDB et la reconstitution des absents *(fait le 7 oct. 2026)*
 - [x] t13 🤖 Les 6 contrôles automatiques et l'arrêt du build *(fait le 7 oct. 2026)*
-- [ ] t14 🤖 Page « État des données »
-- [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée
+- [x] t14 🤖 Page « État des données » *(fait le 7 oct. 2026 ; en ligne avec le site, t17)*
+- [x] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée *(fait le 8 oct. 2026 : aucun écart, porte franchie)*
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
 - [ ] t16 👤 Compte Cloudflare (sous-domaine gratuit)
@@ -196,6 +196,7 @@ site/          le site (Astro), créé en phase 2
 - **Claude Code prépare** : un court message récapitulatif avec le lien direct vers l'onglet Actions et ce qu'on doit y voir.
 - **Réalisé (7 oct.) :** fait par Claude Code à la demande de Julien. PR #1 puis #2 fusionnées dans `main`. Premier passage lancé à la main (run 37614612426) : vert. Il pose la référence (archive du 7 oct. à 10 h 26 GMT, scrutins 1 à 8 560) et le bot a commité `data/mesures/delai_publication/` et `docs/delai-publication.md`. Le relevé tourne ensuite seul à la minute 7 de chaque heure : https://github.com/ijugarcia-pro/site-politique/actions/workflows/delai-publication.yml
 - **Incident (7 oct.) :** GitHub n'a déclenché aucun passage programmé à la minute 7 (12 h 07, 13 h 07, 14 h 07 UTC), alors que le workflow était actif. Le cron est déplacé à la minute 23 (branche `normalisation`). À vérifier : des passages programmés doivent apparaître dans l'onglet Actions. Les 3 semaines de relevé ne partent que du premier passage programmé réussi.
+- **Résolu (7 oct., 21 h 23 UTC) :** premier passage programmé réussi après le déplacement du cron ; aucun passage entre 16 h 23 et 20 h 23, pendant les perturbations de GitHub Actions. Ce passage a relevé une nouvelle version de l'archive (modifiée à 16 h 26 UTC, 17 nouveaux scrutins, n° 8561 à 8577). Les scrutins sont datés par la date de modification de la version, et non par l'heure du relevé : le retard du passage ne fausse pas leur délai. **Relevé démarré le 7 octobre ; fin des 3 semaines vers le 28 octobre.**
 
 ### t05 👤 Clé API Anthropic plafonnée — S2, 20 min
 - Console Anthropic : créer une nouvelle clé, plafond de dépense mensuel bas (10 € suffisent au début). Dans GitHub : *Settings → Secrets → Actions → `ANTHROPIC_API_KEY`.*
@@ -271,11 +272,14 @@ site/          le site (Astro), créé en phase 2
 ### t14 🤖 Page « État des données » — S5, 1 session
 - **Dépend de :** t13.
 - **À faire :** `etat.json` à chaque build (dernière mise à jour, dernier scrutin intégré, scrutins mis de côté avec la raison) + page HTML simple qui l'affiche.
+- **Réalisé (7 oct.) :** `pipeline/etat.py` produit `export/etat.json` et `export/etat.html` après chaque build autorisé : dernière mise à jour, dernier scrutin intégré, scrutins publiés et mis de côté avec leur raison, résultat des 6 contrôles, version et état de chaque source. Le dossier `export/` n'est pas versionné. Tests : `tests/test_etat.py` (4 tests, dont l'échappement des titres). La page reprend la charte V5 (Fredoka, Nunito, violet) et le mode sombre. Branchée dans `nuit.yml` ; l'export est gardé 14 jours comme artefact en attendant le déploiement (t16, t17). Dépendance ajoutée : `tzdata`, pour l'heure de Paris sous Windows.
 
 ### t15 👤 ◆ Vérifier 5 scrutins au hasard — S5, 45 min
 - Comparer le décompte et 5 votes nominatifs par scrutin avec la page officielle du scrutin sur le site de l'Assemblée.
 - **Claude Code prépare** : 5 scrutins tirés au hasard avec le lien officiel, le décompte attendu et 5 votes nominatifs à contrôler, dans un tableau prêt à cocher.
 - **Si un écart :** retour en t12, on ne passe pas à la phase 2.
+- **Préparé (7 oct.) :** `docs/verification-scrutins.md`, généré par `uv run python -m scripts.preparer_verification_scrutins`. Il propose 5 scrutins variés (un solennel, un amendement, un avec mise au point, un récent, un de 2024). Pour chacun : le lien officiel, le décompte attendu et 5 votes à contrôler (pour, contre, abstention ou non-votant, absent, et un dissident ou une mise au point). Claude Code n'a pas pu faire de contrôle préalable : le site de l'Assemblée renvoyait des erreurs 502 le 7 octobre en fin d'après-midi.
+- **Réalisé (8 oct.) :** Julien a vérifié les 5 scrutins (décomptes et 25 votes) sur le site de l'Assemblée et n'a trouvé aucun écart. Ses deux questions portaient sur la mention « dissident », absente de la page officielle. C'est notre calcul ; il se vérifie par le décompte du groupe, et la grille l'explique désormais. Porte de la phase 1 franchie : la phase 2 peut commencer. Le site de l'Assemblée a été très instable pendant la vérification (erreurs 502 et 503).
 
 ---
 

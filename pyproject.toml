@@ -11,6 +11,7 @@ dependencies = [
     "openpyxl",
     "pytest",
     "ruff",
+    "tzdata>=2026.5",
 ]
 
 [tool.uv]

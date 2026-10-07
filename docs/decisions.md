@@ -96,3 +96,8 @@
 - Raison : des contrôles qui ne déclenchent pas de fausse alerte sur les écarts connus de la ventilation publiée (docs/normalisation.md), mais qui arrêtent tout ce qui changerait un résultat déjà publié.
 - Conséquence : tant que le site n'est pas déployé (t17), « publié » veut dire « passé aux contrôles ». La référence est remplacée à chaque build autorisé.
 
+## 2026-10-08 · Porte t15 : données conformes au site de l'Assemblée, passage à la phase 2
+- Décision (Julien) : les 5 scrutins tirés au hasard sont conformes au site officiel (décomptes et 25 votes nominatifs, y compris les absents et les mises au point). La phase 2 (site) peut commencer.
+- Raison : docs/verification-scrutins.md.
+- Conséquence : la notion de dissident n'est pas affichée par l'Assemblée. Le site devra l'expliquer et la rendre vérifiable, avec le décompte du groupe à côté de la mention, pour éviter que le visiteur la prenne pour une donnée officielle.
+

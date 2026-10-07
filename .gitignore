@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Données et secrets
+data/raw/*
+!data/raw/.gitkeep
+.env
+*.duckdb
+*.duckdb.wal
+
+# Node
+node_modules/
+
+# Divers
+.DS_Store

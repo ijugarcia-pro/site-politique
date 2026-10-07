@@ -101,3 +101,8 @@
 - Raison : docs/verification-scrutins.md.
 - Conséquence : la notion de dissident n'est pas affichée par l'Assemblée. Le site devra l'expliquer et la rendre vérifiable, avec le décompte du groupe à côté de la mention, pour éviter que le visiteur la prenne pour une donnée officielle.
 
+
+## 2026-10-08 · Déploiement par téléversement direct depuis GitHub Actions
+- Décision : le site est envoyé à Cloudflare Pages par le pipeline de nuit (GitHub Actions, `wrangler pages deploy`), et non construit par Cloudflare à partir du dépôt (liaison Git). Deux secrets GitHub : `CLOUDFLARE_API_TOKEN` (clé limitée à « Cloudflare Pages : Edit ») et `CLOUDFLARE_ACCOUNT_ID`. Le projet Pages est créé par Claude Code en t17.
+- Raison : les données du site (`export/`, base DuckDB) sont produites dans GitHub Actions et ne sont pas versionnées ; un build fait par Cloudflare n'y aurait pas accès. Le déploiement n'a lieu que si les contrôles ont réussi : un build arrêté ne publie rien.
+- Conséquence : t16 se limite au compte, à la clé et aux secrets (docs/deploiement-cloudflare.md). Un projet en téléversement direct ne peut pas passer ensuite à la liaison Git. Limite gratuite à surveiller : 20 000 fichiers par déploiement.

@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (t16 préparée : déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -53,7 +53,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée *(fait le 8 oct. 2026 : aucun écart, porte franchie)*
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
-- [ ] t16 👤 Compte Cloudflare (sous-domaine gratuit)
+- [ ] t16 👤 Compte Cloudflare (sous-domaine gratuit) *(préparée le 8 oct. 2026 : docs/deploiement-cloudflare.md ; en attente de Julien)*
 - [ ] t17 🤖 Site Astro + design system 578e siège
 - [ ] t18 🤖 Page vote branchée sur les vrais scrutins
 - [ ] t19 🤖 Fiche député + recherche par code postal
@@ -290,6 +290,7 @@ site/          le site (Astro), créé en phase 2
 ### t16 👤 Cloudflare Pages (sous-domaine gratuit) — S6, 30 min
 - Créer le compte Cloudflare (offre gratuite) et relier Pages au dépôt GitHub. Le site est servi sur le sous-domaine gratuit `*.pages.dev`. Un nom de domaine coûte une dizaine d'euros par an : pas d'achat sans décision de Julien (zéro euro).
 - **Claude Code prépare** : les paramètres de build exacts (commande, dossier de sortie, version de Node).
+- **Préparé (8 oct.) :** `docs/deploiement-cloudflare.md`, instructions pas à pas (compte, nom du site, identifiant du compte, clé d'API limitée à Pages, deux secrets GitHub). **Écart à la fiche :** pas de liaison de Pages au dépôt. Les données sont produites dans GitHub Actions et ne sont pas versionnées : le pipeline de nuit construit le site et l'envoie à Cloudflare (téléversement direct), seulement si les contrôles passent (docs/decisions.md). Le projet Pages sera créé en t17 par `wrangler`. **Reste pour Julien :** les étapes 1 à 5 du document, puis donner le nom du site retenu en début de t17. **Critère de fin :** les secrets `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` existent dans le dépôt (vérifiés par `gh secret list`).
 
 ### t17 🤖 Site Astro et design system — S6, 2 sessions
 - **Dépend de :** t15, t16.

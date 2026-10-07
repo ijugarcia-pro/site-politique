@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t09 faites ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t10 faites, go pour la phase 1 ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -43,7 +43,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t07 🤖 Prototype de vulgarisation sur 5 textes *(fait le 7 oct. 2026 ; branche `vulgarisation-essai` poussée, en attente de PR et de fusion)*
 - [x] t08 👤 Relire les 5 fiches vulgarisées *(fait le 7 oct. 2026 : « tout est bon »)*
 - [x] t09 🤖 Rapport de faisabilité *(fait le 7 oct. 2026 ; délai pas encore mesuré, formule du verdict à trancher vers le 28 oct.)*
-- [ ] t10 👤 ◆ Décision Go / No-go et formule du verdict
+- [x] t10 👤 ◆ Décision Go / No-go et formule du verdict *(go le 7 oct. 2026 ; formule du verdict à trancher vers le 28 oct., « verdict du matin » par défaut)*
 
 ### Phase 1 — Socle data (S4–S5, 26 oct. → 8 nov.)
 - [ ] t11 🤖 Ingestion de nuit et archives avec empreinte
@@ -238,6 +238,7 @@ site/          le site (Astro), créé en phase 2
 ### t10 👤 ◆ Décision Go / No-go — S3, 30 min
 - Julien lit `docs/faisabilite.md` et tranche. Décision consignée dans `docs/decisions.md` et dans le journal du suivi.
 - **No-go ou go partiel :** Claude propose le scénario de repli (par ex. sans « Ce que ça change » sur les types de scrutins mal rattachés, ou verdict du matin).
+- **Réalisé (7 oct.) :** go de Julien pour la phase 1. La formule du verdict reste en suspens jusqu'à la fin du relevé de t03 (vers le 28 oct.) ; « le verdict du matin » s'applique par défaut d'ici là. Décision consignée dans `docs/decisions.md`.
 
 ---
 

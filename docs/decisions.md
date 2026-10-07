@@ -70,3 +70,8 @@
 - Raison : temps limité et budget nul. Les e-mails demanderaient en outre un nom de domaine payant (question ouverte 4).
 - Conséquence : t30 à t33 et la partie « signalements » de t28 sont marquées reportées dans le planning, sans être supprimées. Supabase et Brevo ne sont pas mis en place. Un dépôt public dispose de minutes GitHub Actions illimitées et gratuites.
 
+## 2026-10-07 · Porte t10 : go pour la phase 1, formule du verdict en suspens
+- Décision (Julien) : go. La phase 1 (ingestion de nuit, normalisation, contrôles) démarre. La formule du verdict sera tranchée vers le 28 octobre 2026, une fois le délai de publication mesuré sur au moins trois mardis de votes solennels. D'ici là, la formule par défaut est « le verdict du matin ».
+- Raison : docs/faisabilite.md. Le rattachement et la vulgarisation sont validés ; le délai ne touche que l'écran Verdict (t25, phase 3).
+- Conséquence : t03 continue son relevé jusqu'au 28 octobre, et docs/faisabilite.md sera complété à cette date.
+

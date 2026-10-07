@@ -1,8 +1,40 @@
 # Essai de vulgarisation sur 5 textes
 
-Généré le 2026-10-07T13:25:56+00:00 par `uv run python -m scripts.essai_vulgarisation` (modèle `claude-opus-5-5`, effort `high`). Sorties brutes : `data/mesures/vulgarisation/essai.json`. Contrôles : `docs/vulgarisation-controles.md`. Tout est régénéré, sauf la section de relecture.
+Généré le 2026-10-07T13:25:56+00:00 par `uv run python -m scripts.essai_vulgarisation` (modèle `claude-opus-5-5`, effort `high`). Sorties brutes : `data/mesures/vulgarisation/essai.json`. Contrôles : `docs/vulgarisation-controles.md`. Tout est régénéré, sauf les sections « Constats » et « Relecture ».
 
 Fiches **générées automatiquement à partir du texte officiel**, à relire avant toute publication.
+
+## Constats
+
+<!-- constats:debut -->
+Lecture de l'essai du 7 octobre 2026, lancé par le workflow « Essai de vulgarisation » sur GitHub (Claude Opus 5.5, effort `high`).
+
+**Résultat**
+- **3 fiches publiables sur 5**, toutes dès la première tentative : légitime défense (7987), hydroélectricité (7409) et réseaux sociaux (8431).
+- **2 replis** (Corse 7454, maladies cardio-neuro-vasculaires 8419). Ils étaient justifiés : à la 2e tentative, la relecture automatique (contrôle 7) a relevé une vraie inexactitude dans la carte 3. Pour la Corse, la carte parlait d'un « décret du Gouvernement » là où le texte prévoit un décret en Conseil d'État délibéré en conseil des ministres, après avis de l'assemblée de Corse. Pour la santé, le dépistage n'est prévu qu'à la visite de mi-carrière, pas à toute visite médicale au travail. Rien d'inexact n'aurait donc été publié : le repli a fonctionné comme prévu.
+- Aucune réponse refusée par le modèle, aucun basculement vers un modèle de secours.
+
+**Deux faux positifs, corrigés après l'essai**
+- Les premières tentatives de ces deux textes avaient été rejetées à tort par le contrôle 5 (vocabulaire). « rendez-vous » déclenchait « vous » ; « historique » venait du texte constitutionnel lui-même (« communauté historique »). Le contrôle ne compte plus que les mots entiers, et accepte un mot employé par le texte voté.
+- Recontrôlées avec cette correction, les 7 tentatives de l'essai passent toutes les contrôles 1 à 6. On ne sait pas si les premières versions de la Corse et de la santé auraient passé la relecture (contrôle 7) : elles n'y sont pas allées. Je n'ai pas relancé l'essai, pour garder le crédit.
+
+**Limites constatées (à traiter en t27)**
+- **Un extrait peut être exact sans prouver la carte.** Pour la carte 3 du texte sur les réseaux sociaux, l'extrait est l'insertion d'une référence (« 223‑14 ») dans une loi de 2004 : il est bien dans l'article, mais n'éclaire pas le lecteur. Proposition : demander aussi à la relecture si l'extrait appuie la carte.
+- **Question double.** « Faut-il interdire les réseaux sociaux aux moins de quinze ans et le téléphone portable dans les lycées ? » est fermée, mais elle réunit deux mesures. Faut-il imposer une seule idée par question ? À trancher à la relecture (t08).
+- **Texte de commission mixte paritaire.** Il ne contient que les articles restés en discussion (17 sur 24 pour l'hydroélectricité, 3 pour les réseaux sociaux). Les mesures adoptées dans les mêmes termes par les deux chambres en sont absentes. Les cartes peuvent donc manquer une mesure importante. Pour t27 : reconstituer le texte complet à partir du dernier texte adopté.
+- **Choix du texte voté.** Il a été fait à la main pour l'essai, selon une règle simple : le dernier texte de l'Assemblée déposé avant le scrutin. Pour la Corse et la légitime défense, la commission n'a pas publié de texte : c'est le texte déposé qui est voté. Cette règle est à automatiser en t27.
+- **Très gros textes.** Le texte le plus long (hydroélectricité, 74 000 jetons en entrée) a coûté 0,37 $. Un budget (projet de loi de finances) dépasserait largement ce volume : il faudra le découper ou l'exclure.
+
+**Coût**
+- 1,02 $ pour l'essai (environ 0,95 €), soit 0,20 $ par texte, nouvelle tentative et relecture comprises. La réflexion du modèle est comptée dans les jetons de sortie.
+- Projection : environ 2 $ par mois pour les quelque 10 textes entiers votés chaque mois, 0,57 $ pour les seuls scrutins solennels. Il reste environ 3 € de crédit. Cela suffit pour t27 et t29, mais pas pour une année de production : il faudra recharger le compte avant le lancement.
+
+**Critère de fin de t07**
+- Les 5 fiches sont lisibles ci-dessous. Pour les 2 replis, c'est la dernière version, marquée comme non publiée.
+- Chaque carte cite un article du texte voté, avec un extrait vérifié mot pour mot (contrôle 3). Le lien vers le texte figure sous chaque fiche.
+- Le coût par dossier est connu.
+- Reste la relecture humaine (t08).
+<!-- constats:fin -->
 
 <!-- relecture:debut -->
 ## Relecture de Julien (t08)

@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 et t06 faites ; relevé de t03 démarré). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t07 faites ; relevé de t03 démarré). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -38,9 +38,9 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t02 🤖 Inventaire des fichiers open data *(fait le 7 oct. 2026 ; PR #1 fusionnée)*
 - [ ] t03 🤖 Mesure du délai de publication (action horaire) *(livrée le 7 oct. 2026, PR #2 fusionnée ; relevé démarré le 7 oct., à cocher après 3 semaines sans intervention, vers le 28 oct.)*
 - [x] t04 👤 Vérifier que la mesure tourne *(fait le 7 oct. 2026 par Claude Code, à la demande de Julien)*
-- [ ] t05 👤 Clé API Anthropic plafonnée + secret GitHub
+- [x] t05 👤 Clé API Anthropic plafonnée + secret GitHub *(fait le 7 oct. 2026 par Julien)*
 - [x] t06 🤖 Test du rattachement vote → texte sur 100 scrutins *(fait le 7 oct. 2026 ; branche locale, en attente de push et de fusion)*
-- [ ] t07 🤖 Prototype de vulgarisation sur 5 textes
+- [x] t07 🤖 Prototype de vulgarisation sur 5 textes *(fait le 7 oct. 2026 ; branche `vulgarisation-essai` poussée, en attente de PR et de fusion)*
 - [ ] t08 👤 Relire les 5 fiches vulgarisées
 - [ ] t09 🤖 Rapport de faisabilité
 - [ ] t10 👤 ◆ Décision Go / No-go et formule du verdict
@@ -138,7 +138,7 @@ Site statique (Astro). Calculs personnels (accord, groupe le plus proche, jumeau
 Échec de partition ou de totaux → le scrutin est mis de côté, les autres passent. Échec d'effectifs, de non-régression ou de schéma → build arrêté + alerte (issue GitHub automatique).
 
 ### 4.6 Les 7 contrôles de vulgarisation
-Sortie JSON stricte (question fermée, phrase « Concrètement », 3 cartes « Ce que ça change »). Les 7 contrôles automatiques portent notamment sur : validité du JSON, longueur, chaque carte cite un article réel du texte, question fermée et neutre, absence de jugement ou de vocabulaire partisan, cohérence avec l'exposé des motifs, absence de chiffre non présent dans la source. *(La liste exacte est à figer dans `docs/vulgarisation-controles.md` lors de t07, puis conservée.)* Échec → une nouvelle tentative → sinon **repli** : le vote est publié sans cartes, avec l'objet officiel et le lien. Mention affichée : « Résumé généré automatiquement à partir du texte officiel » + lien vers l'article cité.
+Sortie JSON stricte (question fermée, phrase « Concrètement », 3 cartes « Ce que ça change »). Les 7 contrôles automatiques portent notamment sur : validité du JSON, longueur, chaque carte cite un article réel du texte, question fermée et neutre, absence de jugement ou de vocabulaire partisan, cohérence avec l'exposé des motifs, absence de chiffre non présent dans la source. *(Liste exacte figée le 7 octobre 2026 dans `docs/vulgarisation-controles.md` : format, longueurs, article réel avec extrait mot pour mot, question fermée, vocabulaire neutre, chiffres présents dans la source, fidélité jugée par une relecture automatique séparée.)* Échec → une nouvelle tentative → sinon **repli** : le vote est publié sans cartes, avec l'objet officiel et le lien. Mention affichée : « Résumé généré automatiquement à partir du texte officiel » + lien vers l'article cité.
 
 ### 4.7 Arborescence du dépôt
 ```
@@ -199,6 +199,7 @@ site/          le site (Astro), créé en phase 2
 ### t05 👤 Clé API Anthropic plafonnée — S2, 20 min
 - Console Anthropic : créer une nouvelle clé, plafond de dépense mensuel bas (10 € suffisent au début). Dans GitHub : *Settings → Secrets → Actions → `ANTHROPIC_API_KEY`.*
 - **Ne jamais** coller la clé dans le chat ni dans le dépôt. `.env` est ignoré par git ; `.env.example` liste les variables.
+- **Réalisé (7 oct.) :** Julien a créé la clé et le secret GitHub `ANTHROPIC_API_KEY`. Le compte dispose d'environ 4 € de crédit. La clé n'existe que dans GitHub : les appels à l'API passent donc par un workflow GitHub Actions, et non par le poste.
 
 ### t06 🤖 Test du rattachement vote → texte — S2, 1 session
 - **Dépend de :** t02.
@@ -220,6 +221,7 @@ site/          le site (Astro), créé en phase 2
   4. Mesurer le coût en jetons par texte et projeter le coût mensuel.
 - **Livrable :** `docs/vulgarisation-essai.md` : résultat brut, contrôles passés ou non, coût.
 - **Critère de fin :** les 5 fiches sont lisibles par Julien, chaque carte renvoie à un article vérifiable, le coût par dossier est connu.
+- **Réalisé (7 oct.) :** `docs/vulgarisation-essai.md` (constats, grille de relecture pour t08, les 5 fiches), `docs/vulgarisation-controles.md` (les 7 contrôles figés), `pipeline/vulgarisation.py`, `scripts/essai_vulgarisation.py`, `tests/test_vulgarisation.py`. Les sorties brutes sont dans `data/mesures/vulgarisation/essai.json`. L'essai tourne dans GitHub Actions (`.github/workflows/vulgarisation-essai.yml`), car la clé n'existe que là ; il se lance à la main ou en modifiant `data/mesures/vulgarisation/demande.txt`, avec un plafond de 2,50 $. Textes : Corse (7454), légitime défense (7987), hydroélectricité (7409), réseaux sociaux et mineurs (8431), maladies cardio-neuro-vasculaires (8419). Résultat : 3 fiches publiables, 2 replis justifiés par le contrôle 7, coût 1,02 $ (0,20 $ par texte, environ 2 $ par mois projetés). Le contrôle 5 a été assoupli après l'essai (deux faux positifs) ; l'essai n'a pas été relancé. Reste pour t27 : extrait qui appuie la carte, texte complet pour la commission mixte paritaire, choix automatique du texte voté.
 
 ### t08 👤 Relire les 5 fiches vulgarisées — S2, 45 min
 - Pour chacune : juste par rapport au texte ? neutre ? compréhensible par quelqu'un qui ne suit pas la politique ? Remarques notées en bas de `docs/vulgarisation-essai.md`.

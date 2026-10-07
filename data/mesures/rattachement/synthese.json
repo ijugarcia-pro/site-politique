@@ -1,0 +1,1096 @@
+{
+ "genere_le": "2026-10-07T12:03:25+00:00",
+ "scrutins": 8560,
+ "sans_amendements": {
+  "scrutins": 8560,
+  "conclut": 8505,
+  "perdus": 41,
+  "differents": 2
+ },
+ "premier": "2024-10-08",
+ "dernier": "2026-10-06",
+ "echantillon": {
+  "A": {
+   "global": {
+    "scrutins": 100,
+    "conclut": 31,
+    "taux_conclut": 0.31,
+    "compares_au_declare": 10,
+    "accord_avec_declare": 10,
+    "desaccord_avec_declare": 0
+   },
+   "causes_d_echec": {
+    "aucun acte ne cite le scrutin": 66,
+    "plusieurs dossiers citent le scrutin": 3
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 20,
+     "conclut": 15,
+     "taux_conclut": 0.75,
+     "compares_au_declare": 6,
+     "accord_avec_declare": 6,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 74,
+     "conclut": 13,
+     "taux_conclut": 0.176,
+     "compares_au_declare": 3,
+     "accord_avec_declare": 3,
+     "desaccord_avec_declare": 0
+    },
+    "MOC": {
+     "scrutins": 6,
+     "conclut": 3,
+     "taux_conclut": 0.5,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 28,
+     "conclut": 23,
+     "taux_conclut": 0.821,
+     "compares_au_declare": 8,
+     "accord_avec_declare": 8,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 5,
+     "conclut": 2,
+     "taux_conclut": 0.4,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 12,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 20,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "sous-amendement": {
+     "scrutins": 8,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 8,
+     "conclut": 1,
+     "taux_conclut": 0.125,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 6,
+     "conclut": 3,
+     "taux_conclut": 0.5,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 5,
+     "conclut": 2,
+     "taux_conclut": 0.4,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 2,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 6,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "B": {
+   "global": {
+    "scrutins": 100,
+    "conclut": 89,
+    "taux_conclut": 0.89,
+    "compares_au_declare": 29,
+    "accord_avec_declare": 29,
+    "desaccord_avec_declare": 0
+   },
+   "causes_d_echec": {
+    "le libellé ne désigne aucun texte": 11
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 20,
+     "conclut": 18,
+     "taux_conclut": 0.9,
+     "compares_au_declare": 8,
+     "accord_avec_declare": 8,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 74,
+     "conclut": 71,
+     "taux_conclut": 0.959,
+     "compares_au_declare": 21,
+     "accord_avec_declare": 21,
+     "desaccord_avec_declare": 0
+    },
+    "MOC": {
+     "scrutins": 6,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 28,
+     "conclut": 28,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 10,
+     "accord_avec_declare": 10,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 5,
+     "conclut": 5,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 12,
+     "conclut": 12,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 5,
+     "accord_avec_declare": 5,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 20,
+     "conclut": 20,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 8,
+     "accord_avec_declare": 8,
+     "desaccord_avec_declare": 0
+    },
+    "sous-amendement": {
+     "scrutins": 8,
+     "conclut": 8,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 3,
+     "accord_avec_declare": 3,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 8,
+     "conclut": 8,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 6,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 5,
+     "conclut": 5,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 2,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 6,
+     "conclut": 3,
+     "taux_conclut": 0.5,
+     "compares_au_declare": 2,
+     "accord_avec_declare": 2,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "C": {
+   "global": {
+    "scrutins": 100,
+    "conclut": 52,
+    "taux_conclut": 0.52,
+    "compares_au_declare": 19,
+    "accord_avec_declare": 19,
+    "desaccord_avec_declare": 0
+   },
+   "causes_d_echec": {
+    "l'ordre du jour cite plusieurs dossiers": 47,
+    "l'ordre du jour de la séance ne cite aucun dossier": 1
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 20,
+     "conclut": 4,
+     "taux_conclut": 0.2,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 74,
+     "conclut": 46,
+     "taux_conclut": 0.622,
+     "compares_au_declare": 18,
+     "accord_avec_declare": 18,
+     "desaccord_avec_declare": 0
+    },
+    "MOC": {
+     "scrutins": 6,
+     "conclut": 2,
+     "taux_conclut": 0.333,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 28,
+     "conclut": 4,
+     "taux_conclut": 0.143,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 5,
+     "conclut": 5,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 12,
+     "conclut": 9,
+     "taux_conclut": 0.75,
+     "compares_au_declare": 5,
+     "accord_avec_declare": 5,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 20,
+     "conclut": 15,
+     "taux_conclut": 0.75,
+     "compares_au_declare": 5,
+     "accord_avec_declare": 5,
+     "desaccord_avec_declare": 0
+    },
+    "sous-amendement": {
+     "scrutins": 8,
+     "conclut": 8,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 3,
+     "accord_avec_declare": 3,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 8,
+     "conclut": 2,
+     "taux_conclut": 0.25,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 6,
+     "conclut": 2,
+     "taux_conclut": 0.333,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 5,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 2,
+     "conclut": 1,
+     "taux_conclut": 0.5,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 6,
+     "conclut": 6,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 4,
+     "accord_avec_declare": 4,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "combinee": {
+   "global": {
+    "scrutins": 100,
+    "conclut": 97,
+    "taux_conclut": 0.97,
+    "compares_au_declare": 32,
+    "accord_avec_declare": 32,
+    "desaccord_avec_declare": 0
+   },
+   "causes_d_echec": {
+    "aucune méthode ne conclut": 3
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 20,
+     "conclut": 18,
+     "taux_conclut": 0.9,
+     "compares_au_declare": 8,
+     "accord_avec_declare": 8,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 74,
+     "conclut": 74,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 23,
+     "accord_avec_declare": 23,
+     "desaccord_avec_declare": 0
+    },
+    "MOC": {
+     "scrutins": 6,
+     "conclut": 5,
+     "taux_conclut": 0.833,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 28,
+     "conclut": 28,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 10,
+     "accord_avec_declare": 10,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 5,
+     "conclut": 5,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 12,
+     "conclut": 12,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 5,
+     "accord_avec_declare": 5,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 20,
+     "conclut": 20,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 8,
+     "accord_avec_declare": 8,
+     "desaccord_avec_declare": 0
+    },
+    "sous-amendement": {
+     "scrutins": 8,
+     "conclut": 8,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 3,
+     "accord_avec_declare": 3,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 8,
+     "conclut": 8,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 6,
+     "conclut": 5,
+     "taux_conclut": 0.833,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 5,
+     "conclut": 5,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 2,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 6,
+     "conclut": 6,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 4,
+     "accord_avec_declare": 4,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "combinee_par_voie": {
+   "B · titre du texte identique": 33,
+   "A · acte du dossier": 31,
+   "B · amendement retrouvé": 27,
+   "aucune méthode ne conclut": 3,
+   "C · seul dossier de la séance": 3,
+   "A ∩ C · recoupement": 2,
+   "B · amendement retrouvé, titre du texte différent": 1
+  }
+ },
+ "tous": {
+  "A": {
+   "global": {
+    "scrutins": 8560,
+    "conclut": 239,
+    "taux_conclut": 0.028,
+    "compares_au_declare": 78,
+    "accord_avec_declare": 78,
+    "desaccord_avec_declare": 0
+   },
+   "causes_d_echec": {
+    "aucun acte ne cite le scrutin": 8310,
+    "plusieurs dossiers citent le scrutin": 11
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 72,
+     "conclut": 61,
+     "taux_conclut": 0.847,
+     "compares_au_declare": 28,
+     "accord_avec_declare": 28,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 8465,
+     "conclut": 168,
+     "taux_conclut": 0.02,
+     "compares_au_declare": 49,
+     "accord_avec_declare": 49,
+     "desaccord_avec_declare": 0
+    },
+    "MOC": {
+     "scrutins": 23,
+     "conclut": 10,
+     "taux_conclut": 0.435,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 221,
+     "conclut": 194,
+     "taux_conclut": 0.878,
+     "compares_au_declare": 70,
+     "accord_avec_declare": 70,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 9,
+     "conclut": 3,
+     "taux_conclut": 0.333,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 896,
+     "conclut": 21,
+     "taux_conclut": 0.023,
+     "compares_au_declare": 4,
+     "accord_avec_declare": 4,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 6673,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "sous-amendement": {
+     "scrutins": 649,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 57,
+     "conclut": 6,
+     "taux_conclut": 0.105,
+     "compares_au_declare": 3,
+     "accord_avec_declare": 3,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 23,
+     "conclut": 10,
+     "taux_conclut": 0.435,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 9,
+     "conclut": 5,
+     "taux_conclut": 0.556,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 4,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 18,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "autre": {
+     "scrutins": 1,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "B": {
+   "global": {
+    "scrutins": 8560,
+    "conclut": 8513,
+    "taux_conclut": 0.995,
+    "compares_au_declare": 2731,
+    "accord_avec_declare": 2728,
+    "desaccord_avec_declare": 3
+   },
+   "causes_d_echec": {
+    "le libellé ne désigne aucun texte": 30,
+    "aucun texte de ce titre": 16,
+    "plusieurs amendements possibles": 1
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 72,
+     "conclut": 66,
+     "taux_conclut": 0.917,
+     "compares_au_declare": 30,
+     "accord_avec_declare": 30,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 8465,
+     "conclut": 8447,
+     "taux_conclut": 0.998,
+     "compares_au_declare": 2701,
+     "accord_avec_declare": 2698,
+     "desaccord_avec_declare": 3
+    },
+    "MOC": {
+     "scrutins": 23,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 221,
+     "conclut": 217,
+     "taux_conclut": 0.982,
+     "compares_au_declare": 73,
+     "accord_avec_declare": 72,
+     "desaccord_avec_declare": 1
+    },
+    "partie": {
+     "scrutins": 9,
+     "conclut": 9,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 896,
+     "conclut": 885,
+     "taux_conclut": 0.988,
+     "compares_au_declare": 265,
+     "accord_avec_declare": 264,
+     "desaccord_avec_declare": 1
+    },
+    "amendement": {
+     "scrutins": 6673,
+     "conclut": 6672,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 2151,
+     "accord_avec_declare": 2150,
+     "desaccord_avec_declare": 1
+    },
+    "sous-amendement": {
+     "scrutins": 649,
+     "conclut": 649,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 214,
+     "accord_avec_declare": 214,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 57,
+     "conclut": 56,
+     "taux_conclut": 0.982,
+     "compares_au_declare": 18,
+     "accord_avec_declare": 18,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 23,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 9,
+     "conclut": 9,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 4,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 18,
+     "conclut": 15,
+     "taux_conclut": 0.833,
+     "compares_au_declare": 10,
+     "accord_avec_declare": 10,
+     "desaccord_avec_declare": 0
+    },
+    "autre": {
+     "scrutins": 1,
+     "conclut": 1,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "C": {
+   "global": {
+    "scrutins": 8560,
+    "conclut": 6007,
+    "taux_conclut": 0.702,
+    "compares_au_declare": 1922,
+    "accord_avec_declare": 1921,
+    "desaccord_avec_declare": 1
+   },
+   "causes_d_echec": {
+    "l'ordre du jour cite plusieurs dossiers": 2530,
+    "l'ordre du jour de la séance ne cite aucun dossier": 23
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 72,
+     "conclut": 9,
+     "taux_conclut": 0.125,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 8465,
+     "conclut": 5994,
+     "taux_conclut": 0.708,
+     "compares_au_declare": 1920,
+     "accord_avec_declare": 1919,
+     "desaccord_avec_declare": 1
+    },
+    "MOC": {
+     "scrutins": 23,
+     "conclut": 4,
+     "taux_conclut": 0.174,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 221,
+     "conclut": 35,
+     "taux_conclut": 0.158,
+     "compares_au_declare": 9,
+     "accord_avec_declare": 9,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 9,
+     "conclut": 7,
+     "taux_conclut": 0.778,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 896,
+     "conclut": 552,
+     "taux_conclut": 0.616,
+     "compares_au_declare": 160,
+     "accord_avec_declare": 160,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 6673,
+     "conclut": 4878,
+     "taux_conclut": 0.731,
+     "compares_au_declare": 1559,
+     "accord_avec_declare": 1558,
+     "desaccord_avec_declare": 1
+    },
+    "sous-amendement": {
+     "scrutins": 649,
+     "conclut": 496,
+     "taux_conclut": 0.764,
+     "compares_au_declare": 180,
+     "accord_avec_declare": 180,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 57,
+     "conclut": 20,
+     "taux_conclut": 0.351,
+     "compares_au_declare": 4,
+     "accord_avec_declare": 4,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 23,
+     "conclut": 4,
+     "taux_conclut": 0.174,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 9,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 4,
+     "conclut": 1,
+     "taux_conclut": 0.25,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 18,
+     "conclut": 13,
+     "taux_conclut": 0.722,
+     "compares_au_declare": 9,
+     "accord_avec_declare": 9,
+     "desaccord_avec_declare": 0
+    },
+    "autre": {
+     "scrutins": 1,
+     "conclut": 1,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "combinee": {
+   "global": {
+    "scrutins": 8560,
+    "conclut": 8546,
+    "taux_conclut": 0.998,
+    "compares_au_declare": 2734,
+    "accord_avec_declare": 2733,
+    "desaccord_avec_declare": 1
+   },
+   "causes_d_echec": {
+    "aucune méthode ne conclut": 14
+   },
+   "par_type_de_vote": {
+    "SPS": {
+     "scrutins": 72,
+     "conclut": 68,
+     "taux_conclut": 0.944,
+     "compares_au_declare": 30,
+     "accord_avec_declare": 30,
+     "desaccord_avec_declare": 0
+    },
+    "SPO": {
+     "scrutins": 8465,
+     "conclut": 8461,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 2703,
+     "accord_avec_declare": 2702,
+     "desaccord_avec_declare": 1
+    },
+    "MOC": {
+     "scrutins": 23,
+     "conclut": 17,
+     "taux_conclut": 0.739,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    }
+   },
+   "par_categorie": {
+    "ensemble": {
+     "scrutins": 221,
+     "conclut": 221,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 73,
+     "accord_avec_declare": 73,
+     "desaccord_avec_declare": 0
+    },
+    "partie": {
+     "scrutins": 9,
+     "conclut": 9,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "article": {
+     "scrutins": 896,
+     "conclut": 894,
+     "taux_conclut": 0.998,
+     "compares_au_declare": 265,
+     "accord_avec_declare": 265,
+     "desaccord_avec_declare": 0
+    },
+    "amendement": {
+     "scrutins": 6673,
+     "conclut": 6672,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 2151,
+     "accord_avec_declare": 2150,
+     "desaccord_avec_declare": 1
+    },
+    "sous-amendement": {
+     "scrutins": 649,
+     "conclut": 649,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 214,
+     "accord_avec_declare": 214,
+     "desaccord_avec_declare": 0
+    },
+    "motion de procédure": {
+     "scrutins": 57,
+     "conclut": 56,
+     "taux_conclut": 0.982,
+     "compares_au_declare": 18,
+     "accord_avec_declare": 18,
+     "desaccord_avec_declare": 0
+    },
+    "motion de censure": {
+     "scrutins": 23,
+     "conclut": 17,
+     "taux_conclut": 0.739,
+     "compares_au_declare": 1,
+     "accord_avec_declare": 1,
+     "desaccord_avec_declare": 0
+    },
+    "résolution": {
+     "scrutins": 9,
+     "conclut": 9,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "déclaration": {
+     "scrutins": 4,
+     "conclut": 0,
+     "taux_conclut": 0.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    },
+    "procédure": {
+     "scrutins": 18,
+     "conclut": 18,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 12,
+     "accord_avec_declare": 12,
+     "desaccord_avec_declare": 0
+    },
+    "autre": {
+     "scrutins": 1,
+     "conclut": 1,
+     "taux_conclut": 1.0,
+     "compares_au_declare": 0,
+     "accord_avec_declare": 0,
+     "desaccord_avec_declare": 0
+    }
+   }
+  },
+  "combinee_par_voie": {
+   "B · amendement retrouvé": 7261,
+   "B · titre du texte identique": 921,
+   "A · acte du dossier": 239,
+   "B · amendement introuvable ; titre du texte identique": 49,
+   "B · titre du texte approchant": 45,
+   "aucune méthode ne conclut": 14,
+   "C · seul dossier de la séance": 13,
+   "B · amendement retrouvé, titre du texte différent": 9,
+   "A ∩ C · recoupement": 7,
+   "B · amendement introuvable ; titre du texte approchant": 1,
+   "C · seul dossier de la séance, titre écarté": 1
+  }
+ },
+ "desaccords": [
+  {
+   "uid": "VTANR5L17V6283",
+   "numero": 6283,
+   "methode": "C",
+   "trouve": "DLR5L17N53284",
+   "declare": "DLR5L17N53981",
+   "titre": "l'amendement n° 1 de M. Monnet et les amendements identiques suivants de suppression de l'article unique du projet de loi portant transposition de l'avenant n° 3 du 25 février 2026 au protocole d'accord du 10 novembre 2023 relatif à l'assurance chômage (première lecture)."
+  },
+  {
+   "uid": "VTANR5L17V6758",
+   "numero": 6758,
+   "methode": "B",
+   "trouve": "DLR5L17N54085",
+   "declare": "DLR5L17N52104",
+   "titre": "l'amendement n° 1128 de M. Casterman à l'article premier du projet de loi d'urgence pour la protection et la souveraineté agricoles (première lecture)."
+  },
+  {
+   "uid": "VTANR5L17V7302",
+   "numero": 7302,
+   "methode": "B",
+   "trouve": "DLR5L17N53418",
+   "declare": "DLR5L17N54148",
+   "titre": "l'article unique de la proposition de loi visant à protéger l'alimentation des Français et des Françaises des contaminations au cadmium (première lecture)."
+  },
+  {
+   "uid": "VTANR5L17V7303",
+   "numero": 7303,
+   "methode": "B",
+   "trouve": "DLR5L17N53418",
+   "declare": "DLR5L17N54148",
+   "titre": "l'ensemble de la proposition de loi visant à protéger l'alimentation des Français et des Françaises des contaminations au cadmium (première lecture)."
+  }
+ ],
+ "verification_manuelle": {
+  "scrutins_verifies": 99,
+  "par_methode": {
+   "A": {
+    "juste": 31
+   },
+   "B": {
+    "juste": 89
+   },
+   "C": {
+    "juste": 51,
+    "faux positif": 1
+   },
+   "combinee": {
+    "juste": 97
+   }
+  }
+ }
+}

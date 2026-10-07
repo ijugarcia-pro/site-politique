@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02 et t04 faites ; relevé de t03 démarré). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t08 faites ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -38,10 +38,10 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t02 🤖 Inventaire des fichiers open data *(fait le 7 oct. 2026 ; PR #1 fusionnée)*
 - [ ] t03 🤖 Mesure du délai de publication (action horaire) *(livrée le 7 oct. 2026, PR #2 fusionnée ; relevé démarré le 7 oct., à cocher après 3 semaines sans intervention, vers le 28 oct.)*
 - [x] t04 👤 Vérifier que la mesure tourne *(fait le 7 oct. 2026 par Claude Code, à la demande de Julien)*
-- [ ] t05 👤 Clé API Anthropic plafonnée + secret GitHub
-- [ ] t06 🤖 Test du rattachement vote → texte sur 100 scrutins
-- [ ] t07 🤖 Prototype de vulgarisation sur 5 textes
-- [ ] t08 👤 Relire les 5 fiches vulgarisées
+- [x] t05 👤 Clé API Anthropic plafonnée + secret GitHub *(fait le 7 oct. 2026 par Julien ; sans usage depuis le passage à zéro euro, clé à révoquer)*
+- [x] t06 🤖 Test du rattachement vote → texte sur 100 scrutins *(fait le 7 oct. 2026 ; branche locale, en attente de push et de fusion)*
+- [x] t07 🤖 Prototype de vulgarisation sur 5 textes *(fait le 7 oct. 2026 ; branche `vulgarisation-essai` poussée, en attente de PR et de fusion)*
+- [x] t08 👤 Relire les 5 fiches vulgarisées *(fait le 7 oct. 2026 : « tout est bon »)*
 - [ ] t09 🤖 Rapport de faisabilité
 - [ ] t10 👤 ◆ Décision Go / No-go et formule du verdict
 
@@ -53,7 +53,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t15 👤 ◆ Vérifier 5 scrutins contre le site de l'Assemblée
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
-- [ ] t16 👤 Compte Cloudflare + domaine
+- [ ] t16 👤 Compte Cloudflare (sous-domaine gratuit)
 - [ ] t17 🤖 Site Astro + design system 578e siège
 - [ ] t18 🤖 Page vote branchée sur les vrais scrutins
 - [ ] t19 🤖 Fiche député + recherche par code postal
@@ -67,16 +67,16 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t25 🤖 Verdict et passages horaires des soirs de scrutin
 - [ ] t26 👤 ◆ Vivre une vraie séance du lundi au verdict
 
-### Phase 4 — Vulgarisation automatique (S11–S12, 14 → 27 déc.)
-- [ ] t27 🤖 Pipeline de rédaction, 7 contrôles, repli sans cartes
-- [ ] t28 🤖 Thèmes, signalements, retrait automatique
-- [ ] t29 👤 Relire les 10 premières fiches publiées seules
+### Phase 4 — Vulgarisation hebdomadaire (S11–S12, 14 → 27 déc.)
+- [ ] t27 🤖 Session hebdomadaire de rédaction dans Claude Code, 7 contrôles, repli sans cartes
+- [ ] t28 🤖 Thèmes, signalements, retrait automatique *(signalements reportés : décision du 7 oct.)*
+- [ ] t29 👤 Bilan des 10 premières fiches validées
 
 ### Phase 5 — Le service (S13–S15, 28 déc. → 17 janv. 2027)
-- [ ] t30 👤 Projet Supabase + expéditeur Brevo
-- [ ] t31 🤖 Comptes facultatifs, lois et députés suivis
-- [ ] t32 🤖 Alertes d'étape et récap du dimanche
-- [ ] t33 🤖 Le duel entre amis
+- [ ] t30 👤 Projet Supabase + expéditeur Brevo *(reportée : décision du 7 oct.)*
+- [ ] t31 🤖 Comptes facultatifs, lois et députés suivis *(reportée)*
+- [ ] t32 🤖 Alertes d'étape et récap du dimanche *(reportée)*
+- [ ] t33 🤖 Le duel entre amis *(reportée)*
 - [ ] t34 🤖 « Comment c'est calculé », mentions légales, confidentialité (brouillons)
 - [ ] t35 👤 Valider mentions légales et confidentialité
 - [ ] t36 🤖 Audience sans cookies, accessibilité, performance, SEO
@@ -88,7 +88,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t40 👤 ◆ Décision de lancement public
 - [ ] t41 🤝 Préparer le lancement : LinkedIn, portfolio Factory, story
 
-**Calendrier indicatif.** Semaine 1 = lundi 5 octobre 2026. Lancement public visé mi-février 2027, **seulement après 4 semaines de séance consécutives sans aucune action humaine**. Les dates sont indicatives : le critère de sortie d'une phase prime sur la date.
+**Calendrier indicatif.** Semaine 1 = lundi 5 octobre 2026. Lancement public visé mi-février 2027, **seulement après 4 semaines de séance consécutives sans aucune action humaine** (la session hebdomadaire de rédaction des fiches, prévue, ne compte pas comme une intervention : sans elle, les votes sortent sans cartes). Les dates sont indicatives : le critère de sortie d'une phase prime sur la date.
 
 ## 3. Principes d'exécution (valables pour toutes les tâches)
 
@@ -101,13 +101,13 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 7. **Honnêteté sur les limites.** Si une mesure ou une vérification n'a pas pu être faite, le dire dans le résumé de fin de session et dans le fichier concerné.
 8. **Aucune donnée sensible côté serveur par défaut.** Les réponses de l'utilisateur restent dans le navigateur (localStorage).
 9. **Neutralité éditoriale.** Les textes vulgarisés décrivent ce que dit le texte, citent un article, ne jugent pas. Pas de formulation favorable ou défavorable.
-10. **Coûts maîtrisés.** Appels à l'API Anthropic mis en cache par empreinte du texte ; plafond de dépense mensuel côté console ; journaliser le coût en jetons.
+10. **Zéro euro.** Le projet ne coûte rien (décision du 7 octobre 2026) : aucun appel à l'API Anthropic, aucun service payant, chaque service dans son offre gratuite. La rédaction se fait dans la session Claude Code hebdomadaire de Julien. Toute dépense, même minime, est soumise à Julien.
 
 ## 4. Référence technique (à relire au besoin)
 
 ### 4.1 Architecture
 Tâche GitHub Actions chaque nuit (6 h UTC) + chaque heure de 16 h à minuit les jours de scrutin solennel :
-`récupérer (si modifié) → normaliser (Python + DuckDB, 11 tables) → contrôler (6 règles) → calculer → vulgariser (API Anthropic + 7 contrôles) → exporter des JSON statiques → déployer sur Cloudflare Pages`.
+`récupérer (si modifié) → normaliser (Python + DuckDB, 11 tables) → contrôler (6 règles) → calculer → joindre les fiches validées (si l'empreinte du texte correspond) → exporter des JSON statiques → déployer sur Cloudflare Pages`. Les fiches sont rédigées chaque semaine dans une session Claude Code lancée par Julien (abonnement, aucun appel payant), puis contrôlées, validées par lui et versionnées dans le dépôt.
 Site statique (Astro). Calculs personnels (accord, groupe le plus proche, jumeau, précision) dans le navigateur à partir de `matrice.json`. Supabase uniquement pour : comptes facultatifs, suivis (lois, députés), alertes, signalements, agrégats consentis. E-mails via Brevo.
 
 ### 4.2 Sources
@@ -123,7 +123,7 @@ Site statique (Astro). Calculs personnels (accord, groupe le plus proche, jumeau
 - Dissident : vote opposé à la position majoritaire de son groupe ; jamais pour les non-inscrits ; une abstention n'est pas une dissidence.
 - Voix pour inverser un résultat : `P − R + 1` si adopté, `R − P` si rejeté (P = voix pour, R = suffrages requis publiés avec le scrutin).
 - Jumeau : classement par accord lissé `(m+2)/(n+4)` (m = votes identiques, n = votes en commun), affiché à partir de **10 votes en commun**. Précision V1 : `1 − e^(−n/20)` (fiable vers 25 votes).
-- Lien scrutin → dossier législatif : point fragile, à mesurer (t06) avant de s'appuyer dessus.
+- Lien scrutin → dossier législatif : mesuré en t06, fiable à 99,8 % en combinant amendement retrouvé, actes du dossier, titre du texte et agenda (`pipeline/rattachement.py`, docs/rattachement.md). Ne pas utiliser `objet.dossierLegislatif` du scrutin (un tiers seulement, parfois faux).
 
 ### 4.4 Les 11 tables DuckDB
 `depute, mandat, groupe, appartenance, scrutin, vote, position_groupe, dossier, etape, vote_prevu, contenu`.
@@ -138,7 +138,7 @@ Site statique (Astro). Calculs personnels (accord, groupe le plus proche, jumeau
 Échec de partition ou de totaux → le scrutin est mis de côté, les autres passent. Échec d'effectifs, de non-régression ou de schéma → build arrêté + alerte (issue GitHub automatique).
 
 ### 4.6 Les 7 contrôles de vulgarisation
-Sortie JSON stricte (question fermée, phrase « Concrètement », 3 cartes « Ce que ça change »). Les 7 contrôles automatiques portent notamment sur : validité du JSON, longueur, chaque carte cite un article réel du texte, question fermée et neutre, absence de jugement ou de vocabulaire partisan, cohérence avec l'exposé des motifs, absence de chiffre non présent dans la source. *(La liste exacte est à figer dans `docs/vulgarisation-controles.md` lors de t07, puis conservée.)* Échec → une nouvelle tentative → sinon **repli** : le vote est publié sans cartes, avec l'objet officiel et le lien. Mention affichée : « Résumé généré automatiquement à partir du texte officiel » + lien vers l'article cité.
+Sortie JSON stricte (question fermée, phrase « Concrètement », 3 cartes « Ce que ça change »). Les 7 contrôles automatiques portent notamment sur : validité du JSON, longueur, chaque carte cite un article réel du texte, question fermée et neutre, absence de jugement ou de vocabulaire partisan, cohérence avec l'exposé des motifs, absence de chiffre non présent dans la source. *(Liste exacte figée le 7 octobre 2026 dans `docs/vulgarisation-controles.md` : format, longueurs, article réel avec extrait mot pour mot, question fermée, vocabulaire neutre, chiffres présents dans la source, fidélité jugée par une relecture séparée, faite par un agent qui ne voit que la fiche, les articles cités et l'exposé des motifs ; puis validation par Julien.)* Échec → une nouvelle tentative → sinon **repli** : le vote est publié sans cartes, avec l'objet officiel et le lien. Mention affichée : « Résumé généré automatiquement à partir du texte officiel » + lien vers l'article cité.
 
 ### 4.7 Arborescence du dépôt
 ```
@@ -199,6 +199,7 @@ site/          le site (Astro), créé en phase 2
 ### t05 👤 Clé API Anthropic plafonnée — S2, 20 min
 - Console Anthropic : créer une nouvelle clé, plafond de dépense mensuel bas (10 € suffisent au début). Dans GitHub : *Settings → Secrets → Actions → `ANTHROPIC_API_KEY`.*
 - **Ne jamais** coller la clé dans le chat ni dans le dépôt. `.env` est ignoré par git ; `.env.example` liste les variables.
+- **Réalisé (7 oct.) :** Julien a créé la clé et le secret GitHub `ANTHROPIC_API_KEY`. *(Le même jour, passage à zéro euro : la clé n'a plus d'usage. Le secret peut être supprimé et la clé révoquée.)* Le compte dispose d'environ 4 € de crédit. La clé n'existe que dans GitHub : les appels à l'API passent donc par un workflow GitHub Actions, et non par le poste.
 
 ### t06 🤖 Test du rattachement vote → texte — S2, 1 session
 - **Dépend de :** t02.
@@ -209,6 +210,7 @@ site/          le site (Astro), créé en phase 2
   4. Vérifier à la main un échantillon des rattachements « réussis » pour détecter les faux positifs.
 - **Livrable :** `docs/rattachement.md` + script reproductible.
 - **Critère de fin :** taux chiffrés par méthode et type ; liste des échecs ; recommandation (quels types de scrutins peuvent avoir « Ce que ça change », lesquels non).
+- **Réalisé (7 oct.) :** `docs/rattachement.md`, généré par `uv run python -m scripts.mesurer_rattachement`. La logique réutilisable est dans `pipeline/rattachement.py`, testée dans `tests/test_rattachement.py`. Les mesures sont dans `data/mesures/rattachement/` : `echantillon.csv` (les 100 scrutins), `verification.csv` (vérification à la main) et `synthese.json`. Trois méthodes au lieu de deux : (a) les actes du dossier ; (b) le libellé, où l'amendement est retrouvé dans l'archive des amendements, sinon le titre du texte est comparé aux textes déposés ; (c) l'agenda de la séance. S'y ajoute leur combinaison. Résultat : 99,8 % des 8 560 scrutins rattachés (97 sur 100 dans l'échantillon), aucun faux positif sur 97 vérifications à la main, un seul désaccord avec le dossier déclaré par l'Assemblée, qui est une erreur de l'open data, vérifiée sur le site officiel (scrutin 6758). La vérification à la main compare les titres et les textes de chaque dossier ; un seul scrutin a été contrôlé sur assemblee-nationale.fr. Recommandation : « Ce que ça change » pour l'ensemble d'un texte, une partie de budget ou une résolution ; pour un article, à trancher en t07 ; non pour les amendements, les motions et les votes sans texte. Reste pour t07 : passer du dossier au texte précis examiné (piste notée dans le rapport).
 
 ### t07 🤖 Prototype de vulgarisation — S2, 1 session
 - **Dépend de :** t05, t06.
@@ -219,9 +221,11 @@ site/          le site (Astro), créé en phase 2
   4. Mesurer le coût en jetons par texte et projeter le coût mensuel.
 - **Livrable :** `docs/vulgarisation-essai.md` : résultat brut, contrôles passés ou non, coût.
 - **Critère de fin :** les 5 fiches sont lisibles par Julien, chaque carte renvoie à un article vérifiable, le coût par dossier est connu.
+- **Réalisé (7 oct.) :** `docs/vulgarisation-essai.md` (constats, grille de relecture pour t08, les 5 fiches), `docs/vulgarisation-controles.md` (les 7 contrôles figés), `pipeline/vulgarisation.py`, `scripts/essai_vulgarisation.py`, `tests/test_vulgarisation.py`. Les sorties brutes sont dans `data/mesures/vulgarisation/essai.json`. L'essai tourne dans GitHub Actions (`.github/workflows/vulgarisation-essai.yml`), car la clé n'existe que là ; il se lance à la main ou en modifiant `data/mesures/vulgarisation/demande.txt`, avec un plafond de 2,50 $. Textes : Corse (7454), légitime défense (7987), hydroélectricité (7409), réseaux sociaux et mineurs (8431), maladies cardio-neuro-vasculaires (8419). Résultat : 3 fiches publiables, 2 replis justifiés par le contrôle 7, coût 1,02 $ (0,20 $ par texte, environ 2 $ par mois projetés). Le contrôle 5 a été assoupli après l'essai (deux faux positifs) ; l'essai n'a pas été relancé. Reste pour t27 : extrait qui appuie la carte, texte complet pour la commission mixte paritaire, choix automatique du texte voté. Après l'essai, passage à zéro euro : le workflow de l'essai et la dépendance `anthropic` sont supprimés ; `scripts/essai_vulgarisation.py` ne fait plus que régénérer le rapport.
 
 ### t08 👤 Relire les 5 fiches vulgarisées — S2, 45 min
 - Pour chacune : juste par rapport au texte ? neutre ? compréhensible par quelqu'un qui ne suit pas la politique ? Remarques notées en bas de `docs/vulgarisation-essai.md`.
+- **Réalisé (7 oct.) :** Julien a relu les 5 fiches et répondu en session « tout est bon pour moi », sans remarque. Claude Code a coché la grille d'après cette réponse.
 - **Claude Code prépare** : une grille de relecture courte (3 cases à cocher par fiche) en tête du fichier.
 
 ### t09 🤖 Rapport de faisabilité — S3, 1 session
@@ -273,9 +277,9 @@ site/          le site (Astro), créé en phase 2
 
 **Objectif.** Un site déployé qui affiche de vraies données et permet de faire le quiz d'entrée. **Sortie : parcours complet testé par Julien (t22).**
 
-### t16 👤 Cloudflare Pages + domaine — S6, 30 min
-- Créer le compte Cloudflare, relier Pages au dépôt GitHub, pointer le domaine (DNS) vers Cloudflare.
-- **Claude Code prépare** : les paramètres de build exacts (commande, dossier de sortie, version de Node) et la liste des enregistrements DNS.
+### t16 👤 Cloudflare Pages (sous-domaine gratuit) — S6, 30 min
+- Créer le compte Cloudflare (offre gratuite) et relier Pages au dépôt GitHub. Le site est servi sur le sous-domaine gratuit `*.pages.dev`. Un nom de domaine coûte une dizaine d'euros par an : pas d'achat sans décision de Julien (zéro euro).
+- **Claude Code prépare** : les paramètres de build exacts (commande, dossier de sortie, version de Node).
 
 ### t17 🤖 Site Astro et design system — S6, 2 sessions
 - **Dépend de :** t15, t16.
@@ -328,22 +332,29 @@ site/          le site (Astro), créé en phase 2
 
 ---
 
-## 9. Phase 4 — Vulgarisation automatique (S11–S12)
+## 9. Phase 4 — Vulgarisation hebdomadaire (S11–S12)
 
-**Objectif.** Les fiches « Ce que ça change » se publient seules, uniquement si elles passent les contrôles. **Sortie : t29 — fiches publiées jugées correctes.**
+**Objectif.** Chaque semaine, une session Claude Code lancée par Julien rédige les fiches « Ce que ça change » des votes de la semaine. Une fiche n'est publiée que si elle passe les 7 contrôles et si Julien l'a validée. Coût : zéro euro (décision du 7 octobre 2026). **Sortie : t29 — fiches validées jugées correctes, session tenue en moins de 30 minutes.**
 
-### t27 🤖 Pipeline de rédaction — S11, 2 sessions
+*(Phase revue le 7 octobre 2026 après le passage à zéro euro : la rédaction par l'API, prévue au départ, est abandonnée.)*
+
+### t27 🤖 Session hebdomadaire de rédaction dans Claude Code — S11, 2 sessions
 - **Dépend de :** t26.
-- **À faire :** `pipeline/vulgarise.py` : un appel par nouveau dossier, **mis en cache par empreinte du texte** ; JSON strict ; 7 contrôles ; **une** nouvelle tentative ; puis repli (vote publié sans cartes, objet officiel + lien). Mention « Résumé généré automatiquement à partir du texte officiel » + lien vers l'article cité. Journaliser le coût en jetons.
-- **Tests :** JSON invalide, carte sans article valide, formulation partisane, dépassement de longueur, repli effectif.
+- **À faire :**
+  1. `scripts/fiches_a_rediger.py` : liste les textes des votes de la semaine (et des votes à venir de l'agenda) qui n'ont pas de fiche validée pour leur version actuelle. Pour chacun, il prépare le dossier de travail : le texte voté découpé en articles, l'exposé des motifs et les consignes de `pipeline/vulgarisation.py`. Le texte voté est choisi automatiquement, selon la règle de t07.
+  2. Une commande de projet Claude Code (skill dans `.claude/skills/`) qui enchaîne : préparation → rédaction de chaque fiche → contrôles 1 à 6 (`scripts/controler_fiche.py`) → relecture par un agent séparé (contrôle 7) → une nouvelle tentative si besoin → présentation à Julien → enregistrement des seules fiches validées (`data/fiches/`, versionnées, avec l'empreinte du texte et la date de validation) → commit.
+  3. Le pipeline de nuit ne joint une fiche qu'aux votes dont le texte a la même empreinte ; sinon, repli (vote publié sans cartes, objet officiel et lien). Mention « Résumé rédigé à partir du texte officiel » et lien vers l'article cité.
+  4. Traiter les limites relevées en t07 : la relecture vérifie aussi que l'extrait appuie la carte ; texte complet pour la commission mixte paritaire ; très gros textes (budget) exclus ou découpés.
+- **Tests :** JSON invalide, carte sans article valide, formulation partisane, dépassement de longueur, empreinte qui ne correspond plus, repli effectif.
+- **Critère de fin :** Julien tient une vraie session : 3 fiches rédigées, contrôlées et validées en moins de 30 minutes, publiées au build suivant, sans aucun appel payant.
 
 ### t28 🤖 Thèmes, signalements, retrait automatique — S11, 1 session
 - **Dépend de :** t27.
-- **À faire :** attribuer **un des 12 thèmes** à chaque dossier (une fois, mis en cache). « Signaler une erreur » (Supabase, table `signalements`, **sans compte**) ; à **3 signalements distincts** : cartes retirées et régénération au build suivant. Protéger contre les abus (limitation par empreinte navigateur / IP hachée, sans stocker de donnée personnelle).
+- **À faire :** attribuer **un des 12 thèmes** à chaque dossier, pendant la session hebdomadaire, une fois par dossier, enregistré avec la fiche. « Signaler une erreur » (Supabase, table `signalements`, **sans compte**) ; à **3 signalements distincts** : cartes retirées au build suivant, puis nouvelle rédaction à la session hebdomadaire suivante. Protéger contre les abus (limitation par empreinte navigateur / IP hachée, sans stocker de donnée personnelle).
 - **Remarque :** nécessite Supabase ; si t30 n'est pas encore fait, Claude demande à Julien de le devancer ou livre la partie sans backend et le branche après.
 
-### t29 👤 Calibrer : relire les 10 premières fiches publiées seules — S12, 1 h
-- Semaine de Noël : une seule tâche. Remarques notées ; Claude ajuste les consignes de rédaction et les contrôles en conséquence (nouvelle entrée dans `docs/decisions.md`).
+### t29 👤 Bilan des 10 premières fiches validées — S12, 1 h
+- Semaine de Noël : une seule tâche. Julien a déjà validé chaque fiche en session. Il fait le bilan : rejets fréquents, temps passé par session, remarques des signalements. Claude ajuste les consignes de rédaction et les contrôles en conséquence (nouvelle entrée dans `docs/decisions.md`).
 
 ---
 
@@ -351,8 +362,10 @@ site/          le site (Astro), créé en phase 2
 
 **Objectif.** Les mécaniques de rétention et de confiance : comptes facultatifs, alertes, duel, pages légales, audience et accessibilité. **Sortie : t35 + t36.**
 
+*(Décision du 7 octobre 2026 : projet portfolio, fonctions centrées sur l'utilisateur reportées. t30 à t33 ne sont pas à faire pour l'instant ; t34 à t36 restent, sans la partie comptes.)*
+
 ### t30 👤 Supabase + Brevo — S13, 45 min
-- Créer le projet Supabase (**région Europe**). Dans Brevo, authentifier le domaine d'envoi (SPF, DKIM). Ajouter les clés en secrets GitHub (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `BREVO_API_KEY`).
+- Créer le projet Supabase (**région Europe**, offre gratuite). Dans Brevo (offre gratuite), authentifier l'expéditeur. *(À revoir : sans nom de domaine — t16, zéro euro —, l'authentification SPF/DKIM n'est pas possible ; voir docs/questions-ouvertes.md.)* Ajouter les clés en secrets GitHub (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `BREVO_API_KEY`).
 - **Claude Code prépare** : la liste exacte des enregistrements DNS à ajouter et des secrets à créer.
 
 ### t31 🤖 Comptes facultatifs, lois et députés suivis — S13, 2 sessions
@@ -375,7 +388,7 @@ site/          le site (Astro), créé en phase 2
 - Relire les brouillons. En cas de doute sur les données sensibles : faire relire par un juriste ou consulter la CNIL. **Claude n'est pas juriste** : ses textes sont des brouillons.
 
 ### t36 🤖 Audience sans cookies, accessibilité, performance, SEO — S15, 1 session
-- **À faire :** mesure d'audience sans cookies (Plausible ou Umami), **aucune réponse politique transmise** ; audit WCAG AA et performance (Lighthouse) ; pages vote et député indexables (titres, descriptions, données structurées) ; corriger ce qui est bloquant.
+- **À faire :** mesure d'audience sans cookies et gratuite (Cloudflare Web Analytics ; Plausible est payant), **aucune réponse politique transmise** ; audit WCAG AA et performance (Lighthouse) ; pages vote et député indexables (titres, descriptions, données structurées) ; corriger ce qui est bloquant.
 
 ---
 
@@ -394,7 +407,7 @@ site/          le site (Astro), créé en phase 2
 
 ### t40 👤 ◆ Décision de lancement public — S19, 30 min
 - **Critère :** 4 semaines de séance consécutives sans aucune action humaine, contrôles au vert, retours bêta traités, pages légales validées.
-- **Claude Code prépare** : un bilan factuel (semaines propres, incidents, issues ouvertes, coûts API réels).
+- **Claude Code prépare** : un bilan factuel (semaines propres, incidents, issues ouvertes, sessions hebdomadaires tenues, coûts réels : doivent être nuls).
 
 ### t41 🤝 Préparer le lancement — S19, 1 h + 1 session
 - Claude rédige : post LinkedIn de lancement (démarche, choix data, chiffres réels de la bêta), page projet pour le portfolio Factory, texte d'une story de lancement. **Ton sobre, factuel, sans superlatifs.** Julien ajuste et publie.
@@ -407,10 +420,11 @@ site/          le site (Astro), créé en phase 2
 |---|---|
 | Délai de publication des scrutins trop long ou irrégulier | Formule « le verdict du matin » ; décision en t10 |
 | Rattachement vote → texte peu fiable | Cartes uniquement pour les types de scrutins bien rattachés ; sinon repli sans cartes |
-| Vulgarisation fausse ou partisane | 7 contrôles, repli, signalements (3 → retrait), relecture t29 |
+| Vulgarisation fausse ou partisane | 7 contrôles, validation de chaque fiche par Julien, repli, signalements (3 → retrait), bilan t29 |
 | Format open data qui change | Contrôle de schéma + arrêt du build + alerte |
 | Données politiques = sensibles | Stockage local par défaut, consentement exprès, RLS, pas de classement public |
-| Coût API qui dérape | Cache par empreinte, plafond mensuel, journal des jetons |
+| Coût qui apparaît | Zéro euro : aucun appel payant, offres gratuites seulement, toute dépense soumise à Julien |
+| Julien saute la session hebdomadaire | Repli automatique : les votes sortent sans cartes, la séance reste complète |
 | Julien indisponible une semaine | Aucune tâche Julien ne bloque plus d'une phase ; la séance tourne seule ; Claude reporte et prévient |
 | Usine à gaz | Règle n° 6 : la solution la plus simple qui tient |
 

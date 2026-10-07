@@ -8,7 +8,8 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 - Données publiques : pipeline de nuit (GitHub Actions) → Python + DuckDB → JSON statiques → Cloudflare Pages. Pas de base de données dans ce chemin. Un build en échec ne publie rien.
 - Calculs personnels dans le navigateur ; réponses en localStorage par défaut (les opinions politiques sont des données sensibles au sens du RGPD).
 - Supabase uniquement pour les comptes facultatifs, suivis, alertes, signalements et agrégats consentis. E-mails via Brevo.
-- Vulgarisation (question, « Concrètement », 3 cartes « Ce que ça change ») rédigée par l'API Anthropic, publiée seulement si les 7 contrôles passent ; sinon le vote est affiché sans cartes.
+- **Zéro euro** : le projet ne doit rien coûter. Aucun appel à l'API Anthropic, aucun service payant ; chaque service reste dans son offre gratuite. Avant toute dépense, même minime, demander à Julien.
+- Vulgarisation (question, « Concrètement », 3 cartes « Ce que ça change ») rédigée pendant la session Claude Code hebdomadaire de Julien. Elle est publiée seulement si les 7 contrôles passent (docs/vulgarisation-controles.md) et si Julien l'a validée ; sinon le vote est affiché sans cartes.
 
 ## Sources
 - Open data de l'Assemblée nationale, 17e législature (Licence ouverte) : scrutins, députés/mandats/organes, historique des mandats, agenda, dossiers législatifs, textes et amendements. Scrutins : https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip

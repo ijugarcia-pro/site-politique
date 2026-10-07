@@ -1,6 +1,6 @@
 # Inventaire des fichiers open data
 
-Généré le 2026-10-07T10:06:52+00:00 par `uv run python scripts/inventaire_open_data.py`. Tout ce document est régénéré, sauf la section « Constats ». Mesures complètes : `data/mesures/inventaire_open_data.json`.
+Généré le 2026-10-07T11:13:48+00:00 par `uv run python scripts/inventaire_open_data.py`. Tout ce document est régénéré, sauf la section « Constats ». Mesures complètes : `data/mesures/inventaire_open_data.json`.
 
 ## Constats
 
@@ -8,7 +8,8 @@ Généré le 2026-10-07T10:06:52+00:00 par `uv run python scripts/inventaire_ope
 Lecture de l'inventaire du 7 octobre 2026. Les chiffres viennent des mesures ci-dessous.
 
 **Disponibilité**
-- 9 sources, 418 Mo téléchargés. Les archives de l'Assemblée sont régénérées chaque nuit (dernières modifications entre 00 h 34 et 06 h 24 GMT). L'archive des scrutins du 7 octobre contient les scrutins jusqu'au 6 octobre. Ce n'est qu'une observation : la mesure du délai de publication reste à faire (question ouverte 1).
+- 9 sources, 418 Mo téléchargés. L'archive des scrutins du 7 octobre contient les scrutins jusqu'au 6 octobre. Ce n'est qu'une observation : la mesure du délai de publication reste à faire (question ouverte 1).
+- **Cache** : `data.assemblee-nationale.fr` garde les fichiers 4 h en cache (`Cache-Control: max-age=14400`). Sans paramètre anti-cache, on peut recevoir une version vieille de 4 h. Les dates de cet inventaire (00 h 34 à 06 h 24 GMT) viennent de ce cache. Le 7 octobre à 11 h 11 GMT, le serveur d'origine annonçait une régénération des scrutins à 10 h 26, de l'agenda à 10 h 41, des dossiers à 10 h 16 et des amendements à 08 h 23 : les archives sont régénérées plusieurs fois par jour, et pas seulement la nuit. Le script ajoute désormais un paramètre anti-cache à chaque requête.
 - Le téléchargement des amendements (310 Mo) a échoué deux fois (503, puis coupure) avant de réussir. Le pipeline doit donc réessayer et ne pas dépendre de cette archive pour publier.
 - Non retenu : `AMO50_acteurs_mandats_organes_divises`, figé depuis juillet 2024.
 - Pour data.gouv.fr, la « dernière modification » est celle du serveur de fichiers (juillet 2026), pas celle des données (table de 2017, contours de juin 2024).

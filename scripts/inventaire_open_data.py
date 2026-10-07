@@ -129,11 +129,16 @@ def nom_fichier(source: dict) -> str:
     return source.get("fichier") or source["url"].rsplit("/", 1)[-1]
 
 
+def sans_cache(url: str) -> str:
+    """Ajoute un paramètre unique : le cache de data.assemblee-nationale.fr garde 4 h sinon."""
+    return f"{url}{'&' if '?' in url else '?'}t={time.time_ns()}"
+
+
 def telecharger(client: httpx.Client, source: dict) -> dict:
     """Télécharge la source si la version distante a changé ; renvoie ses métadonnées."""
     chemin = RAW / nom_fichier(source)
     meta_chemin = chemin.with_name(chemin.name + ".meta.json")
-    tete = client.head(source["url"])
+    tete = client.head(sans_cache(source["url"]))
     distant = {
         "taille": int(tete.headers["content-length"]) if "content-length" in tete.headers else None,
         "derniere_modification": tete.headers.get("last-modified"),
@@ -154,7 +159,7 @@ def telecharger(client: httpx.Client, source: dict) -> dict:
     for tentative in range(1, TENTATIVES + 1):
         empreinte = hashlib.sha256()
         try:
-            with client.stream("GET", source["url"]) as reponse:
+            with client.stream("GET", sans_cache(source["url"])) as reponse:
                 reponse.raise_for_status()
                 derniere_modification = reponse.headers.get("last-modified")
                 with partiel.open("wb") as sortie:

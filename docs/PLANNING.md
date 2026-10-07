@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t08 faites ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 7 octobre 2026 (t02, t04 à t09 faites ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -42,7 +42,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t06 🤖 Test du rattachement vote → texte sur 100 scrutins *(fait le 7 oct. 2026 ; branche locale, en attente de push et de fusion)*
 - [x] t07 🤖 Prototype de vulgarisation sur 5 textes *(fait le 7 oct. 2026 ; branche `vulgarisation-essai` poussée, en attente de PR et de fusion)*
 - [x] t08 👤 Relire les 5 fiches vulgarisées *(fait le 7 oct. 2026 : « tout est bon »)*
-- [ ] t09 🤖 Rapport de faisabilité
+- [x] t09 🤖 Rapport de faisabilité *(fait le 7 oct. 2026 ; délai pas encore mesuré, formule du verdict à trancher vers le 28 oct.)*
 - [ ] t10 👤 ◆ Décision Go / No-go et formule du verdict
 
 ### Phase 1 — Socle data (S4–S5, 26 oct. → 8 nov.)
@@ -233,6 +233,7 @@ site/          le site (Astro), créé en phase 2
 - **À faire :** lire `docs/inventaire.md`, `docs/rattachement.md`, `docs/vulgarisation-essai.md`, `data/mesures/delai.csv` (au moins 2 semaines de scrutins solennels) et rédiger `docs/faisabilite.md` : délai médian et maximal (solennels), conséquence pour le verdict, taux de rattachement, qualité de la vulgarisation, risques restants, **recommandation go / no-go argumentée**.
 - **Formule du verdict à trancher :** « dès la publication » (si le délai est court et régulier) ou « le verdict du matin » (sinon).
 - **Si les données sont insuffisantes** (trop peu de scrutins solennels mesurés) : le dire et proposer de prolonger la mesure plutôt que de conclure.
+- **Réalisé (7 oct.) :** `docs/faisabilite.md`. Rattachement (99,8 %) et vulgarisation (3 fiches publiables sur 5, relecture de Julien positive, zéro euro) : favorables. Délai : données insuffisantes, aucun scrutin encore mesuré. Un premier indice donne au plus 6 h 30 environ après la séance du 6 octobre au soir. Le rapport propose de prolonger le relevé jusqu'au 28 octobre et de garder « le verdict du matin » par défaut. Incident : le planificateur de GitHub n'a encore déclenché aucun passage horaire de t03, à vérifier le 8 octobre. Recommandation : go pour la phase 1, formule du verdict en suspens.
 
 ### t10 👤 ◆ Décision Go / No-go — S3, 30 min
 - Julien lit `docs/faisabilite.md` et tranche. Décision consignée dans `docs/decisions.md` et dans le journal du suivi.

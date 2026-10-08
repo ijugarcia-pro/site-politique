@@ -7,7 +7,7 @@
 import Base from '../layouts/Base.astro';
 import { composition, lienVote, questionsQuiz, scrutin } from '../lib/donnees.ts';
 import { HAUTEUR, LARGEUR, places, RAYON_SIEGE } from '../lib/hemicycle.ts';
-import { TEINTES, SANS_VOTE_COMMUN } from '../lib/profil.ts';
+import { NIVEAUX, SANS_VOTE_COMMUN } from '../lib/profil.ts';
 import { verdict } from '../lib/votes.ts';
 
 const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A',
@@ -133,7 +133,7 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
         <li><span style="background: var(--absent)"></span>Absent</li>
       </ul>
       <ul class="legende" data-legende-accord hidden>
-        {TEINTES.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
+        {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
         <li><span style={`background: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
       </ul>
     </section>

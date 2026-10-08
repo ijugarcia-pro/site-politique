@@ -8,7 +8,8 @@
 // parcourt avec les flèches (← → siège, ↑ ↓ groupe, Début, Fin) et chaque siège est annoncé.
 // En mode vote, des filtres (`filtres`) éclairent les votes contre le groupe, ou le siège du
 // député choisi par le visiteur (gardé dans son navigateur : lib/navigateur.ts).
-import { etiquette, HAUTEUR, LARGEUR, places, RAYON_SIEGE, SIEGES } from '../lib/hemicycle.ts';
+import { etiquettes as placerEtiquettes, HAUTEUR, LARGEUR, parts, places, RAYON_SIEGE, SIEGES }
+  from '../lib/hemicycle.ts';
 import { LIBELLES, type Groupe, type Position, type Siege } from '../lib/donnees.ts';
 
 interface Props {
@@ -50,19 +51,11 @@ function remplissage(s: Siege): string {
   return GRIS[(rang.get(s.groupe ?? '') ?? 0) % 2];
 }
 
-// Étendue de chaque groupe (ses sièges sont contigus) pour placer son étiquette. Les petits
-// groupes voisins sont décalés vers l'extérieur un sur deux pour ne pas se chevaucher.
-const etendues = groupes.map((g) => {
-  const indices = sieges.flatMap((s, i) => (s.groupe === g.uid ? [i] : []));
-  return { g, debut: indices[0], fin: indices[indices.length - 1] };
-}).filter((e) => e.debut !== undefined);
-let decale = false;
-const libelles = etendues.map(({ g, debut, fin }) => {
-  const arc = (liste[fin].angle - liste[debut].angle + Math.PI / SIEGES) * 460;
-  const etroit = arc < g.sigle.length * 8.4;
-  decale = etroit ? !decale : false;
-  return { texte: g.sigle, ...etiquette(liste, debut, fin, decale ? 20 : 0) };
-});
+// Étiquette de chaque groupe au milieu de sa part ; les petits groupes voisins sont décalés
+// vers l'extérieur un sur deux pour ne pas se chevaucher.
+const libelles = placerEtiquettes(liste, parts(sieges.map((s) => s.groupe)),
+  (p) => (sigle.get(p.groupe) ?? '').length * 8.4, 20)
+  .map((e) => ({ texte: sigle.get(e.part.groupe) ?? '', ...e }));
 
 // Ce que la zone annonce pour chaque siège : [texte, indice du groupe]. Le numéro du siège
 // (« Siège 12 sur 577 : ») est ajouté par le script, pour alléger la page.

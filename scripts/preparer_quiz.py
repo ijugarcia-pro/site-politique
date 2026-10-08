@@ -1,18 +1,23 @@
 """Prépare le choix des 10 votes du quiz d'entrée (tâche t20).
 
 Usage :
-    uv run python -m scripts.preparer_quiz [--base chemin/vers/site.duckdb]
+    uv run python -m scripts.preparer_quiz [--base site.duckdb] [--textes data/raw/textes]
 
-Vingt scrutins solennels qui divisent, sur des thèmes variés, chacun avec une question fermée
-(« oui » veut dire voter pour) rédigée d'après le texte voté. Les questions sont contrôlées
-comme les fiches (docs/vulgarisation-controles.md : longueur, question fermée, vocabulaire
-neutre). Pour chaque vote : le résultat, la position de chaque groupe et les votes contre leur
-groupe. Le script propose ensuite les 10 votes qui, ensemble, séparent le mieux les groupes
-deux à deux : un quiz qui ne distingue pas deux groupes ne peut pas dire duquel on est proche.
+Critères (décision de Julien, 8 octobre 2026) : des sujets de société, à objet unique, qu'un
+citoyen comprend en une phrase sans connaître le dossier ; pas de texte technique ni de texte
+« fourre-tout » (les députés votent l'ensemble, la question n'en citerait qu'une mesure). Les
+votes peuvent venir au-delà des scrutins solennels ; leur participation est alors affichée.
+
+Chaque candidat a une question fermée (« oui » veut dire voter pour) et une phrase
+« Concrètement », rédigées d'après le texte voté et contrôlées comme les fiches
+(docs/vulgarisation-controles.md) : longueurs, question fermée, vocabulaire neutre, et chiffres
+présents dans le texte. Pour chaque vote : le résultat, la participation, la position de chaque
+groupe et les votes contre leur groupe. Le script propose les 10 votes qui séparent le mieux les
+groupes deux à deux, et compte combien de députés ont pris position sur chacun d'eux.
 
 Produit :
     docs/quiz-candidats.md                 la grille à cocher par Julien
-    data/mesures/quiz/candidats.json       les 20 candidats et leurs positions (pour t21)
+    data/mesures/quiz/candidats.json       les candidats et leurs positions (pour t21)
 """
 
 from __future__ import annotations
@@ -21,7 +26,7 @@ import argparse
 import itertools
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import duckdb
@@ -30,6 +35,7 @@ from pipeline import vulgarisation as vg
 
 RACINE = Path(__file__).resolve().parent.parent
 BASE = RACINE / "data" / "site.duckdb"
+TEXTES = RACINE / "data" / "raw" / "textes"
 SORTIE = RACINE / "docs" / "quiz-candidats.md"
 DONNEES = RACINE / "data" / "mesures" / "quiz" / "candidats.json"
 LIEN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/{numero}"
@@ -37,6 +43,7 @@ N_QUIZ = 10
 NON_INSCRITS = "NI"
 # UDR est devenu UDDPLR le 5 septembre 2025 : même groupe pour comparer les votes.
 SUCCESSEURS = {"UDR": "UDDPLR"}
+PRISES_DE_POSITION = ("pour", "contre", "abstention")
 
 
 @dataclass(frozen=True)
@@ -44,139 +51,193 @@ class Candidat:
     numero: int
     theme: str
     question: str
+    concretement: str
     verifie: str
     reserve: str = ""
+    # Documents de l'Assemblée (texte voté, texte déposé avec son exposé des motifs) où les
+    # chiffres de la question et de « Concrètement » doivent figurer (contrôle 6).
+    sources: tuple[str, ...] = field(default_factory=tuple)
 
 
-# Rédigés en session d'après le texte voté (dernier texte de l'Assemblée avant le scrutin,
-# docs/vulgarisation-essai.md) ; « verifie » dit ce qui a été lu, « reserve » ce qui ne l'a pas
-# été. Les questions de la Corse, de la légitime défense, de l'hydroélectricité et des réseaux
-# sociaux sont celles des fiches de t07, relues par Julien en t08.
+RESOLUTION = "Cette résolution, qui n'a pas force de loi,"
+
+# Rédigés en session d'après le texte voté (dernier texte de l'Assemblée avant le scrutin) :
+# « verifie » dit ce qui a été lu, « reserve » ce que la question simplifie ou ce qui n'a pas
+# pu être vérifié. Les questions et « Concrètement » de la Corse, de la légitime défense et des
+# réseaux sociaux sont ceux des fiches de t07, relues par Julien en t08.
 CANDIDATS = [
-    Candidat(8280, "Santé et fin de vie",
+    Candidat(8280, "Fin de vie",
              "Faut-il permettre aux adultes atteints d'une maladie grave et incurable en phase "
              "avancée de demander une aide à mourir ?",
-             "Texte adopté (lecture définitive), article 4 : 18 ans au moins, affection grave et "
-             "incurable qui engage le pronostic vital, en phase avancée, et autres conditions."),
-    Candidat(7454, "Institutions",
-             "Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein "
-             "de la République ?",
-             "Question de la fiche t07, relue par Julien."),
-    Candidat(1303, "Institutions",
-             "Faut-il étendre le scrutin de liste paritaire aux communes de moins de 1 000 "
-             "habitants ?",
-             "Exposé des motifs et texte de la commission (deuxième lecture) : extension du "
-             "scrutin de liste paritaire aux communes de moins de 1 000 habitants."),
-    Candidat(3182, "Outre-mer",
-             "Faut-il reporter au plus tard à juin 2026 les élections provinciales en "
-             "Nouvelle-Calédonie ?",
-             "Texte de la commission mixte paritaire, article 1er : élections « au plus tard le "
-             "28 juin 2026 » au lieu du 30 novembre 2025.",
-             "Le report sert à appliquer l'accord du 12 juillet 2025 : la question ne le dit pas."),
-    Candidat(1308, "Outre-mer",
-             "Faut-il exiger, à Mayotte, que les deux parents d'un enfant y résident "
-             "régulièrement depuis un an pour qu'il puisse devenir français ?",
-             "Article unique : « ses deux parents résidaient » au lieu de « l'un de ses parents "
-             "au moins », et « d'un an » au lieu de « de trois mois ».",
-             "La condition porte sur la résidence régulière en France à la naissance : relire la "
-             "formulation « y résident »."),
-    Candidat(7987, "Sécurité et justice",
-             "Faut-il présumer que les policiers et gendarmes qui utilisent leur arme dans les "
-             "cas prévus par la loi ont agi en légitime défense ?",
-             "Question de la fiche t07, relue par Julien."),
-    Candidat(1624, "Sécurité et justice",
-             "Faut-il sanctionner davantage les parents de mineurs délinquants et juger plus "
-             "vite les mineurs de 16 ans et plus ?",
-             "Texte de la commission mixte paritaire : peines et amende civile pour les parents "
-             "(articles 1er et 2), audience unique pour les mineurs d'au moins 16 ans (article 4).",
-             "Deux mesures dans une question, comme pour les réseaux sociaux en t07."),
-    Candidat(2958, "Immigration",
-             "Faut-il pouvoir retenir jusqu'à 210 jours avant leur expulsion les étrangers "
-             "condamnés pour des faits graves ?",
-             "Texte de la commission mixte paritaire : durée maximale de rétention portée à « deux "
-             "cent dix jours » pour les étrangers condamnés pour des faits graves ou menaçants.",
-             "« Expulsion » est le mot courant ; le texte dit « éloignement »."),
-    Candidat(2880, "Éducation",
-             "Faut-il renforcer la formation, la prévention et les sanctions contre "
-             "l'antisémitisme et le racisme dans les universités ?",
-             "Texte de la commission mixte paritaire : formation (article 1er), mission « égalité "
-             "et diversité » (article 2), section disciplinaire formée à ces sujets (article 3).",
-             "Le texte vise l'enseignement supérieur, pas seulement les universités."),
+             "Le texte crée un droit à l'aide à mourir : une personne majeure, atteinte d'une "
+             "affection grave et incurable qui engage son pronostic vital, en phase avancée, peut "
+             "demander à recourir à une substance létale, sous d'autres conditions.",
+             "Texte adopté en lecture définitive, articles 2 et 4 (définition et conditions "
+             "d'accès).",
+             sources=("PIONANR5L17BTA0323", "PIONANR5L17B1100")),
     Candidat(8431, "Numérique",
              "Faut-il interdire les réseaux sociaux aux moins de quinze ans et le téléphone "
              "portable dans les lycées ?",
-             "Question de la fiche t07, relue par Julien."),
-    Candidat(7409, "Énergie",
-             "Faut-il remplacer les contrats de concession des grands barrages par un droit "
-             "d'exploitation de soixante-dix ans accordé aux exploitants actuels ?",
-             "Question de la fiche t07, relue par Julien."),
-    Candidat(2653, "Énergie",
-             "Faut-il adopter cette programmation nationale de l'énergie et du climat, avec ses "
-             "objectifs de production nucléaire et renouvelable ?",
-             "Texte de la commission : objectifs de production décarbonée (article 5), monopole "
-             "public du nucléaire (article 1er A).",
-             "Texte rejeté après des amendements de séance qui ne sont pas publiés dans un texte "
-             "séparé : ce qui a été réellement voté n'a pas pu être relu. À éviter."),
-    Candidat(2957, "Agriculture",
-             "Faut-il assouplir les règles imposées aux agriculteurs, notamment en permettant "
-             "des dérogations à l'interdiction des néonicotinoïdes ?",
-             "Texte de la commission mixte paritaire, article 2 : un décret peut, à titre "
-             "exceptionnel, déroger à l'interdiction des produits néonicotinoïdes.",
-             "Le texte touche aussi l'eau et les élevages : la question met en avant la mesure "
-             "la plus débattue."),
-    Candidat(1319, "Économie",
-             "Faut-il prolonger jusqu'en 2028 l'obligation pour les supermarchés de revendre "
-             "l'alimentation au moins 10 % au-dessus de son prix d'achat ?",
-             "Exposé des motifs (« SRP+10 ») et article 1er : dispositif applicable « jusqu'au 15 "
-             "avril 2028 ».",
-             "Le texte prolonge aussi l'encadrement des promotions et relève les amendes."),
-    Candidat(6184, "Économie",
-             "Faut-il adopter ce texte de simplification de la vie économique, qui supprime "
-             "notamment les zones à faibles émissions ?",
-             "Texte de la commission mixte paritaire : références aux zones à faibles émissions "
-             "supprimées (article sur le code des transports).",
-             "Texte de 80 articles : la question n'en cite qu'une mesure, la plus débattue. "
-             "Vérifier que l'abrogation des ZFE est bien dans le texte final."),
-    Candidat(6319, "Économie",
-             "Faut-il donner plus de moyens d'enquête et d'échange d'informations aux services "
-             "qui luttent contre les fraudes sociales et fiscales ?",
-             "Texte de la commission mixte paritaire : partage d'informations entre douanes, "
-             "services fiscaux et organismes sociaux (articles 1er à 2 bis AA).",
-             "Texte de 102 articles, résumé à grands traits."),
-    Candidat(4758, "Budget",
-             "Faut-il adopter le budget 2026 de la Sécurité sociale, qui suspend notamment le "
-             "recul de l'âge légal de départ à la retraite ?",
-             "Texte adopté (lecture définitive) : âges de départ fixés par génération (calendrier "
-             "de la réforme de 2023 gelé).",
-             "Texte de 127 articles ; « suspend » résume un gel du calendrier, à confirmer."),
-    Candidat(438, "Budget",
-             "Faut-il adopter la partie recettes du budget de l'État pour 2025, telle que "
-             "modifiée par les députés ?",
-             "Titre officiel : première partie du projet de loi de finances (les recettes).",
-             "Partie rejetée après de nombreux amendements de séance, non publiés dans un texte "
-             "séparé : contenu réel non relu. À éviter."),
+             "Le texte interdit l'accès aux réseaux sociaux aux moins de quinze ans, étend aux "
+             "lycées l'interdiction du téléphone portable et ajoute la propagande pour des moyens "
+             "de se donner la mort aux contenus que les sites doivent combattre.",
+             "Fiche de t07, relue par Julien.",
+             "Deux mesures dans une question (relevé en t07, accepté en t08)."),
+    Candidat(7987, "Police",
+             "Faut-il présumer que les policiers et gendarmes qui utilisent leur arme dans les "
+             "cas prévus par la loi ont agi en légitime défense ?",
+             "Le texte prévoit qu'un policier ou un gendarme qui tire avec son arme dans les cas "
+             "déjà autorisés par la loi est considéré d'office comme ayant agi en légitime "
+             "défense, sauf si l'enquête prouve le contraire.",
+             "Fiche de t07, relue par Julien (phrase « Concrètement » raccourcie)."),
+    Candidat(7454, "Corse",
+             "Faut-il inscrire dans la Constitution un statut d'autonomie pour la Corse au sein "
+             "de la République ?",
+             "Le texte modifie la Constitution pour donner à la Corse un statut d'autonomie. Sous "
+             "conditions, la Collectivité de Corse pourra adapter des lois nationales ou fixer "
+             "ses propres règles dans certains domaines.",
+             "Fiche de t07, relue par Julien.",
+             "Première lecture d'une révision constitutionnelle : le texte n'est pas définitif."),
+    Candidat(2958, "Immigration",
+             "Faut-il pouvoir retenir jusqu'à deux cent dix jours avant leur expulsion les "
+             "étrangers condamnés pour des faits graves ?",
+             "Les étrangers condamnés pour certains crimes ou délits graves, ou dont le "
+             "comportement menace gravement l'ordre public, pourront être maintenus en rétention "
+             "administrative jusqu'à deux cent dix jours, le temps d'organiser leur départ.",
+             "Texte de la commission mixte paritaire, articles 1er à 3 : durée maximale de "
+             "rétention de « deux cent dix jours » pour ces étrangers.",
+             "« Expulsion » est le mot courant ; le texte parle d'éloignement."),
+    Candidat(1308, "Nationalité",
+             "Faut-il exiger que les deux parents résident en France depuis plus d'un an pour "
+             "qu'un enfant né à Mayotte puisse devenir français ?",
+             "Pour qu'un enfant né à Mayotte puisse devenir français, ses deux parents devront "
+             "résider régulièrement en France depuis plus d'un an à sa naissance, au lieu d'un "
+             "seul parent depuis plus de trois mois.",
+             "Article unique : « ses deux parents résidaient » au lieu de « l'un de ses parents "
+             "au moins », « d'un an » au lieu de « de trois mois ».",
+             "Le texte prévoit un cas particulier quand la filiation n'est établie qu'à l'égard "
+             "d'un parent.",
+             sources=("PIONANR5L17BTC1199", "PIONANR5L17B0693")),
+    Candidat(3260, "Immigration",
+             "Faut-il demander au Gouvernement de dénoncer l'accord franco-algérien de 1968 sur "
+             "l'entrée et le séjour des Algériens ?",
+             f"{RESOLUTION} appelle le Gouvernement à dénoncer l'accord du 27 décembre 1968, qui "
+             "fixe des règles particulières pour l'entrée et le séjour des ressortissants "
+             "algériens en France.",
+             "Proposition de résolution (article 34-1 de la Constitution) : exposé des motifs et "
+             "article unique.",
+             "Vote serré (185 pour, 184 contre) et participation moyenne.",
+             sources=("PNREANR5L17B1778",)),
+    Candidat(5106, "Islamisme",
+             "Faut-il demander l'inscription des Frères musulmans sur la liste européenne des "
+             "organisations terroristes ?",
+             f"{RESOLUTION} invite la Commission européenne à proposer l'inscription de la "
+             "mouvance des Frères musulmans et de ses responsables sur la liste européenne des "
+             "organisations terroristes.",
+             "Proposition de résolution européenne, texte de la commission, point 5.",
+             "Participation faible : moins de la moitié des députés ont voté.",
+             sources=("PNREANR5L17BTC2344",)),
+    Candidat(988, "Ukraine",
+             "Faut-il appeler l'Union européenne et ses alliés à accroître leur soutien "
+             "politique, économique et militaire à l'Ukraine ?",
+             f"{RESOLUTION} condamne l'agression russe et encourage l'Union européenne, ses États "
+             "membres et l'OTAN à poursuivre et accroître leur soutien politique, économique et "
+             "militaire à l'Ukraine.",
+             "Proposition de résolution européenne, point 12.",
+             "La résolution invite aussi à faciliter l'adhésion de l'Ukraine à l'Union.",
+             sources=("PNREANR5L17BTC1001", "PNREANR5L17B0916")),
     Candidat(7905, "Défense",
              "Faut-il ajouter 36 milliards d'euros de ressources aux armées pour les années "
              "2026 à 2030 ?",
-             "Texte de la commission mixte paritaire, article 2 : « 36 milliards d'euros de "
-             "ressources nouvelles pour la période 2026‑2030 »."),
-    Candidat(988, "International",
-             "Faut-il appeler l'Union européenne et ses alliés à accroître leur soutien "
-             "politique, économique et militaire à l'Ukraine ?",
-             "Résolution européenne, point 12 : « poursuivre et accroître leur soutien politique, "
-             "économique et militaire à l'Ukraine ».",
-             "La résolution invite aussi à faciliter l'adhésion de l'Ukraine à l'Union."),
+             "Le texte actualise la programmation militaire 2024-2030 : il prévoit 36 milliards "
+             "d'euros de ressources nouvelles pour les armées sur la période 2026-2030.",
+             "Texte de la commission mixte paritaire, article 2.",
+             "Le texte contient aussi d'autres mesures de défense (43 articles) : la question "
+             "retient la principale.",
+             sources=("PRJLANR5L17BTC2976",)),
+    Candidat(881, "Impôts",
+             "Faut-il que les personnes dont le patrimoine dépasse 100 millions d'euros paient au "
+             "moins 2 % de sa valeur en impôts ?",
+             "Le texte crée un impôt plancher sur la fortune : les personnes dont le patrimoine "
+             "dépasse 100 millions d'euros devraient payer, au total, des impôts égaux à au moins "
+             "2 % de sa valeur.",
+             "Exposé des motifs et article unique (texte de la commission).",
+             "Vote en première lecture, participation faible (un tiers des députés) ; le texte "
+             "n'est pas devenu loi.",
+             sources=("PIONANR5L17BTC0930", "PIONANR5L17B0768")),
+    Candidat(2257, "Retraites",
+             "Faut-il affirmer la nécessité d'abroger la réforme des retraites de 2023, qui a "
+             "reculé l'âge légal de 62 à 64 ans ?",
+             f"{RESOLUTION} affirme « l'impérieuse nécessité d'aboutir à l'abrogation de la "
+             "réforme des retraites » de 2023, qui a reculé l'âge légal de départ de 62 à 64 ans.",
+             "Proposition de résolution : exposé des motifs (âge de 62 à 64 ans) et article "
+             "unique.",
+             "Participation faible : plusieurs groupes n'ont presque pas pris part au vote.",
+             sources=("PNREANR5L17B1352",)),
+    Candidat(3061, "Violences sexuelles",
+             "Faut-il définir le viol et les agressions sexuelles comme tout acte sexuel non "
+             "consenti ?",
+             "Le code pénal définirait l'agression sexuelle comme « tout acte sexuel non "
+             "consenti », au lieu d'une atteinte commise « avec violence, contrainte, menace ou "
+             "surprise ».",
+             "Texte de la commission, article 1er.",
+             "Participation faible (un tiers des députés).",
+             sources=("PIONANR5L17BTC1982",)),
+    Candidat(852, "Environnement",
+             "Faut-il interdire les cosmétiques, les farts et les vêtements contenant des "
+             "substances PFAS ?",
+             "Le texte interdit à partir du 1er janvier 2026 la fabrication et la vente de "
+             "cosmétiques, de farts et de vêtements contenant des PFAS, sauf équipements de "
+             "protection, et fixe une trajectoire de réduction de leurs rejets.",
+             "Texte de la commission (deuxième lecture), articles 1er et 1er bis.",
+             "Participation faible (la moitié des députés).",
+             sources=("PIONANR5L17BTC0929",)),
+    Candidat(7380, "Industrie",
+             "Faut-il nationaliser la société ArcelorMittal France ?",
+             "L'État achèterait la société ArcelorMittal France, à un prix fixé par une "
+             "commission et plafonné à la valeur moyenne de ses actions entre le 1er octobre 2024 "
+             "et le 30 septembre 2025.",
+             "Texte de la commission, article 1er.",
+             "Participation faible (un tiers des députés).",
+             sources=("PIONANR5L17BTC2872",)),
+    Candidat(2957, "Agriculture",
+             "Faut-il permettre, à titre exceptionnel, des dérogations à l'interdiction des "
+             "pesticides néonicotinoïdes ?",
+             "Un décret pourra, à titre exceptionnel et face à une menace grave pour une "
+             "production agricole, autoriser des produits néonicotinoïdes aujourd'hui interdits. "
+             "Le texte modifie aussi d'autres règles, notamment sur la gestion de l'eau.",
+             "Texte de la commission mixte paritaire, article 2.",
+             "Texte à plusieurs volets : la question ne retient que la mesure la plus débattue.",
+             sources=("PIONANR5L17BTC1652",)),
 ]
 
 
-def controler(question: str) -> list[str]:
-    """Contrôles 2 (longueur), 4 (question fermée) et 5 (vocabulaire) des fiches."""
-    mini, maxi = vg.LONGUEURS["question"]
-    erreurs = [] if mini <= len(question) <= maxi else [
-        f"{len(question)} caractères (attendu de {mini} à {maxi})"]
-    fiche = {"question": question, "concretement": "", "cartes": []}
+def texte_source(uid: str, dossier: Path) -> str:
+    """Le texte brut d'un document de l'Assemblée, téléchargé une fois puis lu en cache."""
+    chemin = dossier / f"{uid}.html"
+    if not chemin.exists():
+        import httpx
+
+        reponse = httpx.get(vg.URL_DOCUMENT.format(uid=uid), timeout=60,
+                            follow_redirects=True)
+        reponse.raise_for_status()
+        dossier.mkdir(parents=True, exist_ok=True)
+        chemin.write_text(reponse.text, encoding="utf-8")
+    return vg.texte_du_html(chemin.read_text(encoding="utf-8"))
+
+
+def controler(c: Candidat, sources: str = "") -> list[str]:
+    """Contrôles 2 (longueurs), 4 (question fermée), 5 (vocabulaire) et 6 (chiffres) des
+    fiches, sur la question et la phrase « Concrètement »."""
+    erreurs = []
+    for cle, valeur in (("question", c.question), ("concretement", c.concretement)):
+        mini, maxi = vg.LONGUEURS[cle]
+        if not mini <= len(valeur) <= maxi:
+            erreurs.append(f"{cle} : {len(valeur)} caractères (attendu de {mini} à {maxi})")
+    fiche = {"question": c.question, "concretement": c.concretement, "cartes": []}
     erreurs += vg.controle_question(fiche).erreurs
-    erreurs += vg.controle_vocabulaire(fiche).erreurs
+    erreurs += vg.controle_vocabulaire(fiche, sources).erreurs
+    erreurs += vg.controle_chiffres(fiche, sources).erreurs
     return erreurs
 
 
@@ -195,12 +256,18 @@ def lire(con: duckdb.DuckDBPyConnection, numero: int) -> dict:
         groupes[SUCCESSEURS.get(sigle, sigle)] = {"position": position, "pour": p,
                                                   "contre": c, "abstention": a,
                                                   "membres": membres}
-    dissidents = con.execute("SELECT count(*) FROM vote WHERE scrutin_uid = ? AND dissident",
-                             [uid]).fetchone()[0]
+    dissidents, en_exercice = con.execute(
+        "SELECT count(*) FILTER (WHERE dissident), count(*) FROM vote WHERE scrutin_uid = ?",
+        [uid]).fetchone()
+    deputes = [d for d, in con.execute(
+        "SELECT depute_uid FROM vote WHERE scrutin_uid = ? AND list_contains(?, position)",
+        [uid, list(PRISES_DE_POSITION)]).fetchall()]
     return {"uid": uid, "numero": numero, "date": jour.isoformat(), "titre": titre,
             "dossier": dossier, "sort": sort, "solennel": solennel,
             "decompte": {"pour": pour, "contre": contre, "abstention": abst},
-            "voix_pour_inverser": inverser, "dissidents": dissidents, "groupes": groupes}
+            "participation": round(100 * (pour + contre + abst) / en_exercice),
+            "voix_pour_inverser": inverser, "dissidents": dissidents, "groupes": groupes,
+            "deputes": deputes}
 
 
 def separation(votes: list[dict], groupes: list[str]) -> dict[tuple[str, str], int]:
@@ -218,24 +285,34 @@ def separation(votes: list[dict], groupes: list[str]) -> dict[tuple[str, str], i
     return resultat
 
 
-def recommander(votes: list[dict], groupes: list[str], themes: dict[int, str],
-                n: int = N_QUIZ) -> list[int]:
+def recommander(votes: list[dict], groupes: list[str], n: int = N_QUIZ) -> list[int]:
     """Les n votes qui séparent le mieux les groupes deux à deux : d'abord la plus petite
     séparation entre deux groupes, puis le nombre de paires séparées au moins deux fois, puis
-    le nombre de thèmes, puis la séparation totale. Recherche exhaustive (quelques dizaines de
-    milliers de combinaisons)."""
-    # Pour chaque vote, la liste 0 / 1 des paires qu'il sépare : la somme sur une combinaison
-    # donne sa séparation.
+    la participation totale (plus de députés comparables), puis la séparation totale.
+    Recherche exhaustive."""
     paires = list(itertools.combinations(groupes, 2))
     separe = {v["numero"]: [separation([v], groupes)[p] for p in paires] for v in votes}
     meilleur, cle_meilleure = None, None
     for combi in itertools.combinations(votes, n):
         sep = [sum(col) for col in zip(*(separe[v["numero"]] for v in combi), strict=True)]
-        cle = (min(sep), sum(s >= 2 for s in sep), len({themes[v["numero"]] for v in combi}),
+        cle = (min(sep), sum(s >= 2 for s in sep), sum(v.get("participation", 0) for v in combi),
                sum(sep))
         if cle_meilleure is None or cle > cle_meilleure:
             meilleur, cle_meilleure = combi, cle
     return sorted(v["numero"] for v in meilleur)
+
+
+def couverture(votes: list[dict]) -> dict[int, int]:
+    """Combien de députés ont pris position (pour, contre, abstention) sur k des votes, pour
+    chaque k : le jumeau n'est affiché qu'à partir de 10 votes en commun (§ 4.3)."""
+    compte: dict[str, int] = {}
+    for v in votes:
+        for d in v["deputes"]:
+            compte[d] = compte.get(d, 0) + 1
+    resultat: dict[int, int] = {}
+    for k in compte.values():
+        resultat[k] = resultat.get(k, 0) + 1
+    return dict(sorted(resultat.items(), reverse=True))
 
 
 ETIQUETTES = {"pour": "Pour", "contre": "Contre", "abstention": "Abstention"}
@@ -250,7 +327,8 @@ def date_lisible(iso: str) -> str:
 
 
 def ligne_groupes(vote: dict) -> list[str]:
-    par_position: dict[str, list[str]] = {"pour": [], "contre": [], "abstention": [], None: []}
+    par_position: dict[str | None, list[str]] = {"pour": [], "contre": [], "abstention": [],
+                                                 None: []}
     for sigle, g in sorted(vote["groupes"].items()):
         if sigle == NON_INSCRITS:
             continue
@@ -266,11 +344,14 @@ def ligne_groupes(vote: dict) -> list[str]:
 def rapport(candidats: list[Candidat], votes: list[dict], groupes: list[str],
             recommandes: list[int]) -> str:
     par_numero = {v["numero"]: v for v in votes}
-    sep = separation([par_numero[n] for n in recommandes], groupes)
+    proposes = [par_numero[n] for n in recommandes]
+    sep = separation(proposes, groupes)
     faibles = sorted((k for k, s in sep.items() if s <= 1), key=lambda k: (sep[k], k))
-    themes = sorted({c.theme for c in candidats if c.numero in recommandes})
+    cover = couverture(proposes)
+    tous_les_dix = cover.get(N_QUIZ, 0)
+    au_moins_huit = sum(n for k, n in cover.items() if k >= 8)
     lignes = [
-        "# Quiz d'entrée : 20 votes candidats (t20)",
+        "# Quiz d'entrée : votes candidats (t20)",
         "",
         "> Généré par `uv run python -m scripts.preparer_quiz`. Ne pas modifier à la main : "
         "cocher ci-dessous, puis répondre en session.",
@@ -279,56 +360,63 @@ def rapport(candidats: list[Candidat], votes: list[dict], groupes: list[str],
         "celles des 577 députés : le groupe le plus proche, le jumeau, la précision (t21). "
         "C'est le **seul choix éditorial fixe** du site.",
         "",
-        "## Comment choisir",
+        "## Critères (ta décision du 8 octobre 2026)",
         "",
-        "- Les 20 candidats sont des **scrutins solennels** (tous les députés sont appelés à "
-        "voter) qui **divisent** : aucun n'est voté à l'unanimité. Pour un texte voté plusieurs "
-        "fois, c'est la lecture finale qui est retenue.",
-        "- Chaque question est **fermée** : « oui » veut dire voter pour. Elle est rédigée "
-        "d'après le texte voté, et passe les contrôles 2, 4 et 5 des fiches (longueur, "
-        "question fermée, vocabulaire neutre). La ligne « Vérifié » dit ce qui a été lu dans "
-        "le texte ; « Réserve », ce qui ne l'a pas été ou ce que la question simplifie.",
-        "- L'**écart entre groupes** donne la position majoritaire de chaque groupe, avec son "
-        "décompte (pour-contre-abstention). Les non-inscrits n'ont pas de position commune.",
-        "- Un bon quiz **sépare les groupes deux à deux** : si deux groupes votent pareil sur "
-        "les 10 votes, le quiz ne peut pas dire duquel tu es le plus proche.",
+        f"- **Des sujets de société, à objet unique**, qu'on comprend en une phrase sans "
+        f"connaître le dossier. Pas de texte technique, pas de texte « fourre-tout » : les "
+        f"députés votent l'ensemble, et une question qui n'en citerait qu'une mesure ne "
+        f"mesurerait pas le même vote. {len(candidats)} candidats tiennent ce critère.",
+        "- **Au-delà des scrutins solennels** quand le sujet le justifie. Un vote ordinaire "
+        "réunit moins de députés : sa **participation** est indiquée.",
+        "- **Chaque question est fermée** (« oui » veut dire voter pour) et accompagnée d'une "
+        "phrase **« Concrètement »**, tirée des articles du texte voté. Les deux passent les "
+        "contrôles 2, 4, 5 et 6 des fiches (longueurs, question fermée, vocabulaire neutre, "
+        "chiffres présents dans le texte). « Vérifié » dit ce qui a été lu ; « Réserve », ce "
+        "que la question simplifie ou ce qui n'a pas pu l'être.",
+        "- **Un bouton « Je ne sais pas »** à chaque question (pour t21) : personne n'est "
+        "obligé de trancher un sujet qu'il ne connaît pas.",
         "",
-        "Coche 10 cases (ou réponds simplement en session avec les numéros). Tu peux aussi "
-        "corriger une question : c'est le moment.",
+        "Coche 10 cases (ou donne les numéros en session). Tu peux aussi corriger une question.",
         "",
         "## Ma proposition de 10",
         "",
-        f"Votes n° {', '.join(str(n) for n in recommandes)}. Ensemble, ils couvrent "
-        f"{len(themes)} thèmes ({', '.join(themes).lower()}) et séparent chaque paire de groupes "
-        f"au moins {min(sep.values())} fois sur 10 ; {sum(s >= 2 for s in sep.values())} paires "
-        f"sur {len(sep)} au moins deux fois.",
+        f"Votes n° {', '.join(str(n) for n in recommandes)}. Ensemble, ils séparent chaque "
+        f"paire de groupes au moins {min(sep.values())} fois sur 10 ; "
+        f"{sum(s >= 2 for s in sep.values())} paires sur {len(sep)} au moins deux fois.",
     ]
     if faibles:
         lignes.append("Paires de groupes séparées une seule fois (ou jamais) : "
-                 + ", ".join(f"{a} / {b} ({sep[(a, b)]})" for a, b in faibles) + ".")
+                      + ", ".join(f"{a} / {b} ({sep[(a, b)]})" for a, b in faibles) + ".")
     lignes += [
         "",
-        "Les candidats marqués « À éviter » (contenu réellement voté non relu) sont exclus de "
-        "cette proposition. Elle est calculée : elle ne dit rien de l'intérêt d'un vote pour le "
-        "public, que toi seul juges.",
+        f"**Point d'attention pour t21.** Le jumeau n'est affiché qu'à partir de 10 votes en "
+        f"commun. Sur ces 10 votes, **{tous_les_dix} députés** ont pris position sur les 10, "
+        f"et {au_moins_huit} sur au moins 8 (votes ordinaires moins suivis, absences). Avec la "
+        f"réponse « Je ne sais pas » en plus, le jumeau ne pourra presque jamais s'afficher "
+        f"après le seul quiz : t21 devra soit l'annoncer « à préciser », soit inviter à trancher "
+        f"d'autres votes. Le groupe le plus proche, lui, se calcule sans problème.",
         "",
-        "## Les 20 candidats",
+        "La proposition est calculée (séparation des groupes, puis participation) : elle ne dit "
+        "rien de l'intérêt d'un sujet pour le public, que toi seul juges.",
+        "",
+        "## Les candidats",
         "",
     ]
     for i, c in enumerate(candidats, 1):
         v = par_numero[c.numero]
         d = v["decompte"]
         marque = " · **proposé**" if c.numero in recommandes else ""
+        nature = "scrutin solennel" if v["solennel"] else "scrutin ordinaire"
         lignes += [
             f"### {i}. {c.theme} · n° {c.numero}{marque}",
             "",
             "- [ ] **Je le retiens**",
             f"- **Question** : « {c.question} »",
-            f"- **Le vote** : {v['sort']} le {date_lisible(v['date'])}, {d['pour']} pour, "
-            f"{d['contre']} "
-            f"contre, {d['abstention']} abstentions ; {v['dissidents']} votes contre leur "
-            f"groupe. [Scrutin n° {c.numero}]({LIEN.format(numero=c.numero)}), page du site "
-            f"`/votes/{c.numero}/`.",
+            f"- **Concrètement** : {c.concretement}",
+            f"- **Le vote** : {nature}, {v['sort']} le {date_lisible(v['date'])} ; {d['pour']} "
+            f"pour, {d['contre']} contre, {d['abstention']} abstentions ; participation "
+            f"{v['participation']} % ; {v['dissidents']} votes contre leur groupe. "
+            f"[Scrutin n° {c.numero}]({LIEN.format(numero=c.numero)}).",
             f"- **Objet officiel** : {v['titre']}",
             "- **Écart entre groupes** :",
             *ligne_groupes(v),
@@ -346,49 +434,57 @@ def rapport(candidats: list[Candidat], votes: list[dict], groupes: list[str],
         "|" + "---|" * (len(groupes) + 1),
     ]
     for a in groupes:
-        cases = []
-        for b in groupes:
-            if a == b:
-                cases.append("—")
-            else:
-                cases.append(str(sep.get((a, b), sep.get((b, a)))))
+        cases = ["—" if a == b else str(sep.get((a, b), sep.get((b, a)))) for b in groupes]
         lignes.append(f"| **{a}** | " + " | ".join(cases) + " |")
-    lignes.append("")
+    lignes += [
+        "",
+        "## Écartés de la première liste",
+        "",
+        "Retirés le 8 octobre 2026 parce que techniques ou « fourre-tout » : parité dans les "
+        "communes de moins de 1 000 habitants (n° 1303), élections en Nouvelle-Calédonie "
+        "(n° 3182), antisémitisme dans l'enseignement supérieur (n° 2880 : titre qui pousse au "
+        "oui, contenu débattu), barrages (n° 7409), prix de l'alimentation (n° 1319), fraudes "
+        "(n° 6319), mineurs délinquants (n° 1624), simplification de la vie économique "
+        "(n° 6184), budget de la Sécurité sociale (n° 4758), budget 2025 (n° 438), "
+        "programmation de l'énergie (n° 2653). La première liste reste dans l'historique git.",
+        "",
+    ]
     return "\n".join(lignes)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     args.add_argument("--base", type=Path, default=BASE)
-    base = args.parse_args(argv).base
+    args.add_argument("--textes", type=Path, default=TEXTES)
+    options = args.parse_args(argv)
 
-    erreurs = {c.numero: controler(c.question) for c in CANDIDATS}
+    erreurs = {}
+    for c in CANDIDATS:
+        sources = "\n".join(texte_source(u, options.textes) for u in c.sources)
+        erreurs[c.numero] = controler(c, sources)
     if any(erreurs.values()):
         for numero, e in erreurs.items():
             for message in e:
                 print(f"n° {numero} : {message}", file=sys.stderr)
         return 1
-    con = duckdb.connect(str(base), read_only=True)
+    con = duckdb.connect(str(options.base), read_only=True)
     try:
         votes = [lire(con, c.numero) for c in CANDIDATS]
     finally:
         con.close()
-    non_solennels = [v["numero"] for v in votes if not v["solennel"]]
-    if non_solennels:
-        print(f"Scrutins non solennels : {non_solennels}", file=sys.stderr)
-        return 1
     groupes = sorted({g for v in votes for g in v["groupes"]} - {NON_INSCRITS})
-    themes = {c.numero: c.theme for c in CANDIDATS}
-    eviter = {c.numero for c in CANDIDATS if "À éviter" in c.reserve}
-    recommandes = recommander([v for v in votes if v["numero"] not in eviter], groupes, themes)
+    recommandes = recommander(votes, groupes)
     SORTIE.write_text(rapport(CANDIDATS, votes, groupes, recommandes), encoding="utf-8")
     DONNEES.parent.mkdir(parents=True, exist_ok=True)
     DONNEES.write_text(json.dumps({
         "recommandes": recommandes,
-        "candidats": [{"question": c.question, "theme": c.theme, **v}
+        "candidats": [{"question": c.question, "concretement": c.concretement,
+                       "theme": c.theme, **{k: x for k, x in v.items() if k != "deputes"}}
                       for c, v in zip(CANDIDATS, votes, strict=True)],
     }, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{len(CANDIDATS)} candidats, proposition : {recommandes}")
+    proposes = [v for v in votes if v["numero"] in recommandes]
+    print(f"Couverture de la proposition : {couverture(proposes)}")
     print(f"Écrit : {SORTIE.relative_to(RACINE)} et {DONNEES.relative_to(RACINE)}")
     return 0
 

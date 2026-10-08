@@ -52,3 +52,6 @@ export function repondre(uid: string, v: Reponse | null): boolean {
 export const deputeChoisi = (): string | null => lire<string | null>(CLE_DEPUTE, null);
 
 export const choisirDepute = (uid: string | null): boolean => ecrire(CLE_DEPUTE, uid);
+
+/** Lecture protégée d'une valeur JSON du navigateur (état du quiz…). */
+export const lireJSON = lire;

@@ -9,9 +9,12 @@ interface Props {
   titre: string;
   description: string;
   onglet?: 'semaine' | 'hemicycle' | 'explorer';
+  /** Mode focus (quiz, séance) : pas d'onglets ; l'en-tête reçoit le contenu du slot
+   *  « entete » (barre de progression…). */
+  focus?: boolean;
 }
 
-const { titre, description, onglet } = Astro.props;
+const { titre, description, onglet, focus = false } = Astro.props;
 const ONGLETS = [
   { id: 'semaine', href: '/', label: 'Cette semaine', icone: 'M3 5h14v12H3zM3 9h14M7 3v4M13 3v4' },
   { id: 'hemicycle', href: '/hemicycle/', label: 'Mon hémicycle',
@@ -44,6 +47,7 @@ const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e s
         </svg>
         <span>578<sup>e</sup> siège</span>
       </a>
+      {focus ? <slot name="entete" /> : (
       <nav aria-label="Navigation principale">
         <ul>
           {ONGLETS.map((o) => (
@@ -59,8 +63,9 @@ const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e s
           ))}
         </ul>
       </nav>
+      )}
     </header>
-    <main id="contenu" class="page">
+    <main id="contenu" class:list={['page', { focus }]}>
       <slot />
     </main>
     <footer class="pied">

@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t20 faite : 10 votes de société retenus par Julien, figés dans data/quiz.json, jumeau toujours montré ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (t21 livrée, branche `quiz`, en attente de fusion : quiz d'entrée, ton hémicycle, jumeau, stories ; t20 faite : 10 votes de société retenus par Julien, figés dans data/quiz.json, jumeau toujours montré ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -58,8 +58,8 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t18 🤖 Page vote branchée sur les vrais scrutins *(livrée le 8 oct. 2026, branche `page-vote` ; à cocher après fusion et déploiement vert)*
 - [ ] t19 🤖 Fiche député + recherche par code postal *(livrée le 8 oct. 2026, branche `page-vote` ; à cocher après fusion et déploiement vert)*
 - [x] t20 👤 Valider les 10 votes du quiz d'entrée *(fait le 8 oct. 2026 : data/quiz.json ; branche `quiz-candidats`)*
-- [ ] t21 🤖 Quiz d'entrée, résultat, jumeau, stories
-- [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone)
+- [ ] t21 🤖 Quiz d'entrée, résultat, jumeau, stories *(livrée le 8 oct. 2026, branche `quiz` ; à cocher après fusion et déploiement vert)*
+- [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone) *(préparée le 8 oct. 2026 : docs/test-parcours.md)*
 
 ### Phase 3 — La séance de la semaine (S9–S10, 30 nov. → 13 déc.)
 - [ ] t23 🤖 Agenda et sélection automatique des 3 votes
@@ -320,10 +320,12 @@ site/          le site (Astro), créé en phase 2
 - **Dépend de :** t20.
 - **À faire :** export `matrice.json` (une chaîne P/C/A/- par député). Quiz d'après V5 : question, révélation, résultat. Accord, groupe le plus proche et jumeau (§ 4.3) **calculés dans le navigateur** ; réponses en `localStorage` uniquement. Génération de 3 stories en image 1080×1920.
 - **Tests :** formules (accord lissé, seuil de 10 votes, précision), cas limites (0 vote commun, égalité).
+- **Réalisé (8 oct.) :** en une session au lieu de deux. Données : `pipeline/export_site.py` produit `export/site/matrice.json` (244 votes à page hors motions de censure, une lettre P / C / A / - par député et par groupe actuel, la lignée « À droite » → UDR → UDDPLR étant fusionnée), servi au navigateur par `/donnees/matrice.json` (207 Ko) ; test dans `tests/test_export_site.py`. Calculs : `site/src/lib/profil.ts` (accord lissé, jumeau toujours montré dès un vote en commun, opposé, groupes, précision, part des députés comme toi, teintes), testés dans `profil.test.ts` (dont 0 vote commun, égalités, une seule réponse). Écrans : `/quiz/` en mode focus d'après les frames V5 (question avec « Concrètement », Pour / Contre / Je ne sais pas, révélation du vote réel avec « Ta voix de 578e », résultat : groupe le plus proche, jumeau, trois premiers groupes, précision, hémicycle teinté avec l'étoile) ; les réponses du quiz rejoignent celles des pages de vote (même stockage). Trois stories 1080 × 1920 dessinées dans le navigateur (`site/src/lib/stories.ts`), partagées par le partage natif du téléphone ou téléchargées. « Mon hémicycle » refait sur le profil (place, précision, jumeau, opposé, ton député, tous les groupes, tes réponses) ; filtre « Ton jumeau » sur les pages de vote ; l'accueil mène au quiz, puis à ta place. Vérifié dans le navigateur à 1440 px et 375 px : parcours complet, stories, aucun débordement, aucune erreur. **Écarts :** pas de code QR vers le téléphone ni de duel (reporté, t33) ; la place du visiteur est figurée près de son jumeau, faute de position propre sans axe. **Non vérifié :** le partage natif sur un vrai téléphone (t22), le déploiement.
 
 ### t22 👤 Tester le parcours complet — S8, 1 h
 - Faire le quiz comme « Jade », chercher sa députée comme « Marc », sur ordinateur et téléphone. Chaque friction → une issue GitHub étiquetée.
 - **Claude Code prépare** : la liste des scénarios à tester et un modèle d'issue.
+- **Préparé (8 oct.) :** `docs/test-parcours.md`, check-list à cocher : 6 scénarios « Jade » sur téléphone (accueil, quiz et neutralité des questions, résultat, partage des stories, Mon hémicycle, retour), 4 scénarios « Marc » sur ordinateur (code postal avec 8 cas aux résultats attendus vérifiés dans les données, fiche député, page de vote au clavier, recherche), vérifications de fond (ordre LIOT / SOC face au schéma officiel, zoom, état des données, navigation privée) et limites connues. Modèle d'issue : `.github/ISSUE_TEMPLATE/friction-parcours.md` (scénario, appareil, gestes, attendu, constaté, gravité), libellé `parcours`. **Reste pour Julien :** faire le test sur le site en ligne une fois les PR #8 à #11 fusionnées. **Reste à créer** le libellé `parcours` dans le dépôt (sans lui, les issues sont créées sans libellé).
 
 ---
 

@@ -1,90 +1,157 @@
 ---
-// Mon hémicycle (frame V5 « Mon hémicycle »). Le calcul de ta place, de ton groupe le plus
-// proche et de ton jumeau arrive avec le quiz d'entrée (t21) ; en attendant, la page montre
-// l'Assemblée du jour, tes réponses déjà données (gardées dans ton navigateur) et ton député.
+// Mon hémicycle (frame V5 « Mon hémicycle ») : tes réponses comparées une à une aux votes des
+// députés et des groupes, dans ton navigateur (lib/profil.ts). Plus un siège est foncé, plus ce
+// député vote comme toi ; l'étoile marque ta place, près de ton jumeau. Sans réponse : l'Assemblée
+// du jour et l'invitation au quiz d'entrée.
 import Base from '../layouts/Base.astro';
-import Hemicycle from '../components/Hemicycle.astro';
 import { composition, dateLisible, lienVote, majuscule, scrutins } from '../lib/donnees.ts';
+import { HAUTEUR, LARGEUR, places, RAYON_SIEGE } from '../lib/hemicycle.ts';
+import { SANS_VOTE_COMMUN, TEINTES } from '../lib/profil.ts';
 
 const compo = composition();
 const occupes = compo.sieges.filter((s) => !s.vacant).length;
-const vacants = compo.sieges.length - occupes;
+const rang = new Map(compo.groupes.map((g, i) => [g.uid, i]));
+const liste = places();
 // De quoi lister les réponses du visiteur : identifiant → [lien, titre].
 const titres = Object.fromEntries(scrutins().map((s) => {
   const t = majuscule(s.titre).replace(/\.$/, '');
   return [s.uid, [lienVote(s), t.length > 110 ? `${t.slice(0, 108)}…` : t]];
 }));
+const donnees = JSON.stringify({ titres, sieges: compo.sieges.map((s) => s.depute ?? '') })
+  .replace(/</g, '\\u003c');
 ---
 <Base titre="Mon hémicycle" onglet="hemicycle"
-  description="Ton hémicycle : l'Assemblée nationale siège par siège, tes réponses à de vrais votes et ton député.">
+  description="Ton hémicycle : les députés et les groupes qui votent le plus comme toi, calculés dans ton navigateur à partir de vrais votes.">
   <div class="haut">
     <section class="salle" aria-labelledby="titre-hemicycle">
       <div class="titre-section">
         <h1 id="titre-hemicycle">Ton hémicycle</h1>
-        <span>L'Assemblée au {dateLisible(compo.date)}</span>
+        <span data-sous-titre>L'Assemblée au {dateLisible(compo.date)}</span>
       </div>
-      <p class="sous-titre">
-        {occupes} députés dans {compo.groupes.length} groupes{vacants > 0 && `, ${vacants} siège${vacants > 1 ? 's' : ''} vacant${vacants > 1 ? 's' : ''}`}.
-        Les groupes sont rangés dans l'ordre de leurs places dans la salle ; les non-inscrits,
-        dispersés, sont regroupés à droite. Touche un siège pour voir son député.
-      </p>
       <div class="dessin">
-        <Hemicycle sieges={compo.sieges} groupes={compo.groupes} mode="composition"
-          titre="Composition de l'Assemblée nationale" />
+        <svg viewBox={`0 -70 ${LARGEUR} ${HAUTEUR + 70}`} role="img" data-svg
+          aria-label={`L'Assemblée nationale : ${occupes} députés`}>
+          {liste.map((p, i) => (
+            <circle data-i={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={RAYON_SIEGE}
+              fill={compo.sieges[i].vacant ? '#FFFFFF'
+                : ['#B9C0CE', '#D6DBE4'][(rang.get(compo.sieges[i].groupe ?? '') ?? 0) % 2]}
+              stroke={compo.sieges[i].vacant ? '#9AA1B2' : 'none'}></circle>
+          ))}
+          <g data-etoile hidden>
+            <path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z"
+              fill="#FFC531" stroke="#1F2433" stroke-width="2" stroke-linejoin="round"></path>
+          </g>
+          <text x="500" y="440" text-anchor="middle" class="centre-chiffres" data-centre>{occupes}</text>
+          <text x="500" y="478" text-anchor="middle" class="centre-legende" data-centre-legende>députés</text>
+        </svg>
       </div>
+      <p class="info" aria-live="polite" data-info>Survole ou touche un siège pour voir son député.</p>
+      <ul class="legende" data-legende hidden>
+        {TEINTES.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
+        <li><span style={`background: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
+      </ul>
     </section>
 
     <div class="cote">
       <section class="encadre place" aria-labelledby="titre-place">
-        <p class="sur-titre">Ta place · bientôt</p>
-        <h2 id="titre-place">Le 578<sup>e</sup> siège t'attend</h2>
-        <p>
-          Après un quiz de 10 vrais votes, tes réponses seront comparées une à une à celles des
-          577 députés : le groupe qui vote le plus comme toi, ton jumeau, et la précision de ton
-          résultat. Aucun axe gauche-droite : seulement des votes réels.
+        <p class="sur-titre">Ta place</p>
+        <h2 id="titre-place" data-place-titre>Le 578<sup>e</sup> siège t'attend</h2>
+        <p data-place-texte>
+          Réponds à 10 vrais votes : on compare tes réponses, une à une, à celles des 577
+          députés. Aucun axe gauche-droite, seulement des votes réels.
         </p>
+        <a class="bouton-violet" href="/quiz/" data-cta-quiz>Faire le quiz · 2 min</a>
       </section>
 
-      <section class="encadre reponses" aria-labelledby="titre-reponses">
+      <section class="encadre precision" aria-labelledby="titre-precision" data-bloc-precision hidden>
         <div class="titre-carte">
-          <h2 id="titre-reponses">Tes réponses</h2>
-          <span class="compteur" data-compteur>0</span>
+          <h2 id="titre-precision">Précision</h2>
+          <span class="grand" data-precision></span>
         </div>
-        <p data-texte-reponses>
-          Tu n'as encore tranché aucun vote. Chaque page de vote te demande : « Et toi,
-          qu'aurais-tu voté ? »
-        </p>
-        <ul class="liste-reponses" data-liste-reponses hidden></ul>
-        <a class="bouton-violet" href="/explorer/">Trancher des votes</a>
-        <p class="discret">Tes réponses restent dans ton navigateur : rien n'est envoyé.</p>
-      </section>
-
-      <section class="encadre" aria-labelledby="titre-depute" data-encadre-depute>
-        <h2 id="titre-depute">Ton député</h2>
-        <p data-depute-texte>Retrouve qui te représente et compare ses votes aux tiens.</p>
-        <a class="bouton" href="/deputes/" data-depute-lien>Trouver avec mon code postal</a>
+        <span class="segments" aria-hidden="true" data-segments>
+          {Array.from({ length: 10 }, () => <span></span>)}
+        </span>
+        <p data-precision-note></p>
+        <a class="bouton-violet" href="/explorer/">Trancher d'autres votes</a>
       </section>
     </div>
   </div>
-  <script type="application/json" data-titres set:html={JSON.stringify(titres).replace(/</g, '\\u003c')}></script>
+
+  <div class="trio" data-trio hidden>
+    <a class="personne jumeau" data-personne="jumeau">
+      <span class="sur-titre">Ton jumeau</span>
+      <span class="personne-ligne">
+        <span class="avatar" data-ini></span>
+        <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
+        <span class="score" data-score></span>
+      </span>
+      <span class="phrase">Le député qui vote le plus souvent comme toi, parmi ceux en exercice.</span>
+    </a>
+    <a class="personne oppose" data-personne="oppose">
+      <span class="sur-titre">Ton opposé</span>
+      <span class="personne-ligne">
+        <span class="avatar" data-ini></span>
+        <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
+        <span class="score" data-score></span>
+      </span>
+      <span class="phrase">Le député qui vote le moins souvent comme toi.</span>
+    </a>
+    <a class="personne" data-personne="depute" href="/deputes/">
+      <span class="sur-titre">Ton député</span>
+      <span class="personne-ligne">
+        <span class="avatar rond" data-ini>?</span>
+        <span class="personne-texte"><span class="nom" data-nom>À choisir</span><span class="detail" data-detail>Avec ton code postal</span></span>
+        <span class="score" data-score></span>
+      </span>
+      <span class="phrase" data-phrase>Retrouve qui te représente et compare ses votes aux tiens.</span>
+    </a>
+  </div>
+
+  <div class="bas">
+    <section class="encadre groupes-bloc" aria-labelledby="titre-groupes" data-bloc-groupes hidden>
+      <h2 id="titre-groupes">Les groupes, du plus proche au plus lointain</h2>
+      <p class="aide">Part de tes votes en commun où le groupe a pris la même position que toi.</p>
+      <ul class="groupes" data-groupes></ul>
+    </section>
+    <section class="encadre reponses" aria-labelledby="titre-reponses">
+      <div class="titre-carte">
+        <h2 id="titre-reponses">Tes réponses</h2>
+        <span class="compteur" data-compteur>0</span>
+      </div>
+      <p data-texte-reponses>
+        Tu n'as encore tranché aucun vote. Commence par le quiz, ou par n'importe quelle page de
+        vote : « Et toi, qu'aurais-tu voté ? »
+      </p>
+      <ul class="liste-reponses" data-liste-reponses hidden></ul>
+      <p class="discret">Tes réponses restent dans ton navigateur : rien n'est envoyé.</p>
+    </section>
+  </div>
+  <script type="application/json" data-donnees set:html={donnees}></script>
 </Base>
 
 <script>
   import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { comparer, colonnes, initiales, profil, teinte, type Classe, type LigneDepute,
+    type Matrice } from '../lib/profil.ts';
   import { libelleCirco } from '../lib/geo.ts';
+  import { places } from '../lib/hemicycle.ts';
 
-  const titres: Record<string, [string, string]> = JSON.parse(
-    document.querySelector('[data-titres]')?.textContent ?? '{}');
-  const mes = Object.entries(reponses())
-    .filter(([uid]) => titres[uid])
-    .sort((a, b) => b[1].le.localeCompare(a[1].le));
-  const n = mes.length;
-  document.querySelector('[data-compteur]')!.textContent = String(n);
+  const $ = <T extends Element = HTMLElement>(s: string, racine: ParentNode = document) =>
+    racine.querySelector<T>(s)!;
+  const { titres, sieges } = JSON.parse($('[data-donnees]').textContent!) as
+    { titres: Record<string, [string, string]>; sieges: string[] };
+  const mes = Object.entries(reponses()).sort((a, b) => b[1].le.localeCompare(a[1].le));
+  const reps = Object.fromEntries(mes.map(([k, r]) => [k, r.v]));
+  const cercles = [...document.querySelectorAll<SVGCircleElement>('[data-svg] circle[data-i]')];
+  const liste = places();
+
+  // Tes réponses, les plus récentes d'abord.
+  const n = mes.filter(([uid]) => titres[uid]).length;
+  $('[data-compteur]').textContent = String(n);
   if (n > 0) {
-    document.querySelector('[data-texte-reponses]')!.textContent =
-      `${n} vote${n > 1 ? 's' : ''} tranché${n > 1 ? 's' : ''}. Les plus récents :`;
-    const ul = document.querySelector<HTMLElement>('[data-liste-reponses]')!;
-    for (const [uid, r] of mes.slice(0, 6)) {
+    $('[data-texte-reponses]').textContent = `${n} vote${n > 1 ? 's' : ''} tranché${n > 1 ? 's' : ''}. Les plus récents :`;
+    const ul = $('[data-liste-reponses]');
+    for (const [uid, r] of mes.filter(([u]) => titres[u]).slice(0, 8)) {
       const li = document.createElement('li');
       const pastille = document.createElement('span');
       pastille.className = `pastille p-${r.v}`;
@@ -98,59 +165,183 @@ const titres = Object.fromEntries(scrutins().map((s) => {
     ul.hidden = false;
   }
 
-  const uid = deputeChoisi();
-  if (uid) {
-    fetch('/donnees/deputes.json').then((r) => r.json()).then((liste: { u: string; n: string;
-      g: string | null; c: string; d: string }[]) => {
-      const d = liste.find((x) => x.u === uid);
-      if (!d) return;
-      document.querySelector('[data-depute-texte]')!.textContent =
-        `${d.n} (${d.g ?? 'sans groupe'}), ${libelleCirco(d.c)} · ${d.d}.`;
-      const lien = document.querySelector<HTMLAnchorElement>('[data-depute-lien]')!;
-      lien.href = `/deputes/${d.u}/`;
-      lien.textContent = 'Ses votes face aux tiens';
-    }).catch(() => {});
-  }
+  const remplir = (cle: string, c: Classe<LigneDepute> | null, m: Matrice, phrase?: string) => {
+    const carte = $<HTMLAnchorElement>(`[data-personne="${cle}"]`);
+    if (!c) { carte.hidden = cle !== 'depute'; return; }
+    carte.hidden = false;
+    carte.href = `/deputes/${c.ligne.u}/`;
+    $('[data-ini]', carte).textContent = initiales(c.ligne.n);
+    $('[data-nom]', carte).textContent = c.ligne.n;
+    const sigle = m.groupes.find((g) => g.u === c.ligne.g)?.sigle ?? 'non inscrit';
+    $('[data-detail]', carte).textContent = `${sigle} · ${c.communs} vote${c.communs > 1 ? 's' : ''} en commun`;
+    $('[data-score]', carte).textContent = c.communs ? `${c.identiques}/${c.communs}` : '';
+    if (phrase) $('[data-phrase]', carte).textContent = phrase;
+  };
+
+  const dessiner = async () => {
+    const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+    const p = profil(m, reps);
+    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x]));
+    const noms = new Map(m.deputes.map((d) => [d.u, d]));
+    // Survol : le député, et son accord avec toi.
+    const info = $('[data-info]');
+    $('[data-svg]').addEventListener('pointerover', (e) => {
+      const c = e.target as Element;
+      if (!(c instanceof SVGCircleElement) || c.dataset.i === undefined) return;
+      const uid = sieges[Number(c.dataset.i)];
+      if (!uid) { info.textContent = 'Siège vacant'; return; }
+      const d = noms.get(uid);
+      const x = parDepute.get(uid);
+      info.textContent = `${d?.n ?? uid}${x ? ` · ${x.identiques} vote${x.identiques > 1 ? 's' : ''} comme toi sur ${x.communs}` : p.reponses ? ' · aucun vote en commun' : ''}`;
+    });
+    if (!p.reponses) return;
+
+    cercles.forEach((c, k) => {
+      const uid = sieges[k];
+      c.setAttribute('fill', uid ? teinte(parDepute.get(uid)?.lisse ?? null) : '#FFFFFF');
+    });
+    $('[data-legende]').hidden = false;
+    const proches = p.deputes.filter((x) => (x.taux ?? 0) >= 50).length;
+    $('[data-centre]').textContent = String(proches);
+    $('[data-centre-legende]').textContent = 'votent souvent comme toi';
+    $('[data-sous-titre]').textContent = 'Plus un siège est foncé, plus ce député vote comme toi';
+    const siege = p.jumeau ? sieges.indexOf(p.jumeau.ligne.u) : -1;
+    if (siege >= 0) {
+      const pt = liste[siege];
+      const g = $<SVGGElement>('[data-etoile]');
+      g.setAttribute('transform', `translate(${(pt.x - 17).toFixed(1)} ${(pt.y - 52).toFixed(1)})`);
+      g.removeAttribute('hidden');
+    }
+
+    const groupe = p.groupes[0];
+    if (groupe) {
+      $('[data-place-titre]').textContent = `Près de ${groupe.ligne.sigle}`;
+      $('[data-place-texte]').textContent = `Le groupe qui vote le plus comme toi : ${groupe.ligne.libelle}, d'accord avec toi sur ${groupe.identiques} vote${groupe.identiques > 1 ? 's' : ''} sur ${groupe.communs}. Calculé sur ${p.reponses} vote${p.reponses > 1 ? 's' : ''} tranché${p.reponses > 1 ? 's' : ''}, comparés un par un aux 577 députés.`;
+      $('[data-cta-quiz]').textContent = 'Refaire le quiz';
+    }
+    const prec = Math.round(100 * p.precision);
+    $('[data-bloc-precision]').hidden = false;
+    $('[data-precision]').textContent = `${prec} %`;
+    document.querySelectorAll<HTMLElement>('[data-segments] span')
+      .forEach((s, k) => s.classList.toggle('plein', k < Math.round(p.precision * 10)));
+    $('[data-precision-note]').textContent = prec < 70
+      ? `Encore approximatif : ton résultat devient fiable vers 25 votes tranchés (tu en as ${p.reponses}).`
+      : 'Ton résultat est désormais fiable. Chaque nouveau vote l\'affine encore.';
+
+    $('[data-trio]').hidden = false;
+    remplir('jumeau', p.jumeau, m);
+    remplir('oppose', p.oppose, m);
+    const uid = deputeChoisi();
+    const mien = uid ? noms.get(uid) : undefined;
+    if (mien) {
+      const c = comparer(mien.s, colonnes(m, reps));
+      remplir('depute', { ligne: mien, ...c }, m,
+        c.communs ? `D'accord avec toi sur ${c.identiques} vote${c.identiques > 1 ? 's' : ''} sur ${c.communs}.`
+          : 'Aucun vote en commun pour l\'instant.');
+      const d = await fetch('/donnees/deputes.json').then((r) => r.json())
+        .then((l: { u: string; c: string; d: string }[]) => l.find((x) => x.u === uid))
+        .catch(() => null);
+      if (d) $('[data-detail]', $('[data-personne="depute"]')).textContent = `${libelleCirco(d.c)} · ${d.d}`;
+    }
+
+    $('[data-bloc-groupes]').hidden = false;
+    $('[data-groupes]').replaceChildren(...p.groupes.map((x) => {
+      const li = document.createElement('li');
+      const s = document.createElement('abbr');
+      s.textContent = x.ligne.sigle;
+      s.title = x.ligne.libelle;
+      const jauge = document.createElement('span');
+      jauge.className = 'jauge';
+      const plein = document.createElement('span');
+      plein.style.width = `${x.taux ?? 0}%`;
+      jauge.append(plein);
+      const pct = document.createElement('span');
+      pct.className = 'pct';
+      pct.textContent = `${x.taux} %`;
+      const detail = document.createElement('span');
+      detail.className = 'visuellement-cache';
+      detail.textContent = `${x.ligne.libelle} : ${x.identiques} sur ${x.communs}`;
+      li.append(s, jauge, pct, detail);
+      return li;
+    }));
+  };
+  dessiner().catch(() => {
+    $('[data-info]').textContent = 'Les données des votes n\'ont pas pu être chargées. Réessaie plus tard.';
+  });
 </script>
 
 <style>
-  .haut { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .haut { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 22px; align-items: start; }
   @media (max-width: 1080px) { .haut { grid-template-columns: minmax(0, 1fr); } }
   .salle { padding: clamp(18px, 2.6vw, 26px); border-radius: 30px; background: var(--fond-doux); min-width: 0; }
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
   .titre-section span { font-size: 14px; color: var(--gris); }
-  .salle .sous-titre { margin: 8px 0 0; max-width: 720px; }
-  .dessin { margin-top: 26px; }
+  .dessin { margin-top: 18px; }
+  .dessin svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .dessin circle { transition: fill .45s ease; }
+  .centre-chiffres { font-family: var(--police-titre); font-weight: 700; font-size: 44px; fill: var(--texte); }
+  .centre-legende { font-size: 19px; fill: var(--gris-legende); }
+  .info { min-height: 1.6em; margin: 10px 0 0; text-align: center; font-size: 15px; color: var(--texte-doux); }
+  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--texte-doux); }
+  .legende li { display: inline-flex; align-items: center; gap: 6px; }
+  .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
   .cote { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-  @media (max-width: 1080px) {
-    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
-  }
-  .encadre { padding: 20px 22px; border: 2px solid var(--bord); border-radius: 26px; background: var(--fond); }
+  @media (max-width: 1080px) { .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; } }
+  .encadre { padding: 22px; border: 2px solid var(--bord); border-radius: 26px; background: var(--fond); }
   .encadre h2 { font-size: 21px; }
   .encadre p { margin: 8px 0 0; font-size: 15px; color: var(--texte-doux); }
   .sur-titre { margin: 0 !important; font-family: var(--police-titre); font-weight: 600; font-size: 13px !important; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet) !important; }
-  .place h2 { margin-top: 6px; font-size: clamp(24px, 2.4vw, 30px); }
-  .reponses { border: 0; background: #EFE9FF; }
-  .reponses h2, .reponses p { color: var(--violet-encre); }
+  .place h2 { margin-top: 6px; font-size: clamp(26px, 2.6vw, 32px); }
+  .precision { border: 0; background: #EFE9FF; }
+  .precision h2, .precision p { color: var(--violet-encre); }
   .titre-carte { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .compteur { font-family: var(--police-titre); font-weight: 700; font-size: 34px; line-height: 1; color: var(--violet-fonce); }
-  .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .liste-reponses :global(li) { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
-  .liste-reponses :global(a) { color: var(--texte); text-decoration: none; line-height: 1.35; }
-  .liste-reponses :global(a:hover) { color: var(--violet-fonce); text-decoration: underline; }
-  .liste-reponses :global(.pastille) {
-    flex: none; padding: 2px 8px; border-radius: 8px; font-family: var(--police-titre); font-weight: 600;
-    font-size: 12px; color: #fff;
-  }
-  .liste-reponses :global(.p-pour) { background: var(--pour); }
-  .liste-reponses :global(.p-contre) { background: #E5552A; }
+  .grand { font-family: var(--police-titre); font-weight: 700; font-size: 34px; line-height: 1; color: var(--violet-fonce); }
+  .segments { display: flex; gap: 4px; margin-top: 12px; }
+  .segments span { flex: 1; height: 14px; border-radius: 4px; background: #fff; }
+  .segments :global(span.plein) { background: var(--violet); }
   .bouton-violet {
-    display: flex; align-items: center; justify-content: center; min-height: 52px; margin-top: 16px;
+    display: flex; align-items: center; justify-content: center; min-height: 52px; margin-top: 14px;
     border-radius: 14px; background: var(--violet); color: #fff; box-shadow: 0 5px 0 var(--violet-fonce);
     font-family: var(--police-titre); font-weight: 600; font-size: 15px; letter-spacing: 0.04em;
     text-transform: uppercase; text-decoration: none;
   }
   .bouton-violet:hover { color: #fff; background: var(--violet-fonce); }
-  .discret { font-size: 13px !important; color: var(--violet-fonce) !important; opacity: 0.8; }
-  [data-encadre-depute] .bouton { width: 100%; margin-top: 14px; }
+
+  .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  @media (max-width: 900px) { .trio { grid-template-columns: minmax(0, 1fr); } }
+  .personne { display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 2px solid var(--bord); border-radius: 24px; background: var(--fond); box-shadow: 0 5px 0 var(--bord); color: inherit; text-decoration: none; }
+  .personne:hover { border-color: var(--violet-pale); }
+  .jumeau { border-color: #C9B8FF; background: #FBF9FF; box-shadow: 0 5px 0 #E3DAFF; }
+  .oppose .sur-titre { color: #C2410C !important; }
+  .personne-ligne { display: flex; align-items: center; gap: 12px; }
+  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 16px; background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 18px; }
+  .oppose .avatar { background: #FFE6DA; color: #B83C0A; }
+  .avatar.rond { border-radius: 50%; background: var(--violet-voile); color: var(--violet-fonce); }
+  .personne-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .nom { font-family: var(--police-titre); font-weight: 700; font-size: 19px; }
+  .detail { font-size: 13px; color: var(--gris-legende); }
+  .score { font-family: var(--police-titre); font-weight: 700; font-size: 22px; color: var(--violet-fonce); }
+  .oppose .score { color: #C2410C; }
+  .phrase { font-size: 14px; color: var(--gris); }
+
+  .bas { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+  @media (max-width: 1000px) { .bas { grid-template-columns: minmax(0, 1fr); } }
+  .aide { font-size: 14px !important; color: var(--gris) !important; }
+  .groupes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin: 10px 0 0; padding: 0; list-style: none; }
+  @media (max-width: 640px) { .groupes { grid-template-columns: minmax(0, 1fr); } }
+  .groupes :global(li) { display: grid; grid-template-columns: 70px minmax(0, 1fr) 46px; gap: 10px; align-items: center; padding: 9px 0; border-top: 2px solid var(--bord-leger); }
+  .groupes :global(abbr) { font-family: var(--police-titre); font-weight: 700; font-size: 15px; text-decoration: none; }
+  .groupes :global(.jauge) { height: 12px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; }
+  .groupes :global(.jauge span) { display: block; height: 100%; border-radius: 999px; background: #A98BFF; }
+  .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 700; color: var(--violet-fonce); }
+  .compteur { font-family: var(--police-titre); font-weight: 700; font-size: 34px; line-height: 1; color: var(--violet-fonce); }
+  .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .liste-reponses :global(li) { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
+  .liste-reponses :global(a) { color: var(--texte); text-decoration: none; line-height: 1.35; }
+  .liste-reponses :global(a:hover) { color: var(--violet-fonce); text-decoration: underline; }
+  .liste-reponses :global(.pastille) { flex: none; padding: 2px 8px; border-radius: 8px; font-family: var(--police-titre); font-weight: 600; font-size: 12px; color: #fff; }
+  .liste-reponses :global(.p-pour) { background: var(--pour); }
+  .liste-reponses :global(.p-contre) { background: #E5552A; }
+  .discret { font-size: 13px !important; color: var(--gris) !important; }
 </style>

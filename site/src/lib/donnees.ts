@@ -241,4 +241,17 @@ export function questionsQuiz(): QuestionQuiz[] {
   return JSON.parse(readFileSync(chemin, 'utf-8')) as QuestionQuiz[];
 }
 
+/** Une carte de vote (pipeline/cartes.py) : thème, titre court, question, « Concrètement ». */
+export interface CarteVote extends QuestionQuiz {
+  titre: string;
+}
+
+/** Les 5 lots de 3 votes qui suivent le quiz (data/lots.json, choix de Julien, t43), dans
+ *  l'ordre de passage. */
+export function lotsDeVotes(): CarteVote[][] {
+  const chemin = resolve(process.cwd(), '..', 'data', 'lots.json');
+  const lots = JSON.parse(readFileSync(chemin, 'utf-8')) as { lot: number; cartes: CarteVote[] }[];
+  return lots.map((l) => l.cartes);
+}
+
 export const matrice = () => lire<Matrice>('site/matrice.json', EXPORT_SITE);

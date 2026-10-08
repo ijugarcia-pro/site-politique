@@ -1,0 +1,221 @@
+---
+// Trancher des votes, un par un (frames V5 « ① Première question », « ② Révélation » et
+// « ⑥ Séance ») : la question, « Concrètement », Pour / Contre / Je ne sais pas, puis la
+// révélation du vote réel ; à droite, ton hémicycle se construit à chaque réponse. Commun au
+// quiz d'entrée et aux lots de votes ; le déroulé est dans lib/seance.ts, l'écran de fin vient
+// de la page (slot « fin »).
+import Salle from './Salle.astro';
+import { composition, dateLisible, lienVote, scrutin } from '../lib/donnees.ts';
+import { NIVEAUX, SANS_VOTE_COMMUN } from '../lib/profil.ts';
+import { verdict } from '../lib/votes.ts';
+
+interface Props {
+  cartes: { uid: string; numero: number; theme: string; question: string; concretement: string }[];
+  /** La puce de chaque carte, « fond:encre ». */
+  puces: string[];
+  /** Afficher la date du vote à côté du thème (frame ⑥). */
+  dates?: boolean;
+}
+
+const { cartes, puces, dates = false } = Astro.props;
+const compo = composition();
+// Le vote de chaque député d'aujourd'hui, siège par siège dans la salle du jour : P, C, A
+// (abstention), N (non-votant), - (absent), en minuscule s'il a voté contre son groupe ;
+// x s'il n'était pas député à la date du vote, V pour un siège vacant.
+const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A',
+  non_votant: 'N', absent: '-' };
+const questions = cartes.map((q, k) => {
+  const s = scrutin(q.uid);
+  const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
+  return {
+    uid: q.uid, numero: q.numero, theme: q.theme, concretement: q.concretement,
+    question: q.question.replace(/ ([?!:;])/g, ' $1'),
+    date: dates ? `${s.solennel ? 'Scrutin solennel' : 'Vote'} du ${dateLisible(s.date)}` : '',
+    lien: lienVote(s), verdict: verdict(s), adopte: s.sort === 'adopté', decompte: s.decompte,
+    dissidents: s.dissidents, marge: s.voix_pour_inverser, puce: puces[k],
+    sieges: compo.sieges.map((c) => {
+      if (c.vacant || !c.depute) return 'V';
+      const x = votes.get(c.depute);
+      if (!x) return 'x';
+      const l = LETTRES[x.vote ?? 'absent'] ?? '-';
+      return x.dissident ? l.toLowerCase() : l;
+    }).join(''),
+  };
+});
+const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
+---
+<div class="quiz" data-quiz>
+  <section class="gauche" aria-live="polite">
+    <div class="question" data-ecran="question">
+      {Astro.slots.has('bulle') && (
+        <div class="bulle" data-bulle>
+          <span class="robot" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28"><rect x="6" y="12" width="16" height="9" rx="3" fill="#fff"></rect><rect x="9" y="5" width="10" height="8" rx="3" fill="#fff"></rect><rect x="8" y="20" width="3" height="5" rx="1.5" fill="#fff"></rect><rect x="17" y="20" width="3" height="5" rx="1.5" fill="#fff"></rect></svg>
+          </span>
+          <p><slot name="bulle" /></p>
+        </div>
+      )}
+      <div class="puces">
+        <span class="puce-theme" data-theme></span>
+        {dates && (
+          <span class="puce-date" data-date>
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M8 4.5V8l2.5 1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <span data-date-texte></span>
+          </span>
+        )}
+      </div>
+      <h1 data-question tabindex="-1"></h1>
+      <p class="concretement"><strong>Concrètement :</strong> <span data-concretement></span></p>
+      <div class="choix">
+        <button type="button" class="b-pour" data-reponse="pour">Pour</button>
+        <button type="button" class="b-contre" data-reponse="contre">Contre</button>
+      </div>
+      <button type="button" class="b-passer" data-reponse="">Je ne sais pas</button>
+    </div>
+    <slot name="fin" />
+  </section>
+
+  <section class="panneau" aria-labelledby="titre-panneau">
+    <div class="panneau-tete">
+      <div>
+        <h2 id="titre-panneau" data-panneau-titre>Ton hémicycle</h2>
+        <p data-panneau-sous>Il se construit à chaque réponse</p>
+      </div>
+      <div class="precision-tete" data-precision-tete title="Plus tu tranches de votes, plus ton résultat est fiable">
+        <span class="precision-tete-titre">Précision</span>
+        <span class="precision-tete-segments" aria-hidden="true" data-segments-tete>
+          {Array.from({ length: 10 }, () => <span></span>)}
+        </span>
+        <span class="precision-tete-pct" data-precision-tete-pct>0 %</span>
+      </div>
+    </div>
+    <div class="cadre-salle">
+      <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale" libre
+        chiffre="577" legende="sièges… et le tien" />
+    </div>
+    <ul class="legende" data-legende-vote hidden>
+      <li><span style="background: var(--pour)"></span>Pour</li>
+      <li><span style="background: var(--contre)"></span>Contre</li>
+      <li><span style="background: var(--abstention)"></span>Abstention</li>
+      <li><span style="background: var(--non-votant)"></span>Non-votant</li>
+      <li><span style="background: var(--absent)"></span>Absent</li>
+      <li><span class="anneau"></span>Contre son groupe</li>
+      <li data-legende-hors hidden><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Pas encore député</li>
+    </ul>
+    <ul class="legende" data-legende-accord>
+      {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
+      <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
+    </ul>
+  </section>
+</div>
+
+<div class="revelation" data-revelation hidden>
+  <div class="revelation-dedans">
+    <span class="revelation-icone" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="9" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="21" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="15" cy="20" r="4.5" fill="#7C4DFF"></circle></svg>
+    </span>
+    <div class="revelation-texte">
+      <p class="revelation-titre" data-rv-titre></p>
+      <p><span data-rv-ligne></span> <a data-lien-vote href="/explorer/">Tout savoir sur ce vote</a></p>
+    </div>
+    <div class="ta-voix">
+      <p class="sur-titre">
+        <svg width="22" height="14" viewBox="0 0 40 24" aria-hidden="true"><circle cx="5" cy="20" r="3.2" fill="#C9B8FF"></circle><circle cx="9" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="17" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="26" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="33" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="36" cy="20" r="3.8" fill="#7C4DFF"></circle></svg>
+        <span>Ta voix de 578<sup>e</sup></span>
+      </p>
+      <p data-rv-voix></p>
+    </div>
+    <button type="button" class="b-continuer" data-continuer>Continuer</button>
+  </div>
+</div>
+
+<script type="application/json" data-donnees-seance set:html={donnees}></script>
+
+<style>
+  /* Cotes reprises des frames V5 « ① Première question », « ② Révélation », « ⑥ Séance ». */
+  :global(main.page.focus) { flex: 1; justify-content: center; max-width: 1320px;
+    padding: 12px clamp(16px, 3.4vw, 48px) 32px; }
+
+  .quiz { display: flex; flex-wrap: wrap; gap: 32px 56px; align-items: center; }
+  .gauche { flex: 1 1 440px; min-width: 0; max-width: 560px; }
+  .panneau { flex: 1.25 1 560px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: 32px;
+    background: var(--fond-doux); scroll-margin-top: 16px; }
+  .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
+  .panneau h2 { font-size: 24px; font-weight: 600; }
+  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris-legende); }
+  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px;
+    background: var(--fond); border: 2px solid var(--bord); }
+  .precision-tete-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: #7A8296; }
+  .precision-tete-segments { display: flex; gap: 3px; }
+  .precision-tete-segments span { width: 9px; height: 14px; border-radius: 3px; background: var(--bord); }
+  .precision-tete-segments :global(span.plein) { background: var(--violet); }
+  .precision-tete-pct { min-width: 36px; font-family: var(--police-titre); font-weight: 700; font-size: 14px; }
+  .cadre-salle { margin-top: 20px; }
+  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
+    list-style: none; font-size: 14px; color: var(--texte-doux); }
+  .legende li { display: inline-flex; align-items: center; gap: 7px; }
+  .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
+  .legende .sans { background: #FFFFFF; border: 2px solid; }
+
+  .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 28px; }
+  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: 18px;
+    font-size: 17px; line-height: 1.45; color: var(--texte-doux); }
+  .bulle :global(strong) { color: var(--violet-fonce); }
+  .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
+    border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
+  .puces { display: flex; flex-wrap: wrap; gap: 8px; }
+  .puce-theme, .puce-date { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
+    border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px; }
+  .puce-theme { letter-spacing: 0.06em; text-transform: uppercase; }
+  .puce-theme::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .puce-date { background: var(--texte); color: #FFFFFF; }
+  .question h1 { margin: 16px 0 14px; font-size: clamp(34px, 3.3vw, 48px); font-weight: 600; line-height: 1.08;
+    letter-spacing: -0.015em; outline: none; }
+  .question h1:global(.longue) { font-size: clamp(28px, 2.6vw, 38px); line-height: 1.12; }
+  .concretement { margin: 0 0 30px; font-size: 18px; line-height: 1.5; color: var(--gris); }
+  .concretement strong { color: var(--texte); }
+  .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .choix button, .b-passer {
+    min-height: 76px; border: 0; border-radius: 18px; font-family: var(--police-titre); font-weight: 600;
+    font-size: 24px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; cursor: pointer;
+    transition: transform .08s ease, box-shadow .08s ease, opacity .2s;
+  }
+  /* Contre : #E5552A plutôt que le #FF6A3D de la maquette, pour un texte blanc lisible (contraste AA). */
+  .b-pour { background: var(--pour); box-shadow: 0 6px 0 #1C5AD0; }
+  .b-contre { background: #E5552A; box-shadow: 0 6px 0 #B83C0A; }
+  .choix button:active, .b-passer:active { transform: translateY(5px); box-shadow: none; }
+  .b-passer { width: 100%; min-height: 54px; margin-top: 14px; border: 2px solid var(--bord); background: var(--fond);
+    box-shadow: 0 4px 0 var(--bord); color: #7A8296; font-size: 17px; }
+  .choix button:disabled, .b-passer:disabled { cursor: default; }
+  .choix button:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
+  .b-passer:global(.estompe) { opacity: .35; box-shadow: none; }
+
+  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
+    border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
+  @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
+  @keyframes monte { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
+  .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
+    margin: 0 auto; padding: 22px clamp(16px, 3.4vw, 48px); }
+  .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px;
+    border-radius: 50%; background: var(--fond); box-shadow: 0 4px 0 #E3DAFF; }
+  .revelation-texte { flex: 1 1 380px; }
+  .revelation p { margin: 0; }
+  .revelation-titre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(22px, 2.2vw, 28px);
+    line-height: 1.1; color: #4B2BC2; }
+  .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: #4A4F63; }
+  .revelation-texte a { white-space: nowrap; }
+  .ta-voix { flex: 0 1 330px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF;
+    font-size: 15px; line-height: 1.4; color: var(--texte-doux); }
+  .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; }
+  .ta-voix p + p { margin-top: 5px; }
+  .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--violet); }
+  .sur-titre sup { text-transform: none; }
+  .b-continuer { min-width: 220px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: 18px; background: var(--violet);
+    color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600;
+    font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+  @media (max-width: 640px) { .b-continuer { width: 100%; } }
+</style>

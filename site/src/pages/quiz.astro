@@ -6,172 +6,71 @@
 // plus proches, la précision, et trois stories à partager. Tout est calculé dans le
 // navigateur ; les réponses y restent (lib/navigateur.ts).
 import Base from '../layouts/Base.astro';
-import Salle from '../components/Salle.astro';
-import { composition, lienVote, questionsQuiz, scrutin } from '../lib/donnees.ts';
-import { NIVEAUX, SANS_VOTE_COMMUN } from '../lib/profil.ts';
-import { verdict } from '../lib/votes.ts';
+import EnteteSeance from '../components/EnteteSeance.astro';
+import Seance from '../components/Seance.astro';
+import { lotsDeVotes, questionsQuiz } from '../lib/donnees.ts';
 
-const compo = composition();
-// Le vote de chaque député d'aujourd'hui, siège par siège dans la salle du jour : P, C, A
-// (abstention), N (non-votant), - (absent), en minuscule s'il a voté contre son groupe ;
-// x s'il n'était pas député à la date du vote, V pour un siège vacant.
-const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A',
-  non_votant: 'N', absent: '-' };
 // Les puces de thème de la maquette, dans l'ordre des questions.
 const PUCES = ['#E8E1FF:#5B35E6', '#FFE1EF:#B5175A', '#E3F6D5:#3B7F12', '#FFF1CC:#9A5B00',
   '#DDF1FF:#0B6AAE', '#D9F7EA:#0C7F57', '#FFE6DA:#B83C0A', '#E6E9F0:#3A4256',
   '#FFF6C2:#7A6000', '#E2E5FF:#3443B0'];
-const questions = questionsQuiz().map((q, k) => {
-  const s = scrutin(q.uid);
-  const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
-  return {
-    ...q, question: q.question.replace(/ ([?!:;])/g, ' $1'),
-    lien: lienVote(s), verdict: verdict(s), adopte: s.sort === 'adopté', decompte: s.decompte,
-    dissidents: s.dissidents, marge: s.voix_pour_inverser, puce: PUCES[k % PUCES.length],
-    sieges: compo.sieges.map((c) => {
-      if (c.vacant || !c.depute) return 'V';
-      const x = votes.get(c.depute);
-      if (!x) return 'x';
-      const l = LETTRES[x.vote ?? 'absent'] ?? '-';
-      return x.dissident ? l.toLowerCase() : l;
-    }).join(''),
-  };
-});
-const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
+const cartes = questionsQuiz();
+const nLots = lotsDeVotes().length;
 ---
 <Base titre="Le quiz d'entrée" focus
   description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
-  <div class="progression" slot="entete">
-    <div class="barre-cadre">
-      <div class="barre" role="progressbar" aria-label="Progression du quiz" aria-valuemin="0"
-        aria-valuemax={questions.length} aria-valuenow="0" data-barre>
-        <span data-barre-pleine></span>
-      </div>
-      <span class="compteur" data-compteur>Vote 1 sur {questions.length}</span>
-    </div>
-    <a class="quitter" href="/explorer/">Explorer tous les votes</a>
-  </div>
+  <EnteteSeance slot="entete" total={cartes.length} libelle="Progression du quiz"
+    sortie={{ href: '/explorer/', texte: 'Explorer tous les votes' }} />
 
-  <div class="quiz" data-quiz>
-    <section class="gauche" aria-live="polite">
-      <div class="question" data-ecran="question">
-        <div class="bulle" data-bulle>
-          <span class="robot" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 28 28"><rect x="6" y="12" width="16" height="9" rx="3" fill="#fff"></rect><rect x="9" y="5" width="10" height="8" rx="3" fill="#fff"></rect><rect x="8" y="20" width="3" height="5" rx="1.5" fill="#fff"></rect><rect x="17" y="20" width="3" height="5" rx="1.5" fill="#fff"></rect></svg>
-          </span>
-          <p>
-            Il reste un siège libre à l'Assemblée : <strong>le tien</strong>.
-            {` Réponds à ${questions.length} vrais votes, on te montre quels députés ont voté comme toi.`}
-          </p>
-        </div>
-        <span class="puce-theme" data-theme></span>
-        <h1 data-question tabindex="-1"></h1>
-        <p class="concretement"><strong>Concrètement :</strong> <span data-concretement></span></p>
-        <div class="choix">
-          <button type="button" class="b-pour" data-reponse="pour">Pour</button>
-          <button type="button" class="b-contre" data-reponse="contre">Contre</button>
-        </div>
-        <button type="button" class="b-passer" data-reponse="">Je ne sais pas</button>
+  <Seance cartes={cartes} puces={cartes.map((_, k) => PUCES[k % PUCES.length])}>
+    <Fragment slot="bulle">
+      Il reste un siège libre à l'Assemblée : <strong>le tien</strong>.
+      {` Réponds à ${cartes.length} vrais votes, on te montre quels députés ont voté comme toi.`}
+    </Fragment>
+    <div class="resultat" slot="fin" data-ecran="resultat" hidden>
+      <span class="confetti c1" aria-hidden="true"></span>
+      <span class="confetti c2" aria-hidden="true"></span>
+      <span class="confetti c3" aria-hidden="true"></span>
+      <span class="puce-resultat" data-sur-titre-resultat></span>
+      <h1 tabindex="-1" data-titre-resultat>Ta place est prête&nbsp;!</h1>
+      <p class="phrase" data-phrase-groupe></p>
+      <a class="jumeau" data-jumeau hidden>
+        <span class="avatar" data-jumeau-ini></span>
+        <span class="jumeau-texte">
+          <span class="sur-titre">Ton jumeau à l'Assemblée</span>
+          <span class="jumeau-nom" data-jumeau-nom></span>
+          <span class="jumeau-detail" data-jumeau-detail></span>
+        </span>
+        <span class="jumeau-score">
+          <span data-jumeau-score></span>
+          <span class="petit">votes comme toi</span>
+        </span>
+      </a>
+      <ul class="groupes" data-groupes aria-label="Les groupes qui votent le plus comme toi"></ul>
+      <div class="precision">
+        <span class="precision-titre">Précision</span>
+        <span class="segments" data-segments aria-hidden="true">
+          {Array.from({ length: 10 }, () => <span></span>)}
+        </span>
+        <span class="precision-pct" data-precision></span>
       </div>
-
-      <div class="resultat" data-ecran="resultat" hidden>
-        <span class="confetti c1" aria-hidden="true"></span>
-        <span class="confetti c2" aria-hidden="true"></span>
-        <span class="confetti c3" aria-hidden="true"></span>
-        <span class="puce-resultat" data-sur-titre-resultat></span>
-        <h1 tabindex="-1" data-titre-resultat>Ta place est prête&nbsp;!</h1>
-        <p class="phrase" data-phrase-groupe></p>
-        <a class="jumeau" data-jumeau hidden>
-          <span class="avatar" data-jumeau-ini></span>
-          <span class="jumeau-texte">
-            <span class="sur-titre">Ton jumeau à l'Assemblée</span>
-            <span class="jumeau-nom" data-jumeau-nom></span>
-            <span class="jumeau-detail" data-jumeau-detail></span>
-          </span>
-          <span class="jumeau-score">
-            <span data-jumeau-score></span>
-            <span class="petit">votes comme toi</span>
-          </span>
+      <p class="note" data-note-precision></p>
+      <div class="actions">
+        <a class="b-principal" href="/lots/" data-suite>
+          <span data-suite-titre>Continuer →</span>
+          <span class="petit" data-suite-detail>3 votes de plus · environ 2 min</span>
         </a>
-        <ul class="groupes" data-groupes aria-label="Les groupes qui votent le plus comme toi"></ul>
-        <div class="precision">
-          <span class="precision-titre">Précision</span>
-          <span class="segments" data-segments aria-hidden="true">
-            {Array.from({ length: 10 }, () => <span></span>)}
-          </span>
-          <span class="precision-pct" data-precision></span>
-        </div>
-        <p class="note" data-note-precision></p>
-        <div class="actions">
-          <a class="b-principal" href="/hemicycle/">
-            <span>Voir mon hémicycle →</span>
-            <span class="petit">Ton jumeau, ton opposé, tous les groupes</span>
-          </a>
-          <button type="button" class="b-partager" data-ouvrir-partage>
-            <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2.2"></rect><circle cx="11" cy="11" r="3.6" fill="none" stroke="currentColor" stroke-width="2.2"></circle><circle cx="15.6" cy="6.4" r="1.2" fill="currentColor"></circle></svg>
-            Partager
-          </button>
-        </div>
-        <p class="recommencer">
-          <button type="button" data-recommencer>Recommencer le quiz</button>{' · '}<a
-            href="/explorer/">Trancher d'autres votes</a> pour affiner ton résultat
-        </p>
+        <button type="button" class="b-partager" data-ouvrir-partage>
+          <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2.2"></rect><circle cx="11" cy="11" r="3.6" fill="none" stroke="currentColor" stroke-width="2.2"></circle><circle cx="15.6" cy="6.4" r="1.2" fill="currentColor"></circle></svg>
+          Partager
+        </button>
       </div>
-    </section>
-
-    <section class="panneau" aria-labelledby="titre-panneau">
-      <div class="panneau-tete">
-        <div>
-          <h2 id="titre-panneau" data-panneau-titre>Ton hémicycle</h2>
-          <p data-panneau-sous>Il se construit à chaque réponse</p>
-        </div>
-        <div class="precision-tete" data-precision-tete title="Plus tu tranches de votes, plus ton résultat est fiable">
-          <span class="precision-tete-titre">Précision</span>
-          <span class="precision-tete-segments" aria-hidden="true" data-segments-tete>
-            {Array.from({ length: 10 }, () => <span></span>)}
-          </span>
-          <span class="precision-tete-pct" data-precision-tete-pct>0 %</span>
-        </div>
-      </div>
-      <div class="cadre-salle">
-        <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale" libre
-          chiffre="577" legende="sièges… et le tien" />
-      </div>
-      <ul class="legende" data-legende-vote hidden>
-        <li><span style="background: var(--pour)"></span>Pour</li>
-        <li><span style="background: var(--contre)"></span>Contre</li>
-        <li><span style="background: var(--abstention)"></span>Abstention</li>
-        <li><span style="background: var(--non-votant)"></span>Non-votant</li>
-        <li><span style="background: var(--absent)"></span>Absent</li>
-        <li><span class="anneau"></span>Contre son groupe</li>
-        <li data-legende-hors hidden><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Pas encore député</li>
-      </ul>
-      <ul class="legende" data-legende-accord>
-        {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
-        <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
-      </ul>
-    </section>
-  </div>
-
-  <div class="revelation" data-revelation hidden>
-    <div class="revelation-dedans">
-      <span class="revelation-icone" aria-hidden="true">
-        <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="9" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="21" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="15" cy="20" r="4.5" fill="#7C4DFF"></circle></svg>
-      </span>
-      <div class="revelation-texte">
-        <p class="revelation-titre" data-rv-titre></p>
-        <p><span data-rv-ligne></span> <a data-lien-vote href="/explorer/">Tout savoir sur ce vote</a></p>
-      </div>
-      <div class="ta-voix">
-        <p class="sur-titre">
-          <svg width="22" height="14" viewBox="0 0 40 24" aria-hidden="true"><circle cx="5" cy="20" r="3.2" fill="#C9B8FF"></circle><circle cx="9" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="17" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="26" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="33" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="36" cy="20" r="3.8" fill="#7C4DFF"></circle></svg>
-          <span>Ta voix de 578<sup>e</sup></span>
-        </p>
-        <p data-rv-voix></p>
-      </div>
-      <button type="button" class="b-continuer" data-continuer>Continuer</button>
+      <p class="recommencer">
+        <button type="button" data-recommencer>Recommencer le quiz</button>{' · '}<a
+          href="/hemicycle/" data-lien-second>Voir mon hémicycle</a>
+      </p>
     </div>
-  </div>
+  </Seance>
 
   <dialog class="partage" data-partage aria-labelledby="titre-partage">
     <div class="partage-tete">
@@ -188,175 +87,37 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     </div>
   </dialog>
 
-  <script type="application/json" data-donnees-quiz set:html={donnees}></script>
+  <script type="application/json" data-lots set:html={String(nLots)}></script>
 </Base>
 
 <script>
-  import { lireJSON, repondre, reponses as mesReponses } from '../lib/navigateur.ts';
-  import { initiales, niveau, partCommeToi, precision, profil, teinte, type Matrice,
-    type Profil, type Reponse } from '../lib/profil.ts';
+  import { lireJSON, repondre } from '../lib/navigateur.ts';
+  import { etatLots, prochainLot } from '../lib/lots.ts';
+  import { initiales, niveau, partCommeToi, teinte, type Reponse } from '../lib/profil.ts';
+  import { $, mesReps, pluriel, seance, segments } from '../lib/seance.ts';
   import { dessiner, enImage, type DonneesStories, type TypeStory } from '../lib/stories.ts';
-  import { pastille, Salle } from '../lib/salle.ts';
+  import { pastille } from '../lib/salle.ts';
 
-  interface Question {
-    uid: string; numero: number; theme: string; question: string; concretement: string;
-    lien: string; verdict: string; adopte: boolean; dissidents: number; marge: number | null;
-    puce: string; sieges: string;
-    decompte: { pour: number; contre: number; abstention: number };
-  }
-  const { questions } = JSON.parse(
-    document.querySelector('[data-donnees-quiz]')!.textContent!) as { questions: Question[] };
   const CLE = '578e.quiz.v1';
-  const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531',
-    N: '#9AA1B2', '-': '#DFE3EB' };
-  const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
-  const salle = new Salle($('[data-salle]'));
+  const nLots = Number($('[data-lots]').textContent);
+  const s = seance({
+    libelleContinuer: (i) => (i + 1 < s.questions.length ? 'Continuer' : 'Voir ma place'),
+  });
+  const { questions, salle } = s;
   const { groupes, sieges } = salle.reglages;
   const deputes = sieges.map(([u]) => u);
   const etat = lireJSON<{ i: number; fini: boolean }>(CLE, { i: 0, fini: false });
-  const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
-  let matrice: Matrice | null = null;
-  const chargement = fetch('/donnees/matrice.json').then((r) => r.json())
-    .then((m: Matrice) => { matrice = m; return m; });
-
   const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch { /* */ } };
-  const montrer = (ecran: string) => {
-    for (const e of document.querySelectorAll<HTMLElement>('[data-ecran]')) {
-      e.hidden = e.dataset.ecran !== ecran;
-    }
-  };
-  const progression = (n: number) => {
-    $('[data-barre]').setAttribute('aria-valuenow', String(n));
-    $('[data-barre-pleine]').style.width = `${(100 * n) / questions.length}%`;
-  };
-  const mesReps = () => Object.fromEntries(Object.entries(mesReponses()).map(([k, r]) => [k, r.v]));
-  const segments = (selecteur: string, p: number) => {
-    document.querySelectorAll<HTMLElement>(`${selecteur} span`)
-      .forEach((s, k) => s.classList.toggle('plein', k < Math.round(p * 10)));
-  };
-
-  /** Ton hémicycle tel qu'il est : plus un siège est foncé, plus ce député vote comme toi. */
-  const tonHemicycle = (m: Matrice | null): Profil | null => {
-    const p = m ? profil(m, mesReps()) : null;
-    const n = p?.reponses ?? 0;
-    $('[data-precision-tete-pct]').textContent = `${Math.round(100 * precision(n))} %`;
-    segments('[data-segments-tete]', precision(n));
-    if (!p || !n) {
-      salle.colorer(() => ({ fond: '#D6DBE4' }));
-      salle.centre('577', 'sièges… et le tien');
-      salle.libre(true);
-      return p;
-    }
-    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x]));
-    salle.colorer((_, uid) => {
-      const x = parDepute.get(uid);
-      return x ? { fond: niveau(x.lisse).couleur } : { sansCommun: true };
-    });
-    const proches = p.deputes.filter((x) => niveau(x.lisse).haut).length;
-    salle.centre(String(proches), `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`);
-    salle.libre(false);
-    return p;
-  };
-
-  // --- Une question ---
-  const poser = (i: number) => {
-    const q = questions[i];
-    montrer('question');
-    $('[data-revelation]').hidden = true;
-    $('[data-pied-focus]').hidden = false;
-    $('[data-bulle]').hidden = i > 0;
-    const theme = $('[data-theme]');
-    const [fond, encre] = q.puce.split(':');
-    theme.textContent = q.theme;
-    theme.style.background = fond;
-    theme.style.color = encre;
-    const titre = $('[data-question]');
-    titre.textContent = q.question;
-    titre.classList.toggle('longue', q.question.length > 95);
-    $('[data-concretement]').textContent = q.concretement;
-    $('[data-compteur]').textContent = `Vote ${i + 1} sur ${questions.length}`;
-    progression(i);
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
-      b.disabled = false;
-      b.classList.remove('choisi', 'estompe');
-    }
-    $('[data-panneau-titre]').textContent = 'Ton hémicycle';
-    $('[data-panneau-sous]').textContent = 'Il se construit à chaque réponse';
-    $('[data-precision-tete]').hidden = false;
-    $('[data-legende-vote]').hidden = true;
-    $('[data-legende-accord]').hidden = false;
-    salle.jumeau(null);
-    salle.toi(null);
-    tonHemicycle(matrice);
-    if (!matrice) chargement.then((m) => { if (!$('[data-ecran="question"]').hidden) tonHemicycle(m); });
-    if (i > 0) titre.focus();
-  };
-
-  // --- La révélation du vote réel ---
-  const reveler = (i: number, v: Reponse | null) => {
-    const q = questions[i];
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
-      b.disabled = true;
-      const choisi = (b.dataset.reponse || null) === v;
-      b.classList.toggle('choisi', choisi);
-      b.classList.toggle('estompe', !choisi);
-    }
-    // En couleur vive : les députés qui ont voté comme toi.
-    const mienne = v === 'pour' ? 'P' : v === 'contre' ? 'C' : null;
-    salle.colorer((k) => {
-      const brut = q.sieges[k];
-      if (brut === 'x') return { sansCommun: true };
-      const l = brut.toUpperCase();
-      return { fond: COULEURS[l] ?? '#DFE3EB', contreGroupe: brut !== l,
-        estompe: !!mienne && l !== '-' && l !== mienne };
-    });
-    salle.libre(false);
-    const d = q.decompte;
-    salle.centre(`${d.pour} – ${d.contre}`, `${q.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`);
-    $('[data-panneau-titre]').textContent = 'Comment l\'Assemblée a voté';
-    $('[data-panneau-sous]').textContent = v ? 'En couleur vive : ceux qui ont voté comme toi'
-      : 'Tu n\'as pas répondu à ce vote';
-    $('[data-precision-tete]').hidden = true;
-    $('[data-legende-vote]').hidden = false;
-    $('[data-legende-hors]').hidden = !q.sieges.includes('x');
-    $('[data-legende-accord]').hidden = true;
-    const gagnant = q.adopte ? 'pour' : 'contre';
-    $('[data-rv-titre]').textContent = v
-      ? `Tu es ${v === gagnant ? 'avec la majorité' : 'dans la minorité'} : ${v === 'pour' ? d.pour : d.contre} députés ont voté comme toi`
-      : 'Voici ce qu\'a voté l\'Assemblée';
-    $('[data-rv-ligne]').textContent = `Le texte a été ${q.adopte ? 'adopté' : 'rejeté'} par ${d.pour} voix contre ${d.contre}.`
-      + (q.dissidents ? ` ${pluriel(q.dissidents, 'député')} ${q.dissidents > 1 ? 'ont' : 'a'} voté contre leur propre groupe.` : '');
-    $<HTMLAnchorElement>('[data-lien-vote]').href = q.lien;
-    $('[data-rv-voix]').textContent = (v
-      ? `Avec ta voix : ${d.pour + (v === 'pour' ? 1 : 0)} pour, ${d.contre + (v === 'contre' ? 1 : 0)} contre. `
-      : 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat. ')
-      + (q.marge ? `Pour inverser le résultat, il aurait fallu que ${pluriel(q.marge, 'député')} change${q.marge > 1 ? 'nt' : ''} d'avis.` : '');
-    $('[data-revelation]').hidden = false;
-    $('[data-pied-focus]').hidden = true;
-    $('[data-continuer]').textContent = i + 1 < questions.length ? 'Continuer' : 'Voir ma place';
-    $('[data-continuer]').focus({ preventScroll: true });
-    if (window.matchMedia('(max-width: 1000px)').matches) {
-      document.querySelector('.panneau')!.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
 
   // --- Le résultat ---
   const resultat = async () => {
     etat.fini = true;
     sauver();
-    montrer('resultat');
-    $('[data-revelation]').hidden = true;
-    $('[data-pied-focus]').hidden = false;
-    progression(questions.length);
-    $('[data-compteur]').textContent = 'Terminé';
-    const m = matrice ?? await chargement;
+    s.finir('resultat');
+    const m = s.matrice() ?? await s.chargement;
     const reps = mesReps();
-    const p = tonHemicycle(m)!;
-    $('[data-legende-vote]').hidden = true;
-    $('[data-legende-accord]').hidden = false;
-    $('[data-precision-tete]').hidden = true;
-    $('[data-panneau-titre]').textContent = 'Ton hémicycle';
-    $('[data-panneau-sous]').textContent = 'Plus un siège est foncé, plus ce député a voté comme toi';
+    const p = s.tonHemicycle(m)!;
+    s.panneauHemicycle('Plus un siège est foncé, plus ce député a voté comme toi');
     const dansQuiz = questions.filter((q) => reps[q.uid]).length;
     $('[data-sur-titre-resultat]').textContent = `${dansQuiz} vote${dansQuiz > 1 ? 's' : ''} sur `
       + `${questions.length} · ${p.reponses > dansQuiz ? `${p.reponses} en tout` : 'premier quiz'}`;
@@ -392,9 +153,9 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     }
     $('[data-groupes]').replaceChildren(...p.groupes.slice(0, 3).map((x) => {
       const li = document.createElement('li');
-      const s = document.createElement('abbr');
-      pastille(s, groupes[x.ligne.u]);
-      s.classList.add('sigle');
+      const sigle = document.createElement('abbr');
+      pastille(sigle, groupes[x.ligne.u]);
+      sigle.classList.add('sigle');
       const barre = document.createElement('span');
       barre.className = 'jauge';
       const plein = document.createElement('span');
@@ -403,7 +164,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       const pct = document.createElement('span');
       pct.className = 'pct';
       pct.textContent = `${x.taux} %`;
-      li.append(s, barre, pct);
+      li.append(sigle, barre, pct);
       return li;
     }));
     $('[data-precision]').textContent = `${Math.round(100 * p.precision)} %`;
@@ -412,6 +173,15 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     $('[data-note-precision]').textContent = reste
       ? `Fiable à partir de 25 votes : encore ${reste} à trancher.`
       : 'Ton résultat est fiable. Chaque vote l\'affine encore.';
+    // La suite (frame ③) : le prochain lot de 3 votes ; ton hémicycle quand les lots sont faits.
+    if (prochainLot(etatLots().faits, nLots) === null) {
+      $<HTMLAnchorElement>('[data-suite]').href = '/hemicycle/';
+      $('[data-suite-titre]').textContent = 'Voir mon hémicycle →';
+      $('[data-suite-detail]').textContent = 'Ton jumeau, ton opposé, tous les groupes';
+      const second = $<HTMLAnchorElement>('[data-lien-second]');
+      second.href = '/explorer/';
+      second.textContent = 'Trancher d\'autres votes';
+    }
     $('[data-titre-resultat]').focus();
     // Les stories, prêtes à partager.
     const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.lisse]));
@@ -468,121 +238,34 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       const q = questions[etat.i];
       const v = (b.dataset.reponse || null) as Reponse | null;
       repondre(q.uid, v);
-      reveler(etat.i, v);
+      s.reveler(etat.i, v);
     });
   }
   $('[data-continuer]').addEventListener('click', () => {
     etat.i += 1;
     sauver();
     if (etat.i >= questions.length) resultat();
-    else poser(etat.i);
+    else s.poser(etat.i);
   });
   $('[data-recommencer]').addEventListener('click', () => {
     etat.i = 0;
     etat.fini = false;
     sauver();
-    poser(0);
+    s.poser(0);
     $('[data-question]').focus();
   });
   if (etat.fini || etat.i >= questions.length) resultat();
-  else poser(Math.max(0, etat.i));
+  else s.poser(Math.max(0, etat.i));
 </script>
 
 <style>
-  /* Cotes reprises des frames V5 « ① Première question », « ② Révélation », « ③ Résultat ». */
-  :global(main.page.focus) { flex: 1; justify-content: center; max-width: 1320px;
-    padding: 12px clamp(16px, 3.4vw, 48px) 32px; }
-  .progression { display: contents; }
-  .barre-cadre { flex: 1 1 280px; display: flex; align-items: center; gap: 14px; max-width: 640px; margin: 0 auto; }
-  .barre { flex: 1; height: 16px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; }
-  .barre span { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--violet);
-    box-shadow: inset 0 4px 0 rgba(255,255,255,.28); transition: width .4s ease; }
-  .compteur { font-family: var(--police-titre); font-weight: 600; font-size: 15px; color: var(--gris-legende); white-space: nowrap; }
-  .quitter { padding: 12px 4px; font-family: var(--police-titre); font-weight: 600; font-size: 16px;
-    color: var(--violet-fonce); text-decoration: none; }
-
-  .quiz { display: flex; flex-wrap: wrap; gap: 32px 56px; align-items: center; }
-  .gauche { flex: 1 1 440px; min-width: 0; max-width: 560px; }
-  .panneau { flex: 1.25 1 560px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: 32px;
-    background: var(--fond-doux); scroll-margin-top: 16px; }
-  .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
-  .panneau h2 { font-size: 24px; font-weight: 600; }
-  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris-legende); }
-  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px;
-    background: var(--fond); border: 2px solid var(--bord); }
-  .precision-tete-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px;
-    letter-spacing: 0.06em; text-transform: uppercase; color: #7A8296; }
-  .precision-tete-segments { display: flex; gap: 3px; }
-  .precision-tete-segments span { width: 9px; height: 14px; border-radius: 3px; background: var(--bord); }
-  .precision-tete-segments :global(span.plein) { background: var(--violet); }
-  .precision-tete-pct { min-width: 36px; font-family: var(--police-titre); font-weight: 700; font-size: 14px; }
-  .cadre-salle { margin-top: 20px; }
-  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
-    list-style: none; font-size: 14px; color: var(--texte-doux); }
-  .legende li { display: inline-flex; align-items: center; gap: 7px; }
-  .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
-  .legende .sans { background: #FFFFFF; border: 2px solid; }
-
-  .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 28px; }
-  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: 18px;
-    font-size: 17px; line-height: 1.45; color: var(--texte-doux); }
-  .bulle strong { color: var(--violet-fonce); }
-  .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
-    border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
-  .puce-theme, .puce-resultat { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
-    border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
-    letter-spacing: 0.06em; text-transform: uppercase; }
-  .puce-theme::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-  .puce-resultat { background: #EFE9FF; color: var(--violet-fonce); }
-  .question h1 { margin: 16px 0 14px; font-size: clamp(34px, 3.3vw, 48px); font-weight: 600; line-height: 1.08;
-    letter-spacing: -0.015em; outline: none; }
-  .question h1:global(.longue) { font-size: clamp(28px, 2.6vw, 38px); line-height: 1.12; }
-  .concretement { margin: 0 0 30px; font-size: 18px; line-height: 1.5; color: var(--gris); }
-  .concretement strong { color: var(--texte); }
-  .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .choix button, .b-passer {
-    min-height: 76px; border: 0; border-radius: 18px; font-family: var(--police-titre); font-weight: 600;
-    font-size: 24px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; cursor: pointer;
-    transition: transform .08s ease, box-shadow .08s ease, opacity .2s;
-  }
-  /* Contre : #E5552A plutôt que le #FF6A3D de la maquette, pour un texte blanc lisible (contraste AA). */
-  .b-pour { background: var(--pour); box-shadow: 0 6px 0 #1C5AD0; }
-  .b-contre { background: #E5552A; box-shadow: 0 6px 0 #B83C0A; }
-  .choix button:active, .b-passer:active { transform: translateY(5px); box-shadow: none; }
-  .b-passer { width: 100%; min-height: 54px; margin-top: 14px; border: 2px solid var(--bord); background: var(--fond);
-    box-shadow: 0 4px 0 var(--bord); color: #7A8296; font-size: 17px; }
-  .choix button:disabled, .b-passer:disabled { cursor: default; }
-  .choix button:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
-  .b-passer:global(.estompe) { opacity: .35; box-shadow: none; }
-
-  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
-    border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
-  @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
-  @keyframes monte { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
-  .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
-    margin: 0 auto; padding: 22px clamp(16px, 3.4vw, 48px); }
-  .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px;
-    border-radius: 50%; background: var(--fond); box-shadow: 0 4px 0 #E3DAFF; }
-  .revelation-texte { flex: 1 1 380px; }
-  .revelation p { margin: 0; }
-  .revelation-titre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(22px, 2.2vw, 28px);
-    line-height: 1.1; color: #4B2BC2; }
-  .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: #4A4F63; }
-  .revelation-texte a { white-space: nowrap; }
-  .ta-voix { flex: 0 1 330px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF;
-    font-size: 15px; line-height: 1.4; color: var(--texte-doux); }
-  .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; }
-  .ta-voix p + p { margin-top: 5px; }
+  /* Cotes reprises des frames V5 « ③ Résultat » et « ④ Partage » ; la question et la
+     révélation sont dans components/Seance.astro. */
   .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em;
     text-transform: uppercase; color: var(--violet); }
-  .sur-titre sup { text-transform: none; }
-  .b-continuer { min-width: 220px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: 18px; background: var(--violet);
-    color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600;
-    font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
-  @media (max-width: 640px) { .b-continuer { width: 100%; } }
-
+  .puce-resultat { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
+    border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
+    letter-spacing: 0.06em; text-transform: uppercase; background: #EFE9FF; color: var(--violet-fonce); }
   .resultat { position: relative; }
   .confetti { position: absolute; }
   .c1 { left: -26px; top: -18px; width: 14px; height: 14px; border-radius: 4px; background: var(--abstention); transform: rotate(18deg); }

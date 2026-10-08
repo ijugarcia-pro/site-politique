@@ -76,9 +76,9 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
             <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
           </svg>
         </a>
-        <a class="anneau" href="/hemicycle/" data-anneau hidden
+        <a class="anneau-precision" href="/hemicycle/" data-precision-entete hidden
           title="Précision de ton hémicycle : plus tu tranches de votes, plus elle monte">
-          <span data-anneau-pct></span>
+          <span data-precision-entete-pct></span>
         </a>
         <a class="rond etoile" href="/hemicycle/" aria-label="Mon hémicycle : ta place">
           <svg width="22" height="22" viewBox="0 0 34 34" aria-hidden="true">
@@ -114,7 +114,7 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
       import { precision } from '../lib/profil.ts';
 
       // L'anneau de précision de l'en-tête (frame V5) : calculé sur place, comme tout le profil.
-      const anneau = document.querySelector<HTMLElement>('[data-anneau]');
+      const anneau = document.querySelector<HTMLElement>('[data-precision-entete]');
       if (anneau) {
         const hors = new Set(JSON.parse(
           document.querySelector('[data-hors-matrice]')?.textContent ?? '[]') as string[]);
@@ -122,7 +122,7 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
         if (n > 0) {
           const pct = Math.round(100 * precision(n));
           anneau.style.setProperty('--pct', `${pct}%`);
-          anneau.querySelector('[data-anneau-pct]')!.textContent = `${pct}%`;
+          anneau.querySelector('[data-precision-entete-pct]')!.textContent = `${pct}%`;
           anneau.setAttribute('aria-label', `Précision de ton hémicycle : ${pct} %`);
           anneau.hidden = false;
         }
@@ -215,13 +215,13 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
   .rond:hover { background: var(--fond-doux); color: var(--gris); }
   .etoile { background: var(--jaune-pale); border-color: var(--abstention); }
   .etoile:hover { background: #FFE7A3; }
-  .anneau {
+  .anneau-precision {
     display: flex; align-items: center; justify-content: center;
     width: 44px; height: 44px; border-radius: 50%;
     background: conic-gradient(var(--violet) 0 var(--pct, 0%), var(--bord-leger) var(--pct, 0%) 100%);
     text-decoration: none; color: var(--texte);
   }
-  .anneau span {
+  .anneau-precision span {
     display: flex; align-items: center; justify-content: center;
     width: 34px; height: 34px; border-radius: 50%; background: var(--fond);
     font-family: var(--police-titre); font-weight: 700; font-size: 11px;

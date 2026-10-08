@@ -5,11 +5,13 @@
 // serveur) ; seule une adresse à préciser est envoyée au service public de géocodage de
 // l'IGN, au moment où le visiteur la demande.
 import Base from '../../layouts/Base.astro';
-import { deputes, lienDepute, nomComplet } from '../../lib/donnees.ts';
+import { composition, deputes, lienDepute, nomComplet } from '../../lib/donnees.ts';
+import { couleurGroupe } from '../../lib/couleurs.ts';
 import { libelleCirco } from '../../lib/geo.ts';
 import { normaliser } from '../../lib/votes.ts';
 
 const tous = deputes();
+const couleurs = new Map(composition().groupes.map((g) => [g.uid, couleurGroupe(g.couleur)]));
 const enExercice = tous.filter((d) => d.en_exercice);
 const PARTICULES = new Set(['de', 'du', 'des', 'la', 'le', "d'"]);
 const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
@@ -86,7 +88,9 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
             <span class="annuaire-texte">
               <span class="annuaire-nom">{nomComplet(d)}</span>
               <span class="annuaire-detail">
-                {d.sigle ?? 'Sans groupe'} · {libelleCirco(d.circo)} · {d.departement}
+                {d.sigle
+                  ? <span class="pastille-groupe" style={`--c: ${couleurs.get(d.groupe ?? '') ?? couleurGroupe(null)}`}>{d.sigle}</span>
+                  : 'Sans groupe'} · {libelleCirco(d.circo)} · {d.departement}
                 {!d.en_exercice && ' · mandat terminé'}
               </span>
             </span>

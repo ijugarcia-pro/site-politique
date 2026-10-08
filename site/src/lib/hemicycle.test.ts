@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { arc, etiquette, LARGEUR, parts, places, RAYON_SIEGE, SIEGES } from './hemicycle.ts';
+import { arc, etiquette, etiquettes, LARGEUR, parts, places, RAYON_SIEGE, SIEGES } from './hemicycle.ts';
 
 test('577 places, de gauche à droite', () => {
   const liste = places();
@@ -37,4 +37,14 @@ test('les parts des groupes, sièges vacants exclus', () => {
 test("l'arc d'une part va de son premier à son dernier siège, par le haut", () => {
   const liste = places();
   assert.equal(arc(liste, { debut: 0, fin: SIEGES - 1 }, 100), 'M400.0 490.0A100 100 0 0 1 600.0 490.0');
+});
+
+test("les étiquettes restent au même rayon tant qu'elles ne se chevauchent pas", () => {
+  const liste = places();
+  const lesParts = [{ groupe: 'A', debut: 0, fin: 99 }, { groupe: 'B', debut: 100, fin: 299 },
+    { groupe: 'C', debut: 300, fin: 309 }, { groupe: 'D', debut: 310, fin: 319 }];
+  const rayon = (e: { x: number; y: number }) => Math.hypot(e.x - LARGEUR / 2, e.y - 490);
+  const [a, b, c, d] = etiquettes(liste, lesParts, () => 50, 30);
+  assert.ok(Math.abs(rayon(a) - rayon(b)) < 1e-6 && Math.abs(rayon(a) - rayon(c)) < 1e-6);
+  assert.ok(rayon(d) > rayon(c) + 29); // trop proche de C : éloignée
 });

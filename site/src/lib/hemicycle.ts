@@ -88,16 +88,19 @@ export function arc(liste: Place[], p: Pick<Part, 'debut' | 'fin'>, r: number): 
   return `M${a.x.toFixed(1)} ${a.y.toFixed(1)}A${r} ${r} 0 0 1 ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
 }
 
-/** Les étiquettes des groupes : au milieu de leur part ; quand une part est trop étroite pour
- *  son sigle, une étiquette sur deux est éloignée du centre de `ecart`. `largeur` donne la
- *  place que prend le sigle, dans les unités du dessin. */
+/** Les étiquettes des groupes : au milieu de leur part, toutes au même rayon. Une étiquette
+ *  n'est éloignée du centre (de `ecart`) que si elle chevaucherait sa voisine de gauche ;
+ *  `largeur` donne la place que prend le sigle le long de l'arc, dans les unités du dessin. */
 export function etiquettes(liste: Place[], lesParts: Part[], largeur: (p: Part) => number,
   ecart: number, decalage = 0): (Etiquette & { part: Part })[] {
-  let decale = false;
+  const r = R_EXTERIEUR + 30 + decalage;
+  let precedente: { angle: number; demi: number; decale: boolean } | null = null;
   return lesParts.map((p) => {
-    const ouverture = (liste[p.fin].angle - liste[p.debut].angle + Math.PI / SIEGES)
-      * (R_EXTERIEUR + 30 + decalage);
-    decale = ouverture < largeur(p) ? !decale : false;
+    const angle = (liste[p.debut].angle + liste[p.fin].angle) / 2;
+    const demi = largeur(p) / 2;
+    const decale = !!precedente && !precedente.decale
+      && (angle - precedente.angle) * r < precedente.demi + demi + 4;
+    precedente = { angle, demi, decale };
     return { part: p, ...etiquette(liste, p.debut, p.fin, decalage + (decale ? ecart : 0)) };
   });
 }

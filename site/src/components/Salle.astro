@@ -89,9 +89,12 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   </div>
   <script type="application/json" data-salle-reglages set:html={reglages}></script>
 </div>
+<ul class="groupes-salle" aria-hidden="true">
+  {libelles.map((e) => <li><span style={`background:${e.fond};color:${e.encre}`}>{e.g.sigle}</span></li>)}
+</ul>
 
 <style>
-  .dessin { position: relative; width: 100%; }
+  .dessin { position: relative; width: 100%; container-type: inline-size; }
   .dessin > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .arcs path { fill: none; stroke-width: 5; stroke-linecap: round; }
   .siege { fill: #D6DBE4; cursor: pointer; transition: fill .45s ease, opacity .3s ease; }
@@ -101,11 +104,14 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .siege:global(.estompe) { opacity: .38; }
   .siege:global(.siege-jumeau) { r: 11.4px; fill: #6A3DF0 !important; stroke: #7C4DFF; stroke-width: 3; opacity: 1; }
   .siege:hover { stroke: var(--texte); stroke-width: 2.4; }
+  /* Les étiquettes grandissent avec le dessin : elles gardent leur place entre voisines. */
   .etiquette {
-    position: absolute; z-index: 1; padding: 1px 7px; border-radius: 999px;
-    font-family: var(--police-titre); font-weight: 600; font-size: clamp(9px, 0.8vw, 12px);
+    position: absolute; z-index: 1; padding: 0.08em 0.6em; border-radius: 999px;
+    font-family: var(--police-titre); font-weight: 600; font-size: clamp(8px, 1.2cqw, 13px);
     line-height: 1.5; white-space: nowrap; text-decoration: none; cursor: help;
   }
+  /* Sur un petit écran, les sigles passent sous l'hémicycle, dans l'ordre des places. */
+  .groupes-salle { display: none; }
   .libre { position: absolute; z-index: 3; transform: translate(-50%, -50%); display: flex;
     flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
   .libre span { padding: 5px 12px; border-radius: 12px; background: #FFFFFF; border: 2px dashed #B9A4FF;
@@ -145,7 +151,11 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .carte-groupe { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.25; color: var(--gris-legende); }
   .carte-accord { font-size: 13px; line-height: 1.3; color: var(--texte-doux); }
   @media (max-width: 600px) {
-    .etiquette { padding: 0 4px; font-size: 8px; }
+    .etiquette { display: none; }
+    .groupes-salle { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0 0;
+      padding: 0; list-style: none; }
+    .groupes-salle span { display: block; padding: 1px 8px; border-radius: 999px; font-family: var(--police-titre);
+      font-weight: 600; font-size: 12px; line-height: 1.5; }
     .toi .bulle, .libre span { padding: 3px 7px; font-size: 11px; border-radius: 9px; }
     .toi svg { width: 22px; height: 22px; }
     .libre i { width: 18px; height: 18px; }

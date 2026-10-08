@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t17 livrée : site Astro, charte V5, hémicycle sur les vraies données, déploiement branché, en attente de fusion ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -54,7 +54,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 
 ### Phase 2 — Site et premiers écrans réels (S6–S8, 9 → 29 nov.)
 - [x] t16 👤 Compte Cloudflare (sous-domaine gratuit) *(fait le 8 oct. 2026 ; site : le578esiege.pages.dev)*
-- [ ] t17 🤖 Site Astro + design system 578e siège *(livrée le 8 oct. 2026, branche `deploiement-cloudflare` ; à cocher après fusion et premier déploiement vert)*
+- [x] t17 🤖 Site Astro + design system 578e siège *(fait le 8 oct. 2026 ; en ligne sur https://le578esiege.pages.dev, PR #7 fusionnée)*
 - [ ] t18 🤖 Page vote branchée sur les vrais scrutins
 - [ ] t19 🤖 Fiche député + recherche par code postal
 - [ ] t20 👤 Valider les 10 votes du quiz d'entrée
@@ -298,6 +298,7 @@ site/          le site (Astro), créé en phase 2
 - **À faire :** initialiser `site/` (Astro, site statique). Tokens de la maquette V5 (polices, couleurs § 1). Composant **Hemicycle** : 577 sièges, groupes dans l'ordre officiel, dissidents cerclés, accessible (étiquettes, navigation clavier, contraste). Navigation à 3 onglets. Déploiement Cloudflare Pages.
 - **Critère de fin :** un build propre, déployé, avec un hémicycle rendu depuis de vraies données.
 - **Réalisé (8 oct.) :** en une session au lieu de deux. Données : `pipeline/export_site.py` produit `export/site/composition.json` (l'Assemblée du jour : 569 députés, 8 sièges vacants, 12 groupes) et `export/site/scrutins-solennels.json` (les 6 derniers votes solennels publiés, siège par siège, avec dissidents et mises au point), testé dans `tests/test_export_site.py` (5 tests). Site : `site/` (Astro 7.3.7, statique), charte V5 dans `site/src/styles/global.css`, polices servies par le site, en-tête à 3 onglets (`site/src/layouts/Base.astro`), composant `site/src/components/Hemicycle.astro` (577 sièges, groupes dans l'ordre des places, dissidents cerclés, clavier, tableau par groupe), géométrie testée avec `node --test` (`site/src/lib/*.test.ts`). Pages : Cette semaine (dernier vote solennel), Mon hémicycle (composition du jour, en attendant le quiz de t21), Explorer (6 derniers votes solennels), État des données (t14, désormais rendue par Astro), page 404. Vérifié dans le navigateur, sur ordinateur et à 375 px : rendu, clavier, aucun débordement horizontal. Déploiement : `nuit.yml` construit et envoie le site après les contrôles (chaque nuit si une source a changé, et à chaque modification de `site/` ou `pipeline/` sur `main`) ; le projet Cloudflare est créé au premier passage. `ci.yml` lance aussi les tests du site. Décisions : `docs/decisions.md` (deux entrées du 8 oct.). **Reste :** fusionner la branche dans `main`, ce qui lance le premier déploiement ; vérifier https://le578esiege.pages.dev, puis cocher. **Non vérifié :** le déploiement lui-même (la clé n'existe que dans GitHub), et l'ordre LIOT / SOC face au schéma officiel (à voir en t22).
+- **Mis en ligne (8 oct.) :** PR #7 fusionnée ; le passage du pipeline qui a suivi (run 37698564019) a construit et publié le site : https://le578esiege.pages.dev, avec les données du jour (dernier scrutin n° 8577). Critère de fin atteint. Incident : l'étape finale « Enregistrer l'état des sources » a échoué, car la normalisation réécrit `docs/normalisation.md` et `data/mesures/normalisation.json`, versionnés, ce qui bloque `git pull --rebase` (bug présent depuis t12, jamais déclenché jusque-là). Correctif : `git pull --rebase --autostash` (PR #8). L'état des sources de ce passage n'a pas été enregistré : le passage de la nuit refera le travail. **Reste :** vérifier l'ordre LIOT / SOC face au schéma officiel (t22).
 
 ### t18 🤖 Page vote branchée sur les vrais scrutins — S7, 2 sessions
 - **Dépend de :** t17.

@@ -116,6 +116,10 @@ def test_vacances_parlementaires(con, tmp_path, monkeypatch):
     passe(con, 10, 60, 40)
     r = lancer(con, tmp_path, jours_seance={date(2026, 9, 30)}, monkeypatch=monkeypatch)
     assert r["vacances"] and r["votes"] == []
+    # La semaine suivante voit les vacances dans son historique (série gelée).
+    suivante = lancer(con, tmp_path, jour=date(2026, 10, 19), jours_seance={date(2026, 9, 30)},
+                      monkeypatch=monkeypatch)
+    assert suivante["historique"] == [{"lundi": "2026-10-12", "vacances": True, "tranches": {}}]
 
 
 def test_agenda_modifie_en_cours_de_semaine(con, tmp_path, monkeypatch):
@@ -152,3 +156,11 @@ def test_carte_validee_jointe(con, tmp_path, monkeypatch):
         json.dumps({"lundi": "2026-10-12", "cartes": {"PT0": carte}}), encoding="utf-8")
     r = lancer(con, tmp_path, monkeypatch=monkeypatch)
     assert r["votes"][0]["carte"] == carte
+
+
+def test_historique_relie_les_votes_annonces_a_leur_scrutin(con, tmp_path, monkeypatch):
+    annoncer(con, "PT0", "2026-10-13", "Vote solennel sur la loi A", "D0", "Loi A")
+    lancer(con, tmp_path, monkeypatch=monkeypatch)
+    passe(con, 9000, 300, 200, dossier="D0", jour="2026-10-13")
+    suivante = lancer(con, tmp_path, jour=date(2026, 10, 19), monkeypatch=monkeypatch)
+    assert suivante["historique"][0]["tranches"] == {"PT0": "VTANR5L17V9000"}

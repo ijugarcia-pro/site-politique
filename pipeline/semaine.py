@@ -313,7 +313,22 @@ def semaine(con: duckdb.DuckDBPyConnection, jour: date, raw: Path = RAW,
                                  deja_proposes(semaines), cartes, themes_recents(seances, lundi))
     semaines.mkdir(parents=True, exist_ok=True)
     chemin.write_text(json.dumps(selection, ensure_ascii=False, indent=1) + "\n", "utf-8")
-    return exporter(selection, con, cartes)
+    resultat = exporter(selection, con, cartes)
+    # Les semaines passées, pour la série du visiteur : gelée pendant les vacances.
+    # Les votes annoncés devenus scrutins : la réponse donnée avant le vote rejoint alors les
+    # autres réponses du visiteur, dans son navigateur.
+    resultat["historique"] = []
+    for c in sorted(semaines.glob("*.json")):
+        if c.stem >= lundi.isoformat():
+            continue
+        passee = json.loads(c.read_text("utf-8"))
+        tranches = {}
+        for v in passee["votes"]:
+            if v["type"] == "annonce" and (t := scrutin_du_vote(con, v)):
+                tranches[v["cle"]] = t[0]
+        resultat["historique"].append({"lundi": c.stem, "vacances": passee["vacances"],
+                                       "tranches": tranches})
+    return resultat
 
 
 def main(argv: list[str] | None = None) -> int:

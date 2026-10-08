@@ -4,7 +4,7 @@
 import '@fontsource-variable/fredoka/wght.css';
 import '@fontsource-variable/nunito/wght.css';
 import '../styles/global.css';
-import { scrutins } from '../lib/donnees.ts';
+import { scrutins, semaine } from '../lib/donnees.ts';
 
 interface Props {
   titre: string;
@@ -27,6 +27,14 @@ const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e s
 // La précision compte les réponses aux votes de la matrice : tous les votes à page, sauf les
 // motions de censure (lib/profil.ts).
 const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).map((s) => s.uid));
+// Les votes de séance devenus scrutins (t24) : la réponse donnée avant le vote rejoint les
+// autres réponses du visiteur, sur n'importe quelle page.
+const sem = semaine();
+const tranches = JSON.stringify({
+  ...Object.fromEntries(sem.historique.map((h) => [h.lundi, h.tranches ?? {}])),
+  [sem.lundi]: Object.fromEntries(sem.votes.filter((v) => v.type === 'annonce' && v.scrutin)
+    .map((v) => [v.cle, v.scrutin!.uid])),
+});
 ---
 <!doctype html>
 <html lang="fr">
@@ -109,9 +117,14 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
     </footer>
     )}
     <script type="application/json" data-hors-matrice set:html={horsMatrice}></script>
+    <script type="application/json" data-tranches set:html={tranches}></script>
     <script>
       import { reponses } from '../lib/navigateur.ts';
       import { precision } from '../lib/profil.ts';
+      import { reporterReponses } from '../lib/seances.ts';
+
+      reporterReponses(JSON.parse(
+        document.querySelector('[data-tranches]')?.textContent ?? '{}') as Record<string, Record<string, string>>);
 
       // L'anneau de précision de l'en-tête (frame V5) : calculé sur place, comme tout le profil.
       const anneau = document.querySelector<HTMLElement>('[data-precision-entete]');

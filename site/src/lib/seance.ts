@@ -9,6 +9,8 @@ export interface QuestionSeance {
   uid: string; numero: number; theme: string; question: string; concretement: string;
   date: string; lien: string; verdict: string; adopte: boolean; dissidents: number;
   marge: number | null; puce: string; sieges: string;
+  /** Vote annoncé, pas encore tenu : pas de révélation, un pronostic (séance de la semaine). */
+  attente: boolean; quand: string;
   decompte: { pour: number; contre: number; abstention: number };
 }
 
@@ -87,6 +89,18 @@ export function seance({ libelleContinuer, rang }: Options) {
     $('[data-legende-accord]').hidden = false;
   };
 
+  /** Frame ⑥ : les députés n'ont pas encore voté ; l'hémicycle reste gris, le résultat viendra. */
+  const panneauAttente = (q: QuestionSeance) => {
+    $('[data-panneau-titre]').textContent = 'Les députés n’ont pas encore voté';
+    $('[data-panneau-sous]').textContent = `Ils votent ${q.quand}`;
+    $('[data-precision-tete]').hidden = true;
+    $('[data-legende-vote]').hidden = true;
+    $('[data-legende-accord]').hidden = true;
+    salle.colorer(() => ({ fond: '#D6DBE4' }));
+    salle.centre('?', 'Le résultat le lendemain matin');
+    salle.libre(true);
+  };
+
   // --- Une question ---
   const poser = (i: number) => {
     const q = questions[i];
@@ -113,12 +127,18 @@ export function seance({ libelleContinuer, rang }: Options) {
       b.disabled = false;
       b.classList.remove('choisi', 'estompe');
     }
-    panneauHemicycle('Il se construit à chaque réponse');
-    $('[data-precision-tete]').hidden = false;
+    const pronostic = document.querySelector<HTMLElement>('[data-pronostic]');
+    if (pronostic) pronostic.hidden = true;
     salle.jumeau(null);
     salle.toi(null);
-    tonHemicycle(matrice);
-    if (!matrice) chargement.then((m) => { if (!$('[data-ecran="question"]').hidden) tonHemicycle(m); });
+    if (q.attente) {
+      panneauAttente(q);
+    } else {
+      panneauHemicycle('Il se construit à chaque réponse');
+      $('[data-precision-tete]').hidden = false;
+      tonHemicycle(matrice);
+      if (!matrice) chargement.then((m) => { if (!$('[data-ecran="question"]').hidden) tonHemicycle(m); });
+    }
     if (i > 0) titre.focus();
   };
 
@@ -170,16 +190,36 @@ export function seance({ libelleContinuer, rang }: Options) {
     }
   };
 
+  /** Après la réponse à un vote pas encore tenu : ta réponse est gardée, et un pronostic
+   *  facultatif est proposé (frame ⑥). */
+  const attendre = (i: number, v: Reponse | null) => {
+    const q = questions[i];
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
+      b.disabled = true;
+      const choisi = (b.dataset.reponse || null) === v;
+      b.classList.toggle('choisi', choisi);
+      b.classList.toggle('estompe', !choisi);
+    }
+    const pronostic = $('[data-pronostic]');
+    $('[data-prono-question]').textContent = `Selon toi, ${q.quand}, le texte sera…`;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-prono]')) b.classList.remove('choisi');
+    $('[data-suivant]').textContent = libelleContinuer(i);
+    pronostic.hidden = false;
+    $<HTMLButtonElement>('[data-prono="adopte"]').focus({ preventScroll: true });
+  };
+
   /** Quitte la révélation pour l'écran de fin de la page. */
   const finir = (ecran: string) => {
     montrer(ecran);
     $('[data-revelation]').hidden = true;
     $('[data-pied-focus]').hidden = false;
+    const pronostic = document.querySelector<HTMLElement>('[data-pronostic]');
+    if (pronostic) pronostic.hidden = true;
     progression(1, 1);
     $('[data-compteur]').textContent = 'Terminé';
     $('[data-precision-tete]').hidden = true;
   };
 
   return { questions, salle, chargement, matrice: () => matrice, montrer, progression,
-    tonHemicycle, panneauHemicycle, poser, reveler, finir };
+    tonHemicycle, panneauHemicycle, poser, reveler, attendre, finir };
 }

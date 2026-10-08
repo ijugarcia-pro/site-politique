@@ -7,7 +7,8 @@
 // dépend du visiteur est calculé dans son navigateur.
 import Base from '../layouts/Base.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
-import { composition, dateLisible, etat, lienVote, lotsDeVotes, majuscule, scrutins } from '../lib/donnees.ts';
+import { composition, dateLisible, etat, lienVote, lotsDeVotes, majuscule, questionSeance, quandVote,
+  scrutins, semaine } from '../lib/donnees.ts';
 import { adopte, marge, verdict } from '../lib/votes.ts';
 import { puceTheme } from '../lib/themes.ts';
 
@@ -33,7 +34,23 @@ const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
 const occupes = compo.sieges.filter((s) => !s.vacant).length;
 const maj = etat();
 const [jour, mois] = dateLisible(dernier.date).split(' ');
+// La séance de la semaine (t23-t24) : le ticket la propose dès que le quiz est fait.
+const sem = semaine();
+const seance = sem.vacances ? [] : sem.votes.filter((v) => v.statut !== 'retiré');
+const attendu = seance.find((v) => v.type === 'annonce' && v.statut === 'à venir') ?? null;
+const JOURS_COURTS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
+  'oct.', 'nov.', 'déc.'];
+const rdv = attendu ? {
+  jour: `${JOURS_COURTS[new Date(`${attendu.date}T12:00:00Z`).getUTCDay()]} ${Number(attendu.date.slice(8, 10))} `
+    + MOIS_COURTS[Number(attendu.date.slice(5, 7)) - 1],
+  heure: attendu.debut ? `${Number(attendu.debut.slice(11, 13))} h` : '',
+} : null;
 const donnees = JSON.stringify({
+  seance: { lundi: sem.lundi, attente: !!attendu,
+    historique: sem.historique.map((h) => [h.lundi, h.vacances]),
+    votes: seance.map((v) => ({ cle: v.cle, theme: v.carte?.theme ?? 'Vote solennel',
+      puce: v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6', titre: questionSeance(v).titre })) },
   lots: lots.map((l) => l.map((c) => ({ uid: c.uid, theme: c.theme, titre: c.titre,
     puce: puceTheme(c.theme) }))),
   derniers: derniers.map(({ uid, gagnant, pour, contre }) => ({ uid, gagnant, pour, contre })),
@@ -59,15 +76,33 @@ const donnees = JSON.stringify({
             comme toi.
           </p>
           <ul class="items" data-ticket-items hidden></ul>
-          <a class="ticket-bouton" href="/quiz/" data-ticket-bouton>Prendre ma place · 2 min</a>
+          <div class="ticket-bas">
+            <a class="ticket-bouton" href="/quiz/" data-ticket-bouton>Prendre ma place · 2 min</a>
+            <span class="ticket-serie" data-ticket-serie hidden>
+              <svg width="18" height="20" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#FFC531"></path></svg>
+              <span data-ticket-serie-texte></span>
+            </span>
+          </div>
         </div>
-        <a class="ticket-droite" href={lienVote(dernier)}>
-          <span class="petit">Le dernier verdict</span>
-          <span class="jour">{jour} {mois}</span>
-          <span class="tampon">{verdict(dernier)}</span>
-          <span class="score">{dernier.decompte.pour} – {dernier.decompte.contre}</span>
-          {marge(dernier) && <span class="pastille-ticket">{marge(dernier)}</span>}
-        </a>
+        {rdv && attendu ? (
+          <div class="ticket-droite">
+            <span class="petit">Le verdict</span>
+            <span class="jour">{rdv.jour}</span>
+            <span class="heure">{rdv.heure}</span>
+            <span class="pastille-ticket" data-compte-a-rebours
+              data-quand={attendu.debut ? `${attendu.debut.slice(0, 10)}T${attendu.debut.slice(11, 19)}${attendu.debut.slice(19)}:00` : ''}>
+              {quandVote(attendu).replace(/^le /, '')}</span>
+            <span class="note-ticket">Scrutins solennels : tous les députés votent</span>
+          </div>
+        ) : (
+          <a class="ticket-droite" href={lienVote(dernier)}>
+            <span class="petit">Le dernier verdict</span>
+            <span class="jour">{jour} {mois}</span>
+            <span class="tampon">{verdict(dernier)}</span>
+            <span class="score">{dernier.decompte.pour} – {dernier.decompte.contre}</span>
+            {marge(dernier) && <span class="pastille-ticket">{marge(dernier)}</span>}
+          </a>
+        )}
       </section>
 
       <section class="encadre" aria-labelledby="titre-verdicts">
@@ -151,12 +186,15 @@ const donnees = JSON.stringify({
   import { deputeChoisi, lireJSON, reponse, reponses } from '../lib/navigateur.ts';
   import { libelleCirco } from '../lib/geo.ts';
   import { etatLots, prochainLot } from '../lib/lots.ts';
+  import { etatSeance, seancesFaites, serie } from '../lib/seances.ts';
   import { initiales, niveau, profil, teinte, type Matrice } from '../lib/profil.ts';
   import { places, point, R_INTERIEUR } from '../lib/hemicycle.ts';
 
   interface Carte { uid: string; theme: string; titre: string; puce: string }
-  const { lots, derniers, sieges } = JSON.parse(
+  const { seance, lots, derniers, sieges } = JSON.parse(
     document.querySelector('[data-donnees-accueil]')!.textContent!) as {
+    seance: { lundi: string; attente: boolean; historique: [string, boolean][];
+      votes: { cle: string; theme: string; puce: string; titre: string }[] };
     lots: Carte[][]; derniers: { uid: string; gagnant: 'pour' | 'contre'; pour: number; contre: number }[];
     sieges: [string | null, string | null][];
   };
@@ -165,8 +203,49 @@ const donnees = JSON.stringify({
   const n = Object.keys(reponses()).length;
   $('[data-nb-reponses]').textContent = pluriel(n, 'vote');
 
-  // --- Le ticket : le quiz, puis le prochain lot, puis Explorer (frame ⑤ : la séance) ---
-  if (lireJSON<{ fini?: boolean }>('578e.quiz.v1', {}).fini) {
+  // Les 3 lignes du ticket : la puce du thème, le titre, « ✓ voté » ou « ≈ 40 s ».
+  const remplirItems = (lignes: { theme: string; puce: string; titre: string; fait: boolean }[]) => {
+    const items = $('[data-ticket-items]');
+    items.replaceChildren(...lignes.map((c) => {
+      const li = document.createElement('li');
+      const theme = document.createElement('span');
+      const [fond, encre] = c.puce.split(':');
+      theme.className = 'item-theme';
+      theme.style.background = fond;
+      theme.style.color = encre;
+      theme.textContent = c.theme;
+      const titre = document.createElement('span');
+      titre.className = 'item-titre';
+      titre.textContent = c.titre;
+      const meta = document.createElement('span');
+      meta.className = 'item-meta';
+      meta.textContent = c.fait ? '✓ voté' : '≈ 40 s';
+      li.append(theme, titre, meta);
+      return li;
+    }));
+    items.hidden = false;
+    $('[data-ticket-texte]').hidden = true;
+  };
+
+  // --- Le ticket (frame ⑤) : le quiz, puis la séance de la semaine, puis le prochain lot,
+  // puis Explorer ---
+  const quizFait = lireJSON<{ fini?: boolean }>('578e.quiz.v1', {}).fini;
+  const maSeance = etatSeance(seance.lundi);
+  if (quizFait && seance.votes.length && !maSeance.fini) {
+    $('[data-ticket-sur-titre]').textContent = 'La séance de la semaine';
+    $('[data-ticket-titre]').textContent = seance.attente
+      ? '3 vrais votes à trancher avant les députés' : '3 vrais votes à trancher';
+    remplirItems(seance.votes.map((v) => ({ ...v, fait: v.cle in maSeance.reponses })));
+    const bouton = $<HTMLAnchorElement>('[data-ticket-bouton]');
+    bouton.href = '/seance/';
+    bouton.textContent = maSeance.i > 0 ? 'Reprendre · 2 min' : 'Commencer · 2 min';
+    const vacances = new Set(seance.historique.filter(([, v]) => v).map(([l]) => l));
+    const n = serie(seancesFaites(), vacances, seance.lundi);
+    if (n > 0) {
+      $('[data-ticket-serie-texte]').textContent = `Ta série passe à ${n + 1} semaines`;
+      $('[data-ticket-serie]').hidden = false;
+    }
+  } else if (quizFait) {
     const etat = etatLots();
     const k = etat.lot ?? prochainLot(etat.faits, lots.length);
     const bouton = $<HTMLAnchorElement>('[data-ticket-bouton]');
@@ -181,29 +260,22 @@ const donnees = JSON.stringify({
       $('[data-ticket-sur-titre]').textContent =
         `Votes passés · lot ${k + 1} sur ${lots.length} · en attendant la séance`;
       $('[data-ticket-titre]').textContent = '3 vrais votes à trancher';
-      $('[data-ticket-texte]').hidden = true;
-      const items = $('[data-ticket-items]');
-      items.replaceChildren(...lots[k].map((c) => {
-        const li = document.createElement('li');
-        const theme = document.createElement('span');
-        const [fond, encre] = c.puce.split(':');
-        theme.className = 'item-theme';
-        theme.style.background = fond;
-        theme.style.color = encre;
-        theme.textContent = c.theme;
-        const titre = document.createElement('span');
-        titre.className = 'item-titre';
-        titre.textContent = c.titre;
-        const meta = document.createElement('span');
-        meta.className = 'item-meta';
-        meta.textContent = reponse(c.uid) ? '✓ voté' : '≈ 40 s';
-        li.append(theme, titre, meta);
-        return li;
-      }));
-      items.hidden = false;
+      remplirItems(lots[k].map((c) => ({ ...c, fait: !!reponse(c.uid) })));
       bouton.href = '/lots/';
       bouton.textContent = etat.lot !== null && etat.i > 0 ? 'Reprendre · 2 min' : 'Commencer · 2 min';
     }
+  }
+
+  // Le compte à rebours jusqu'au vote (frame ⑤ : « dans 1 j 6 h »).
+  const rebours = document.querySelector<HTMLElement>('[data-compte-a-rebours]');
+  const quand = rebours?.dataset.quand ? Date.parse(rebours.dataset.quand) : NaN;
+  if (rebours && !Number.isNaN(quand)) {
+    const reste = quand - Date.now();
+    const j = Math.floor(reste / 86400000);
+    const h = Math.floor((reste % 86400000) / 3600000);
+    const m = Math.floor((reste % 3600000) / 60000);
+    rebours.textContent = reste <= 0 ? 'vote en cours ou terminé'
+      : j > 0 ? `dans ${j} j ${h} h` : h > 0 ? `dans ${h} h ${m} min` : `dans ${m} min`;
   }
 
   // --- Les derniers verdicts : ce que tu avais répondu ---
@@ -328,7 +400,12 @@ const donnees = JSON.stringify({
   .items :global(.item-titre) { flex: 1; min-width: 0; font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
   .items :global(.item-meta) { flex: none; font-size: 13px; font-weight: 700; opacity: 0.8; }
   @media (max-width: 520px) { .items :global(li) { flex-wrap: wrap; } .items :global(.item-titre) { flex-basis: 100%; order: 3; } }
-  .ticket-bouton { display: inline-flex; align-items: center; min-height: 60px; margin-top: 20px; padding: 0 30px;
+  .ticket-bas { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 20px; }
+  .ticket-serie { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
+  .ticket-serie[hidden] { display: none; }
+  .heure { font-family: var(--police-titre); font-weight: 700; font-size: 66px; line-height: 1; }
+  .note-ticket { margin-top: 10px; font-size: 13px; line-height: 1.35; opacity: 0.85; }
+  .ticket-bouton { display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px;
     border-radius: 16px; background: #fff; color: var(--violet-fonce); box-shadow: 0 5px 0 #D9CCFF;
     font-family: var(--police-titre); font-weight: 600; font-size: 17px; letter-spacing: 0.04em;
     text-transform: uppercase; text-decoration: none; }

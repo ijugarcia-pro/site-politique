@@ -15,7 +15,7 @@
 | **t34** · méthode et brouillons | Page `/calcul/` « Comment c'est calculé », avec un bouton pour tout effacer ; brouillons `docs/mentions-legales-brouillon.md` et `docs/confidentialite-brouillon.md`. |
 | **t36** · qualité | Contrastes corrigés, plan du site, balises de partage, données structurées des députés ; mesure d'audience prête à activer (`docs/audience.md`). |
 
-Tous les tests passent (124 côté pipeline, 37 côté site), le style aussi, et le site se construit (926 pages). Chaque page a été vérifiée dans le navigateur, sur ordinateur et à la taille d'un téléphone.
+Tous les tests passent (123 côté pipeline, 37 côté site), le style aussi, et le site se construit (926 pages). Chaque page a été vérifiée dans le navigateur, sur ordinateur et à la taille d'un téléphone.
 
 ## 2. Comment tester avant la mise en ligne
 

@@ -1,6 +1,6 @@
 # Cadrage : à quoi sert le site, d'après les maquettes V5
 
-> Rédigé le 8 octobre 2026 après les retours de Julien sur t22 (« on ne sait pas réellement où on va »). Source : les 19 frames du fichier de maquettes V5, lues écran par écran (textes, enchaînements, données affichées). Ce document dit ce que l'utilisateur fait sur le site, ce dont chaque écran a besoin, où le site actuel s'en écarte, et l'ordre de construction proposé. **Les points marqués « À valider » attendent la décision de Julien ; le planning ne sera modifié qu'après.**
+> Rédigé le 8 octobre 2026 après les retours de Julien sur t22 (« on ne sait pas réellement où on va »). Source : les 19 frames du fichier de maquettes V5, lues écran par écran (textes, enchaînements, données affichées). Ce document dit ce que l'utilisateur fait sur le site, ce dont chaque écran a besoin, où le site actuel s'en écarte, et l'ordre de construction proposé. **Validé par Julien le 8 octobre 2026** : lots de 3 votes, une séance passée devient un lot, le contenu avant la séance. Le planning en tient compte (phase 2 bis, t42 à t45).
 
 ## 1. Le principe en une phrase
 
@@ -57,7 +57,7 @@ flowchart LR
 
 Julien a choisi : des lots de questions rédigés chaque semaine, et **5 lots prêts au lancement** pour que l'utilisateur puisse aller au bout de son placement.
 
-**Proposition — À valider :**
+**Retenu (Julien, 8 octobre) :**
 
 - **Un lot = 3 votes, au format d'une séance** (3 cartes, environ 2 minutes, avec la révélation de chaque vote comme dans le quiz). 10 votes du quiz + 5 lots de 3 = **25 votes : le seuil où la précision devient fiable** (1 − e^(−25/20) ≈ 71 %). L'utilisateur qui va au bout des 5 lots a une place fiable. *(Variante : des lots de 5, comme le duel des maquettes ; 35 votes au total, plus long à produire.)*
 - **Une séance passée devient un lot.** Chaque semaine, la session de rédaction produit les cartes des 3 votes de la séance ; une fois le verdict tombé, la séance rejoint les lots « à rattraper ». Le stock grandit tout seul, sans deuxième chaîne de production. Au lancement, les 5 premiers lots sont des séances « rétroactives », tirées des votes de juin et juillet 2026.
@@ -77,7 +77,7 @@ Quand une question de conception se pose, la réponse se cherche dans ces règle
 7. **Neutralité** : aucun axe gauche-droite, des groupes reconnaissables par la couleur que leur donne l'Assemblée, des faits sourcés.
 8. **Recopier la frame**, ses cotes et ses textes, et noter chaque écart avec sa raison.
 
-## 6. Ordre de construction proposé — À valider
+## 6. Ordre de construction (validé le 8 octobre)
 
 Le planning actuel fait : séance (t23–t26), puis cartes de vote (t27), puis thèmes (t28). Proposition : **le contenu d'abord**.
 
@@ -88,9 +88,9 @@ Le planning actuel fait : séance (t23–t26), puis cartes de vote (t27), puis t
 5. **Explorer par thème (⑭) et page vote (⑨) avec la carte en tête.**
 6. La session hebdomadaire de rédaction (t27) devient la routine qui produit les 3 cartes de la séance, plus un lot tant que le stock est bas.
 
-## 7. Décisions attendues de Julien
+## 7. Décisions de Julien (8 octobre)
 
-1. Taille d'un lot : **3 votes** (25 au total, recommandé) ou 5.
-2. Une séance passée devient un lot à rattraper : oui ou non.
-3. L'ordre de construction du § 6 (le contenu avant la séance), et donc la réécriture des fiches t23 à t28 du planning.
-4. Qui choisit les votes des lots : Claude Code propose 9 nouveaux candidats (plus les 6 déjà prêts), Julien retient les 15, comme pour le quiz.
+1. Un lot = **3 votes** (10 + 15 = 25).
+2. Une séance passée **devient un lot** à rattraper.
+3. **Le contenu d'abord** : phase 2 bis du planning (t42 à t45), avant la séance de la semaine.
+4. Les votes des lots : Claude Code propose des candidats (t42), Julien en retient 15 (t43), comme pour le quiz.

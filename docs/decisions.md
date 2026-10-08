@@ -167,3 +167,8 @@
 - Raison : retour de Julien sur t22 ; les titres officiels sont trop techniques pour être tranchés d'un clic (t20).
 - Conséquence : docs/cadrage-produit.md propose la taille d'un lot (3 votes : 10 + 15 = 25, le seuil de précision fiable), qu'une séance passée devienne un lot, et de rédiger les cartes de vote avant de construire la séance. À valider par Julien avant de modifier le planning.
 
+## 2026-10-08 · Lots de 3 votes, séances recyclées, le contenu avant la séance
+- Décision (Julien) : un lot compte 3 votes, au format d'une séance ; une séance de la semaine, une fois son verdict tombé, devient un lot à rattraper ; les cartes de vote (thème, titre court, question, « Concrètement ») et les 5 lots du lancement sont construits avant la séance de la semaine.
+- Raison : docs/cadrage-produit.md. Quiz (10) + 5 lots (15) = 25 votes, le seuil où la précision devient fiable ; une seule chaîne de rédaction par semaine ; tous les écrans des maquettes présentent les votes sous forme de carte.
+- Conséquence : phase 2 bis ajoutée au planning (t42 à t45) ; t23, t24, t27 et t28 ajustées (dépendance, reprise de l'écran de lot, séance recyclée en lot, liste des thèmes fixée dès t42).
+

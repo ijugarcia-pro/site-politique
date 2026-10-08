@@ -186,3 +186,19 @@ def test_scrutins_mis_de_cote_exclus(base, tmp_path):
 def test_trop_de_deputes_refuse():
     with pytest.raises(ValueError):
         export_site.completer([{"groupe": "PO1", "_place": 1, "_tri": "a"}] * 578, {})
+
+
+def test_matrice_des_votes(base, tmp_path):
+    donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1))
+    m = donnees["matrice"]
+    # Hors motion de censure (VT12), dans l'ordre de l'index : 14, 13, 10.
+    assert m["votes"] == ["VT14", "VT13", "VT10"]
+    lignes = {d["u"]: d for d in m["deputes"]}
+    # Seul VT10 a des votes : P, C, P, absent (« - »), A.
+    assert [lignes[u]["s"] for u in ["PA1", "PA2", "PA3", "PA4", "PA5"]] == [
+        "--P", "--C", "--P", "---", "--A"]
+    assert lignes["PA1"]["e"] == 1 and lignes["PA1"]["g"] == GAUCHE
+    groupes = {g["sigle"]: g["s"] for g in m["groupes"]}
+    # Positions des groupes actuels ; pas de ligne pour les non-inscrits.
+    assert groupes == {"GCH": "--P", "DRT": "--P"}
+    assert (tmp_path / "export" / "matrice.json").exists()

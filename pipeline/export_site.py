@@ -9,6 +9,8 @@ Lit data/site.duckdb (pipeline/normalize.py) et produit, à chaque build autoris
                                        plus ancien
     export/site/scrutins/{uid}.json    chacun de ces votes, siège par siège, avec le parcours
                                        de son texte
+    export/site/matrice.json           le vote de chaque député et la position de chaque groupe
+                                       sur ces votes, une lettre par vote (t21)
 puis les députés et la recherche par code postal (pipeline/export_deputes.py).
 
 Un vote a sa page s'il est solennel, ou s'il porte sur l'ensemble d'un texte, une partie de
@@ -66,6 +68,14 @@ ETAPES = {
     "PROM": "Promulgation",
     "AN-APPLI": "Mise en application",
 }
+
+# La matrice des votes (t21) : une lettre par vote, pour comparer les réponses du visiteur aux
+# députés et aux groupes dans le navigateur. Absent, non-votant ou hors mandat : « - ».
+LETTRES = {"pour": "P", "contre": "C", "abstention": "A"}
+# Un groupe qui a changé de nom garde la même lignée pour comparer les votes : « À droite »
+# (PO845520) puis « UDR » (PO847173) sont devenus « Union des droites pour la République »
+# (PO872880, 5 septembre 2025).
+LIGNEE = {"PO845520": "PO872880", "PO847173": "PO872880"}
 
 # Dernière place connue de chaque député (mandat le plus récent).
 SQL_PLACES = """
@@ -234,6 +244,39 @@ def scrutin(con: duckdb.DuckDBPyConnection, uid: str, rangs: dict[str, int]) -> 
     }
 
 
+def matrice(con: duckdb.DuckDBPyConnection, uids: list[str], compo: dict) -> dict:
+    """Le vote de chaque député et la position majoritaire de chaque groupe actuel, sur les
+    votes donnés, hors motions de censure (seuls les « pour » y sont publiés)."""
+    colonnes = [u for u, in con.execute(
+        "SELECT uid FROM scrutin WHERE list_contains(?, uid) AND NOT motion_censure",
+        [uids]).fetchall()]
+    colonnes.sort(key=uids.index)
+    rang = {u: i for i, u in enumerate(colonnes)}
+    lettres: dict[str, list[str]] = {}
+    for dep, scrutin_uid, position in con.execute(
+            "SELECT depute_uid, scrutin_uid, position FROM vote "
+            "WHERE scrutin_uid IN (SELECT unnest(?::VARCHAR[]))", [colonnes]).fetchall():
+        ligne = lettres.setdefault(dep, ["-"] * len(colonnes))
+        ligne[rang[scrutin_uid]] = LETTRES.get(position, "-")
+    actuels = {x["depute"]: x["groupe"] for x in compo["sieges"] if not x.get("vacant")}
+    deputes = [{"u": uid, "n": nom, "g": actuels.get(uid), "e": int(uid in actuels),
+                "s": "".join(lettres[uid])}
+               for uid, nom in con.execute(
+                   "SELECT uid, prenom || ' ' || nom FROM depute ORDER BY nom_tri, prenom"
+               ).fetchall() if uid in lettres]
+    positions: dict[str, list[str]] = {g["uid"]: ["-"] * len(colonnes) for g in compo["groupes"]}
+    for groupe, scrutin_uid, position in con.execute(
+            "SELECT groupe_uid, scrutin_uid, position FROM position_groupe "
+            "WHERE list_contains(?, scrutin_uid)", [colonnes]).fetchall():
+        lignee = LIGNEE.get(groupe, groupe)
+        if lignee in positions and position in LETTRES:
+            positions[lignee][rang[scrutin_uid]] = LETTRES[position]
+    groupes = [{"u": g["uid"], "sigle": g["sigle"], "libelle": g["libelle"],
+                "s": "".join(positions[g["uid"]])}
+               for g in compo["groupes"] if not g["non_inscrits"]]
+    return {"votes": colonnes, "deputes": deputes, "groupes": groupes}
+
+
 def resume(s: dict) -> dict:
     """L'entrée d'un scrutin dans l'index : de quoi le lister et le chercher, sans les sièges."""
     cles = ("uid", "numero", "date", "titre", "sort", "categorie", "solennel",
@@ -263,6 +306,7 @@ def exporter(base: Path, dossier: Path, jour: date, exclus: set[str] = frozenset
         rangs = ordre_groupes(con)
         compo = composition(con, rangs, jour)
         scrutins = [scrutin(con, u, rangs) for u in scrutins_pages(con, exclus)]
+        mat = matrice(con, [x["uid"] for x in scrutins], compo)
     finally:
         con.close()
     # Les fichiers d'un build précédent ne doivent pas survivre (scrutin mis de côté depuis).
@@ -276,7 +320,8 @@ def exporter(base: Path, dossier: Path, jour: date, exclus: set[str] = frozenset
     ecrire(dossier / "scrutins.json", index)
     for s in scrutins:
         ecrire(pages / f"{s['uid']}.json", s)
-    return {"composition": compo, "index": index, "scrutins": scrutins}
+    ecrire(dossier / "matrice.json", mat)
+    return {"composition": compo, "index": index, "scrutins": scrutins, "matrice": mat}
 
 
 def main() -> int:

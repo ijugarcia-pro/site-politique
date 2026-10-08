@@ -68,7 +68,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t45 🤖 Accueil refait d'après la frame ⑤ *(livrée le 9 oct. 2026, branche `lots-candidats` ; à cocher après fusion et déploiement vert)*
 
 ### Phase 3 — La séance de la semaine (S9–S10, 30 nov. → 13 déc.)
-- [ ] t23 🤖 Agenda et sélection automatique des 3 votes
+- [ ] t23 🤖 Agenda et sélection automatique des 3 votes *(livrée le 9 oct. 2026, branche `lots-candidats` ; à cocher après un lundi de fonctionnement en ligne)*
 - [ ] t24 🤖 Séance en mode focus, pronostic, réponses locales
 - [ ] t25 🤖 Verdict et passages horaires des soirs de scrutin
 - [ ] t26 👤 ◆ Vivre une vraie séance du lundi au verdict
@@ -385,6 +385,7 @@ site/          le site (Astro), créé en phase 2
 - **À faire :** ingérer l'agenda ; détecter les scrutins solennels annoncés pour la semaine ; choisir 3 votes selon les règles : texte entier d'abord, thème le moins représenté récemment, groupes d'origine variés ; compléter avec des votes passés qui divisent si moins de 3 annoncés ; **geler la série pendant les vacances parlementaires**. Export `semaine.json`. Exécution le lundi à 6 h.
 - **Tests :** semaine pleine, semaine creuse, vacances parlementaires, agenda modifié en cours de semaine.
 
+- **Réalisé (9 oct.) :** `pipeline/semaine.py` (testé dans `tests/test_semaine.py` : semaine pleine, semaine creuse, vacances, agenda modifié en cours de semaine, vote tranché, carte jointe) ; l'agenda était déjà lu en t12 (table `vote_prevu`). Export `export/site/semaine.json` ; sélection figée dans `data/semaines/{lundi}.json` ; cartes de séance attendues dans `data/seances/{lundi}.json` (t27) ; réserve `data/reserve.json` (13 cartes de t42 non retenues). `nuit.yml` : étape « Séance de la semaine » après l'export, passage complet chaque lundi, sélection commitée avec l'état des sources. Essai sur les archives du 7 oct. : semaine du 12 oct., les 2 votes solennels annoncés le 13 (violences sexuelles et sexistes, loi organique sur l'autorité judiciaire) + le logement des travailleurs des services publics (réserve) ; semaine du 3 août : vacances. **Écarts :** pas de nouveau workflow « lundi 6 h » : le passage de nuit (6 h 11 UTC, 7 h 11 ou 8 h 11 à Paris) fait le travail ; le critère du thème ne joue que lorsque des cartes de séance existent. Décision : `docs/decisions.md` (9 oct., « Séance de la semaine »).
 ### t24 🤖 Séance en mode focus — S9, 2 sessions
 - **Dépend de :** t23.
 - **À faire :** reprendre l'écran de lot de t44 et ajouter ce qui est propre à la séance (frames V5 « Séance » et « Séance terminée ») : vote avant les députés, pronostic facultatif, tampon, série (gelée pendant les vacances), barre « utilisateurs du site » masquée sous 200 participants. Tout stocké dans le navigateur.

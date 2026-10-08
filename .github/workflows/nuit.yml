@@ -53,13 +53,19 @@ jobs:
         id: ingestion
         run: uv run python -m pipeline.ingest
 
+      # Le lundi, la séance de la semaine est choisie (t23) : le passage va jusqu'au bout même
+      # si aucune source n'a changé.
+      - name: Jour de la semaine
+        id: jour
+        run: echo "lundi=$([ "$(date -u +%u)" = 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
       - name: Normalisation (11 tables DuckDB)
-        if: steps.ingestion.outputs.changement == 'true' || github.event_name != 'schedule'
+        if: steps.ingestion.outputs.changement == 'true' || github.event_name != 'schedule' || steps.jour.outputs.lundi == 'true'
         run: uv run python -m pipeline.normalize
 
       - name: Contrôles (6 règles ; un échec bloquant arrête le build)
         id: controles
-        if: steps.ingestion.outputs.changement == 'true' || github.event_name != 'schedule'
+        if: steps.ingestion.outputs.changement == 'true' || github.event_name != 'schedule' || steps.jour.outputs.lundi == 'true'
         run: uv run python -m pipeline.checks
 
       # Tout ce qui suit jusqu'au déploiement porte la condition « contrôles réussis » :
@@ -71,6 +77,10 @@ jobs:
       - name: Export des données du site
         if: steps.controles.outcome == 'success'
         run: uv run python -m pipeline.export_site
+
+      - name: Séance de la semaine (choisie au premier passage de la semaine, puis revue)
+        if: steps.controles.outcome == 'success'
+        run: uv run python -m pipeline.semaine
 
       - name: Garder l'export du build
         if: steps.controles.outcome == 'success'
@@ -128,7 +138,7 @@ jobs:
       - name: Enregistrer l'état des sources
         if: always()
         run: |
-          if [ -z "$(git status --porcelain -- data/sources data/controles)" ]; then
+          if [ -z "$(git status --porcelain -- data/sources data/controles data/semaines)" ]; then
             echo "État inchangé."
             exit 0
           fi
@@ -141,17 +151,21 @@ jobs:
           etat="$RUNNER_TEMP/etat"
           rm -rf "$etat" && mkdir -p "$etat"
           cp -r data/sources data/controles "$etat/"
+          if [ -d data/semaines ]; then cp -r data/semaines "$etat/"; fi
           for essai in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
             rm -rf data/sources data/controles
             cp -r "$etat/sources" "$etat/controles" data/
+            # La séance de la semaine, figée au premier passage (pipeline/semaine.py).
+            if [ -d "$etat/semaines" ]; then rm -rf data/semaines; cp -r "$etat/semaines" data/; fi
             git add data/sources data/controles
+            if [ -d data/semaines ]; then git add data/semaines; fi
             if git diff --cached --quiet; then
               echo "État identique à celui de main."
               exit 0
             fi
-            git commit -m "Pipeline de nuit : état des sources et contrôles"
+            git commit -m "Pipeline de nuit : état des sources, contrôles et séance de la semaine"
             if git push origin HEAD:main; then
               exit 0
             fi

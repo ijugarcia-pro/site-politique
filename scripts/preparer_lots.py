@@ -20,6 +20,7 @@ Produit :
     docs/lots-candidats.md                 la grille à cocher par Julien (t43)
     data/mesures/lots/candidats.json       les candidats, leurs positions et la proposition
     data/lots.json                         les 5 lots retenus par Julien (t43), lus par le site
+    data/reserve.json                      les candidats non retenus, réserve de la séance (t23)
 """
 
 from __future__ import annotations
@@ -42,6 +43,7 @@ BASE = RACINE / "data" / "site.duckdb"
 TEXTES = RACINE / "data" / "raw" / "textes"
 QUIZ = RACINE / "data" / "quiz.json"
 LOTS = RACINE / "data" / "lots.json"
+RESERVE = RACINE / "data" / "reserve.json"
 SORTIE = RACINE / "docs" / "lots-candidats.md"
 DONNEES = RACINE / "data" / "mesures" / "lots" / "candidats.json"
 N_LOTS = 5
@@ -648,7 +650,14 @@ def main(argv: list[str] | None = None) -> int:
              for i, lot in enumerate(lots, 1)], ensure_ascii=False, indent=1) + "\n",
             encoding="utf-8")
         cartes.lire_lots(LOTS)  # relu et contrôlé
-        print(f"Écrit : {LOTS.relative_to(RACINE)}")
+        # La réserve : les candidats contrôlés non retenus, où la séance de la semaine puise
+        # quand l'agenda annonce moins de 3 votes (pipeline/semaine.py). Ils restent à valider
+        # par Julien avant d'être montrés comme cartes.
+        retenus = {n for lot in lots for n in lot}
+        RESERVE.write_text(json.dumps(
+            [cartes.vers_json(c.carte(uid(c.numero))) for c in candidats
+             if c.numero not in retenus], ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"Écrit : {LOTS.relative_to(RACINE)} et {RESERVE.relative_to(RACINE)}")
     print(f"{len(candidats)} candidats, lots : {lots}")
     print(f"Écrit : {SORTIE.relative_to(RACINE)} et {DONNEES.relative_to(RACINE)}")
     return 0

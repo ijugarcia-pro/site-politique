@@ -301,12 +301,12 @@ const tuile = premier ? {
   .tampons { display: flex; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
   .tampons :global(li) { flex: 1; max-width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     aspect-ratio: 1 / 1; border-radius: 50%; font-family: var(--police-titre); font-weight: 700; font-size: 13px; line-height: 1.05;
-    text-align: center; border: 2px dashed #DCE0E8; color: #C9CFDA; }
+    text-align: center; border: 2px dashed #DCE0E8; color: var(--gris-legende); }
   .tampons :global(.mini) { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; opacity: .8; }
   .tampons :global(li.fait) { border: 3px solid var(--violet); color: var(--violet-fonce); background: #FFFFFF; transform: rotate(-8deg); }
   .tampons :global(li.vient) { border: 3px solid var(--violet); color: #FFFFFF; background: var(--violet);
     transform: rotate(-8deg); box-shadow: 0 0 0 4px #D9CCFF; }
-  .tampons :global(li.vacances) { border: 2px dashed #B4BAC8; color: #8A91A3; background: var(--fond-doux); }
+  .tampons :global(li.vacances) { border: 2px dashed #B4BAC8; color: var(--gris); background: var(--fond-doux); }
   .actions { align-self: stretch; display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
   .b-principal { flex: 1 1 260px; min-height: 62px; display: flex; align-items: center; justify-content: center; padding: 0 22px;
     border-radius: 18px; background: var(--violet); color: #fff; box-shadow: 0 6px 0 var(--violet-fonce);

@@ -13,9 +13,12 @@ interface Props {
   /** Mode focus (quiz, séance) : pas d'onglets ; l'en-tête reçoit le contenu du slot
    *  « entete » (barre de progression…). */
   focus?: boolean;
+  /** Données structurées schema.org de la page (JSON-LD), pour les moteurs de recherche. */
+  jsonld?: Record<string, unknown>;
 }
 
-const { titre, description, onglet, focus = false } = Astro.props;
+const { titre, description, onglet, focus = false, jsonld } = Astro.props;
+const canonique = new URL(Astro.url.pathname, Astro.site).href;
 const ONGLETS = [
   { id: 'semaine', href: '/', label: 'Cette semaine', icone: 'M3 5h14v12H3zM3 9h14M7 3v4M13 3v4' },
   { id: 'hemicycle', href: '/hemicycle/', label: 'Mon hémicycle',
@@ -43,6 +46,15 @@ const tranches = JSON.stringify({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titreComplet}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonique} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Le 578e siège" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:title" content={titreComplet} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonique} />
+    <meta name="twitter:card" content="summary" />
+    {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld).replace(/</g, '\\u003c')}></script>}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body class:list={[{ focus }]}>

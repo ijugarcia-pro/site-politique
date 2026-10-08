@@ -174,11 +174,11 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     background: var(--fond-doux); scroll-margin-top: 16px; }
   .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
   .panneau h2 { font-size: 24px; font-weight: 600; }
-  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris-legende); }
+  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris); }
   .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px;
     background: var(--fond); border: 2px solid var(--bord); }
   .precision-tete-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px;
-    letter-spacing: 0.06em; text-transform: uppercase; color: #7A8296; }
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); }
   .precision-tete-segments { display: flex; gap: 3px; }
   .precision-tete-segments span { width: 9px; height: 14px; border-radius: 3px; background: var(--bord); }
   .precision-tete-segments :global(span.plein) { background: var(--violet); }
@@ -219,7 +219,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .b-contre { background: #E5552A; box-shadow: 0 6px 0 #B83C0A; }
   .choix button:active, .b-passer:active { transform: translateY(5px); box-shadow: none; }
   .b-passer { width: 100%; min-height: 54px; margin-top: 14px; border: 2px solid var(--bord); background: var(--fond);
-    box-shadow: 0 4px 0 var(--bord); color: #7A8296; font-size: 17px; }
+    box-shadow: 0 4px 0 var(--bord); color: var(--gris); font-size: 17px; }
   .choix button:disabled, .b-passer:disabled { cursor: default; }
   .choix button:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
   .b-passer:global(.estompe) { opacity: .35; box-shadow: none; }

@@ -43,7 +43,12 @@ const libelleVote = (vote: Position, censure: boolean) => censure
   : LIBELLES[vote];
 const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${d.sigle}) ` : ''}de la ${libelleCirco(d.circo)} ${d.departement === 'Français établis hors de France' ? 'des Français établis hors de France' : `(${d.departement})`} : ses votes, sa participation, ses votes contre son groupe.`;
 ---
-<Base titre={nom} description={description} onglet="explorer">
+<Base titre={nom} description={description} onglet="explorer" jsonld={{
+  '@context': 'https://schema.org', '@type': 'Person', name: nom,
+  jobTitle: elle ? 'Députée' : 'Député', url: new URL(Astro.url.pathname, Astro.site).href,
+  ...(d.groupe_libelle ? { memberOf: { '@type': 'Organization', name: d.groupe_libelle } } : {}),
+  worksFor: { '@type': 'GovernmentOrganization', name: 'Assemblée nationale' },
+}}>
   <nav class="fil" aria-label="Fil d'Ariane">
     <a href="/explorer/">Explorer</a> <span aria-hidden="true">›</span>
     <a href="/deputes/">Députés</a> <span aria-hidden="true">›</span>

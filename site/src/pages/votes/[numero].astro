@@ -30,7 +30,10 @@ const etat = !derniere ? null
   : derniere.code === 'PROM' ? `Loi promulguée le ${dateLisible(derniere.fin)}`
   : `Dernière étape connue : ${derniere.libelle.charAt(0).toLowerCase()}${derniere.libelle.slice(1)}`;
 const misesAuPoint = s.sieges.filter((x) => x.mise_au_point);
-const titrePage = `Vote n° ${s.numero} : ${titre.length > 70 ? `${titre.slice(0, 68)}…` : titre}`;
+// Le titre de l'onglet et des moteurs de recherche : celui du dossier, plus parlant que l'objet
+// officiel (« l'ensemble de la proposition de loi visant à… »).
+const court = s.dossier?.titre ?? titre;
+const titrePage = `Vote n° ${s.numero} : ${court.length > 70 ? `${court.slice(0, 68)}…` : court}`;
 const description = censure
   ? `Motion de censure ${verdict(s).toLowerCase()} le ${dateLisible(s.date)} : ${d.pour} voix pour, ${s.requis} requises. Le vote de chaque député.`
   : `${verdict(s)} le ${dateLisible(s.date)} par ${d.pour} voix pour et ${d.contre} contre. Le vote de chaque député, groupe par groupe.`;

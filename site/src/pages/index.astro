@@ -389,7 +389,7 @@ const donnees = JSON.stringify({
     box-shadow: 0 6px 0 var(--violet-fonce); overflow: hidden; }
   .ticket-gauche { flex: 1 1 440px; min-width: 0; padding: 26px 28px; }
   .sur-titre { margin: 0; font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
-    text-transform: uppercase; opacity: 0.85; }
+    text-transform: uppercase; }
   .ticket h2 { margin-top: 6px; font-size: clamp(24px, 2.6vw, 30px); font-weight: 700; line-height: 1.1; }
   .ticket-texte { margin: 12px 0 0; font-size: 16px; opacity: 0.92; max-width: 540px; }
   .items { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
@@ -398,13 +398,13 @@ const donnees = JSON.stringify({
   .items :global(.item-theme) { flex: none; min-width: 86px; padding: 4px 10px; border-radius: 999px; text-align: center;
     font-family: var(--police-titre); font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
   .items :global(.item-titre) { flex: 1; min-width: 0; font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
-  .items :global(.item-meta) { flex: none; font-size: 13px; font-weight: 700; opacity: 0.8; }
+  .items :global(.item-meta) { flex: none; font-size: 13px; font-weight: 700; }
   @media (max-width: 520px) { .items :global(li) { flex-wrap: wrap; } .items :global(.item-titre) { flex-basis: 100%; order: 3; } }
   .ticket-bas { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 20px; }
   .ticket-serie { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
   .ticket-serie[hidden] { display: none; }
   .heure { font-family: var(--police-titre); font-weight: 700; font-size: 66px; line-height: 1; }
-  .note-ticket { margin-top: 10px; font-size: 13px; line-height: 1.35; opacity: 0.85; }
+  .note-ticket { margin-top: 10px; font-size: 13px; line-height: 1.35; }
   .ticket-bouton { display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px;
     border-radius: 16px; background: #fff; color: var(--violet-fonce); box-shadow: 0 5px 0 #D9CCFF;
     font-family: var(--police-titre); font-weight: 600; font-size: 17px; letter-spacing: 0.04em;
@@ -423,7 +423,7 @@ const donnees = JSON.stringify({
     .ticket-droite { flex-basis: 100%; border-left: 0; border-top: 3px dashed rgba(255, 255, 255, 0.35); }
     .ticket-droite::before, .ticket-droite::after { display: none; }
   }
-  .petit { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+  .petit { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
   .jour { font-family: var(--police-titre); font-weight: 700; font-size: 21px; }
   .tampon { margin: 6px 0; padding: 4px 14px; border: 3px solid #fff; border-radius: 12px; font-family: var(--police-titre);
     font-weight: 700; font-size: 24px; letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-4deg); }

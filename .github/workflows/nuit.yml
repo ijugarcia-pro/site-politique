@@ -5,10 +5,14 @@ name: Pipeline de nuit
 # changé. Un lancement à la main ou une modification du site ou du pipeline sur main reconstruit
 # tout, même sans nouvelle donnée. Un échec des contrôles ne publie rien : la version en ligne
 # reste la dernière valide. Minute 11 plutôt que l'heure pile : le planificateur de GitHub est
-# saturé en début d'heure et y saute des passages.
+# saturé en début d'heure et y saute des passages. Deux horaires de secours rattrapent un passage
+# sauté (le 8 octobre 2026, celui de 6 h 11 n'a pas été lancé) ; si le premier a tourné, ils
+# s'arrêtent après l'ingestion, faute de source modifiée.
 on:
   schedule:
     - cron: "11 6 * * *"
+    - cron: "47 6 * * *"
+    - cron: "29 8 * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -130,12 +134,30 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sources data/controles
-          git commit -m "Pipeline de nuit : état des sources et contrôles"
-          # La normalisation réécrit aussi son rapport (docs/normalisation.md, data/mesures/) :
-          # mis de côté le temps du rebase, seul l'état des sources et des contrôles est commité.
-          git pull --rebase --autostash
-          git push
+          # Le passage le plus récent fait foi : son état est recopié sur la dernière version de
+          # main, au lieu d'être fusionné ligne à ligne avec celui d'un passage précédent
+          # (deux passages qui se suivent écrivaient les mêmes fichiers et se gênaient). Le
+          # rapport de normalisation réécrit par le passage n'est pas commité.
+          etat="$RUNNER_TEMP/etat"
+          rm -rf "$etat" && mkdir -p "$etat"
+          cp -r data/sources data/controles "$etat/"
+          for essai in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            rm -rf data/sources data/controles
+            cp -r "$etat/sources" "$etat/controles" data/
+            git add data/sources data/controles
+            if git diff --cached --quiet; then
+              echo "État identique à celui de main."
+              exit 0
+            fi
+            git commit -m "Pipeline de nuit : état des sources et contrôles"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "main a bougé pendant l'enregistrement : nouvelle tentative ($essai)."
+          done
+          exit 1
 
       - name: Alerter si une source échoue depuis plusieurs nuits
         if: always() && hashFiles('data/raw/alerte.md') != ''

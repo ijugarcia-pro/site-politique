@@ -162,3 +162,8 @@
 - Raison : retour de Julien sur t22 (« recopier parfaitement les maquettes »). Placer l'étoile au-dessus d'un groupe ne crée pas d'axe : c'est le groupe le plus proche, calculé sur des votes réels.
 - Conséquence : remplace les cinq teintes de t21 et l'étoile « près du jumeau ». Le dessin est commun à « Mon hémicycle » et au quiz (`site/src/components/Salle.astro`, `site/src/lib/salle.ts`).
 
+## 2026-10-08 · Après le quiz : des lots de votes rédigés, 5 prêts au lancement
+- Décision (Julien) : après le quiz, l'utilisateur continue de se placer par lots de votes rédigés comme ceux du quiz (thème, question fermée, « Concrètement »), contrôlés et validés pendant la session hebdomadaire (zéro euro). Au lancement, 5 lots sont prêts, pour que l'utilisateur puisse aller au bout de son placement : « c'est la base du projet, elle doit être respectée de bout en bout ».
+- Raison : retour de Julien sur t22 ; les titres officiels sont trop techniques pour être tranchés d'un clic (t20).
+- Conséquence : docs/cadrage-produit.md propose la taille d'un lot (3 votes : 10 + 15 = 25, le seuil de précision fiable), qu'une séance passée devienne un lot, et de rédiger les cartes de vote avant de construire la séance. À valider par Julien avant de modifier le planning.
+

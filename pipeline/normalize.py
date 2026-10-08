@@ -55,6 +55,11 @@ POSITIONS = {"pours": "pour", "contres": "contre", "abstentions": "abstention",
              "nonVotants": "non_votant", "nonVotantsVolontaires": "non_votant"}
 # Mise au point : rubriques de `miseAuPoint` et de `miseAuPoint.dysfonctionnement`.
 POSITIONS_MISE_AU_POINT = {**POSITIONS, "pour": "pour", "contre": "contre"}
+# Sigle affiché d'un groupe : l'abréviation que l'Assemblée affiche sur son site
+# (`libelleAbrege` : UDR, EcoS, Dem), à défaut son code court (`libelleAbrev` : UDDPLR, ECOS…).
+# Exception décidée par Julien le 8 octobre 2026 : « LFI » plutôt que « LFI-NFP » ; le nom
+# officiel du groupe reste dans `libelle`.
+SIGLES_AFFICHES = {"LFI-NFP": "LFI"}
 
 
 def archive(raw: Path, source_id: str) -> Path:
@@ -134,13 +139,18 @@ def fusionner_appartenances(gp: list[dict]) -> list[dict]:
     return resultat
 
 
+def sigle_affiche(organe: dict) -> str | None:
+    sigle = val(organe.get("libelleAbrege")) or val(organe.get("libelleAbrev"))
+    return SIGLES_AFFICHES.get(sigle, sigle)
+
+
 def lire_groupes(chemin: Path) -> list[dict]:
     groupes = []
     for _, doc in documents(chemin, "json/organe/"):
         organe = doc["organe"]
         if organe.get("codeType") == "GP" and val(organe.get("legislature")) == "17":
             groupes.append({
-                "uid": organe["uid"], "sigle": val(organe.get("libelleAbrev")),
+                "uid": organe["uid"], "sigle": sigle_affiche(organe),
                 "libelle": organe["libelle"], "debut": jour(champ(organe, "viMoDe", "dateDebut")),
                 "fin": jour(champ(organe, "viMoDe", "dateFin")),
                 "couleur": val(organe.get("couleurAssociee")),

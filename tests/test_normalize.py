@@ -248,3 +248,10 @@ def test_rattachement_et_votes_prevus(base):
     assert base.execute("SELECT point_uid, dossier_uid FROM vote_prevu").fetchall() == [
         ("PT1", "DL1")]
     assert base.execute("SELECT count(*) FROM etape WHERE dossier_uid = 'DL1'").fetchone()[0] == 2
+
+
+def test_sigle_affiche_celui_du_site_de_l_assemblee():
+    lfi = {"libelleAbrege": "LFI-NFP", "libelleAbrev": "LFI-NFP"}
+    udr = {"libelleAbrege": "UDR", "libelleAbrev": "UDDPLR"}
+    ancien = {"libelleAbrev": "AD"}  # sans abréviation affichée : le code court
+    assert [normalize.sigle_affiche(o) for o in (lfi, udr, ancien)] == ["LFI", "UDR", "AD"]

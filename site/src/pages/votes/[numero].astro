@@ -4,6 +4,7 @@
 // Tant qu'aucune fiche « Ce que ça change » n'est validée (t27), le vote est affiché sans
 // cartes : l'objet officiel et les liens vers l'Assemblée en tiennent lieu.
 import Base from '../../layouts/Base.astro';
+import { couleurGroupe } from '../../lib/couleurs.ts';
 import Hemicycle from '../../components/Hemicycle.astro';
 import { dateLisible, LIBELLES, lienVote, majuscule, scrutin, scrutins,
   type Position } from '../../lib/donnees.ts';
@@ -114,7 +115,7 @@ const exprimes = d.pour + d.contre;
             const b = barre(g.decompte!, g.membres);
             return (
               <li>
-                <abbr title={g.libelle}>{g.sigle}</abbr>
+                <abbr class="pastille-groupe" style={`--c: ${couleurGroupe(g.couleur)}`} title={g.libelle}>{g.sigle}</abbr>
                 <span class="barre" aria-hidden="true">
                   <span style={`width: ${b.pour}%; background: var(--pour)`}></span>
                   <span style={`width: ${b.abstention}%; background: var(--abstention)`}></span>

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { classer, colonnes, comparer, initiales, lisse, partCommeToi, precision, profil, teinte,
-  type Matrice } from './profil.ts';
+import { classer, colonnes, comparer, initiales, lisse, niveau, partCommeToi, precision, profil,
+  teinte, type Matrice } from './profil.ts';
 
 const matrice: Matrice = {
   votes: ['V1', 'V2', 'V3', 'V4'],
@@ -79,10 +79,12 @@ test('part des députés qui ont voté comme toi', () => {
 });
 
 test('teintes et initiales', () => {
-  assert.equal(teinte(null), '#DFE3EB');
-  assert.equal(teinte(0.2), '#EDE7FF');
-  assert.equal(teinte(0.75), '#7C4DFF');
-  assert.equal(teinte(0.9), '#4B2BC2');
+  assert.equal(teinte(null), '#FFFFFF');
+  assert.equal(teinte(0.2), '#DFE3EB');
+  assert.equal(teinte(0.6), '#A98BFF');
+  assert.equal(teinte(0.9), '#6A3DF0');
+  assert.equal(niveau(0.67).haut, true);
+  assert.equal(niveau(0.66).haut, false);
   assert.equal(initiales('Charles de Courson'), 'CC');
   assert.equal(initiales('Jean-Luc Mélenchon'), 'JM');
   assert.equal(initiales('Marie-France Lorho'), 'ML');

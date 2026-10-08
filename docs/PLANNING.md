@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t21 livrée, branche `quiz`, en attente de fusion : quiz d'entrée, ton hémicycle, jumeau, stories ; t20 faite : 10 votes de société retenus par Julien, figés dans data/quiz.json, jumeau toujours montré ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 8 octobre 2026 (premiers retours de Julien sur t22 traités, branche `retours-t22`, en attente de fusion : sigles des groupes, couleurs des groupes, frames V5 de Mon hémicycle et du quiz recopiées ; lots de votes après le quiz décidés, 5 au lancement ; cadrage produit validé (docs/cadrage-produit.md) : lots de 3 votes, une séance passée devient un lot, phase 2 bis ajoutée (t42 à t45) avant la séance ; t21 livrée, branche `quiz`, en attente de fusion : quiz d'entrée, ton hémicycle, jumeau, stories ; t20 faite : 10 votes de société retenus par Julien, figés dans data/quiz.json, jumeau toujours montré ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -59,7 +59,13 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t19 🤖 Fiche député + recherche par code postal *(livrée le 8 oct. 2026, branche `page-vote` ; à cocher après fusion et déploiement vert)*
 - [x] t20 👤 Valider les 10 votes du quiz d'entrée *(fait le 8 oct. 2026 : data/quiz.json ; branche `quiz-candidats`)*
 - [ ] t21 🤖 Quiz d'entrée, résultat, jumeau, stories *(livrée le 8 oct. 2026, branche `quiz` ; à cocher après fusion et déploiement vert)*
-- [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone) *(préparée le 8 oct. 2026 : docs/test-parcours.md)*
+- [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone) *(préparée le 8 oct. 2026 : docs/test-parcours.md ; premiers retours de Julien le 8 oct., traités sur la branche `retours-t22`, en attente de fusion)*
+
+### Phase 2 bis — Les lots de votes (ajoutée le 8 oct. 2026, décision de Julien : le contenu d'abord)
+- [ ] t42 🤖 Carte de vote et 15 candidats pour les 5 lots du lancement
+- [ ] t43 👤 Valider les 15 votes des 5 lots
+- [ ] t44 🤖 Trancher un lot : écran de séance sur les lots, suite du quiz
+- [ ] t45 🤖 Accueil refait d'après la frame ⑤
 
 ### Phase 3 — La séance de la semaine (S9–S10, 30 nov. → 13 déc.)
 - [ ] t23 🤖 Agenda et sélection automatique des 3 votes
@@ -327,6 +333,39 @@ site/          le site (Astro), créé en phase 2
 - **Claude Code prépare** : la liste des scénarios à tester et un modèle d'issue.
 - **Préparé (8 oct.) :** `docs/test-parcours.md`, check-list à cocher : 6 scénarios « Jade » sur téléphone (accueil, quiz et neutralité des questions, résultat, partage des stories, Mon hémicycle, retour), 4 scénarios « Marc » sur ordinateur (code postal avec 8 cas aux résultats attendus vérifiés dans les données, fiche député, page de vote au clavier, recherche), vérifications de fond (ordre LIOT / SOC face au schéma officiel, zoom, état des données, navigation privée) et limites connues. Modèle d'issue : `.github/ISSUE_TEMPLATE/friction-parcours.md` (scénario, appareil, gestes, attendu, constaté, gravité), libellé `parcours`. **Reste pour Julien :** faire le test sur le site en ligne une fois les PR #8 à #11 fusionnées. **Reste à créer** le libellé `parcours` dans le dépôt (sans lui, les issues sont créées sans libellé).
 
+- **Premiers retours de Julien (8 oct.) :** trois remarques en session, sans issue GitHub. (1) « LFI-NFP » alors que le NFP n'existe plus ; (2) « Mon hémicycle » peu lisible : on voit qui vote comme soi, pas de quel groupe il est ; recopier fidèlement les maquettes V5 ; (3) après le quiz, affiner son résultat oblige à ouvrir les votes un par un.
+- **Traité (8 oct., branche `retours-t22`) :** (1) sigles affichés de l'Assemblée (`libelleAbrege` : UDR, EcoS, Dem) et « LFI » à la demande de Julien, nom officiel complet conservé (`pipeline/normalize.py`, test dans `tests/test_normalize.py`) ; (2) couleur officielle de chaque groupe (`couleurAssociee`) : arc et pastille autour des hémicycles (Mon hémicycle, quiz, pages de vote), point de couleur devant les sigles (groupes, jumeau, fiche député, annuaire) ; « Mon hémicycle » et le quiz refaits d'après les frames ⑩ et ①②③ (`site/src/components/Salle.astro`, `site/src/lib/salle.ts`, `site/src/lib/couleurs.ts`) : quatre niveaux d'accord, étoile au-dessus du groupe le plus proche, repère du jumeau, carte au survol d'un siège (clic : sa fiche), hémicycle qui se construit à chaque réponse du quiz, révélation « majorité / minorité » avec les votes contre leur groupe cerclés ; en-tête de la maquette (onglets en icônes sous 900 px, loupe, anneau de précision, étoile). Décisions : `docs/decisions.md` (trois entrées du 8 oct.). (3) non traité : proposition et options dans `docs/questions-ouvertes.md` (question 6), à trancher par Julien. Vérifié dans le navigateur à 800 px, 1440 px et 375 px : rendu, survol, parcours du quiz jusqu'au résultat, aucun débordement horizontal. **Écarts aux maquettes :** la série de séances, les pronostics, le carnet et les duels n'existent pas encore (t24, t33) : remplacés dans Mon hémicycle par « votes tranchés » et « comme le vote final » ; bouton « Contre » en #E5552A pour le contraste du texte blanc ; l'accueil, la fiche député et Explorer n'ont pas été repris en détail. **Reste :** fusion, puis la suite du test du parcours par Julien (docs/test-parcours.md).
+- **Deuxièmes retours (8 oct.) :** Julien retient l'option (a) pour la suite du quiz (des lots de votes rédigés, 5 prêts au lancement) ; il relève que l'accueil s'écarte encore de la frame ⑤, que les étiquettes des groupes ne sont pas au même niveau, que le résultat du quiz est plus chargé que la maquette, et demande de cadrer l'usage d'après les maquettes. **Traité :** étiquettes toutes au même rayon et à l'échelle du dessin, repères (ta place, ton jumeau) qui n'en couvrent aucune, vérifié par calcul de 375 à 1900 px ; sur téléphone, les sigles passent sous l'hémicycle. `docs/cadrage-produit.md` : le principe d'usage, les trois parcours, ce que chaque écran attend, les règles de conception, la proposition de lots (3 votes, une séance passée devient un lot) et un nouvel ordre de construction (les cartes de vote avant la séance). **Non traité, en attente de la validation du cadrage :** l'accueil et le résultat du quiz, qui dépendent des lots ; la réécriture des fiches t23 à t28.
+---
+
+## 7 bis. Phase 2 bis — Les lots de votes
+
+**Objectif.** Après le quiz, l'utilisateur continue de se placer, lot par lot, jusqu'à une place fiable (25 votes), sans jamais trancher un titre officiel. Chaque vote lui est présenté comme dans les maquettes : thème, titre court, question fermée, « Concrètement » (docs/cadrage-produit.md). **Sortie : un nouveau venu fait le quiz puis les 5 lots, sans quitter le parcours, et atteint 71 % de précision.**
+
+*(Phase ajoutée le 8 octobre 2026 : Julien retient des lots de 3 votes, 5 prêts au lancement ; une séance passée devient un lot ; les cartes de vote passent avant la séance. Voir docs/decisions.md.)*
+
+### t42 🤖 Carte de vote et 15 candidats pour les 5 lots — 1 session
+- **Dépend de :** t22 (premiers retours).
+- **À faire :**
+  1. Fixer le format de la **carte de vote**, commun au quiz, aux lots, aux séances et aux pages de vote : thème (une liste fermée, celle de t28), titre court, question fermée, « Concrètement », numéro du scrutin ; fichier versionné `data/lots.json` (les 10 du quiz restent dans `data/quiz.json`, au même format).
+  2. Préparer `docs/lots-candidats.md` comme `docs/quiz-candidats.md` : les 6 candidats déjà contrôlés et non retenus pour le quiz (n° 2958, 5106, 7905, 881, 852, 7380), plus au moins 12 nouveaux, rédigés d'après le texte voté et passés aux contrôles 2, 4, 5 et 6. Critères de Julien (8 oct.) : sujets de société à objet unique, compris en une phrase. Critères ajoutés : départager les groupes que le quiz sépare mal (Dem / EPR, Dem / LIOT), varier les thèmes.
+  3. Proposer 5 lots de 3 (ordre, thèmes, groupes séparés), calculés comme la proposition du quiz.
+- **Livrable :** `docs/lots-candidats.md`, `data/mesures/lots/candidats.json`, script reproductible et ses tests.
+- **Ne pas faire :** l'écran des lots, ni écrire `data/lots.json` avant la validation de t43.
+
+### t43 👤 Valider les 15 votes des 5 lots — 45 min
+- Julien retient 15 votes et corrige les questions s'il le souhaite. Le choix est figé dans `data/lots.json`.
+- **Claude Code prépare** : la grille de t42, prête à cocher.
+
+### t44 🤖 Trancher un lot — 1 à 2 sessions
+- **Dépend de :** t43.
+- **À faire :** l'écran de séance (frames ⑥ et ⑦, sans pronostic ni série tant que la séance de la semaine n'existe pas) appliqué aux lots : 3 cartes, la révélation du vrai vote après chaque réponse (comme le quiz), puis la fin de lot (le tampon, la précision gagnée, « Lot suivant »). Le résultat du quiz enchaîne sur le premier lot (« Continuer · 3 votes de plus », frame ③) ; « Trancher des votes passés » (Mon hémicycle) mène au prochain lot non fait. Réponses dans le navigateur, avec les autres.
+- **Critère de fin :** quiz + 5 lots d'affilée sans quitter le parcours ; précision de 71 % au bout ; vérifié à 1440 et 375 px.
+
+### t45 🤖 Accueil refait d'après la frame ⑤ — 1 session
+- **Dépend de :** t44.
+- **À faire :** la carte « séance » (le prochain lot, en attendant la séance de la semaine), « Les verdicts de la semaine dernière » en titres courts quand une carte existe (« Tu avais voté pour · du côté de la majorité »), ton hémicycle, ton député cette semaine. Les blocs des fonctions reportées (loi suivie, duel) n'apparaissent pas : la mise en page se resserre (règle 6 du cadrage).
+
 ---
 
 ## 8. Phase 3 — La séance de la semaine (S9–S10)
@@ -334,13 +373,13 @@ site/          le site (Astro), créé en phase 2
 **Objectif.** La boucle hebdomadaire fonctionne de bout en bout, toute seule. **Sortie : t26 — une vraie séance vécue du lundi au verdict.**
 
 ### t23 🤖 Agenda et sélection automatique des 3 votes — S9, 1 session
-- **Dépend de :** t21.
+- **Dépend de :** t21, t45 *(depuis le 8 oct. 2026 : les lots de votes passent avant la séance)*.
 - **À faire :** ingérer l'agenda ; détecter les scrutins solennels annoncés pour la semaine ; choisir 3 votes selon les règles : texte entier d'abord, thème le moins représenté récemment, groupes d'origine variés ; compléter avec des votes passés qui divisent si moins de 3 annoncés ; **geler la série pendant les vacances parlementaires**. Export `semaine.json`. Exécution le lundi à 6 h.
 - **Tests :** semaine pleine, semaine creuse, vacances parlementaires, agenda modifié en cours de semaine.
 
 ### t24 🤖 Séance en mode focus — S9, 2 sessions
 - **Dépend de :** t23.
-- **À faire :** frames V5 « Séance » et « Séance terminée » : mode focus sans navigation, vote, pronostic facultatif, tampon, série (gelée pendant les vacances), barre « utilisateurs du site » masquée sous 200 participants. Tout stocké dans le navigateur.
+- **À faire :** reprendre l'écran de lot de t44 et ajouter ce qui est propre à la séance (frames V5 « Séance » et « Séance terminée ») : vote avant les députés, pronostic facultatif, tampon, série (gelée pendant les vacances), barre « utilisateurs du site » masquée sous 200 participants. Tout stocké dans le navigateur.
 
 ### t25 🤖 Verdict et passages horaires — S10, 1 session
 - **Dépend de :** t24.
@@ -367,10 +406,11 @@ site/          le site (Astro), créé en phase 2
   4. Traiter les limites relevées en t07 : la relecture vérifie aussi que l'extrait appuie la carte ; texte complet pour la commission mixte paritaire ; très gros textes (budget) exclus ou découpés.
 - **Tests :** JSON invalide, carte sans article valide, formulation partisane, dépassement de longueur, empreinte qui ne correspond plus, repli effectif.
 - **Critère de fin :** Julien tient une vraie session : 3 fiches rédigées, contrôlées et validées en moins de 30 minutes, publiées au build suivant, sans aucun appel payant.
+- **Ajout (8 oct. 2026) :** chaque séance produit 3 cartes de vote (format de t42) ; une fois le verdict tombé, la séance devient un lot à rattraper. Tant que le stock de lots non faits est bas, la session rédige aussi un lot de votes passés.
 
 ### t28 🤖 Thèmes, signalements, retrait automatique — S11, 1 session
 - **Dépend de :** t27.
-- **À faire :** attribuer **un des 12 thèmes** à chaque dossier, pendant la session hebdomadaire, une fois par dossier, enregistré avec la fiche. « Signaler une erreur » (Supabase, table `signalements`, **sans compte**) ; à **3 signalements distincts** : cartes retirées au build suivant, puis nouvelle rédaction à la session hebdomadaire suivante. Protéger contre les abus (limitation par empreinte navigateur / IP hachée, sans stocker de donnée personnelle).
+- **À faire :** *(la liste des thèmes est fixée dès t42, pour les cartes de vote)* attribuer **un des 12 thèmes** à chaque dossier, pendant la session hebdomadaire, une fois par dossier, enregistré avec la fiche. « Signaler une erreur » (Supabase, table `signalements`, **sans compte**) ; à **3 signalements distincts** : cartes retirées au build suivant, puis nouvelle rédaction à la session hebdomadaire suivante. Protéger contre les abus (limitation par empreinte navigateur / IP hachée, sans stocker de donnée personnelle).
 - **Remarque :** nécessite Supabase ; si t30 n'est pas encore fait, Claude demande à Julien de le devancer ou livre la partie sans backend et le branche après.
 
 ### t29 👤 Bilan des 10 premières fiches validées — S12, 1 h

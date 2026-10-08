@@ -3,12 +3,16 @@
 // dessiné au build en SVG. Deux modes :
 // - « vote » : chaque siège prend la couleur de son vote ; les votes contre leur groupe sont
 //   cerclés ;
-// - « composition » : les groupes en deux gris alternés, sans couleur partisane.
+// - « composition » : les groupes en deux gris alternés.
+// Autour de l'arc, la part de chaque groupe est bordée et étiquetée de la couleur que
+// l'Assemblée lui associe, pour reconnaître les groupes d'un coup d'œil.
 // Accessibilité : un résumé et le détail par groupe dans un tableau ; au clavier, la zone se
 // parcourt avec les flèches (← → siège, ↑ ↓ groupe, Début, Fin) et chaque siège est annoncé.
 // En mode vote, des filtres (`filtres`) éclairent les votes contre le groupe, ou le siège du
 // député choisi par le visiteur (gardé dans son navigateur : lib/navigateur.ts).
-import { etiquette, HAUTEUR, LARGEUR, places, RAYON_SIEGE, SIEGES } from '../lib/hemicycle.ts';
+import { arc, etiquettes as placerEtiquettes, HAUTEUR, LARGEUR, parts, places, R_EXTERIEUR,
+  RAYON_SIEGE, SIEGES } from '../lib/hemicycle.ts';
+import { couleurGroupe, encreSur } from '../lib/couleurs.ts';
 import { LIBELLES, type Groupe, type Position, type Siege } from '../lib/donnees.ts';
 
 interface Props {
@@ -50,19 +54,21 @@ function remplissage(s: Siege): string {
   return GRIS[(rang.get(s.groupe ?? '') ?? 0) % 2];
 }
 
-// Étendue de chaque groupe (ses sièges sont contigus) pour placer son étiquette. Les petits
-// groupes voisins sont décalés vers l'extérieur un sur deux pour ne pas se chevaucher.
-const etendues = groupes.map((g) => {
-  const indices = sieges.flatMap((s, i) => (s.groupe === g.uid ? [i] : []));
-  return { g, debut: indices[0], fin: indices[indices.length - 1] };
-}).filter((e) => e.debut !== undefined);
-let decale = false;
-const libelles = etendues.map(({ g, debut, fin }) => {
-  const arc = (liste[fin].angle - liste[debut].angle + Math.PI / SIEGES) * 460;
-  const etroit = arc < g.sigle.length * 8.4;
-  decale = etroit ? !decale : false;
-  return { texte: g.sigle, ...etiquette(liste, debut, fin, decale ? 20 : 0) };
-});
+// Étiquette de chaque groupe au milieu de sa part ; les petits groupes voisins sont décalés
+// vers l'extérieur un sur deux pour ne pas se chevaucher.
+// Chaque étiquette est une pastille à la couleur que l'Assemblée associe au groupe, et un arc
+// de la même couleur borde sa part (lib/couleurs.ts).
+const couleur = new Map(groupes.map((g) => [g.uid, couleurGroupe(g.couleur)]));
+const largeurPastille = (texte: string) => texte.length * 9.6 + 16;
+const lesParts = parts(sieges.map((s) => (s.vacant ? null : s.groupe)));
+const libelles = placerEtiquettes(liste, lesParts,
+  (p) => largeurPastille(sigle.get(p.groupe) ?? ''), 26, 6)
+  .map((e) => {
+    const fond = couleur.get(e.part.groupe) ?? '#9AA1B2';
+    const texte = sigle.get(e.part.groupe) ?? '';
+    return { texte, fond, encre: encreSur(fond), largeur: largeurPastille(texte),
+      arc: arc(liste, e.part, R_EXTERIEUR + RAYON_SIEGE + 5), ...e };
+  });
 
 // Ce que la zone annonce pour chaque siège : [texte, indice du groupe]. Le numéro du siège
 // (« Siège 12 sur 577 : ») est ajouté par le script, pour alléger la page.
@@ -112,13 +118,16 @@ const resume = mode === 'vote' && censure
     aria-roledescription="hémicycle"
     aria-label={`${titre}. ${resume}. Flèches gauche et droite : siège par siège ; haut et bas : groupe par groupe ; Entrée : la fiche du député.`}
   >
-    <svg viewBox={`0 -24 ${LARGEUR} ${HAUTEUR + 24}`} aria-hidden="true">
+    <svg viewBox={`0 -44 ${LARGEUR} ${HAUTEUR + 44}`} aria-hidden="true">
       {etiquettes && (
         <g class="etiquettes">
+          {libelles.map((l) => <path class="arc" d={l.arc} stroke={l.fond}></path>)}
           {libelles.map((l) => (
-            <text x={l.x.toFixed(1)} y={l.y.toFixed(1)}
-              transform={`rotate(${l.rotation.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`}
-              text-anchor="middle" dominant-baseline="middle">{l.texte}</text>
+            <g transform={`translate(${l.x.toFixed(1)} ${l.y.toFixed(1)}) rotate(${l.rotation.toFixed(1)})`}>
+              <rect x={(-l.largeur / 2).toFixed(1)} y="-11" width={l.largeur.toFixed(1)} height="22" rx="11"
+                fill={l.fond}></rect>
+              <text text-anchor="middle" dominant-baseline="central" fill={l.encre}>{l.texte}</text>
+            </g>
           ))}
         </g>
       )}
@@ -474,8 +483,8 @@ const resume = mode === 'vote' && censure
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 15px;
-    fill: var(--gris-legende);
   }
+  .etiquettes .arc { fill: none; stroke-width: 5; stroke-linecap: round; }
   .siege { stroke: #FFFFFF; stroke-width: 0.8; cursor: pointer; }
   .siege.vacant { stroke: #9AA1B2; stroke-width: 1.4; stroke-dasharray: 2.5 2; }
   .cercle-dissident { fill: none; stroke: var(--texte); stroke-width: 1.9; }

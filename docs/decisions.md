@@ -146,3 +146,29 @@
 - Décision : le pipeline publie `matrice.json` (le vote de chaque député et la position de chaque groupe actuel sur les 244 votes à page, hors motions de censure) ; le navigateur la télécharge et calcule le profil sur place (`site/src/lib/profil.ts`). Les réponses du quiz et des pages de vote partagent le même stockage local. Un vote compte en commun quand le visiteur a répondu et que le député a voté pour, contre ou abstention. Les stories sont dessinées dans le navigateur (canevas) et ne partent que si le visiteur les partage lui-même. Ta place dans l'hémicycle est figurée par une étoile près de ton jumeau.
 - Raison : opinions politiques = données sensibles (RGPD) : aucun serveur ne doit les voir. 207 Ko compressés suffisent pour tout calculer. Sans axe gauche-droite, la seule place honnête est près du député qui vote le plus comme toi.
 - Conséquence : le groupe d'un député qui a changé de nom est suivi par sa lignée (« À droite », UDR, UDDPLR) ; toute nouvelle fusion ou scission de groupe devra être ajoutée à `LIGNEE` dans `pipeline/export_site.py`.
+
+## 2026-10-08 · Sigles des groupes : ceux qu'affiche l'Assemblée, et « LFI »
+- Décision (Julien) : le sigle affiché d'un groupe est l'abréviation que l'Assemblée affiche sur son site (`libelleAbrege` : UDR, EcoS, Dem), à défaut son code court (`libelleAbrev` : UDDPLR, ECOS, DEM, utilisé jusqu'ici). Une exception, à la demande de Julien : « LFI » plutôt que « LFI-NFP » (`SIGLES_AFFICHES` dans `pipeline/normalize.py`). Le nom officiel du groupe reste affiché en entier (`libelle`), sur la fiche député et au survol des sigles.
+- Raison : retour de Julien sur t22 (« le NFP n'existe plus »). L'open data donne encore « La France insoumise - Nouveau Front Populaire » et « LFI-NFP » au 8 octobre 2026 : c'est le nom sous lequel le groupe est enregistré à l'Assemblée. Le sigle court suit l'usage courant et la maquette V5, le nom complet reste celui de la source.
+- Conséquence : les deux groupes UDR successifs portent le même sigle ; `scripts/preparer_quiz.py` n'a plus besoin de table de correspondance. Toute autre exception s'ajoute à `SIGLES_AFFICHES`, avec une entrée ici.
+
+## 2026-10-08 · Couleurs des groupes : celles de l'Assemblée, autour de l'hémicycle
+- Décision (Julien) : chaque groupe est reconnaissable d'un coup d'œil par la couleur que l'Assemblée lui associe dans son open data (`couleurAssociee`). Autour de chaque hémicycle, la part du groupe est bordée d'un arc et étiquetée d'une pastille à cette couleur (texte blanc ou foncé selon le contraste) ; partout ailleurs, son sigle est précédé d'un point à sa couleur (`site/src/lib/couleurs.ts`). Dans « Mon hémicycle », tant que le visiteur n'a rien tranché, chaque siège prend la couleur de son groupe.
+- Raison : retour de Julien sur t22 : on voyait qui vote comme soi, pas de quel groupe il est. La couleur vient de la source, sans choix de notre part.
+- Conséquence : remplace « deux gris alternés, sans couleur de parti » de l'entrée « Hémicycle : ordre des groupes, couleurs, accessibilité » pour les étiquettes ; les sièges gardent les couleurs de vote ou d'accord. La couleur ne porte jamais seule l'information : le sigle est toujours écrit.
+
+## 2026-10-08 · Ton hémicycle : les quatre niveaux et la place de la maquette
+- Décision : l'hémicycle personnel reprend la frame V5 : quatre niveaux d'accord lissé (rarement comme toi en dessous de 0,35, parfois jusqu'à 0,5, souvent jusqu'à 0,67, presque toujours au-delà ; `NIVEAUX` dans `site/src/lib/profil.ts`), un siège blanc cerclé quand il n'y a aucun vote en commun, et au centre le nombre de députés d'accord « presque toujours ». L'étoile « Toi · 578e siège » est placée au-dessus du groupe qui vote le plus comme toi (hors non-inscrits), et le jumeau a son propre repère. Le quiz construit cet hémicycle à chaque réponse.
+- Raison : retour de Julien sur t22 (« recopier parfaitement les maquettes »). Placer l'étoile au-dessus d'un groupe ne crée pas d'axe : c'est le groupe le plus proche, calculé sur des votes réels.
+- Conséquence : remplace les cinq teintes de t21 et l'étoile « près du jumeau ». Le dessin est commun à « Mon hémicycle » et au quiz (`site/src/components/Salle.astro`, `site/src/lib/salle.ts`).
+
+## 2026-10-08 · Après le quiz : des lots de votes rédigés, 5 prêts au lancement
+- Décision (Julien) : après le quiz, l'utilisateur continue de se placer par lots de votes rédigés comme ceux du quiz (thème, question fermée, « Concrètement »), contrôlés et validés pendant la session hebdomadaire (zéro euro). Au lancement, 5 lots sont prêts, pour que l'utilisateur puisse aller au bout de son placement : « c'est la base du projet, elle doit être respectée de bout en bout ».
+- Raison : retour de Julien sur t22 ; les titres officiels sont trop techniques pour être tranchés d'un clic (t20).
+- Conséquence : docs/cadrage-produit.md propose la taille d'un lot (3 votes : 10 + 15 = 25, le seuil de précision fiable), qu'une séance passée devienne un lot, et de rédiger les cartes de vote avant de construire la séance. À valider par Julien avant de modifier le planning.
+
+## 2026-10-08 · Lots de 3 votes, séances recyclées, le contenu avant la séance
+- Décision (Julien) : un lot compte 3 votes, au format d'une séance ; une séance de la semaine, une fois son verdict tombé, devient un lot à rattraper ; les cartes de vote (thème, titre court, question, « Concrètement ») et les 5 lots du lancement sont construits avant la séance de la semaine.
+- Raison : docs/cadrage-produit.md. Quiz (10) + 5 lots (15) = 25 votes, le seuil où la précision devient fiable ; une seule chaîne de rédaction par semaine ; tous les écrans des maquettes présentent les votes sous forme de carte.
+- Conséquence : phase 2 bis ajoutée au planning (t42 à t45) ; t23, t24, t27 et t28 ajustées (dépendance, reprise de l'écran de lot, séance recyclée en lot, liste des thèmes fixée dès t42).
+

@@ -7,6 +7,7 @@ import MiniHemicycle from '../../components/MiniHemicycle.astro';
 import { composition, dateLisible, deputes, ficheDepute, LIBELLES, lienVote, majuscule,
   medianes, nomComplet, scrutins, type Position } from '../../lib/donnees.ts';
 import { libelleCirco } from '../../lib/geo.ts';
+import { couleurGroupe } from '../../lib/couleurs.ts';
 import { FAMILLES, famille, verdict } from '../../lib/votes.ts';
 
 export function getStaticPaths() {
@@ -35,6 +36,7 @@ const siege = compo.sieges.findIndex((s) => s.depute === uid);
 const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
   : s.groupe === d.groupe ? '#A98BFF' : '#DCE0E8');
 const membres = compo.sieges.filter((s) => s.groupe === d.groupe).length;
+const couleur = couleurGroupe(compo.groupes.find((g) => g.uid === d.groupe)?.couleur);
 const censures = votes.filter((v) => v.s.motion_censure).map((v) => v.uid);
 const libelleVote = (vote: Position, censure: boolean) => censure
   ? (vote === 'pour' ? 'pour la censure' : vote === 'absent' ? "ne l'a pas votée" : LIBELLES[vote])
@@ -59,7 +61,11 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     <div class="identite-texte">
       <h1 id="nom-depute">{nom}</h1>
       <div class="puces">
-        {d.groupe_libelle && <span class="puce-groupe">{d.groupe_libelle}{d.sigle && d.sigle !== d.groupe_libelle ? ` (${d.sigle})` : ''}</span>}
+        {d.groupe_libelle && (
+          <span class="puce-groupe" style={`--c: ${couleur}`}>
+            {d.sigle && d.sigle !== d.groupe_libelle ? `${d.sigle} · ` : ''}{d.groupe_libelle}
+          </span>
+        )}
         <span class="puce-gris">{libelleCirco(d.circo)} · {d.departement}</span>
         {d.place && d.en_exercice && <span class="puce-gris">Siège n° {d.place}</span>}
         {!d.en_exercice && d.fin && (
@@ -357,7 +363,9 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     font-weight: 600;
     font-size: 14px;
   }
-  .puce-groupe { background: var(--violet-voile); color: var(--violet-fonce); }
+  .puce-groupe { display: inline-flex; align-items: center; gap: 8px; background: var(--fond);
+    border: 2px solid var(--c); color: var(--texte); }
+  .puce-groupe::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
   .puce-gris { background: var(--fond-doux); color: var(--texte-doux); }
   .puce-fin { background: #FFE6DA; color: #9C3207; }
   .depuis { margin: 10px 0 0; font-size: 15px; color: var(--gris); }

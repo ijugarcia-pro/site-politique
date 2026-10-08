@@ -6,44 +6,18 @@
 // le plus comme toi. Sans réponse : l'Assemblée du jour, chaque siège à la couleur de son
 // groupe, et l'invitation au quiz d'entrée.
 import Base from '../layouts/Base.astro';
+import Salle from '../components/Salle.astro';
 import { composition, lienVote, majuscule, scrutins } from '../lib/donnees.ts';
-import { arc, etiquettes, HAUTEUR, LARGEUR, milieu, parts, places, R_EXTERIEUR,
-  RAYON_SIEGE } from '../lib/hemicycle.ts';
-import { couleurGroupe, encreSur } from '../lib/couleurs.ts';
 import { NIVEAUX, SANS_VOTE_COMMUN } from '../lib/profil.ts';
 
 const compo = composition();
 const occupes = compo.sieges.filter((s) => !s.vacant).length;
-const liste = places();
-const groupes = new Map(compo.groupes.map((g) => [g.uid, g]));
-const lesParts = parts(compo.sieges.map((s) => (s.vacant ? null : s.groupe)));
-// Le dessin, dans le repère de 1000 de large de lib/hemicycle.ts ; au-dessus de l'arc, la
-// place des étiquettes et de l'étoile (la marge de 68 px de la maquette).
-const HAUT = 96;
-const BOITE = { x: 0, y: -HAUT, l: LARGEUR, h: HAUTEUR + HAUT };
-const ou = (x: number, y: number) =>
-  `left:${((100 * (x - BOITE.x)) / BOITE.l).toFixed(2)}%;top:${((100 * (y - BOITE.y)) / BOITE.h).toFixed(2)}%`;
-const R_ARC = R_EXTERIEUR + RAYON_SIEGE + 5;
-const libelles = etiquettes(liste, lesParts,
-  (p) => (groupes.get(p.groupe)?.sigle.length ?? 2) * 11 + 22, 30, 8)
-  .map((e) => {
-    const g = groupes.get(e.part.groupe)!;
-    const fond = couleurGroupe(g.couleur);
-    return { ...e, g, fond, encre: encreSur(fond) };
-  });
-// Pour placer l'étoile au-dessus d'un groupe : l'angle du milieu de sa part.
-const centres = Object.fromEntries(lesParts.map((p) => [p.groupe, milieu(liste, p)]));
-const infos = Object.fromEntries(compo.groupes.map((g) => [g.uid,
-  { s: g.sigle, l: g.libelle, c: couleurGroupe(g.couleur), ni: g.non_inscrits }]));
 // De quoi lister les réponses du visiteur : identifiant → [lien, titre, adopté].
 const titres = Object.fromEntries(scrutins().map((s) => {
   const t = majuscule(s.titre).replace(/\.$/, '');
   return [s.uid, [lienVote(s), t.length > 110 ? `${t.slice(0, 108)}…` : t, s.sort === 'adopté']];
 }));
-const donnees = JSON.stringify({
-  titres, centres, groupes: infos, boite: BOITE, rayonEtoile: R_EXTERIEUR + 75,
-  sieges: compo.sieges.map((s) => [s.depute ?? '', s.groupe ?? '']),
-}).replace(/</g, '\\u003c');
+const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 ---
 <Base titre="Mon hémicycle" onglet="hemicycle"
   description="Ton hémicycle : les députés et les groupes qui votent le plus comme toi, calculés dans ton navigateur à partir de vrais votes.">
@@ -53,43 +27,9 @@ const donnees = JSON.stringify({
         <h1 id="titre-hemicycle">Ton hémicycle</h1>
         <span data-sous-titre>Les {occupes} députés du jour, à la couleur de leur groupe</span>
       </div>
-      <div class="dessin" style={`aspect-ratio: ${BOITE.l} / ${BOITE.h}`} data-dessin>
-        <svg viewBox={`${BOITE.x} ${BOITE.y} ${BOITE.l} ${BOITE.h}`} data-svg role="img"
-          aria-label={`L'Assemblée nationale : ${occupes} députés en exercice dans ${compo.groupes.length} groupes`}>
-          <g class="arcs">
-            {libelles.map((e) => <path d={arc(liste, e.part, R_ARC)} stroke={e.fond}></path>)}
-          </g>
-          {liste.map((p, i) => (
-            <circle data-i={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={RAYON_SIEGE}
-              class:list={['siege', { vacant: compo.sieges[i].vacant }]}
-              style={compo.sieges[i].vacant ? undefined
-                : `fill:${couleurGroupe(groupes.get(compo.sieges[i].groupe ?? '')?.couleur)}`}></circle>
-          ))}
-        </svg>
-        {libelles.map((e) => (
-          <abbr class="etiquette" title={e.g.libelle}
-            style={`${ou(e.x, e.y)};background:${e.fond};color:${e.encre};transform:translate(-50%,-50%) rotate(${e.rotation.toFixed(1)}deg)`}>{e.g.sigle}</abbr>
-        ))}
-        <div class="toi" data-toi hidden>
-          <div class="bulle">Toi · 578<sup>e</sup> siège</div>
-          <svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true">
-            <path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z"
-              fill="#FFC531" stroke="#1F2433" stroke-width="2" stroke-linejoin="round"></path>
-          </svg>
-        </div>
-        <div class="marque-jumeau" data-marque-jumeau hidden><span>Ton jumeau</span><i></i></div>
-        <div class="carte-siege" data-carte hidden>
-          <span class="carte-avatar" data-carte-ini></span>
-          <span class="carte-texte">
-            <span class="carte-nom" data-carte-nom></span>
-            <span class="carte-groupe"><span class="pastille-groupe" data-carte-sigle></span><span data-carte-libelle></span></span>
-            <span class="carte-accord" data-carte-accord></span>
-          </span>
-        </div>
-        <div class="centre">
-          <div class="centre-chiffre" data-centre>{occupes}</div>
-          <div class="centre-legende" data-centre-legende>députés en exercice</div>
-        </div>
+      <div class="cadre-salle">
+        <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale"
+          couleursGroupes chiffre={String(occupes)} legende="députés en exercice" />
       </div>
       <p class="visuellement-cache" aria-live="polite" data-info></p>
       <ul class="legende" data-legende hidden>
@@ -191,55 +131,20 @@ const donnees = JSON.stringify({
   import { comparer, colonnes, initiales, niveau, profil, type Classe, type LigneDepute,
     type Matrice } from '../lib/profil.ts';
   import { libelleCirco } from '../lib/geo.ts';
-  import { places, point } from '../lib/hemicycle.ts';
+  import { pastille, Salle } from '../lib/salle.ts';
 
-  type InfoGroupe = { s: string; l: string; c: string; ni: boolean };
   const $ = <T extends Element = HTMLElement>(s: string, racine: ParentNode = document) =>
     racine.querySelector<T>(s)!;
-  const D = JSON.parse($('[data-donnees]').textContent!) as {
-    titres: Record<string, [string, string, boolean]>;
-    centres: Record<string, number>;
-    groupes: Record<string, InfoGroupe>;
-    boite: { x: number; y: number; l: number; h: number };
-    rayonEtoile: number;
-    sieges: [string, string][];
-  };
-  const placer = (el: HTMLElement, x: number, y: number) => {
-    el.style.left = `${(100 * (x - D.boite.x)) / D.boite.l}%`;
-    el.style.top = `${(100 * (y - D.boite.y)) / D.boite.h}%`;
-  };
-  /** Remonte un repère tant qu'il couvre une étiquette de groupe, et le garde dans le dessin. */
-  const eviter = (el: HTMLElement, x: number, y: number) => {
-    const dessin = $('[data-dessin]').getBoundingClientRect();
-    const etiquettes = [...document.querySelectorAll('.etiquette')].map((e) => e.getBoundingClientRect());
-    const unite = dessin.width / D.boite.l;
-    let decalage = 0;
-    for (let essai = 0; essai < 40; essai++) {
-      const r = el.getBoundingClientRect();
-      const hors = r.left < dessin.left ? dessin.left - r.left : r.right > dessin.right ? dessin.right - r.right : 0;
-      if (hors) x += hors / unite;
-      const couvre = etiquettes.some((e) => e.left < r.right && e.right > r.left
-        && e.top < r.bottom && e.bottom > r.top);
-      if (!couvre && !hors) return;
-      if (couvre) decalage += 6;
-      placer(el, x, y - decalage);
-    }
-  };
+  const titres = JSON.parse($('[data-donnees]').textContent!) as
+    Record<string, [string, string, boolean]>;
+  const salle = new Salle($('[data-salle]'));
+  const { groupes } = salle.reglages;
   const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   const mes = Object.entries(reponses()).sort((a, b) => b[1].le.localeCompare(a[1].le));
   const reps = Object.fromEntries(mes.map(([k, r]) => [k, r.v]));
-  const cercles = [...document.querySelectorAll<SVGCircleElement>('[data-svg] circle[data-i]')];
-  const liste = places();
-
-  /** La pastille d'un groupe : son sigle, précédé d'un point à sa couleur. */
-  const pastille = (el: HTMLElement, g: InfoGroupe | undefined) => {
-    el.textContent = g?.s ?? '';
-    el.style.setProperty('--c', g?.c ?? '#9AA1B2');
-    el.title = g?.l ?? '';
-  };
 
   // Tes réponses, les plus récentes d'abord ; combien vont dans le sens du vote final.
-  const tranchees = mes.filter(([uid]) => D.titres[uid]);
+  const tranchees = mes.filter(([uid]) => titres[uid]);
   const n = tranchees.length;
   $('[data-compteur]').textContent = String(n);
   if (n > 0) {
@@ -251,13 +156,13 @@ const donnees = JSON.stringify({
       p.className = `pastille p-${r.v}`;
       p.textContent = r.v;
       const a = document.createElement('a');
-      a.href = D.titres[uid][0];
-      a.textContent = D.titres[uid][1];
+      a.href = titres[uid][0];
+      a.textContent = titres[uid][1];
       li.append(p, a);
       ul.append(li);
     }
     ul.hidden = false;
-    const commeFinal = tranchees.filter(([uid, r]) => (r.v === 'pour') === D.titres[uid][2]).length;
+    const commeFinal = tranchees.filter(([uid, r]) => (r.v === 'pour') === titres[uid][2]).length;
     $('[data-tranches]').textContent = String(n);
     $('[data-comme-final]').textContent = String(commeFinal);
     $('[data-sur-final]').textContent = ` / ${n}`;
@@ -272,8 +177,7 @@ const donnees = JSON.stringify({
     $('[data-ini]', carte).textContent = initiales(c.ligne.n);
     $('[data-nom]', carte).textContent = c.ligne.n;
     const p = document.createElement('span');
-    p.className = 'pastille-groupe';
-    pastille(p, D.groupes[c.ligne.g ?? '']);
+    pastille(p, groupes[c.ligne.g ?? '']);
     $('[data-detail]', carte).replaceChildren(p, `· ${pluriel(c.communs, 'vote')} en commun`);
     $('[data-score]', carte).textContent = c.taux !== null ? `${c.taux} %` : '';
     if (phrase) $('[data-phrase]', carte).textContent = phrase;
@@ -285,100 +189,35 @@ const donnees = JSON.stringify({
     const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x]));
     const noms = new Map(m.deputes.map((d) => [d.u, d]));
 
-    // La carte d'un siège, au survol (ou au premier toucher) ; un clic ouvre la fiche du député.
-    const carte = $('[data-carte]');
+    // La carte d'un siège, au survol ou au premier toucher ; un clic ouvre la fiche du député.
     const info = $('[data-info]');
-    let touche = -1;
-    const montrer = (i: number) => {
-      const [uid, g] = D.sieges[i];
-      if (!uid) { carte.hidden = true; return; }
+    salle.surSiege((i) => {
+      const [uid, g] = salle.reglages.sieges[i];
       const nom = noms.get(uid)?.n ?? uid;
       const x = parDepute.get(uid);
-      $('[data-carte-ini]', carte).textContent = initiales(nom);
-      $('[data-carte-nom]', carte).textContent = nom;
-      pastille($('[data-carte-sigle]', carte), D.groupes[g]);
-      $('[data-carte-libelle]', carte).textContent = D.groupes[g]?.l ?? '';
       const accord = !p.reponses ? 'Fais le quiz pour comparer ses votes aux tiens.'
         : x ? `${pluriel(x.identiques, 'vote')} comme toi sur ${x.communs} · ${niveau(x.lisse).libelle.toLowerCase()}`
         : 'Aucun vote en commun avec toi';
-      $('[data-carte-accord]', carte).textContent = accord;
-      info.textContent = `${nom}, ${D.groupes[g]?.s ?? ''} : ${accord}`;
-      const pt = liste[i];
-      placer(carte, pt.x, pt.y - 14);
-      carte.classList.toggle('a-gauche', pt.x < 250);
-      carte.classList.toggle('a-droite', pt.x > 750);
-      carte.hidden = false;
-    };
-    const svg = $('[data-svg]');
-    const indice = (e: Event) => {
-      const c = e.target as Element;
-      return c instanceof SVGCircleElement && c.dataset.i !== undefined ? Number(c.dataset.i) : -1;
-    };
-    svg.addEventListener('pointerover', (e) => {
-      const i = indice(e);
-      if (i >= 0 && (e as PointerEvent).pointerType !== 'touch') montrer(i);
-    });
-    svg.addEventListener('pointerleave', (e) => {
-      if ((e as PointerEvent).pointerType !== 'touch') carte.hidden = true;
-    });
-    svg.addEventListener('click', (e) => {
-      const i = indice(e);
-      if (i < 0 || !D.sieges[i][0]) return;
-      // Au doigt, un premier toucher montre la carte ; un second ouvre la fiche.
-      if ((e as PointerEvent).pointerType === 'touch' && touche !== i) {
-        touche = i;
-        montrer(i);
-        return;
-      }
-      location.href = `/deputes/${D.sieges[i][0]}/`;
-    });
+      salle.carte(i, nom, accord);
+      info.textContent = `${nom}, ${groupes[g]?.s ?? ''} : ${accord}`;
+    }, (i) => { location.href = `/deputes/${salle.reglages.sieges[i][0]}/`; });
 
     if (!p.reponses) return;
 
-    cercles.forEach((c, k) => {
-      const uid = D.sieges[k][0];
-      if (!uid) return;
+    salle.colorer((_, uid) => {
       const x = parDepute.get(uid);
-      c.style.fill = x ? niveau(x.lisse).couleur : '';
-      if (!x) c.classList.add('sans-commun');
+      return x ? { fond: niveau(x.lisse).couleur } : { sansCommun: true };
     });
     $('[data-legende]').hidden = false;
     const proches = p.deputes.filter((x) => niveau(x.lisse).haut).length;
-    $('[data-centre]').textContent = String(proches);
-    $('[data-centre-legende]').textContent = `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`;
+    salle.centre(String(proches), `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`);
     $('[data-sous-titre]').textContent = 'Plus un siège est foncé, plus ce député vote comme toi';
-
-    // Ton jumeau : son siège, agrandi et cerclé, et son repère (dessous s'il est tout en haut).
-    const siege = p.jumeau ? D.sieges.findIndex(([u]) => u === p.jumeau!.ligne.u) : -1;
-    if (siege >= 0) {
-      const c = cercles[siege];
-      c.classList.add('siege-jumeau');
-      c.parentNode!.append(c);
-      const pt = liste[siege];
-      const marque = $('[data-marque-jumeau]');
-      // Sur les rangées extérieures, le repère passe sous le siège, loin des étiquettes ; près
-      // du sol de l'hémicycle, il se met à côté, vers le centre.
-      const cote = pt.rangee >= 9 && Math.sin(pt.angle) < 0.4;
-      const dessous = pt.rangee >= 9 && !cote;
-      const gauche = pt.x < 500;
-      marque.classList.toggle('dessous', dessous);
-      marque.classList.toggle('vers-droite', cote && gauche);
-      marque.classList.toggle('vers-gauche', cote && !gauche);
-      placer(marque, pt.x + (cote ? (gauche ? 13 : -13) : 0), pt.y + (cote ? 0 : dessous ? 13 : -13));
-      marque.hidden = false;
-    }
+    salle.jumeau(p.jumeau?.ligne.u ?? null);
 
     // Ta place : au-dessus du groupe (hors non-inscrits) qui vote le plus comme toi.
-    const groupe = p.groupes.find((x) => !D.groupes[x.ligne.u]?.ni) ?? null;
+    const groupe = p.groupes.find((x) => !groupes[x.ligne.u]?.ni) ?? null;
     if (groupe) {
-      const angle = D.centres[groupe.ligne.u];
-      if (angle !== undefined) {
-        const toi = $('[data-toi]');
-        const pt = point(angle, D.rayonEtoile);
-        placer(toi, pt.x, pt.y);
-        toi.hidden = false;
-        eviter(toi, pt.x, pt.y);
-      }
+      salle.toi(groupe.ligne.u);
       $('[data-place-titre]').textContent = `Tu siègerais côté ${groupe.ligne.sigle}`;
       $('[data-place-texte]').textContent = `Calculé sur ${pluriel(p.reponses, 'vote')} tranché${p.reponses > 1 ? 's' : ''}, comparé${p.reponses > 1 ? 's' : ''} un par un aux 577 députés : le groupe ${groupe.ligne.libelle} a voté comme toi ${groupe.identiques} fois sur ${groupe.communs}. Aucun axe gauche-droite : seulement des votes réels.`;
       $('[data-cta-quiz]').hidden = true;
@@ -413,9 +252,8 @@ const donnees = JSON.stringify({
     $('[data-groupes]').replaceChildren(...p.groupes.map((x) => {
       const li = document.createElement('li');
       const s = document.createElement('abbr');
-      s.className = 'sigle';
-      pastille(s, D.groupes[x.ligne.u]);
-      s.textContent = x.ligne.sigle;
+      pastille(s, groupes[x.ligne.u]);
+      s.classList.add('sigle');
       const jauge = document.createElement('span');
       jauge.className = 'jauge';
       const plein = document.createElement('span');
@@ -443,55 +281,7 @@ const donnees = JSON.stringify({
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
   .titre-section h1 { font-size: 32px; }
   .titre-section span { font-size: 14px; color: var(--gris-legende); }
-  .dessin { position: relative; width: 100%; margin-top: 12px; }
-  .dessin > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .arcs path { fill: none; stroke-width: 5; stroke-linecap: round; }
-  .siege { fill: #D6DBE4; cursor: pointer; transition: fill .45s ease; }
-  .siege.vacant { fill: #FFFFFF; stroke: #9AA1B2; stroke-width: 1.4; stroke-dasharray: 2.5 2; cursor: default; }
-  .siege.sans-commun { fill: #FFFFFF; stroke: #DFE3EB; stroke-width: 2; }
-  .siege.siege-jumeau { r: 11.4px; fill: #6A3DF0 !important; stroke: #7C4DFF; stroke-width: 3;
-    paint-order: stroke; outline: none; }
-  .siege:hover { stroke: var(--texte); stroke-width: 2.4; }
-  .etiquette {
-    position: absolute; z-index: 1; padding: 1px 7px; border-radius: 999px;
-    font-family: var(--police-titre); font-weight: 600; font-size: clamp(9px, 0.8vw, 12px);
-    line-height: 1.5; white-space: nowrap; text-decoration: none; cursor: help;
-  }
-  .toi { position: absolute; z-index: 4; transform: translate(-50%, -100%); text-align: center; pointer-events: none; }
-  .toi .bulle { padding: 6px 12px; border-radius: 12px; background: var(--texte); color: #fff;
-    font-family: var(--police-titre); font-weight: 600; font-size: 14px; white-space: nowrap; }
-  .toi .bulle sup { font-size: 0.65em; }
-  .toi svg { display: block; margin: 4px auto 0; }
-  .marque-jumeau { position: absolute; z-index: 4; transform: translate(-50%, -100%); display: flex;
-    flex-direction: column; align-items: center; pointer-events: none; }
-  .marque-jumeau.dessous { transform: translate(-50%, 0); flex-direction: column-reverse; }
-  .marque-jumeau span { padding: 4px 10px; border-radius: 10px; background: var(--violet); color: #fff;
-    font-family: var(--police-titre); font-weight: 600; font-size: 12px; white-space: nowrap; }
-  .marque-jumeau i { width: 2px; height: 10px; background: var(--violet); }
-  .marque-jumeau.vers-droite { transform: translate(0, -50%); flex-direction: row-reverse; }
-  .marque-jumeau.vers-gauche { transform: translate(-100%, -50%); flex-direction: row; }
-  .marque-jumeau.vers-droite i, .marque-jumeau.vers-gauche i { width: 10px; height: 2px; }
-  .centre { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 30%; text-align: center; }
-  .centre-chiffre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(26px, 2.8vw, 42px); line-height: 1; }
-  .centre-legende { margin-top: 6px; font-size: 13px; color: var(--gris-legende); }
-  .carte-siege {
-    position: absolute; z-index: 6; transform: translate(-50%, -100%); display: flex; gap: 10px;
-    align-items: center; width: max-content; max-width: 320px; padding: 10px 14px 10px 10px;
-    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond);
-    box-shadow: 0 5px 0 var(--bord); pointer-events: none;
-  }
-  .carte-siege.a-gauche { transform: translate(-12%, -100%); }
-  .carte-siege.a-droite { transform: translate(-88%, -100%); }
-  .carte-avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
-    border-radius: 13px; background: var(--violet-voile); color: var(--violet-fonce);
-    font-family: var(--police-titre); font-weight: 700; font-size: 15px; }
-  .carte-texte { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .carte-nom { font-family: var(--police-titre); font-weight: 700; font-size: 16px; line-height: 1.2; }
-  .carte-groupe { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.25; color: var(--gris-legende); }
-  .carte-accord { font-size: 13px; line-height: 1.3; color: var(--texte-doux); }
-  :global(.pastille-groupe) { flex: none; display: inline-flex; align-items: center; gap: 5px;
-    font-family: var(--police-titre); font-weight: 700; font-size: 12px; color: var(--texte); white-space: nowrap; }
-  :global(.pastille-groupe)::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--c, #9AA1B2); }
+  .cadre-salle { margin-top: 12px; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 16px 0 0; padding: 0;
     list-style: none; font-size: 14px; color: var(--texte-doux); }
   .legende li { display: inline-flex; align-items: center; gap: 7px; }
@@ -584,14 +374,7 @@ const donnees = JSON.stringify({
 
   @media (max-width: 600px) {
     .salle { padding: 18px 12px; }
-    .etiquette { padding: 0 4px; font-size: 8px; }
-    .toi .bulle { padding: 3px 7px; font-size: 11px; border-radius: 9px; }
-    .toi svg { width: 22px; height: 22px; }
-    .marque-jumeau span { padding: 2px 6px; font-size: 10px; }
     .place-titre { font-size: 28px; }
-    .centre { width: 46%; }
-    .centre-chiffre { font-size: 24px; }
-    .centre-legende { margin-top: 2px; font-size: 11px; line-height: 1.3; }
     .legende { gap: 6px 14px; font-size: 13px; }
   }
 </style>

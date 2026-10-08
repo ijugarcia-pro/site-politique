@@ -37,9 +37,9 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
-  <body>
+  <body class:list={[{ focus }]}>
     <a class="evitement" href="#contenu">Aller au contenu</a>
-    <header class="entete">
+    <header class:list={['entete', { focus }]}>
       <a class="logo" href="/" aria-label="Le 578e siège, accueil">
         <svg width="40" height="24" viewBox="0 0 40 24" aria-hidden="true">
           <circle cx="5" cy="20" r="3.2" fill="#C9CFDA"></circle>
@@ -93,6 +93,12 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
     <main id="contenu" class:list={['page', { focus }]}>
       <slot />
     </main>
+    {focus ? (
+    <footer class="pied-focus" data-pied-focus>
+      <span>Votes issus des données ouvertes de l'Assemblée nationale. Tes réponses restent dans ton navigateur.</span>
+      <a href="/etat/">État des données</a>
+    </footer>
+    ) : (
     <footer class="pied">
       <p>
         Données : <a href="https://data.assemblee-nationale.fr/">open data de l'Assemblée
@@ -101,6 +107,7 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
       </p>
       <p>Aucun commentaire politique : seulement des votes réels et leurs décomptes.</p>
     </footer>
+    )}
     <script type="application/json" data-hors-matrice set:html={horsMatrice}></script>
     <script>
       import { reponses } from '../lib/navigateur.ts';
@@ -232,6 +239,16 @@ const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).ma
     .texte-onglet { display: inline; }
     .outils { gap: 10px; }
   }
+
+  /* Mode focus (quiz, séance) : la page tient dans l'écran, contenu centré (frames V5). */
+  body.focus { min-height: 100vh; display: flex; flex-direction: column; }
+  .entete.focus { position: static; flex-wrap: wrap; gap: 16px 32px; padding: 18px clamp(16px, 3.4vw, 48px);
+    border-bottom: 0; }
+  .entete.focus .logo span { font-size: 24px; letter-spacing: -0.01em; }
+  .entete.focus .logo sup { font-size: 14px; }
+  .pied-focus { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; width: 100%;
+    max-width: 1320px; margin: 0 auto; padding: 16px clamp(16px, 3.4vw, 48px) 22px; font-size: 13px; color: #8A91A3; }
+  .pied-focus a { color: inherit; }
 
   .pied {
     max-width: 1320px;

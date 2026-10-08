@@ -1,39 +1,54 @@
 ---
-// Le quiz d'entrée (frames V5 « Question », « Révélation », « Résultat », « Partage ») : les 10
-// votes choisis par Julien (data/quiz.json). Pour chacun : la question, « Concrètement », Pour /
-// Contre / Je ne sais pas, puis la révélation du vote réel. À la fin : le groupe qui vote le plus
-// comme toi, ton jumeau, la précision, et trois stories à partager. Tout est calculé dans le
+// Le quiz d'entrée (frames V5 « ① Première question », « ② Révélation », « ③ Résultat »,
+// « ④ Partage ») : les 10 votes choisis par Julien (data/quiz.json). Pour chacun : la question,
+// « Concrètement », Pour / Contre / Je ne sais pas, puis la révélation du vote réel. À droite,
+// ton hémicycle se construit à chaque réponse. À la fin : ta place, ton jumeau, les groupes les
+// plus proches, la précision, et trois stories à partager. Tout est calculé dans le
 // navigateur ; les réponses y restent (lib/navigateur.ts).
 import Base from '../layouts/Base.astro';
+import Salle from '../components/Salle.astro';
 import { composition, lienVote, questionsQuiz, scrutin } from '../lib/donnees.ts';
-import { HAUTEUR, LARGEUR, places, RAYON_SIEGE } from '../lib/hemicycle.ts';
 import { NIVEAUX, SANS_VOTE_COMMUN } from '../lib/profil.ts';
 import { verdict } from '../lib/votes.ts';
 
+const compo = composition();
+// Le vote de chaque député d'aujourd'hui, siège par siège dans la salle du jour : P, C, A
+// (abstention), N (non-votant), - (absent), en minuscule s'il a voté contre son groupe ;
+// x s'il n'était pas député à la date du vote, V pour un siège vacant.
 const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A',
   non_votant: 'N', absent: '-' };
-const questions = questionsQuiz().map((q) => {
+// Les puces de thème de la maquette, dans l'ordre des questions.
+const PUCES = ['#E8E1FF:#5B35E6', '#FFE1EF:#B5175A', '#E3F6D5:#3B7F12', '#FFF1CC:#9A5B00',
+  '#DDF1FF:#0B6AAE', '#D9F7EA:#0C7F57', '#FFE6DA:#B83C0A', '#E6E9F0:#3A4256',
+  '#FFF6C2:#7A6000', '#E2E5FF:#3443B0'];
+const questions = questionsQuiz().map((q, k) => {
   const s = scrutin(q.uid);
+  const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
   return {
-    ...q, question: q.question.replace(/ ([?!:;])/g, '\u202f$1'),
-    lien: lienVote(s), verdict: verdict(s), decompte: s.decompte,
-    dissidents: s.dissidents, marge: s.voix_pour_inverser,
-    sieges: s.sieges.map((x) => (x.vacant ? 'V' : LETTRES[x.vote ?? 'absent'] ?? '-')).join(''),
+    ...q, question: q.question.replace(/ ([?!:;])/g, ' $1'),
+    lien: lienVote(s), verdict: verdict(s), adopte: s.sort === 'adopté', decompte: s.decompte,
+    dissidents: s.dissidents, marge: s.voix_pour_inverser, puce: PUCES[k % PUCES.length],
+    sieges: compo.sieges.map((c) => {
+      if (c.vacant || !c.depute) return 'V';
+      const x = votes.get(c.depute);
+      if (!x) return 'x';
+      const l = LETTRES[x.vote ?? 'absent'] ?? '-';
+      return x.dissident ? l.toLowerCase() : l;
+    }).join(''),
   };
 });
-const compo = composition();
-const deputesCompo = compo.sieges.map((s) => s.depute ?? '');
-const liste = places();
-const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</g, '\\u003c');
+const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
 ---
 <Base titre="Le quiz d'entrée" focus
   description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
   <div class="progression" slot="entete">
-    <div class="barre" role="progressbar" aria-label="Progression du quiz" aria-valuemin="0"
-      aria-valuemax={questions.length} aria-valuenow="0" data-barre>
-      <span data-barre-pleine></span>
+    <div class="barre-cadre">
+      <div class="barre" role="progressbar" aria-label="Progression du quiz" aria-valuemin="0"
+        aria-valuemax={questions.length} aria-valuenow="0" data-barre>
+        <span data-barre-pleine></span>
+      </div>
+      <span class="compteur" data-compteur>Vote 1 sur {questions.length}</span>
     </div>
-    <span class="compteur" data-compteur>Question 1 sur {questions.length}</span>
     <a class="quitter" href="/explorer/">Explorer tous les votes</a>
   </div>
 
@@ -46,11 +61,10 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
           </span>
           <p>
             Il reste un siège libre à l'Assemblée : <strong>le tien</strong>.
-            {` Réponds à ${questions.length} vrais votes, on te montre quels députés ont voté comme toi.`} Tu
-            peux toujours répondre « Je ne sais pas » ; tes réponses restent dans ton navigateur.
+            {` Réponds à ${questions.length} vrais votes, on te montre quels députés ont voté comme toi.`}
           </p>
         </div>
-        <span class="puce" data-theme></span>
+        <span class="puce-theme" data-theme></span>
         <h1 data-question tabindex="-1"></h1>
         <p class="concretement"><strong>Concrètement :</strong> <span data-concretement></span></p>
         <div class="choix">
@@ -58,11 +72,13 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
           <button type="button" class="b-contre" data-reponse="contre">Contre</button>
         </div>
         <button type="button" class="b-passer" data-reponse="">Je ne sais pas</button>
-        <p class="lien-vote"><a data-lien-vote href="/explorer/">Tout savoir sur ce vote</a></p>
       </div>
 
       <div class="resultat" data-ecran="resultat" hidden>
-        <span class="puce" data-sur-titre-resultat></span>
+        <span class="confetti c1" aria-hidden="true"></span>
+        <span class="confetti c2" aria-hidden="true"></span>
+        <span class="confetti c3" aria-hidden="true"></span>
+        <span class="puce-resultat" data-sur-titre-resultat></span>
         <h1 tabindex="-1" data-titre-resultat>Ta place est prête&nbsp;!</h1>
         <p class="phrase" data-phrase-groupe></p>
         <a class="jumeau" data-jumeau hidden>
@@ -89,9 +105,12 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
         <div class="actions">
           <a class="b-principal" href="/hemicycle/">
             <span>Voir mon hémicycle →</span>
-            <span class="petit">Groupes, jumeau, opposé : tout le détail</span>
+            <span class="petit">Ton jumeau, ton opposé, tous les groupes</span>
           </a>
-          <button type="button" class="b-partager" data-ouvrir-partage>Partager</button>
+          <button type="button" class="b-partager" data-ouvrir-partage>
+            <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2.2"></rect><circle cx="11" cy="11" r="3.6" fill="none" stroke="currentColor" stroke-width="2.2"></circle><circle cx="15.6" cy="6.4" r="1.2" fill="currentColor"></circle></svg>
+            Partager
+          </button>
         </div>
         <p class="recommencer">
           <button type="button" data-recommencer>Recommencer le quiz</button>{' · '}<a
@@ -103,27 +122,20 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     <section class="panneau" aria-labelledby="titre-panneau">
       <div class="panneau-tete">
         <div>
-          <h2 id="titre-panneau" data-panneau-titre>L'Assemblée nationale</h2>
-          <p data-panneau-sous>577 sièges. Le 578<sup>e</sup> est libre.</p>
+          <h2 id="titre-panneau" data-panneau-titre>Ton hémicycle</h2>
+          <p data-panneau-sous>Il se construit à chaque réponse</p>
+        </div>
+        <div class="precision-tete" data-precision-tete title="Plus tu tranches de votes, plus ton résultat est fiable">
+          <span class="precision-tete-titre">Précision</span>
+          <span class="precision-tete-segments" aria-hidden="true" data-segments-tete>
+            {Array.from({ length: 10 }, () => <span></span>)}
+          </span>
+          <span class="precision-tete-pct" data-precision-tete-pct>0 %</span>
         </div>
       </div>
-      <div class="dessin">
-        <svg viewBox={`0 -60 ${LARGEUR} ${HAUTEUR + 60}`} role="img" data-svg
-          aria-label="Hémicycle de l'Assemblée nationale">
-          {liste.map((p, i) => (
-            <circle data-i={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={RAYON_SIEGE}
-              fill={compo.sieges[i].vacant ? '#FFFFFF' : '#D6DBE4'}></circle>
-          ))}
-          <g data-libre>
-            <circle cx="500" cy="-26" r="16" fill="none" stroke="#B9A4FF" stroke-width="3" stroke-dasharray="5 4"></circle>
-          </g>
-          <g data-etoile hidden>
-            <path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z"
-              fill="#FFC531" stroke="#1F2433" stroke-width="2" stroke-linejoin="round"></path>
-          </g>
-          <text x="500" y="440" text-anchor="middle" class="centre-chiffres" data-centre></text>
-          <text x="500" y="478" text-anchor="middle" class="centre-legende" data-centre-legende></text>
-        </svg>
+      <div class="cadre-salle">
+        <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale" libre
+          chiffre="577" legende="sièges… et le tien" />
       </div>
       <ul class="legende" data-legende-vote hidden>
         <li><span style="background: var(--pour)"></span>Pour</li>
@@ -131,22 +143,30 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
         <li><span style="background: var(--abstention)"></span>Abstention</li>
         <li><span style="background: var(--non-votant)"></span>Non-votant</li>
         <li><span style="background: var(--absent)"></span>Absent</li>
+        <li><span class="anneau"></span>Contre son groupe</li>
+        <li data-legende-hors hidden><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Pas encore député</li>
       </ul>
-      <ul class="legende" data-legende-accord hidden>
+      <ul class="legende" data-legende-accord>
         {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
-        <li><span style={`background: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
+        <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
       </ul>
     </section>
   </div>
 
   <div class="revelation" data-revelation hidden>
     <div class="revelation-dedans">
+      <span class="revelation-icone" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="9" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="21" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="15" cy="20" r="4.5" fill="#7C4DFF"></circle></svg>
+      </span>
       <div class="revelation-texte">
         <p class="revelation-titre" data-rv-titre></p>
-        <p data-rv-ligne></p>
+        <p><span data-rv-ligne></span> <a data-lien-vote href="/explorer/">Tout savoir sur ce vote</a></p>
       </div>
       <div class="ta-voix">
-        <p class="sur-titre">Ta voix de 578<sup>e</sup></p>
+        <p class="sur-titre">
+          <svg width="22" height="14" viewBox="0 0 40 24" aria-hidden="true"><circle cx="5" cy="20" r="3.2" fill="#C9B8FF"></circle><circle cx="9" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="17" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="26" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="33" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="36" cy="20" r="3.8" fill="#7C4DFF"></circle></svg>
+          <span>Ta voix de 578<sup>e</sup></span>
+        </p>
         <p data-rv-voix></p>
       </div>
       <button type="button" class="b-continuer" data-continuer>Continuer</button>
@@ -173,26 +193,28 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
 
 <script>
   import { lireJSON, repondre, reponses as mesReponses } from '../lib/navigateur.ts';
-  import { initiales, partCommeToi, profil, teinte, type Matrice,
-    type Reponse } from '../lib/profil.ts';
+  import { initiales, niveau, partCommeToi, precision, profil, teinte, type Matrice,
+    type Profil, type Reponse } from '../lib/profil.ts';
   import { dessiner, enImage, type DonneesStories, type TypeStory } from '../lib/stories.ts';
-  import { places } from '../lib/hemicycle.ts';
+  import { pastille, Salle } from '../lib/salle.ts';
 
   interface Question {
     uid: string; numero: number; theme: string; question: string; concretement: string;
-    lien: string; verdict: string; dissidents: number; marge: number | null; sieges: string;
+    lien: string; verdict: string; adopte: boolean; dissidents: number; marge: number | null;
+    puce: string; sieges: string;
     decompte: { pour: number; contre: number; abstention: number };
   }
-  const { questions, deputes } = JSON.parse(
-    document.querySelector('[data-donnees-quiz]')!.textContent!) as
-    { questions: Question[]; deputes: string[] };
+  const { questions } = JSON.parse(
+    document.querySelector('[data-donnees-quiz]')!.textContent!) as { questions: Question[] };
   const CLE = '578e.quiz.v1';
   const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531',
-    N: '#9AA1B2', '-': '#DFE3EB', V: '#FFFFFF' };
+    N: '#9AA1B2', '-': '#DFE3EB' };
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
-  const cercles = [...document.querySelectorAll<SVGCircleElement>('[data-svg] circle[data-i]')];
-  const liste = places();
+  const salle = new Salle($('[data-salle]'));
+  const { groupes, sieges } = salle.reglages;
+  const deputes = sieges.map(([u]) => u);
   const etat = lireJSON<{ i: number; fini: boolean }>(CLE, { i: 0, fini: false });
+  const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   let matrice: Matrice | null = null;
   const chargement = fetch('/donnees/matrice.json').then((r) => r.json())
     .then((m: Matrice) => { matrice = m; return m; });
@@ -204,16 +226,36 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     }
   };
   const progression = (n: number) => {
-    const barre = $('[data-barre]');
-    barre.setAttribute('aria-valuenow', String(n));
+    $('[data-barre]').setAttribute('aria-valuenow', String(n));
     $('[data-barre-pleine]').style.width = `${(100 * n) / questions.length}%`;
   };
-  const etoileSur = (indice: number) => {
-    const g = $<SVGGElement>('[data-etoile]');
-    if (indice < 0) { g.setAttribute('hidden', ''); return; }
-    const p = liste[indice];
-    g.setAttribute('transform', `translate(${(p.x - 17).toFixed(1)} ${(p.y - 52).toFixed(1)})`);
-    g.removeAttribute('hidden');
+  const mesReps = () => Object.fromEntries(Object.entries(mesReponses()).map(([k, r]) => [k, r.v]));
+  const segments = (selecteur: string, p: number) => {
+    document.querySelectorAll<HTMLElement>(`${selecteur} span`)
+      .forEach((s, k) => s.classList.toggle('plein', k < Math.round(p * 10)));
+  };
+
+  /** Ton hémicycle tel qu'il est : plus un siège est foncé, plus ce député vote comme toi. */
+  const tonHemicycle = (m: Matrice | null): Profil | null => {
+    const p = m ? profil(m, mesReps()) : null;
+    const n = p?.reponses ?? 0;
+    $('[data-precision-tete-pct]').textContent = `${Math.round(100 * precision(n))} %`;
+    segments('[data-segments-tete]', precision(n));
+    if (!p || !n) {
+      salle.colorer(() => ({ fond: '#D6DBE4' }));
+      salle.centre('577', 'sièges… et le tien');
+      salle.libre(true);
+      return p;
+    }
+    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x]));
+    salle.colorer((_, uid) => {
+      const x = parDepute.get(uid);
+      return x ? { fond: niveau(x.lisse).couleur } : { sansCommun: true };
+    });
+    const proches = p.deputes.filter((x) => niveau(x.lisse).haut).length;
+    salle.centre(String(proches), `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`);
+    salle.libre(false);
+    return p;
   };
 
   // --- Une question ---
@@ -221,28 +263,33 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     const q = questions[i];
     montrer('question');
     $('[data-revelation]').hidden = true;
+    $('[data-pied-focus]').hidden = false;
     $('[data-bulle]').hidden = i > 0;
-    $('[data-theme]').textContent = q.theme;
-    $('[data-question]').textContent = q.question;
+    const theme = $('[data-theme]');
+    const [fond, encre] = q.puce.split(':');
+    theme.textContent = q.theme;
+    theme.style.background = fond;
+    theme.style.color = encre;
+    const titre = $('[data-question]');
+    titre.textContent = q.question;
+    titre.classList.toggle('longue', q.question.length > 95);
     $('[data-concretement]').textContent = q.concretement;
-    $<HTMLAnchorElement>('[data-lien-vote]').href = q.lien;
-    $('[data-compteur]').textContent = `Question ${i + 1} sur ${questions.length}`;
+    $('[data-compteur]').textContent = `Vote ${i + 1} sur ${questions.length}`;
     progression(i);
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
       b.disabled = false;
-      b.removeAttribute('aria-pressed');
+      b.classList.remove('choisi', 'estompe');
     }
-    // L'hémicycle attend ton vote : gris, le 578e siège libre.
-    cercles.forEach((c, k) => c.setAttribute('fill', q.sieges[k] === 'V' ? '#FFFFFF' : '#D6DBE4'));
-    $('[data-libre]').removeAttribute('hidden');
-    etoileSur(-1);
-    $('[data-panneau-titre]').textContent = "Qu'a voté l'Assemblée ?";
-    $('[data-panneau-sous]').textContent = 'Réponds pour le découvrir.';
-    $('[data-centre]').textContent = '?';
-    $('[data-centre-legende]').textContent = '';
+    $('[data-panneau-titre]').textContent = 'Ton hémicycle';
+    $('[data-panneau-sous]').textContent = 'Il se construit à chaque réponse';
+    $('[data-precision-tete]').hidden = false;
     $('[data-legende-vote]').hidden = true;
-    $('[data-legende-accord]').hidden = true;
-    if (i > 0) $('[data-question]').focus();
+    $('[data-legende-accord]').hidden = false;
+    salle.jumeau(null);
+    salle.toi(null);
+    tonHemicycle(matrice);
+    if (!matrice) chargement.then((m) => { if (!$('[data-ecran="question"]').hidden) tonHemicycle(m); });
+    if (i > 0) titre.focus();
   };
 
   // --- La révélation du vote réel ---
@@ -250,28 +297,42 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     const q = questions[i];
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
       b.disabled = true;
-      if ((b.dataset.reponse || null) === v) b.setAttribute('aria-pressed', 'true');
+      const choisi = (b.dataset.reponse || null) === v;
+      b.classList.toggle('choisi', choisi);
+      b.classList.toggle('estompe', !choisi);
     }
-    cercles.forEach((c, k) => c.setAttribute('fill', COULEURS[q.sieges[k]] ?? '#DFE3EB'));
-    $('[data-libre]').setAttribute('hidden', '');
+    // En couleur vive : les députés qui ont voté comme toi.
+    const mienne = v === 'pour' ? 'P' : v === 'contre' ? 'C' : null;
+    salle.colorer((k) => {
+      const brut = q.sieges[k];
+      if (brut === 'x') return { sansCommun: true };
+      const l = brut.toUpperCase();
+      return { fond: COULEURS[l] ?? '#DFE3EB', contreGroupe: brut !== l,
+        estompe: !!mienne && l !== '-' && l !== mienne };
+    });
+    salle.libre(false);
     const d = q.decompte;
+    salle.centre(`${d.pour} – ${d.contre}`, `${q.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`);
     $('[data-panneau-titre]').textContent = 'Comment l\'Assemblée a voté';
-    $('[data-panneau-sous]').textContent = `Scrutin n° ${q.numero}`;
-    $('[data-centre]').textContent = `${d.pour} – ${d.contre}`;
-    $('[data-centre-legende]').textContent = 'pour – contre';
+    $('[data-panneau-sous]').textContent = v ? 'En couleur vive : ceux qui ont voté comme toi'
+      : 'Tu n\'as pas répondu à ce vote';
+    $('[data-precision-tete]').hidden = true;
     $('[data-legende-vote]').hidden = false;
-    const exprimes = d.pour + d.contre;
-    const part = v && exprimes ? Math.round((100 * (v === 'pour' ? d.pour : d.contre)) / exprimes) : null;
-    $('[data-rv-titre]').textContent = `${q.verdict} · ${d.pour} pour, ${d.contre} contre`;
-    $('[data-rv-ligne]').textContent = (part === null
-      ? `${exprimes ? Math.round((100 * d.pour) / exprimes) : 0} % des députés qui se sont exprimés ont voté pour.`
-      : `${part} % des députés qui se sont exprimés ont voté comme toi.`)
-      + (q.dissidents ? ` ${q.dissidents} député${q.dissidents > 1 ? 's ont' : ' a'} voté contre leur propre groupe.` : '');
-    $('[data-rv-voix]').textContent = v
-      ? `Avec ta voix : ${d.pour + (v === 'pour' ? 1 : 0)} pour, ${d.contre + (v === 'contre' ? 1 : 0)} contre.`
-        + (q.marge && q.marge > 1 ? ` Le résultat s'est joué à ${q.marge} voix.` : '')
-      : 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat.';
+    $('[data-legende-hors]').hidden = !q.sieges.includes('x');
+    $('[data-legende-accord]').hidden = true;
+    const gagnant = q.adopte ? 'pour' : 'contre';
+    $('[data-rv-titre]').textContent = v
+      ? `Tu es ${v === gagnant ? 'avec la majorité' : 'dans la minorité'} : ${v === 'pour' ? d.pour : d.contre} députés ont voté comme toi`
+      : 'Voici ce qu\'a voté l\'Assemblée';
+    $('[data-rv-ligne]').textContent = `Le texte a été ${q.adopte ? 'adopté' : 'rejeté'} par ${d.pour} voix contre ${d.contre}.`
+      + (q.dissidents ? ` ${pluriel(q.dissidents, 'député')} ${q.dissidents > 1 ? 'ont' : 'a'} voté contre leur propre groupe.` : '');
+    $<HTMLAnchorElement>('[data-lien-vote]').href = q.lien;
+    $('[data-rv-voix]').textContent = (v
+      ? `Avec ta voix : ${d.pour + (v === 'pour' ? 1 : 0)} pour, ${d.contre + (v === 'contre' ? 1 : 0)} contre. `
+      : 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat. ')
+      + (q.marge ? `Pour inverser le résultat, il aurait fallu que ${pluriel(q.marge, 'député')} change${q.marge > 1 ? 'nt' : ''} d'avis.` : '');
     $('[data-revelation]').hidden = false;
+    $('[data-pied-focus]').hidden = true;
     $('[data-continuer]').textContent = i + 1 < questions.length ? 'Continuer' : 'Voir ma place';
     $('[data-continuer]').focus({ preventScroll: true });
     if (window.matchMedia('(max-width: 1000px)').matches) {
@@ -285,47 +346,55 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     sauver();
     montrer('resultat');
     $('[data-revelation]').hidden = true;
+    $('[data-pied-focus]').hidden = false;
     progression(questions.length);
     $('[data-compteur]').textContent = 'Terminé';
     const m = matrice ?? await chargement;
-    const reps = Object.fromEntries(Object.entries(mesReponses()).map(([k, r]) => [k, r.v]));
-    const p = profil(m, reps);
+    const reps = mesReps();
+    const p = tonHemicycle(m)!;
+    $('[data-legende-vote]').hidden = true;
+    $('[data-legende-accord]').hidden = false;
+    $('[data-precision-tete]').hidden = true;
+    $('[data-panneau-titre]').textContent = 'Ton hémicycle';
+    $('[data-panneau-sous]').textContent = 'Plus un siège est foncé, plus ce député a voté comme toi';
     const dansQuiz = questions.filter((q) => reps[q.uid]).length;
     $('[data-sur-titre-resultat]').textContent = `${dansQuiz} vote${dansQuiz > 1 ? 's' : ''} sur `
-      + `${questions.length} tranché${dansQuiz > 1 ? 's' : ''}`
-      + (p.reponses > dansQuiz ? ` · ${p.reponses} en tout` : '');
-    const g = p.groupes[0];
+      + `${questions.length} · ${p.reponses > dansQuiz ? `${p.reponses} en tout` : 'premier quiz'}`;
+    const g = p.groupes.find((x) => !groupes[x.ligne.u]?.ni) ?? null;
+    const j = p.jumeau;
+    const phrase = $('[data-phrase-groupe]');
     if (!g) {
       $('[data-titre-resultat]').textContent = 'Pas encore de place';
-      $('[data-phrase-groupe]').textContent = 'Tu n\'as tranché aucun vote : réponds « Pour » ou « Contre » à au moins une question pour voir qui vote comme toi.';
+      phrase.textContent = 'Tu n\'as tranché aucun vote : réponds « Pour » ou « Contre » à au moins une question pour voir qui vote comme toi.';
     } else {
       $('[data-titre-resultat]').textContent = 'Ta place est prête !';
-      $('[data-phrase-groupe]').innerHTML = '';
-      const b = document.createElement('strong');
-      b.textContent = `${g.ligne.libelle} (${g.ligne.sigle})`;
-      $('[data-phrase-groupe]').append('Le groupe qui vote le plus comme toi : ', b,
-        `, d'accord avec toi sur ${g.identiques} vote${g.identiques > 1 ? 's' : ''} sur ${g.communs}.`);
+      const b = document.createElement('b');
+      b.textContent = `côté ${g.ligne.sigle}`;
+      b.title = g.ligne.libelle;
+      phrase.replaceChildren('Tu siègerais ', b, !j ? '.'
+        : niveau(j.lisse).haut ? '. Et parmi les 577, un député vote presque toujours comme toi :'
+        : '. Et parmi les 577, le député qui vote le plus souvent comme toi :');
     }
-    const j = p.jumeau;
+    salle.jumeau(j?.ligne.u ?? null);
+    salle.toi(g?.ligne.u ?? null);
     const carte = $<HTMLAnchorElement>('[data-jumeau]');
     if (j) {
       carte.hidden = false;
       carte.href = `/deputes/${j.ligne.u}/`;
       $('[data-jumeau-ini]').textContent = initiales(j.ligne.n);
       $('[data-jumeau-nom]').textContent = j.ligne.n;
-      const sigle = m.groupes.find((x) => x.u === j.ligne.g)?.sigle ?? 'non inscrit';
-      $('[data-jumeau-detail]').textContent = `${sigle} · ${j.communs} vote${j.communs > 1 ? 's' : ''} en commun`;
+      const pg = document.createElement('span');
+      pastille(pg, groupes[j.ligne.g ?? '']);
+      $('[data-jumeau-detail]').replaceChildren(pg, ` · ${pluriel(j.communs, 'vote')} en commun`);
       $('[data-jumeau-score]').textContent = `${j.identiques}/${j.communs}`;
     } else {
       carte.hidden = true;
     }
-    const ul = $('[data-groupes]');
-    ul.replaceChildren(...p.groupes.slice(0, 3).map((x) => {
+    $('[data-groupes]').replaceChildren(...p.groupes.slice(0, 3).map((x) => {
       const li = document.createElement('li');
-      const s = document.createElement('span');
-      s.className = 'sigle';
-      s.textContent = x.ligne.sigle;
-      s.title = x.ligne.libelle;
+      const s = document.createElement('abbr');
+      pastille(s, groupes[x.ligne.u]);
+      s.classList.add('sigle');
       const barre = document.createElement('span');
       barre.className = 'jauge';
       const plein = document.createElement('span');
@@ -337,29 +406,16 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
       li.append(s, barre, pct);
       return li;
     }));
-    const prec = Math.round(100 * p.precision);
-    $('[data-precision]').textContent = `${prec} %`;
-    document.querySelectorAll<HTMLElement>('[data-segments] span').forEach((s, k) => {
-      s.classList.toggle('plein', k < Math.round(p.precision * 10));
-    });
-    $('[data-note-precision]').textContent = `Calculé sur ${p.reponses} vote${p.reponses > 1 ? 's' : ''}. `
-      + 'Plus tu tranches de votes, plus ton résultat est fiable : il le devient vers 25 votes.';
-    // L'hémicycle se colore : plus un siège est foncé, plus ce député vote comme toi.
-    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.lisse]));
-    const couleurs = deputes.map((u) => (u ? teinte(parDepute.get(u) ?? null) : '#FFFFFF'));
-    cercles.forEach((c, k) => c.setAttribute('fill', couleurs[k]));
-    $('[data-libre]').setAttribute('hidden', '');
-    const siegeJumeau = j ? deputes.indexOf(j.ligne.u) : -1;
-    etoileSur(siegeJumeau);
-    $('[data-panneau-titre]').textContent = 'Ton hémicycle';
-    $('[data-panneau-sous]').textContent = j ? 'L\'étoile : ta place, près de ton jumeau.' : 'Tranche des votes pour te placer.';
-    const proches = p.deputes.filter((x) => (x.taux ?? 0) >= 50).length;
-    $('[data-centre]').textContent = String(proches);
-    $('[data-centre-legende]').textContent = 'votent souvent comme toi';
-    $('[data-legende-vote]').hidden = true;
-    $('[data-legende-accord]').hidden = false;
+    $('[data-precision]').textContent = `${Math.round(100 * p.precision)} %`;
+    segments('[data-segments]', p.precision);
+    const reste = Math.max(0, 25 - p.reponses);
+    $('[data-note-precision]').textContent = reste
+      ? `Fiable à partir de 25 votes : encore ${reste} à trancher.`
+      : 'Ton résultat est fiable. Chaque vote l\'affine encore.';
     $('[data-titre-resultat]').focus();
     // Les stories, prêtes à partager.
+    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.lisse]));
+    const couleurs = deputes.map((u) => (u ? teinte(parDepute.get(u) ?? null) : '#FFFFFF'));
     let contre: DonneesStories['contre'] = null;
     for (const q of questions) {
       const r = reps[q.uid];
@@ -371,8 +427,8 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     stories = {
       groupe: g ? { sigle: g.ligne.sigle, libelle: g.ligne.libelle } : null,
       jumeau: j ? { nom: j.ligne.n, initiales: initiales(j.ligne.n), identiques: j.identiques,
-        communs: j.communs, groupe: m.groupes.find((x) => x.u === j.ligne.g)?.sigle ?? 'non inscrit' } : null,
-      contre, sieges: couleurs, etoile: siegeJumeau, votes: p.reponses,
+        communs: j.communs, groupe: groupes[j.ligne.g ?? '']?.s ?? 'non inscrit' } : null,
+      contre, sieges: couleurs, etoile: j ? deputes.indexOf(j.ligne.u) : -1, votes: p.reponses,
     };
   };
 
@@ -411,8 +467,7 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     b.addEventListener('click', () => {
       const q = questions[etat.i];
       const v = (b.dataset.reponse || null) as Reponse | null;
-      if (v) repondre(q.uid, v);
-      else repondre(q.uid, null);
+      repondre(q.uid, v);
       reveler(etat.i, v);
     });
   }
@@ -434,34 +489,56 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
 </script>
 
 <style>
-  :global(main.page.focus) { max-width: 1360px; padding-top: 12px; }
-  .progression { flex: 1 1 300px; display: flex; align-items: center; gap: 14px 20px; flex-wrap: wrap; }
-  .barre { flex: 1 1 220px; height: 16px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; max-width: 640px; margin: 0 auto; }
-  .barre span { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--violet); box-shadow: inset 0 4px 0 rgba(255,255,255,.28); transition: width .4s ease; }
+  /* Cotes reprises des frames V5 « ① Première question », « ② Révélation », « ③ Résultat ». */
+  :global(main.page.focus) { flex: 1; justify-content: center; max-width: 1320px;
+    padding: 12px clamp(16px, 3.4vw, 48px) 32px; }
+  .progression { display: contents; }
+  .barre-cadre { flex: 1 1 280px; display: flex; align-items: center; gap: 14px; max-width: 640px; margin: 0 auto; }
+  .barre { flex: 1; height: 16px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; }
+  .barre span { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--violet);
+    box-shadow: inset 0 4px 0 rgba(255,255,255,.28); transition: width .4s ease; }
   .compteur { font-family: var(--police-titre); font-weight: 600; font-size: 15px; color: var(--gris-legende); white-space: nowrap; }
-  .quitter { font-family: var(--police-titre); font-weight: 600; text-decoration: none; }
+  .quitter { padding: 12px 4px; font-family: var(--police-titre); font-weight: 600; font-size: 16px;
+    color: var(--violet-fonce); text-decoration: none; }
 
   .quiz { display: flex; flex-wrap: wrap; gap: 32px 56px; align-items: center; }
-  .gauche { flex: 1 1 440px; min-width: 0; max-width: 580px; }
-  .panneau { flex: 1.25 1 520px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: 32px; background: var(--fond-doux); scroll-margin-top: 16px; }
+  .gauche { flex: 1 1 440px; min-width: 0; max-width: 560px; }
+  .panneau { flex: 1.25 1 560px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: 32px;
+    background: var(--fond-doux); scroll-margin-top: 16px; }
+  .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
   .panneau h2 { font-size: 24px; font-weight: 600; }
   .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris-legende); }
-  .dessin { margin-top: 18px; }
-  .dessin svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .dessin circle[data-i] { transition: fill .45s ease; }
-  .centre-chiffres { font-family: var(--police-titre); font-weight: 700; font-size: 44px; fill: var(--texte); }
-  .centre-legende { font-size: 19px; fill: var(--gris-legende); }
-  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--texte-doux); }
-  .legende li { display: inline-flex; align-items: center; gap: 6px; }
+  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px;
+    background: var(--fond); border: 2px solid var(--bord); }
+  .precision-tete-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: #7A8296; }
+  .precision-tete-segments { display: flex; gap: 3px; }
+  .precision-tete-segments span { width: 9px; height: 14px; border-radius: 3px; background: var(--bord); }
+  .precision-tete-segments :global(span.plein) { background: var(--violet); }
+  .precision-tete-pct { min-width: 36px; font-family: var(--police-titre); font-weight: 700; font-size: 14px; }
+  .cadre-salle { margin-top: 20px; }
+  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
+    list-style: none; font-size: 14px; color: var(--texte-doux); }
+  .legende li { display: inline-flex; align-items: center; gap: 7px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
+  .legende .sans { background: #FFFFFF; border: 2px solid; }
 
-  .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 26px; }
-  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: 18px; font-size: 17px; color: var(--texte-doux); }
+  .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 28px; }
+  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: 18px;
+    font-size: 17px; line-height: 1.45; color: var(--texte-doux); }
   .bulle strong { color: var(--violet-fonce); }
-  .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
-  .question h1, .resultat h1 { margin: 16px 0 14px; font-size: clamp(28px, 3.2vw, 44px); font-weight: 600; line-height: 1.1; letter-spacing: -0.015em; outline: none; }
-  .resultat h1 { font-weight: 700; font-size: clamp(36px, 4vw, 54px); }
-  .concretement { margin: 0 0 28px; font-size: 18px; color: var(--gris); }
+  .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
+    border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
+  .puce-theme, .puce-resultat { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
+    border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
+    letter-spacing: 0.06em; text-transform: uppercase; }
+  .puce-theme::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .puce-resultat { background: #EFE9FF; color: var(--violet-fonce); }
+  .question h1 { margin: 16px 0 14px; font-size: clamp(34px, 3.3vw, 48px); font-weight: 600; line-height: 1.08;
+    letter-spacing: -0.015em; outline: none; }
+  .question h1:global(.longue) { font-size: clamp(28px, 2.6vw, 38px); line-height: 1.12; }
+  .concretement { margin: 0 0 30px; font-size: 18px; line-height: 1.5; color: var(--gris); }
   .concretement strong { color: var(--texte); }
   .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .choix button, .b-passer {
@@ -469,69 +546,106 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
     font-size: 24px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; cursor: pointer;
     transition: transform .08s ease, box-shadow .08s ease, opacity .2s;
   }
+  /* Contre : #E5552A plutôt que le #FF6A3D de la maquette, pour un texte blanc lisible (contraste AA). */
   .b-pour { background: var(--pour); box-shadow: 0 6px 0 #1C5AD0; }
   .b-contre { background: #E5552A; box-shadow: 0 6px 0 #B83C0A; }
   .choix button:active, .b-passer:active { transform: translateY(5px); box-shadow: none; }
-  .b-passer { width: 100%; min-height: 54px; margin-top: 14px; border: 2px solid var(--bord); background: var(--fond); box-shadow: 0 4px 0 var(--bord); color: var(--gris-legende); font-size: 17px; }
-  .choix button:disabled, .b-passer:disabled { opacity: 0.35; cursor: default; transform: none; }
-  .choix button[aria-pressed='true'], .b-passer[aria-pressed='true'] { opacity: 1; outline: 4px solid var(--texte); outline-offset: 3px; }
-  .lien-vote { margin: 18px 0 0; font-size: 15px; }
+  .b-passer { width: 100%; min-height: 54px; margin-top: 14px; border: 2px solid var(--bord); background: var(--fond);
+    box-shadow: 0 4px 0 var(--bord); color: #7A8296; font-size: 17px; }
+  .choix button:disabled, .b-passer:disabled { cursor: default; }
+  .choix button:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
+  .b-passer:global(.estompe) { opacity: .35; box-shadow: none; }
 
-  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * var(--gouttiere)) -56px; border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
+  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
+    border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
   @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
   @keyframes monte { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
-  .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; max-width: 1360px; margin: 0 auto; padding: 18px var(--gouttiere); }
-  .revelation-texte { flex: 1 1 360px; }
+  .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
+    margin: 0 auto; padding: 22px clamp(16px, 3.4vw, 48px); }
+  .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px;
+    border-radius: 50%; background: var(--fond); box-shadow: 0 4px 0 #E3DAFF; }
+  .revelation-texte { flex: 1 1 380px; }
   .revelation p { margin: 0; }
-  .revelation-titre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(21px, 2.2vw, 28px); color: #4B2BC2; }
-  .revelation-texte p + p { margin-top: 6px; font-size: 17px; color: #4A4F63; }
-  .ta-voix { flex: 0 1 320px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF; font-size: 15px; color: var(--texte-doux); }
-  .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet); }
-  .ta-voix sup { text-transform: none; }
-  .b-continuer { min-width: 200px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: 18px; background: var(--violet); color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+  .revelation-titre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(22px, 2.2vw, 28px);
+    line-height: 1.1; color: #4B2BC2; }
+  .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: #4A4F63; }
+  .revelation-texte a { white-space: nowrap; }
+  .ta-voix { flex: 0 1 330px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF;
+    font-size: 15px; line-height: 1.4; color: var(--texte-doux); }
+  .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; }
+  .ta-voix p + p { margin-top: 5px; }
+  .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--violet); }
+  .sur-titre sup { text-transform: none; }
+  .b-continuer { min-width: 220px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: 18px; background: var(--violet);
+    color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600;
+    font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   @media (max-width: 640px) { .b-continuer { width: 100%; } }
 
-  .phrase { margin: 0 0 18px; font-size: 18px; color: var(--gris); }
-  .phrase strong { color: var(--texte); }
-  .jumeau { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 22px; border: 2px solid #C9B8FF; background: #FBF9FF; box-shadow: 0 5px 0 #E3DAFF; color: inherit; text-decoration: none; }
-  .jumeau:hover { border-color: var(--violet); }
-  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: 18px; background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 21px; box-shadow: 0 4px 0 var(--violet-fonce); }
+  .resultat { position: relative; }
+  .confetti { position: absolute; }
+  .c1 { left: -26px; top: -18px; width: 14px; height: 14px; border-radius: 4px; background: var(--abstention); transform: rotate(18deg); }
+  .c2 { left: 300px; top: -30px; width: 10px; height: 10px; border-radius: 50%; background: var(--pour); }
+  .c3 { left: 470px; top: 30px; width: 16px; height: 6px; border-radius: 3px; background: var(--contre); transform: rotate(-24deg); }
+  @media (max-width: 640px) { .confetti { display: none; } }
+  .resultat h1 { margin: 14px 0 8px; font-weight: 700; font-size: clamp(40px, 4vw, 56px); line-height: 1;
+    letter-spacing: -0.02em; outline: none; }
+  .phrase { margin: 0 0 18px; font-size: 18px; line-height: 1.5; color: var(--gris); }
+  .phrase b { color: var(--texte); }
+  .jumeau { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 22px; border: 2px solid #C9B8FF;
+    background: #FBF9FF; box-shadow: 0 5px 0 #E3DAFF; color: inherit; text-decoration: none; }
+  .jumeau:hover { border-color: var(--violet); color: inherit; }
+  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: 18px;
+    background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 21px;
+    box-shadow: 0 4px 0 var(--violet-fonce); }
   .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .jumeau-nom { font-family: var(--police-titre); font-weight: 700; font-size: 21px; }
-  .jumeau-detail, .petit { font-size: 13px; color: var(--gris-legende); }
-  .jumeau-score { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-family: var(--police-titre); font-weight: 700; font-size: 28px; line-height: 1; color: var(--violet-fonce); }
+  .jumeau-detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 4px; font-size: 13px; color: var(--gris-legende); }
+  .petit { font-size: 12px; color: var(--gris-legende); }
+  .jumeau-score { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-family: var(--police-titre);
+    font-weight: 700; font-size: 28px; line-height: 1; color: var(--violet-fonce); }
   .jumeau-score .petit { margin-top: 3px; font-family: var(--police-texte); font-weight: 400; }
   .groupes { display: flex; flex-direction: column; gap: 9px; margin: 20px 0 0; padding: 0; list-style: none; }
-  .groupes :global(li) { display: grid; grid-template-columns: 72px minmax(0, 1fr) 52px; gap: 12px; align-items: center; }
-  .groupes :global(.sigle) { font-family: var(--police-titre); font-weight: 700; font-size: 16px; }
+  .groupes :global(li) { display: grid; grid-template-columns: 70px minmax(0, 1fr) 52px; gap: 12px; align-items: center; }
+  .groupes :global(.sigle) { font-size: 16px; text-decoration: none; }
   .groupes :global(.jauge) { height: 12px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; }
   .groupes :global(.jauge span) { display: block; height: 100%; border-radius: 999px; background: #A98BFF; }
-  .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 700; color: var(--violet-fonce); }
+  .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 700; font-size: 16px; color: var(--violet-fonce); }
   .precision { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 16px; border-radius: 16px; background: var(--fond-doux); }
   .precision-titre { font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); }
   .segments { flex: 1; display: flex; gap: 4px; }
-  .segments span { flex: 1; height: 12px; border-radius: 4px; background: var(--bord-leger); }
+  .segments span { flex: 1; height: 12px; border-radius: 4px; background: var(--bord); }
   .segments :global(span.plein) { background: var(--violet); }
-  .precision-pct { font-family: var(--police-titre); font-weight: 700; }
+  .precision-pct { font-family: var(--police-titre); font-weight: 700; font-size: 16px; }
   .note { margin: 6px 0 0; font-size: 14px; color: var(--gris-legende); }
   .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
-  .b-principal { flex: 1 1 260px; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 74px; padding: 0 24px; border-radius: 18px; background: var(--violet); color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); text-decoration: none; font-family: var(--police-titre); font-weight: 600; font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .b-principal { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+    gap: 2px; min-height: 74px; padding: 0 24px; border-radius: 18px; background: var(--violet); color: #fff;
+    box-shadow: 0 6px 0 var(--violet-fonce); text-decoration: none; font-family: var(--police-titre); font-weight: 600;
+    font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; }
   .b-principal:hover { color: #fff; background: var(--violet-fonce); }
-  .b-principal .petit { color: #E6DDFF; font-family: var(--police-texte); font-weight: 700; text-transform: none; letter-spacing: 0; font-size: 14px; }
-  .b-partager { flex: 0 0 170px; min-height: 74px; border: 2px solid var(--bord); border-radius: 18px; background: var(--fond); box-shadow: 0 4px 0 var(--bord); font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--violet-fonce); cursor: pointer; }
+  .b-principal .petit { color: #fff; opacity: .85; font-family: var(--police-texte); font-weight: 700; text-transform: none;
+    letter-spacing: 0; font-size: 14px; }
+  .b-partager { flex: 0 0 170px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 74px;
+    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond); box-shadow: 0 4px 0 var(--bord);
+    font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--violet-fonce); cursor: pointer; }
   @media (max-width: 640px) { .b-partager { flex: 1 1 100%; } }
   .recommencer { margin: 16px 0 0; font-size: 15px; color: var(--gris); }
   .recommencer button { border: 0; background: none; padding: 0; font: inherit; color: var(--violet-fonce); text-decoration: underline; cursor: pointer; }
 
-  .partage { width: min(1000px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; border-radius: 32px; padding: 28px clamp(18px, 3vw, 36px); box-shadow: 0 8px 0 #C9CFDA; }
+  .partage { width: min(1000px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; border-radius: 32px;
+    padding: 28px clamp(18px, 3vw, 36px); box-shadow: 0 8px 0 #C9CFDA; }
   .partage::backdrop { background: rgba(31, 36, 51, 0.55); }
   .partage-tete { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-  .partage h2 { font-size: clamp(24px, 3vw, 32px); }
-  .partage > p { margin: 6px 0 20px; color: var(--gris); }
-  .fermer { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--bord); background: var(--fond); color: var(--gris); cursor: pointer; }
+  .partage h2 { font-size: clamp(24px, 3vw, 34px); }
+  .partage > p { margin: 6px 0 20px; font-size: 17px; color: var(--gris); }
+  .fermer { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid var(--bord); background: var(--fond); color: var(--gris); cursor: pointer; }
   .stories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
   .stories figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
   .stories img { width: 100%; aspect-ratio: 9 / 16; border-radius: 18px; background: var(--fond-doux); object-fit: cover; }
-  .stories button { width: 100%; min-height: 46px; border: 2px solid #C9B8FF; border-radius: 14px; background: var(--fond); font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); cursor: pointer; }
+  .stories button { width: 100%; min-height: 46px; border: 2px solid #C9B8FF; border-radius: 14px; background: var(--fond);
+    font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); cursor: pointer; }
 </style>

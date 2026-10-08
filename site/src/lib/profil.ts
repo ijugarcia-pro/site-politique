@@ -121,3 +121,28 @@ export function partCommeToi(matrice: Matrice, indice: number, reponse: Reponse)
   }
   return exprimes ? Math.round((100 * pareils) / exprimes) : null;
 }
+
+/** Les teintes de l'hémicycle personnel : plus un siège est foncé, plus ce député vote comme
+ *  toi. Gris : aucun vote en commun. */
+export const TEINTES = [
+  { jusqua: 0.35, couleur: '#EDE7FF', libelle: 'Rarement comme toi' },
+  { jusqua: 0.5, couleur: '#D3C4FF', libelle: 'Parfois' },
+  { jusqua: 0.65, couleur: '#A98BFF', libelle: 'Souvent' },
+  { jusqua: 0.8, couleur: '#7C4DFF', libelle: 'Très souvent' },
+  { jusqua: Infinity, couleur: '#4B2BC2', libelle: 'Presque toujours' },
+];
+export const SANS_VOTE_COMMUN = '#DFE3EB';
+
+export function teinte(lisse: number | null): string {
+  if (lisse === null) return SANS_VOTE_COMMUN;
+  return TEINTES.find((t) => lisse < t.jusqua)!.couleur;
+}
+
+/** « Prénom Nom » → « PN » (le premier mot qui n'est pas une particule pour le nom). */
+export function initiales(nom: string): string {
+  const PARTICULES = new Set(['de', 'du', 'des', 'la', 'le', "d'"]);
+  const [prenom, ...reste] = nom.split(' ');
+  const famille = reste.flatMap((m) => m.split('-')).find((m) => !PARTICULES.has(m.toLowerCase()))
+    ?? reste[0] ?? '';
+  return (prenom.charAt(0) + famille.charAt(0)).toUpperCase();
+}

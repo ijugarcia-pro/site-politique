@@ -1,6 +1,7 @@
 // Lecture, au build, des JSON produits par le pipeline (export/). Rien n'est inventé ici :
 // si un fichier manque, le build échoue, et rien n'est publié.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import type { Matrice } from './profil.ts';
 import { resolve } from 'node:path';
 
 const EXPORT = process.env.EXPORT_DIR ?? resolve(process.cwd(), '..', 'export');
@@ -224,3 +225,20 @@ export function medianes(): Reperes {
   };
   return reperes;
 }
+
+/** Une question du quiz d'entrée (data/quiz.json, choix de Julien, t20). */
+export interface QuestionQuiz {
+  uid: string;
+  numero: number;
+  theme: string;
+  question: string;
+  concretement: string;
+}
+
+/** Les 10 votes du quiz, versionnés dans le dépôt (et non produits par le pipeline). */
+export function questionsQuiz(): QuestionQuiz[] {
+  const chemin = resolve(process.cwd(), '..', 'data', 'quiz.json');
+  return JSON.parse(readFileSync(chemin, 'utf-8')) as QuestionQuiz[];
+}
+
+export const matrice = () => lire<Matrice>('site/matrice.json', EXPORT_SITE);

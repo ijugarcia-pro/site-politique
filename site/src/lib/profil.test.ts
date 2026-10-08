@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { classer, colonnes, comparer, lisse, partCommeToi, precision, profil,
+import { classer, colonnes, comparer, initiales, lisse, partCommeToi, precision, profil, teinte,
   type Matrice } from './profil.ts';
 
 const matrice: Matrice = {
@@ -72,8 +72,18 @@ test('égalité : le plus de votes en commun, puis le nom', () => {
 });
 
 test('part des députés qui ont voté comme toi', () => {
-  // Vote 1 : quatre pour (Alice, Bruno, David) et un contre (Chloé) parmi les exprimés.
+  // Vote 1 : trois pour (Alice, Bruno, David) et un contre (Chloé) parmi les exprimés.
   assert.equal(partCommeToi(matrice, 0, 'pour'), 75);
   assert.equal(partCommeToi(matrice, 0, 'contre'), 25);
   assert.equal(partCommeToi({ ...matrice, deputes: [] }, 0, 'pour'), null);
+});
+
+test('teintes et initiales', () => {
+  assert.equal(teinte(null), '#DFE3EB');
+  assert.equal(teinte(0.2), '#EDE7FF');
+  assert.equal(teinte(0.75), '#7C4DFF');
+  assert.equal(teinte(0.9), '#4B2BC2');
+  assert.equal(initiales('Charles de Courson'), 'CC');
+  assert.equal(initiales('Jean-Luc Mélenchon'), 'JM');
+  assert.equal(initiales('Marie-France Lorho'), 'ML');
 });

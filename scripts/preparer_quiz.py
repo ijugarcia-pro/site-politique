@@ -17,7 +17,8 @@ groupes deux à deux, et compte combien de députés ont pris position sur chacu
 
 Produit :
     docs/quiz-candidats.md                 la grille à cocher par Julien
-    data/mesures/quiz/candidats.json       les candidats et leurs positions (pour t21)
+    data/mesures/quiz/candidats.json       les candidats et leurs positions
+    data/quiz.json                         les 10 votes choisis par Julien (lu par t21)
 """
 
 from __future__ import annotations
@@ -38,6 +39,9 @@ BASE = RACINE / "data" / "site.duckdb"
 TEXTES = RACINE / "data" / "raw" / "textes"
 SORTIE = RACINE / "docs" / "quiz-candidats.md"
 DONNEES = RACINE / "data" / "mesures" / "quiz" / "candidats.json"
+QUIZ = RACINE / "data" / "quiz.json"
+# Choix de Julien, 8 octobre 2026 (t20) : la proposition calculée, retenue telle quelle.
+CHOIX = [988, 1308, 2257, 2957, 3061, 3260, 7454, 7987, 8280, 8431]
 LIEN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/{numero}"
 N_QUIZ = 10
 NON_INSCRITS = "NI"
@@ -378,6 +382,12 @@ def rapport(candidats: list[Candidat], votes: list[dict], groupes: list[str],
         "",
         "Coche 10 cases (ou donne les numéros en session). Tu peux aussi corriger une question.",
         "",
+        "## Choix de Julien",
+        "",
+        f"Le 8 octobre 2026, Julien a retenu la proposition ci-dessous : votes n° "
+        f"{', '.join(str(n) for n in CHOIX)}. Ils sont figés dans `data/quiz.json`, que lit le "
+        "quiz (t21).",
+        "",
         "## Ma proposition de 10",
         "",
         f"Votes n° {', '.join(str(n) for n in recommandes)}. Ensemble, ils séparent chaque "
@@ -475,6 +485,17 @@ def main(argv: list[str] | None = None) -> int:
     groupes = sorted({g for v in votes for g in v["groupes"]} - {NON_INSCRITS})
     recommandes = recommander(votes, groupes)
     SORTIE.write_text(rapport(CANDIDATS, votes, groupes, recommandes), encoding="utf-8")
+    # Le quiz figé : les votes choisis, dans l'ordre des candidats (du plus parlant au plus
+    # spécifique), avec leur question et leur phrase « Concrètement ».
+    par_numero = {v["numero"]: v for v in votes}
+    if sorted(CHOIX) != sorted(set(CHOIX)) or not set(CHOIX) <= set(par_numero):
+        print("CHOIX doit contenir des candidats distincts", file=sys.stderr)
+        return 1
+    QUIZ.write_text(json.dumps([
+        {"uid": par_numero[c.numero]["uid"], "numero": c.numero, "theme": c.theme,
+         "question": c.question, "concretement": c.concretement}
+        for c in CANDIDATS if c.numero in CHOIX], ensure_ascii=False, indent=1) + "\n",
+        encoding="utf-8")
     DONNEES.parent.mkdir(parents=True, exist_ok=True)
     DONNEES.write_text(json.dumps({
         "recommandes": recommandes,

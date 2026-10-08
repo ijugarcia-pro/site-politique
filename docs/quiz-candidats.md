@@ -13,6 +13,10 @@ Le quiz d'entrée pose 10 vrais votes de l'Assemblée. Tes réponses sont compar
 
 Coche 10 cases (ou donne les numéros en session). Tu peux aussi corriger une question.
 
+## Choix de Julien
+
+Le 8 octobre 2026, Julien a retenu la proposition ci-dessous : votes n° 988, 1308, 2257, 2957, 3061, 3260, 7454, 7987, 8280, 8431. Ils sont figés dans `data/quiz.json`, que lit le quiz (t21).
+
 ## Ma proposition de 10
 
 Votes n° 988, 1308, 2257, 2957, 3061, 3260, 7454, 7987, 8280, 8431. Ensemble, ils séparent chaque paire de groupes au moins 0 fois sur 10 ; 52 paires sur 55 au moins deux fois.

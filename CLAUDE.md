@@ -23,7 +23,7 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 - Motions de censure exclues des calculs d'accord (seuls les « pour » y sont publiés). Mise au point affichée, calcul sur le vote officiel.
 - Dissident : vote opposé à la position majoritaire de son groupe ; jamais pour les non-inscrits ; une abstention n'est pas une dissidence.
 - Voix pour inverser un résultat : P − R + 1 si adopté, R − P si rejeté (P = voix pour, R = suffrages requis publiés avec le scrutin).
-- Jumeau : classement par accord lissé (m+2)/(n+4), affiché à partir de 10 votes en commun. Précision V1 : 1 − e^(−n/20).
+- Jumeau : classement par accord lissé (m+2)/(n+4) ; le député le mieux classé est toujours montré, même avec moins de 10 votes en commun et même sans accord total, avec son nombre de votes en commun et la jauge de précision (décision du 8 oct. 2026). Précision V1 : 1 − e^(−n/20).
 - Aucun axe gauche-droite : seulement des taux d'accord sur des votes réels.
 
 ## Arborescence

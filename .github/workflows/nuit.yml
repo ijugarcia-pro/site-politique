@@ -5,10 +5,14 @@ name: Pipeline de nuit
 # changé. Un lancement à la main ou une modification du site ou du pipeline sur main reconstruit
 # tout, même sans nouvelle donnée. Un échec des contrôles ne publie rien : la version en ligne
 # reste la dernière valide. Minute 11 plutôt que l'heure pile : le planificateur de GitHub est
-# saturé en début d'heure et y saute des passages.
+# saturé en début d'heure et y saute des passages. Deux horaires de secours rattrapent un passage
+# sauté (le 8 octobre 2026, celui de 6 h 11 n'a pas été lancé) ; si le premier a tourné, ils
+# s'arrêtent après l'ingestion, faute de source modifiée.
 on:
   schedule:
     - cron: "11 6 * * *"
+    - cron: "47 6 * * *"
+    - cron: "29 8 * * *"
   workflow_dispatch:
   push:
     branches: [main]

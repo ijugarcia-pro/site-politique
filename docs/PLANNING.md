@@ -1,7 +1,7 @@
 # PLANNING — Site Politique · « Le 578e siège »
 
 > Fichier de référence pour Claude Code, versionné dans `docs/PLANNING.md` depuis le 7 octobre 2026. Claude Code le relit en début de session et le met à jour en fin de session (§ 0).
-> Dernière mise à jour : 8 octobre 2026 (t42 faite, branche `lots-candidats`, en attente de fusion : format de la carte de vote et 12 thèmes, 24 candidats et 5 lots proposés dans docs/lots-candidats.md, prêts pour t43 ; premiers retours de Julien sur t22 traités, branche `retours-t22`, en attente de fusion : sigles des groupes, couleurs des groupes, frames V5 de Mon hémicycle et du quiz recopiées ; lots de votes après le quiz décidés, 5 au lancement ; cadrage produit validé (docs/cadrage-produit.md) : lots de 3 votes, une séance passée devient un lot, phase 2 bis ajoutée (t42 à t45) avant la séance ; t21 livrée, branche `quiz`, en attente de fusion : quiz d'entrée, ton hémicycle, jumeau, stories ; t20 faite : 10 votes de société retenus par Julien, figés dans data/quiz.json, jumeau toujours montré ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
+> Dernière mise à jour : 9 octobre 2026 (t43 faite : les 15 votes des 5 lots choisis par Julien, figés dans data/lots.json ; t42 faite, branche `lots-candidats`, en attente de fusion : format de la carte de vote et 12 thèmes, 24 candidats et 5 lots proposés dans docs/lots-candidats.md, prêts pour t43 ; premiers retours de Julien sur t22 traités, branche `retours-t22`, en attente de fusion : sigles des groupes, couleurs des groupes, frames V5 de Mon hémicycle et du quiz recopiées ; lots de votes après le quiz décidés, 5 au lancement ; cadrage produit validé (docs/cadrage-produit.md) : lots de 3 votes, une séance passée devient un lot, phase 2 bis ajoutée (t42 à t45) avant la séance ; t21 livrée, branche `quiz`, en attente de fusion : quiz d'entrée, ton hémicycle, jumeau, stories ; t20 faite : 10 votes de société retenus par Julien, figés dans data/quiz.json, jumeau toujours montré ; t18 et t19 livrées, branche `page-vote`, en attente de fusion : page de chaque vote, Explorer, accueil, fiche député, recherche par code postal ; t17 faite : site en ligne sur https://le578esiege.pages.dev, hémicycle sur les vraies données ; t16 faite, déploiement par téléversement direct depuis GitHub Actions ; t15 faite, porte de la phase 1 franchie ; t02, t04 à t10, t12 à t14 faites, go pour la phase 1, t11 livrée ; périmètre portfolio, fonctions centrées sur l'utilisateur reportées ; relevé de t03 démarré ; passage à zéro euro : vulgarisation dans une session Claude Code hebdomadaire, phase 4 revue). Tableau de suivi visuel : https://claude.ai/artifact/6qqYu8GKCMVHohkmZjN23h
 
 ## 0. Comment utiliser ce fichier
 
@@ -63,7 +63,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 
 ### Phase 2 bis — Les lots de votes (ajoutée le 8 oct. 2026, décision de Julien : le contenu d'abord)
 - [x] t42 🤖 Carte de vote et 15 candidats pour les 5 lots du lancement *(fait le 8 oct. 2026 : docs/lots-candidats.md ; branche `lots-candidats`, en attente de fusion)*
-- [ ] t43 👤 Valider les 15 votes des 5 lots
+- [x] t43 👤 Valider les 15 votes des 5 lots *(fait le 9 oct. 2026 : data/lots.json)*
 - [ ] t44 🤖 Trancher un lot : écran de séance sur les lots, suite du quiz
 - [ ] t45 🤖 Accueil refait d'après la frame ⑤
 
@@ -357,6 +357,7 @@ site/          le site (Astro), créé en phase 2
 ### t43 👤 Valider les 15 votes des 5 lots — 45 min
 - Julien retient 15 votes et corrige les questions s'il le souhaite. Le choix est figé dans `data/lots.json`.
 - **Claude Code prépare** : la grille de t42, prête à cocher.
+- **Réalisé (9 oct.) :** Julien a retenu 15 votes, dont 4 hors de la grille de t42 (n° 1624, 3055, 2880, 1304), rédigés en session d'après le texte adopté et passés aux contrôles ; censure partielle du n° 1624 vérifiée (décision n° 2025-886 DC du 19 juin 2025) et dite dans « Vérifié ». Lots figés dans `data/lots.json` (`CHOIX` de `scripts/preparer_lots.py`) ; grille mise à jour (`docs/lots-candidats.md`). Chaque paire de groupes séparée au moins 2 fois sur 25 votes ; 529 députés comparables sur au moins 10 votes. **Écart :** thème et titre court des 10 cartes du quiz non ajoutés (quiz figé, décision du 9 oct.).
 
 ### t44 🤖 Trancher un lot — 1 à 2 sessions
 - **Dépend de :** t43.

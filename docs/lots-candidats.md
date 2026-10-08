@@ -1,8 +1,8 @@
-# Lots de votes : candidats (t42)
+# Lots de votes : candidats et choix (t42, t43)
 
-> Généré par `uv run python -m scripts.preparer_lots`. Ne pas modifier à la main : cocher ci-dessous, puis répondre en session (t43).
+> Généré par `uv run python -m scripts.preparer_lots`. Ne pas modifier à la main : le choix est dans `CHOIX`, et les lots retenus dans `data/lots.json`.
 
-Après le quiz d'entrée, l'utilisateur continue avec des **lots de 3 votes**, au format d'une séance (ta décision du 8 octobre 2026). 10 votes du quiz + 5 lots de 3 = **25 votes** : la précision passe de 39 % à 71 %, le seuil où elle devient fiable. Comme pour le quiz, c'est un choix éditorial : tu retiens 15 votes et tu corriges ce que tu veux.
+Après le quiz d'entrée, l'utilisateur continue avec des **lots de 3 votes**, au format d'une séance (ta décision du 8 octobre 2026). 10 votes du quiz + 5 lots de 3 = **25 votes** : la précision passe de 39 % à 71 %, le seuil où elle devient fiable. Comme pour le quiz, c'est un choix éditorial : tu retiens 15 votes et tu corriges ce que tu veux. **Choix fait le 9 octobre 2026** : voir ci-dessous.
 
 ## La carte de vote
 
@@ -20,31 +20,31 @@ Chaque vote se présente sous la même forme partout (quiz, lots, séances, page
 - **Rédigé d'après le texte adopté** par l'Assemblée, lu en entier (à défaut, le texte de la commission, quand c'est lui qui a été voté). Chaque carte passe les contrôles 2, 4, 5 et 6 des fiches : longueurs, question fermée, vocabulaire neutre, chiffres présents dans le texte. « Vérifié » dit ce qui a été lu ; « Réserve », ce que la carte simplifie.
 - **Une participation d'au moins 20 %** : en dessous, trop peu de députés à comparer.
 
-## Ma proposition de 5 lots
+## Les 5 lots retenus (choix de Julien, 9 octobre 2026)
 
-Les lots sont composés un par un : chaque lot est le trio qui, ajouté au quiz et aux lots précédents, sépare le mieux les paires de groupes encore les moins séparées. Le premier lot est donc celui qui apporte le plus à qui s'arrête tôt.
+Dans l'ordre de passage ; dans chaque lot, le vote le plus concret en premier. Remplaçants de même thème si un vote ne passait pas un contrôle : n° 3055 → n° 7260, n° 1624 → n° 1041, n° 600 → n° 2685, n° 4723 → n° 657 (aucun n'a servi).
 
 | Lot | Votes | Paires les moins séparées qu'il départage | Précision après |
 |---|---|---|---|
-| 1 | Sécurité · 36 milliards d'euros de plus pour les armées (n° 7905) ; Santé · Le don du sang sur le temps de travail (n° 2256) ; Institutions · L'Alsace, une collectivité unique (n° 6045) | Dem / EPR (0 → 2), EcoS / SOC (0 → 1), DR / HOR (1 → 2), DR / UDR (2 → 3) | 48 % |
-| 2 | Économie · S'opposer à l'accord avec le Mercosur (n° 4244) ; Institutions · Paris, Lyon, Marseille : deux votes municipaux (n° 1330) ; Énergie · Les centrales à charbon converties (n° 1306) | EcoS / SOC (1 → 2), DR / HOR (2 → 3), Dem / EPR (2 → 3), EPR / LIOT (2 → 3) | 55 % |
-| 3 | Environnement · Les PFAS interdits dans cosmétiques et vêtements (n° 852) ; Éducation · Le repas à 1 euro pour tous les étudiants (n° 606) ; Sécurité · Le délit d'homicide routier (n° 2217) | DR / HOR (3 → 4), DR / LIOT (3 → 4), DR / UDR (3 → 4), Dem / LIOT (3 → 4) | 61 % |
-| 4 | Économie · La nationalisation d'ArcelorMittal France (n° 7380) ; Santé · Un nombre minimum de soignants à l'hôpital (n° 600) ; Logement · Le logement social lié à l'emploi public (n° 7408) | DR / EPR (4 → 5), DR / HOR (4 → 5), DR / LIOT (4 → 5), DR / UDR (4 → 5) | 67 % |
-| 5 | Immigration · La rétention des étrangers condamnés allongée (n° 2958) ; Logement · L'encadrement des loyers rendu permanent (n° 4745) ; Environnement · La publicité pour la mode ultra-express interdite (n° 7494) | DR / LIOT (5 → 6), Dem / LIOT (6 → 7), EPR / LIOT (6 → 7), HOR / LIOT (6 → 7) | 71 % |
+| 1 | Logement · L'encadrement des loyers rendu permanent (n° 4745) ; Santé · Un nombre minimum de soignants à l'hôpital (n° 600) ; Sécurité · La justice des mineurs délinquants durcie (n° 1624) | DR / HOR (1 → 2), DR / UDR (2 → 3), Dem / LIOT (2 → 4), EPR / LIOT (2 → 4) | 48 % |
+| 2 | Économie · Le pays d'origine sur toutes les étiquettes (n° 3273) ; Santé · Le don du sang sur le temps de travail (n° 2256) ; Éducation · Le repas à 1 euro pour tous les étudiants (n° 606) | Dem / EPR (0 → 1), DR / HOR (2 → 4), Dem / HOR (2 → 5), EPR / HOR (2 → 4) | 55 % |
+| 3 | Environnement · La publicité pour la mode ultra-express interdite (n° 7494) ; Immigration · La rétention des étrangers condamnés allongée (n° 2958) ; Travail · L'emploi des salariés expérimentés (n° 3055) | EcoS / SOC (0 → 1), EcoS / LFI (2 → 3), GDR / LFI (2 → 3), GDR / SOC (2 → 3) | 61 % |
+| 4 | Environnement · Les PFAS interdits dans cosmétiques et vêtements (n° 852) ; Droits · Les jeunes isolés hébergés pendant leur recours (n° 4723) ; Économie · S'opposer à l'accord avec le Mercosur (n° 4244) | Dem / EPR (1 → 2), RN / UDR (3 → 4), DR / UDR (4 → 5), EPR / HOR (4 → 5) | 67 % |
+| 5 | Sécurité · Le délit d'homicide routier (n° 2217) ; Éducation · La lutte contre l'antisémitisme à l'université (n° 2880) ; Institutions · Le scrutin de liste dans toutes les communes (n° 1304) | EcoS / SOC (1 → 2), EcoS / LFI (3 → 4), GDR / LFI (3 → 4), GDR / SOC (3 → 4) | 71 % |
 
-Sur le quiz seul, la paire la moins séparée l'est 0 fois ; avec les 5 lots, 2 fois. 54 paires sur 55 sont séparées au moins trois fois sur les 25 votes.
+Sur le quiz seul, la paire la moins séparée l'est 0 fois ; avec les 5 lots, 2 fois. 52 paires sur 55 sont séparées au moins trois fois sur les 25 votes.
 
-**Jumeau.** Sur ces 25 votes, **519 députés** ont pris position (pour, contre, abstention) sur au moins 10 : ce sont ceux qui pourront être comparés à quelqu'un qui a tout tranché.
+**Jumeau.** Sur ces 25 votes, **529 députés** ont pris position (pour, contre, abstention) sur au moins 10 : ce sont ceux qui pourront être comparés à quelqu'un qui a tout tranché.
 
-La proposition est calculée (séparation des groupes, puis participation) : elle ne dit rien de l'intérêt d'un sujet pour le public, que toi seul juges. Si tu retires un vote, je recalcule les lots.
+Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %, 71 %.
 
 ## Les candidats
 
-24 cartes : les 6 candidats du quiz non retenus, puis 18 nouveaux. Coche 15 cases (ou donne les numéros en session).
+28 cartes : les 6 candidats du quiz non retenus, les 18 rédigés le 8 octobre, puis les 4 ajoutés par Julien le 9 octobre. Les cases cochées sont les votes retenus.
 
-### 1. Immigration · La rétention des étrangers condamnés allongée · n° 2958 · **proposé**
+### 1. Immigration · La rétention des étrangers condamnés allongée · n° 2958 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il pouvoir retenir jusqu'à deux cent dix jours avant leur expulsion les étrangers condamnés pour des faits graves ? »
 - **Concrètement** : Les étrangers condamnés pour certains crimes ou délits graves, ou dont le comportement menace gravement l'ordre public, pourront être maintenus en rétention administrative jusqu'à deux cent dix jours, le temps d'organiser leur départ.
 - **Le vote** : scrutin solennel, adopté le 8 juillet 2025 ; 303 pour, 168 contre, 1 abstention ; participation 82 % ; 2 votes contre leur groupe. [Scrutin n° 2958](https://www.assemblee-nationale.fr/dyn/17/scrutins/2958).
@@ -68,7 +68,7 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Proposition de résolution européenne, texte de la commission, point 5.
 - **Réserve** : Participation faible : moins de la moitié des députés ont voté.
 
-### 3. Sécurité · 36 milliards d'euros de plus pour les armées · n° 7905 · **proposé**
+### 3. Sécurité · 36 milliards d'euros de plus pour les armées · n° 7905
 
 - [ ] **Je le retiens**
 - **Question** : « Faut-il ajouter 36 milliards d'euros de ressources aux armées pour les années 2026 à 2030 ? »
@@ -96,9 +96,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Exposé des motifs et article unique (texte de la commission).
 - **Réserve** : Vote en première lecture, participation faible (un tiers des députés) ; le texte n'est pas devenu loi.
 
-### 5. Environnement · Les PFAS interdits dans cosmétiques et vêtements · n° 852 · **proposé**
+### 5. Environnement · Les PFAS interdits dans cosmétiques et vêtements · n° 852 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il interdire les cosmétiques, les farts et les vêtements contenant des substances PFAS ? »
 - **Concrètement** : Le texte interdit à partir du 1er janvier 2026 la fabrication et la vente de cosmétiques, de farts et de vêtements contenant des PFAS, sauf équipements de protection, et fixe une trajectoire de réduction de leurs rejets.
 - **Le vote** : scrutin ordinaire, adopté le 20 février 2025 ; 231 pour, 51 contre, 7 abstentions ; participation 50 % ; 1 vote contre leur groupe. [Scrutin n° 852](https://www.assemblee-nationale.fr/dyn/17/scrutins/852).
@@ -110,7 +110,7 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte de la commission (deuxième lecture), articles 1er et 1er bis.
 - **Réserve** : Participation faible (la moitié des députés).
 
-### 6. Économie · La nationalisation d'ArcelorMittal France · n° 7380 · **proposé**
+### 6. Économie · La nationalisation d'ArcelorMittal France · n° 7380
 
 - [ ] **Je le retiens**
 - **Question** : « Faut-il nationaliser la société ArcelorMittal France ? »
@@ -124,9 +124,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte de la commission, article 1er.
 - **Réserve** : Participation faible (un tiers des députés).
 
-### 7. Santé · Le don du sang sur le temps de travail · n° 2256 · **proposé**
+### 7. Santé · Le don du sang sur le temps de travail · n° 2256 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il permettre aux salariés de donner leur sang pendant leurs heures de travail, sans perte de salaire ? »
 - **Concrètement** : Les salariés et les agents publics pourraient s'absenter, sans perte de salaire, pour donner leur sang, leurs plaquettes ou leur plasma, dans la limite de huit absences par an. L'employeur peut s'y opposer pour des raisons d'organisation.
 - **Le vote** : scrutin ordinaire, adopté le 4 juin 2025 ; 125 pour, 12 contre, 8 abstentions ; participation 25 % ; 2 votes contre leur groupe. [Scrutin n° 2256](https://www.assemblee-nationale.fr/dyn/17/scrutins/2256).
@@ -136,9 +136,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
   - Contre : Dem (0-7-1), UDR (0-3-0)
 - **Vérifié** : Texte adopté, article 1er (autorisation d'absence, rémunération maintenue).
 
-### 8. Éducation · Le repas à 1 euro pour tous les étudiants · n° 606 · **proposé**
+### 8. Éducation · Le repas à 1 euro pour tous les étudiants · n° 606 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il plafonner à 1 euro le prix du repas étudiant dans tous les restaurants universitaires ? »
 - **Concrètement** : Le repas à tarif modéré servi aux étudiants dans tous les restaurants des Crous ne pourrait pas coûter plus de 1 euro, sur place comme à emporter.
 - **Le vote** : scrutin ordinaire, adopté le 23 janvier 2025 ; 149 pour, 5 contre, 19 abstentions ; participation 30 % ; 0 vote contre leur groupe. [Scrutin n° 606](https://www.assemblee-nationale.fr/dyn/17/scrutins/606).
@@ -151,9 +151,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté, article 1er.
 - **Réserve** : Le texte s'applique à l'offre à tarif modéré ouverte à tous les étudiants ; le repas à 1 euro était jusque-là réservé aux boursiers et aux étudiants en difficulté (exposé des motifs).
 
-### 9. Santé · Un nombre minimum de soignants à l'hôpital · n° 600 · **proposé**
+### 9. Santé · Un nombre minimum de soignants à l'hôpital · n° 600 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il fixer un nombre minimum de soignants par patient dans les hôpitaux ? »
 - **Concrètement** : Pour chaque spécialité, un décret fixerait, après avis de la Haute Autorité de santé, un nombre minimum de soignants par lit. Un hôpital public qui ne peut le respecter plus de trois jours devrait prévenir l'agence régionale de santé.
 - **Le vote** : scrutin ordinaire, adopté le 23 janvier 2025 ; 138 pour, 3 contre, 70 abstentions ; participation 37 % ; 0 vote contre leur groupe. [Scrutin n° 600](https://www.assemblee-nationale.fr/dyn/17/scrutins/600).
@@ -164,9 +164,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté (article unique, II : articles L. 6124-3 et L. 6124-5).
 - **Réserve** : Texte venu du Sénat ; le ratio s'applique à partir du 1er janvier 2027.
 
-### 10. Économie · S'opposer à l'accord avec le Mercosur · n° 4244 · **proposé**
+### 10. Économie · S'opposer à l'accord avec le Mercosur · n° 4244 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il demander au Gouvernement de s'opposer à l'accord de libre-échange entre l'Union européenne et le Mercosur ? »
 - **Concrètement** : Cette résolution, qui n'a pas force de loi, invite le Gouvernement à s'opposer à l'accord de libre-échange entre l'Union européenne et les pays du Mercosur, en réunissant une minorité de blocage au Conseil de l'Union, et à saisir la Cour de justice de l'Union.
 - **Le vote** : scrutin ordinaire, adopté le 27 novembre 2025 ; 244 pour, 1 contre, 5 abstentions ; participation 43 % ; 1 vote contre leur groupe. [Scrutin n° 4244](https://www.assemblee-nationale.fr/dyn/17/scrutins/4244).
@@ -177,7 +177,7 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Proposition de résolution (article 34-1 de la Constitution) : dispositif.
 - **Réserve** : Le Mercosur réunit des pays d'Amérique du Sud ; la carte ne le dit pas, faute de le lire dans le texte.
 
-### 11. Institutions · L'Alsace, une collectivité unique · n° 6045 · **proposé**
+### 11. Institutions · L'Alsace, une collectivité unique · n° 6045
 
 - [ ] **Je le retiens**
 - **Question** : « Faut-il que l'Alsace devienne une collectivité unique, avec les compétences d'un département et d'une région ? »
@@ -192,9 +192,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté, article 2.
 - **Réserve** : Sujet régional. L'article 1er, qui permettait à d'autres départements regroupés de reprendre les compétences de leur région, a été supprimé en commission.
 
-### 12. Économie · Le pays d'origine sur toutes les étiquettes · n° 3273
+### 12. Économie · Le pays d'origine sur toutes les étiquettes · n° 3273 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il rendre obligatoire l'indication du pays d'origine sur tous les produits alimentaires ? »
 - **Concrètement** : L'étiquette de tout produit agricole ou alimentaire, brut ou transformé, devrait indiquer son pays d'origine, ainsi que celui de l'ingrédient principal et de chaque ingrédient qui représente 10 % ou plus du produit.
 - **Le vote** : scrutin ordinaire, rejeté le 30 octobre 2025 ; 149 pour, 174 contre, 8 abstentions ; participation 57 % ; 1 vote contre leur groupe. [Scrutin n° 3273](https://www.assemblee-nationale.fr/dyn/17/scrutins/3273).
@@ -206,7 +206,7 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte de la commission (texte voté), article 1er.
 - **Réserve** : Texte rejeté. Il prévoyait aussi des sanctions, et un étiquetage des produits importés faits avec des produits phytosanitaires interdits dans l'Union.
 
-### 13. Logement · Le logement social lié à l'emploi public · n° 7408 · **proposé**
+### 13. Logement · Le logement social lié à l'emploi public · n° 7408
 
 - [ ] **Je le retiens**
 - **Question** : « Faut-il qu'un agent public logé grâce à son employeur puisse perdre ce logement quand il quitte son poste ? »
@@ -220,9 +220,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté (commission mixte paritaire), article 1er : clause de fonction.
 - **Réserve** : Le texte contient d'autres mesures pour loger ces travailleurs (terrains publics vendus moins cher, constructions dérogatoires) : la question retient la plus débattue.
 
-### 14. Logement · L'encadrement des loyers rendu permanent · n° 4745 · **proposé**
+### 14. Logement · L'encadrement des loyers rendu permanent · n° 4745 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il rendre permanent l'encadrement des loyers et l'ouvrir à toutes les communes où se loger est difficile ? »
 - **Concrètement** : L'encadrement des loyers ne serait plus une expérimentation : les villes où l'offre de logements ne suffit pas à la demande pourraient l'appliquer durablement, sur tout ou partie de leur territoire.
 - **Le vote** : scrutin ordinaire, adopté le 11 décembre 2025 ; 105 pour, 56 contre, 4 abstentions ; participation 29 % ; 0 vote contre leur groupe. [Scrutin n° 4745](https://www.assemblee-nationale.fr/dyn/17/scrutins/4745).
@@ -246,7 +246,7 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté, article unique (code électoral, article L. 12-1).
 - **Réserve** : Le texte de la commission disait l'inverse (bureau de vote dans chaque prison) : la séance l'a réécrit. Les européennes ne sont pas nommées dans le texte.
 
-### 16. Institutions · Paris, Lyon, Marseille : deux votes municipaux · n° 1330 · **proposé**
+### 16. Institutions · Paris, Lyon, Marseille : deux votes municipaux · n° 1330
 
 - [ ] **Je le retiens**
 - **Question** : « Faut-il élire le conseil municipal de Paris, Lyon et Marseille séparément des conseils d'arrondissement ? »
@@ -273,9 +273,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
   - Sans position majoritaire : Dem (0-1-1)
 - **Vérifié** : Texte de la commission, article 1er (aucun texte adopté publié).
 
-### 18. Environnement · La publicité pour la mode ultra-express interdite · n° 7494 · **proposé**
+### 18. Environnement · La publicité pour la mode ultra-express interdite · n° 7494 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il interdire la publicité pour la mode ultra-express, y compris par les influenceurs ? »
 - **Concrètement** : Le texte définit la mode ultra-express, qui met en vente un très grand nombre de nouveaux vêtements peu réparables, et en interdit la publicité, y compris par les influenceurs, à partir du 1er janvier 2027.
 - **Le vote** : scrutin solennel, adopté le 24 juin 2026 ; 338 pour, 0 contre, 151 abstentions ; participation 85 % ; 0 vote contre leur groupe. [Scrutin n° 7494](https://www.assemblee-nationale.fr/dyn/17/scrutins/7494).
@@ -286,7 +286,7 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté (commission mixte paritaire), articles 1er, 3 et 3 bis.
 - **Réserve** : Le texte contient d'autres mesures (affichage du lieu de fabrication, éco-contribution modulée) : la question retient la plus visible.
 
-### 19. Énergie · Les centrales à charbon converties · n° 1306 · **proposé**
+### 19. Énergie · Les centrales à charbon converties · n° 1306
 
 - [ ] **Je le retiens**
 - **Question** : « Faut-il faciliter la conversion des centrales électriques au charbon vers des combustibles moins émetteurs ? »
@@ -313,9 +313,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
 - **Vérifié** : Texte adopté, articles 1er et 2.
 - **Réserve** : Le texte parle de « rassemblement festif à caractère musical », pas de rave-party.
 
-### 21. Sécurité · Le délit d'homicide routier · n° 2217 · **proposé**
+### 21. Sécurité · Le délit d'homicide routier · n° 2217 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il créer un délit d'homicide routier pour les conducteurs qui tuent en ayant bu, pris des stupéfiants ou commis une faute délibérée ? »
 - **Concrètement** : Un conducteur qui cause la mort sans le vouloir commettrait un « homicide routier », puni de sept ans de prison et de 100 000 euros d'amende, s'il conduisait ivre ou drogué, ou en violant délibérément une règle de sécurité.
 - **Le vote** : scrutin ordinaire, adopté le 3 juin 2025 ; 194 pour, 6 contre, 3 abstentions ; participation 35 % ; 0 vote contre leur groupe. [Scrutin n° 2217](https://www.assemblee-nationale.fr/dyn/17/scrutins/2217).
@@ -339,9 +339,9 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
   - Sans position majoritaire : Dem (0-2-2), LIOT (0-0-0)
 - **Vérifié** : Texte adopté, article 1er.
 
-### 23. Droits · Les jeunes isolés hébergés pendant leur recours · n° 4723
+### 23. Droits · Les jeunes isolés hébergés pendant leur recours · n° 4723 · **retenu**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il continuer d'héberger un jeune qui se dit mineur et isolé tant que le juge n'a pas tranché son recours ? »
 - **Concrètement** : Un jeune qui se dit mineur et isolé, mais n'a pas été reconnu comme tel, resterait hébergé en urgence pendant son recours devant le juge. Le texte interdit aussi d'évaluer son âge par un examen des os, des dents ou de la puberté.
 - **Le vote** : scrutin ordinaire, adopté le 11 décembre 2025 ; 144 pour, 100 contre, 2 abstentions ; participation 43 % ; 0 vote contre leur groupe. [Scrutin n° 4723](https://www.assemblee-nationale.fr/dyn/17/scrutins/4723).
@@ -363,6 +363,60 @@ La proposition est calculée (séparation des groupes, puis participation) : ell
   - Abstention : DR (0-0-15), Dem (1-0-7), EPR (2-0-26), HOR (0-0-12), RN (0-0-65), UDR (0-0-7)
 - **Vérifié** : Texte adopté, article 1er (article L. 22-12-1 du code de la sécurité intérieure).
 
+### 25. Sécurité · La justice des mineurs délinquants durcie · n° 1624 · **retenu**
+
+- [x] **Je le retiens**
+- **Question** : « Faut-il durcir les règles de la justice pénale pour les mineurs délinquants et leurs parents ? »
+- **Concrètement** : Le texte permet de juger en comparution immédiate les mineurs de plus de seize ans déjà suivis par la justice, limite pour les récidivistes l'atténuation des peines liée à l'âge, et punit de trois ans de prison les parents dont la défaillance a conduit l'enfant à commettre des infractions.
+- **Le vote** : scrutin solennel, adopté le 13 mai 2025 ; 341 pour, 187 contre, 8 abstentions ; participation 93 % ; 7 votes contre leur groupe. [Scrutin n° 1624](https://www.assemblee-nationale.fr/dyn/17/scrutins/1624).
+- **Objet officiel** : l'ensemble de la proposition de loi visant à renforcer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents (texte de la commission mixte paritaire).
+- **Écart entre groupes** :
+  - Pour : DR (45-0-0), Dem (31-0-0), EPR (80-1-4), HOR (32-0-0), LIOT (14-6-3), RN (119-0-0), UDR (16-0-0)
+  - Contre : EcoS (0-36-0), GDR (0-13-0), LFI (0-67-0), SOC (0-62-0)
+- **Vérifié** : Texte adopté, articles 1er, 4 et 5. Le Conseil constitutionnel (décision n° 2025-886 DC du 19 juin 2025) a censuré la comparution immédiate, la limite à l'atténuation des peines et quatre autres dispositions ; la peine des parents et l'interdiction de sortir seul la nuit ont été validées.
+- **Réserve** : Texte à plusieurs mesures, dont les deux principales ont été censurées après le vote : la carte décrit ce que les députés ont voté.
+
+### 26. Travail · L'emploi des salariés expérimentés · n° 3055 · **retenu**
+
+- [x] **Je le retiens**
+- **Question** : « Faut-il créer un contrat de travail spécial pour embaucher les demandeurs d'emploi de soixante ans et plus ? »
+- **Concrètement** : À titre expérimental pendant cinq ans, une entreprise pourrait embaucher en CDI un demandeur d'emploi d'au moins soixante ans, puis le mettre à la retraite dès qu'il peut partir à taux plein. Les entreprises devraient aussi négocier sur l'emploi des salariés expérimentés.
+- **Le vote** : scrutin ordinaire, adopté le 15 octobre 2025 ; 143 pour, 25 contre, 8 abstentions ; participation 31 % ; 0 vote contre leur groupe. [Scrutin n° 3055](https://www.assemblee-nationale.fr/dyn/17/scrutins/3055).
+- **Objet officiel** : l'ensemble du projet de loi portant transposition des accords nationaux interprofessionnels en faveur de l'emploi des salariés expérimentés et relatif à l'évolution du dialogue social (texte de la commission mixte paritaire).
+- **Écart entre groupes** :
+  - Pour : DR (11-0-0), Dem (8-0-0), EPR (31-0-0), HOR (15-0-0), LIOT (2-0-0), RN (61-0-0), SOC (10-0-0), UDR (1-0-0)
+  - Contre : LFI (0-25-0)
+  - Abstention : EcoS (0-0-5), GDR (0-0-3)
+- **Vérifié** : Texte adopté, articles 1er, 2 et 4 (contrat de valorisation de l'expérience).
+- **Réserve** : Texte à plusieurs objets (dialogue social, assurance chômage, reconversion) : la carte retient la mesure principale pour l'emploi des plus âgés.
+
+### 27. Éducation · La lutte contre l'antisémitisme à l'université · n° 2880 · **retenu**
+
+- [x] **Je le retiens**
+- **Question** : « Faut-il imposer aux universités un dispositif de signalement et de sanction des actes antisémites et racistes ? »
+- **Concrètement** : Chaque université aurait une mission chargée de lutter contre l'antisémitisme et le racisme, avec un référent et un dispositif de signalement anonyme ; les étudiants pourraient être jugés par une section disciplinaire commune à leur région académique.
+- **Le vote** : scrutin solennel, adopté le 2 juillet 2025 ; 366 pour, 88 contre, 7 abstentions ; participation 80 % ; 7 votes contre leur groupe. [Scrutin n° 2880](https://www.assemblee-nationale.fr/dyn/17/scrutins/2880).
+- **Objet officiel** : l'ensemble de la proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur (texte de la commission mixte paritaire).
+- **Écart entre groupes** :
+  - Pour : DR (40-0-0), Dem (23-0-0), EPR (79-0-0), HOR (29-0-0), LIOT (17-0-0), RN (117-0-0), SOC (35-0-0), UDR (14-0-0)
+  - Contre : EcoS (4-11-7), GDR (3-12-0), LFI (0-65-0)
+- **Vérifié** : Texte adopté (commission mixte paritaire), articles 1er à 3.
+- **Réserve** : Le titre du texte appelle le oui : la question porte sur ses moyens (signalement, sanctions), qui ont fait débat. Écarté du quiz le 8 octobre pour cette raison.
+
+### 28. Institutions · Le scrutin de liste dans toutes les communes · n° 1304 · **retenu**
+
+- [x] **Je le retiens**
+- **Question** : « Faut-il élire les conseils municipaux au scrutin de liste dans toutes les communes, même celles de moins de 1 000 habitants ? »
+- **Concrètement** : Ce vote porte sur la loi organique qui accompagne la réforme : elle adapte les règles des listes aux communes de moins de 1 000 habitants et garde ce seuil pour limiter le cumul d'un mandat de député avec celui de conseiller municipal.
+- **Le vote** : scrutin solennel, adopté le 7 avril 2025 ; 204 pour, 180 contre, 24 abstentions ; participation 71 % ; 10 votes contre leur groupe. [Scrutin n° 1304](https://www.assemblee-nationale.fr/dyn/17/scrutins/1304).
+- **Objet officiel** : l'ensemble de la proposition de loi organique visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité (première lecture).
+- **Écart entre groupes** :
+  - Pour : Dem (20-2-1), EPR (57-2-1), EcoS (18-0-0), GDR (6-0-1), LFI (57-0-0), SOC (35-0-0)
+  - Contre : DR (2-41-0), LIOT (4-8-3), RN (0-114-0), UDR (0-9-0)
+  - Abstention : HOR (1-0-18)
+- **Vérifié** : Texte adopté, article 1er (code électoral, articles L.O. 141, L.O. 247-1 et L.O. 255-5).
+- **Réserve** : La réforme elle-même (scrutin de liste paritaire partout) est dans la loi ordinaire, votée le même jour (n° 1303) ; texte venu du Sénat, sans exposé des motifs.
+
 ## Les cartes du quiz : thème et titre court proposés
 
 Les questions et « Concrètement » du quiz ne changent pas.
@@ -382,21 +436,21 @@ Les questions et « Concrètement » du quiz ne changent pas.
 
 ## Séparation des groupes
 
-Nombre de votes où les deux groupes n'ont pas la même position : sur les 10 du quiz, puis sur les 25 avec les lots proposés.
+Nombre de votes où les deux groupes n'ont pas la même position : sur les 10 du quiz, puis sur les 25 avec les lots retenus.
 
 | | DR | Dem | EPR | EcoS | GDR | HOR | LFI | LIOT | RN | SOC | UDR |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **DR** | — | 3 → 6 | 3 → 5 | 7 → 17 | 8 → 17 | 1 → 5 | 9 → 18 | 3 → 6 | 4 → 8 | 7 → 15 | 2 → 5 |
-| **Dem** | 3 → 6 | — | 0 → 3 | 4 → 16 | 6 → 17 | 2 → 6 | 6 → 17 | 2 → 7 | 7 → 12 | 4 → 14 | 5 → 7 |
-| **EPR** | 3 → 5 | 0 → 3 | — | 4 → 16 | 6 → 17 | 2 → 6 | 6 → 17 | 2 → 7 | 7 → 11 | 4 → 14 | 5 → 8 |
-| **EcoS** | 7 → 17 | 4 → 16 | 4 → 16 | — | 2 → 3 | 6 → 16 | 2 → 5 | 4 → 11 | 9 → 20 | 0 → 2 | 9 → 21 |
-| **GDR** | 8 → 17 | 6 → 17 | 6 → 17 | 2 → 3 | — | 8 → 17 | 2 → 4 | 6 → 12 | 8 → 18 | 2 → 3 | 8 → 19 |
-| **HOR** | 1 → 5 | 2 → 6 | 2 → 6 | 6 → 16 | 8 → 17 | — | 8 → 18 | 2 → 7 | 5 → 10 | 6 → 14 | 3 → 7 |
-| **LFI** | 9 → 18 | 6 → 17 | 6 → 17 | 2 → 5 | 2 → 4 | 8 → 18 | — | 6 → 12 | 9 → 19 | 2 → 5 | 10 → 21 |
-| **LIOT** | 3 → 6 | 2 → 7 | 2 → 7 | 4 → 11 | 6 → 12 | 2 → 7 | 6 → 12 | — | 5 → 10 | 4 → 9 | 5 → 10 |
-| **RN** | 4 → 8 | 7 → 12 | 7 → 11 | 9 → 20 | 8 → 18 | 5 → 10 | 9 → 19 | 5 → 10 | — | 9 → 18 | 2 → 5 |
-| **SOC** | 7 → 15 | 4 → 14 | 4 → 14 | 0 → 2 | 2 → 3 | 6 → 14 | 2 → 5 | 4 → 9 | 9 → 18 | — | 9 → 19 |
-| **UDR** | 2 → 5 | 5 → 7 | 5 → 8 | 9 → 21 | 8 → 19 | 3 → 7 | 10 → 21 | 5 → 10 | 2 → 5 | 9 → 19 | — |
+| **DR** | — | 3 → 7 | 3 → 7 | 7 → 17 | 8 → 18 | 1 → 5 | 9 → 20 | 3 → 6 | 4 → 7 | 7 → 15 | 2 → 5 |
+| **Dem** | 3 → 7 | — | 0 → 2 | 4 → 14 | 6 → 16 | 2 → 6 | 6 → 17 | 2 → 8 | 7 → 12 | 4 → 12 | 5 → 8 |
+| **EPR** | 3 → 7 | 0 → 2 | — | 4 → 14 | 6 → 16 | 2 → 6 | 6 → 17 | 2 → 8 | 7 → 12 | 4 → 12 | 5 → 10 |
+| **EcoS** | 7 → 17 | 4 → 14 | 4 → 14 | — | 2 → 2 | 6 → 17 | 2 → 4 | 4 → 12 | 9 → 20 | 0 → 2 | 9 → 21 |
+| **GDR** | 8 → 18 | 6 → 16 | 6 → 16 | 2 → 2 | — | 8 → 19 | 2 → 4 | 6 → 14 | 8 → 19 | 2 → 4 | 8 → 20 |
+| **HOR** | 1 → 5 | 2 → 6 | 2 → 6 | 6 → 17 | 8 → 19 | — | 8 → 20 | 2 → 6 | 5 → 9 | 6 → 15 | 3 → 7 |
+| **LFI** | 9 → 20 | 6 → 17 | 6 → 17 | 2 → 4 | 2 → 4 | 8 → 20 | — | 6 → 15 | 9 → 21 | 2 → 5 | 10 → 23 |
+| **LIOT** | 3 → 6 | 2 → 8 | 2 → 8 | 4 → 12 | 6 → 14 | 2 → 6 | 6 → 15 | — | 5 → 9 | 4 → 10 | 5 → 10 |
+| **RN** | 4 → 7 | 7 → 12 | 7 → 12 | 9 → 20 | 8 → 19 | 5 → 9 | 9 → 21 | 5 → 9 | — | 9 → 18 | 2 → 4 |
+| **SOC** | 7 → 15 | 4 → 12 | 4 → 12 | 0 → 2 | 2 → 4 | 6 → 15 | 2 → 5 | 4 → 10 | 9 → 18 | — | 9 → 19 |
+| **UDR** | 2 → 5 | 5 → 8 | 5 → 10 | 9 → 21 | 8 → 20 | 3 → 7 | 10 → 23 | 5 → 10 | 2 → 4 | 9 → 19 | — |
 
 ## Regardés et écartés
 

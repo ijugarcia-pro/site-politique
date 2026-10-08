@@ -19,7 +19,7 @@ tôt.
 Produit :
     docs/lots-candidats.md                 la grille à cocher par Julien (t43)
     data/mesures/lots/candidats.json       les candidats, leurs positions et la proposition
-`data/lots.json` n'est écrit qu'après la validation de Julien (t43).
+    data/lots.json                         les 5 lots retenus par Julien (t43), lus par le site
 """
 
 from __future__ import annotations
@@ -41,6 +41,7 @@ RACINE = Path(__file__).resolve().parent.parent
 BASE = RACINE / "data" / "site.duckdb"
 TEXTES = RACINE / "data" / "raw" / "textes"
 QUIZ = RACINE / "data" / "quiz.json"
+LOTS = RACINE / "data" / "lots.json"
 SORTIE = RACINE / "docs" / "lots-candidats.md"
 DONNEES = RACINE / "data" / "mesures" / "lots" / "candidats.json"
 N_LOTS = 5
@@ -253,6 +254,65 @@ NOUVEAUX = [
              sources=("PIONANR5L17BTA0236", "PIONANR5L17B2310")),
 ]
 
+# Ajoutés par Julien le 9 octobre 2026 (t43), rédigés d'après le texte adopté.
+AJOUTES = [
+    Candidat(1624, "Sécurité", "La justice des mineurs délinquants durcie",
+             "Faut-il durcir les règles de la justice pénale pour les mineurs délinquants et "
+             "leurs parents ?",
+             "Le texte permet de juger en comparution immédiate les mineurs de plus de seize ans "
+             "déjà suivis par la justice, limite pour les récidivistes l'atténuation des peines "
+             "liée à l'âge, et punit de trois ans de prison les parents dont la défaillance a "
+             "conduit l'enfant à commettre des infractions.",
+             "Texte adopté, articles 1er, 4 et 5. Le Conseil constitutionnel (décision "
+             "n° 2025-886 DC du 19 juin 2025) a censuré la comparution immédiate, la limite à "
+             "l'atténuation des peines et quatre autres dispositions ; la peine des parents et "
+             "l'interdiction de sortir seul la nuit ont été validées.",
+             "Texte à plusieurs mesures, dont les deux principales ont été censurées après le "
+             "vote : la carte décrit ce que les députés ont voté.",
+             sources=("PIONANR5L17BTA0111", "PIONANR5L17B0448")),
+    Candidat(3055, "Travail", "L'emploi des salariés expérimentés",
+             "Faut-il créer un contrat de travail spécial pour embaucher les demandeurs "
+             "d'emploi de soixante ans et plus ?",
+             "À titre expérimental pendant cinq ans, une entreprise pourrait embaucher en CDI un "
+             "demandeur d'emploi d'au moins soixante ans, puis le mettre à la retraite dès qu'il "
+             "peut partir à taux plein. Les entreprises devraient aussi négocier sur l'emploi des "
+             "salariés expérimentés.",
+             "Texte adopté, articles 1er, 2 et 4 (contrat de valorisation de l'expérience).",
+             "Texte à plusieurs objets (dialogue social, assurance chômage, reconversion) : la "
+             "carte retient la mesure principale pour l'emploi des plus âgés.",
+             sources=("PRJLANR5L17BTA0171", "PRJLANR5L17B1526")),
+    Candidat(2880, "Éducation", "La lutte contre l'antisémitisme à l'université",
+             "Faut-il imposer aux universités un dispositif de signalement et de sanction des "
+             "actes antisémites et racistes ?",
+             "Chaque université aurait une mission chargée de lutter contre l'antisémitisme et le "
+             "racisme, avec un référent et un dispositif de signalement anonyme ; les étudiants "
+             "pourraient être jugés par une section disciplinaire commune à leur région "
+             "académique.",
+             "Texte adopté (commission mixte paritaire), articles 1er à 3.",
+             "Le titre du texte appelle le oui : la question porte sur ses moyens (signalement, "
+             "sanctions), qui ont fait débat. Écarté du quiz le 8 octobre pour cette raison.",
+             sources=("PIONANR5L17BTA0156", "PIONANR5L17B1009")),
+    Candidat(1304, "Institutions", "Le scrutin de liste dans toutes les communes",
+             "Faut-il élire les conseils municipaux au scrutin de liste dans toutes les "
+             "communes, même celles de moins de 1 000 habitants ?",
+             "Ce vote porte sur la loi organique qui accompagne la réforme : elle adapte les "
+             "règles des listes aux communes de moins de 1 000 habitants et garde ce seuil pour "
+             "limiter le cumul d'un mandat de député avec celui de conseiller municipal.",
+             "Texte adopté, article 1er (code électoral, articles L.O. 141, L.O. 247-1 et "
+             "L.O. 255-5).",
+             "La réforme elle-même (scrutin de liste paritaire partout) est dans la loi "
+             "ordinaire, votée le même jour (n° 1303) ; texte venu du Sénat, sans exposé des "
+             "motifs.",
+             sources=("PIONANR5L17BTA0094", "PIONANR5L17B1106")),
+]
+
+# Choix de Julien du 9 octobre 2026 (t43) : les 5 lots, dans l'ordre de passage ; dans chaque
+# lot, le vote le plus concret en premier. Vide : les lots sont composés par `composer`.
+CHOIX = [[4745, 600, 1624], [3273, 2256, 606], [7494, 2958, 3055], [852, 4723, 4244],
+         [2217, 2880, 1304]]
+# Si un vote ne passe pas un contrôle : son remplaçant, de même thème (choix de Julien).
+REMPLACANTS = {3055: 7260, 1624: 1041, 600: 2685, 4723: 657}
+
 # Thèmes et titres courts proposés pour les 10 cartes du quiz (format commun, t42) : à valider
 # avec les lots (t43), puis reportés dans data/quiz.json.
 QUIZ_CARTES = {8280: ("Santé", "L'aide à mourir"),
@@ -305,7 +365,7 @@ def candidats_repris() -> list[Candidat]:
 
 
 def tous_les_candidats() -> list[Candidat]:
-    return candidats_repris() + NOUVEAUX
+    return candidats_repris() + NOUVEAUX + AJOUTES
 
 
 def precision(n: int) -> int:
@@ -384,16 +444,17 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
     au_moins_dix = sum(n for k, n in cover.items() if k >= 10)
     par_numero = {c.numero: c for c in candidats}
     lignes = [
-        "# Lots de votes : candidats (t42)",
+        "# Lots de votes : candidats et choix (t42, t43)",
         "",
         "> Généré par `uv run python -m scripts.preparer_lots`. Ne pas modifier à la main : "
-        "cocher ci-dessous, puis répondre en session (t43).",
+        "le choix est dans `CHOIX`, et les lots retenus dans `data/lots.json`.",
         "",
         "Après le quiz d'entrée, l'utilisateur continue avec des **lots de 3 votes**, au format "
         "d'une séance (ta décision du 8 octobre 2026). 10 votes du quiz + 5 lots de 3 = "
         f"**25 votes** : la précision passe de {precision(10)} % à {precision(25)} %, le seuil "
         "où elle devient fiable. Comme pour le quiz, c'est un choix éditorial : tu retiens 15 "
-        "votes et tu corriges ce que tu veux.",
+        "votes et tu corriges ce que tu veux."
+        + (" **Choix fait le 9 octobre 2026** : voir ci-dessous." if CHOIX else ""),
         "",
         "## La carte de vote",
         "",
@@ -430,11 +491,17 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         f"- **Une participation d'au moins {PARTICIPATION_MINIMALE} %** : en dessous, trop peu "
         "de députés à comparer.",
         "",
-        "## Ma proposition de 5 lots",
-        "",
-        "Les lots sont composés un par un : chaque lot est le trio qui, ajouté au quiz et aux "
-        "lots précédents, sépare le mieux les paires de groupes encore les moins séparées. Le "
-        "premier lot est donc celui qui apporte le plus à qui s'arrête tôt.",
+        *(["## Les 5 lots retenus (choix de Julien, 9 octobre 2026)",
+            "",
+            "Dans l'ordre de passage ; dans chaque lot, le vote le plus concret en premier. "
+            "Remplaçants de même thème si un vote ne passait pas un contrôle : "
+            + ", ".join(f"n° {a} → n° {b}" for a, b in REMPLACANTS.items())
+            + " (aucun n'a servi)."] if CHOIX else
+          ["## Ma proposition de 5 lots",
+           "",
+           "Les lots sont composés un par un : chaque lot est le trio qui, ajouté au quiz et "
+           "aux lots précédents, sépare le mieux les paires de groupes encore les moins "
+           "séparées. Le premier lot est donc celui qui apporte le plus à qui s'arrête tôt."]),
         "",
         "| Lot | Votes | Paires les moins séparées qu'il départage | Précision après |",
         "|---|---|---|---|",
@@ -466,27 +533,26 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         "contre, abstention) sur au moins 10 : ce sont ceux qui pourront être comparés à "
         "quelqu'un qui a tout tranché.",
         "",
-        "La proposition est calculée (séparation des groupes, puis participation) : elle ne dit "
-        "rien de l'intérêt d'un sujet pour le public, que toi seul juges. Si tu retires un "
-        "vote, je recalcule les lots.",
+        "Précision après 10, 13, 16, 19, 22 et 25 votes : "
+        + ", ".join(f"{precision(n)} %" for n in range(10, 26, 3)) + ".",
         "",
         "## Les candidats",
         "",
-        f"{len(candidats)} cartes : les {len(REPRIS)} candidats du quiz non retenus, puis "
-        f"{len(candidats) - len(REPRIS)} nouveaux. Coche 15 cases (ou donne les numéros en "
-        "session).",
+        f"{len(candidats)} cartes : les {len(REPRIS)} candidats du quiz non retenus, les "
+        f"{len(NOUVEAUX)} rédigés le 8 octobre, puis les {len(AJOUTES)} ajoutés par Julien le "
+        "9 octobre. Les cases cochées sont les votes retenus.",
         "",
     ]
     proposes = {n for lot in lots for n in lot}
     for i, c in enumerate(candidats, 1):
         v = votes[c.numero]
         d = v["decompte"]
-        marque = " · **proposé**" if c.numero in proposes else ""
+        marque = (" · **retenu**" if CHOIX else " · **proposé**") if c.numero in proposes else ""
         nature = "scrutin solennel" if v["solennel"] else "scrutin ordinaire"
         lignes += [
             f"### {i}. {c.theme} · {c.titre} · n° {c.numero}{marque}",
             "",
-            "- [ ] **Je le retiens**",
+            f"- [{'x' if c.numero in proposes else ' '}] **Je le retiens**",
             f"- **Question** : « {c.question} »",
             f"- **Concrètement** : {c.concretement}",
             f"- **Le vote** : {nature}, {v['sort']} le {pq.date_lisible(v['date'])} ; "
@@ -514,7 +580,7 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         "## Séparation des groupes",
         "",
         "Nombre de votes où les deux groupes n'ont pas la même position : sur les 10 du quiz, "
-        "puis sur les 25 avec les lots proposés.",
+        "puis sur les 25 avec les lots " + ("retenus." if CHOIX else "proposés."),
         "",
         *matrice(sep_fin, groupes, sep_quiz),
         "",
@@ -558,7 +624,11 @@ def main(argv: list[str] | None = None) -> int:
                      - {pq.NON_INSCRITS})
     eligibles = [{**votes[c.numero], "theme": c.theme} for c in candidats
                  if votes[c.numero]["participation"] >= PARTICIPATION_MINIMALE]
-    lots = composer(quiz, eligibles, groupes)
+    lots = CHOIX or composer(quiz, eligibles, groupes)
+    inconnus = {n for lot in lots for n in lot} - set(votes)
+    if inconnus:
+        print(f"CHOIX : votes sans carte {sorted(inconnus)}", file=sys.stderr)
+        return 1
     questions_quiz = {q["numero"]: q["question"] for q in quiz_json}
     SORTIE.write_text(rapport(candidats, votes, quiz, questions_quiz, groupes, lots),
                       encoding="utf-8")
@@ -571,7 +641,15 @@ def main(argv: list[str] | None = None) -> int:
                       for c in candidats],
         "quiz": {str(n): {"theme": t, "titre": titre} for n, (t, titre) in QUIZ_CARTES.items()},
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"{len(candidats)} candidats, lots proposés : {lots}")
+    if CHOIX:
+        par_numero = {c.numero: c for c in candidats}
+        LOTS.write_text(json.dumps(
+            [{"lot": i, "cartes": [cartes.vers_json(par_numero[n].carte(uid(n))) for n in lot]}
+             for i, lot in enumerate(lots, 1)], ensure_ascii=False, indent=1) + "\n",
+            encoding="utf-8")
+        cartes.lire_lots(LOTS)  # relu et contrôlé
+        print(f"Écrit : {LOTS.relative_to(RACINE)}")
+    print(f"{len(candidats)} candidats, lots : {lots}")
     print(f"Écrit : {SORTIE.relative_to(RACINE)} et {DONNEES.relative_to(RACINE)}")
     return 0
 

@@ -50,3 +50,22 @@ def test_themes_differents_dans_un_lot_et_plafond_par_theme():
         assert len({themes[n] for n in lot}) == 3
     assert len(lots) == 2  # le troisième lot demanderait une troisième « Santé »
     assert sum(themes[n] == "Santé" for lot in lots for n in lot) == 2
+
+
+def test_choix_de_julien_respecte_les_regles_des_lots():
+    lots = pl.CHOIX
+    numeros = [n for lot in lots for n in lot]
+    assert len(lots) == pl.N_LOTS and len(numeros) == len(set(numeros)) == 15
+    themes = {c.numero: c.theme for c in pl.tous_les_candidats()}
+    assert set(numeros) <= set(themes) and not set(numeros) & set(pq.CHOIX)
+    for lot in lots:
+        assert len({themes[n] for n in lot}) == len(lot)
+    compte = {}
+    for n in numeros:
+        compte[themes[n]] = compte.get(themes[n], 0) + 1
+    assert max(compte.values()) <= pl.MAX_PAR_THEME
+
+
+def test_data_lots_json_conforme_au_choix():
+    lus = cartes.lire_lots(pl.LOTS)
+    assert [[c.numero for c in lot] for lot in lus] == pl.CHOIX

@@ -1,29 +1,29 @@
 {
  "lots_proposes": [
   [
-   7905,
-   2256,
-   6045
+   4745,
+   600,
+   1624
   ],
   [
-   4244,
-   1330,
-   1306
+   3273,
+   2256,
+   606
+  ],
+  [
+   7494,
+   2958,
+   3055
   ],
   [
    852,
-   606,
-   2217
+   4723,
+   4244
   ],
   [
-   7380,
-   600,
-   7408
-  ],
-  [
-   2958,
-   4745,
-   7494
+   2217,
+   2880,
+   1304
   ]
  ],
  "candidats": [
@@ -2568,6 +2568,430 @@
      "contre": 0,
      "abstention": 12,
      "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V1624",
+   "numero": 1624,
+   "theme": "Sécurité",
+   "titre": "l'ensemble de la proposition de loi visant à renforcer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents (texte de la commission mixte paritaire).",
+   "question": "Faut-il durcir les règles de la justice pénale pour les mineurs délinquants et leurs parents ?",
+   "concretement": "Le texte permet de juger en comparution immédiate les mineurs de plus de seize ans déjà suivis par la justice, limite pour les récidivistes l'atténuation des peines liée à l'âge, et punit de trois ans de prison les parents dont la défaillance a conduit l'enfant à commettre des infractions.",
+   "date": "2025-05-13",
+   "dossier": "Restaurer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 341,
+    "contre": 187,
+    "abstention": 8
+   },
+   "participation": 93,
+   "voix_pour_inverser": 77,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 119,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 45,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 62,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 6,
+     "abstention": 3,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 67,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 80,
+     "contre": 1,
+     "abstention": 4,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 36,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V3055",
+   "numero": 3055,
+   "theme": "Travail",
+   "titre": "l'ensemble du projet de loi portant transposition des accords nationaux interprofessionnels en faveur de l'emploi des salariés expérimentés et relatif à l'évolution du dialogue social (texte de la commission mixte paritaire).",
+   "question": "Faut-il créer un contrat de travail spécial pour embaucher les demandeurs d'emploi de soixante ans et plus ?",
+   "concretement": "À titre expérimental pendant cinq ans, une entreprise pourrait embaucher en CDI un demandeur d'emploi d'au moins soixante ans, puis le mettre à la retraite dès qu'il peut partir à taux plein. Les entreprises devraient aussi négocier sur l'emploi des salariés expérimentés.",
+   "date": "2025-10-15",
+   "dossier": "Projet de loi portant transposition des accords nationaux interprofessionnels en faveur de l’emploi des salariés expérimentés et relatif à l’évolution du dialogue social",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 143,
+    "contre": 25,
+    "abstention": 8
+   },
+   "participation": 31,
+   "voix_pour_inverser": 59,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 61,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 11,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 50
+    },
+    "GDR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 3,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 25,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 92
+    },
+    "EcoS": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 5,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 15,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V2880",
+   "numero": 2880,
+   "theme": "Éducation",
+   "titre": "l'ensemble de la proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur (texte de la commission mixte paritaire).",
+   "question": "Faut-il imposer aux universités un dispositif de signalement et de sanction des actes antisémites et racistes ?",
+   "concretement": "Chaque université aurait une mission chargée de lutter contre l'antisémitisme et le racisme, avec un référent et un dispositif de signalement anonyme ; les étudiants pourraient être jugés par une section disciplinaire commune à leur région académique.",
+   "date": "2025-07-02",
+   "dossier": "Proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 366,
+    "contre": 88,
+    "abstention": 7
+   },
+   "participation": 80,
+   "voix_pour_inverser": 139,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 117,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 40,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 3,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 23,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 65,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 79,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 93
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 4,
+     "contre": 11,
+     "abstention": 7,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V1304",
+   "numero": 1304,
+   "theme": "Institutions",
+   "titre": "l'ensemble de la proposition de loi organique visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité (première lecture).",
+   "question": "Faut-il élire les conseils municipaux au scrutin de liste dans toutes les communes, même celles de moins de 1 000 habitants ?",
+   "concretement": "Ce vote porte sur la loi organique qui accompagne la réforme : elle adapte les règles des listes aux communes de moins de 1 000 habitants et garde ce seuil pour limiter le cumul d'un mandat de député avec celui de conseiller municipal.",
+   "date": "2025-04-07",
+   "dossier": "Proposition de loi organique visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 204,
+    "contre": 180,
+    "abstention": 24
+   },
+   "participation": 71,
+   "voix_pour_inverser": 12,
+   "dissidents": 10,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 114,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 2,
+     "contre": 41,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 4,
+     "contre": 8,
+     "abstention": 3,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 9,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 18,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 4,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 18,
+     "membres": 33
     }
    }
   }

@@ -1,0 +1,462 @@
+---
+// Les députés : « Qui te représente ? » par code postal (puis commune, puis adresse si la
+// commune est partagée entre plusieurs circonscriptions), et l'annuaire, filtrable par nom.
+// Le code postal reste dans le navigateur (il passe par le fragment #cp=, jamais envoyé au
+// serveur) ; seule une adresse à préciser est envoyée au service public de géocodage de
+// l'IGN, au moment où le visiteur la demande.
+import Base from '../../layouts/Base.astro';
+import { deputes, lienDepute, nomComplet } from '../../lib/donnees.ts';
+import { libelleCirco } from '../../lib/geo.ts';
+import { normaliser } from '../../lib/votes.ts';
+
+const tous = deputes();
+const enExercice = tous.filter((d) => d.en_exercice);
+const PARTICULES = new Set(['de', 'du', 'des', 'la', 'le', "d'"]);
+const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
+  d.nom.split(/[\s-]+/).find((m) => !PARTICULES.has(m.toLowerCase())) ?? d.nom]
+  .map((m) => m.charAt(0).toUpperCase()).join('');
+---
+<Base titre="Les députés" onglet="explorer"
+  description="Qui te représente à l'Assemblée nationale ? Retrouve ton député avec ton code postal, et les 577 députés de la 17e législature.">
+  <nav class="fil" aria-label="Fil d'Ariane">
+    <a href="/explorer/">Explorer</a> <span aria-hidden="true">›</span>
+    <span aria-current="page">Députés</span>
+  </nav>
+
+  <section class="accroche" aria-labelledby="titre-cp">
+    <div class="accroche-texte">
+      <h1 id="titre-cp">Qui te représente&#8239;?</h1>
+      <p class="sous-titre">
+        Ton code postal suffit. S'il couvre plusieurs circonscriptions, on te demandera ta rue.
+      </p>
+      <form class="cp" data-form-cp-local>
+        <label for="cp" class="visuellement-cache">Code postal</label>
+        <input id="cp" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
+          placeholder="Code postal" autocomplete="postal-code" required />
+        <button type="submit">Trouver</button>
+      </form>
+      <p class="discret">Ton code postal reste dans ton navigateur.</p>
+    </div>
+    <div class="resultat" data-resultat aria-live="polite" hidden></div>
+  </section>
+
+  <template id="modele-depute">
+    <div class="trouve">
+      <span class="avatar" data-ini></span>
+      <span class="trouve-texte">
+        <span class="sur-titre" data-sur-titre></span>
+        <a class="trouve-nom" data-nom></a>
+        <span class="trouve-detail" data-detail></span>
+      </span>
+      <span class="trouve-actions">
+        <button type="button" class="choisir" data-choisir aria-pressed="false"></button>
+        <a class="voir" data-voir>Voir sa fiche</a>
+      </span>
+    </div>
+  </template>
+
+  <section aria-labelledby="titre-annuaire">
+    <div class="titre-section">
+      <h2 id="titre-annuaire">Les {enExercice.length} députés en exercice</h2>
+      <span data-compte-deputes>{enExercice.length} députés</span>
+    </div>
+    <div class="outils">
+      <label class="recherche">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
+          <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+        </svg>
+        <span class="visuellement-cache">Chercher un député par son nom, son groupe ou son département</span>
+        <input type="search" data-recherche-depute placeholder="Un nom, un groupe, un département…" autocomplete="off" />
+      </label>
+      <label class="anciens">
+        <input type="checkbox" data-anciens />
+        Afficher aussi les {tous.length - enExercice.length} anciens députés de la législature
+      </label>
+    </div>
+    <ul class="annuaire" data-annuaire>
+      {tous.map((d) => (
+        <li data-uid={d.uid} data-circo={d.circo} data-en-exercice={d.en_exercice ? '1' : undefined}
+          data-recherche={normaliser(`${nomComplet(d)} ${d.sigle ?? ''} ${d.groupe_libelle ?? ''} ${d.departement} ${d.num_departement}`)}
+          data-nom={nomComplet(d)} data-sigle={d.sigle ?? ''} data-civ={d.civilite ?? ''}
+          data-libelle={`${libelleCirco(d.circo)} · ${d.departement}`}
+          hidden={!d.en_exercice}>
+          <a href={lienDepute(d)}>
+            <span class="avatar petit" aria-hidden="true">{initiales(d)}</span>
+            <span class="annuaire-texte">
+              <span class="annuaire-nom">{nomComplet(d)}</span>
+              <span class="annuaire-detail">
+                {d.sigle ?? 'Sans groupe'} · {libelleCirco(d.circo)} · {d.departement}
+                {!d.en_exercice && ' · mandat terminé'}
+              </span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="vide" data-vide-annuaire hidden>Aucun député ne correspond.</p>
+  </section>
+</Base>
+
+<script>
+  import { choisirDepute, deputeChoisi } from '../../lib/navigateur.ts';
+  import { circoDuPoint, codePostalValide, conclure, conclureCommune, departementDe,
+    libelleCirco, prefixe, type Commune, type Geometrie, type Issue } from '../../lib/geo.ts';
+  import { normaliser } from '../../lib/votes.ts';
+
+  const GEOCODAGE = 'https://data.geopf.fr/geocodage/search';
+  const zone = document.querySelector<HTMLElement>('[data-resultat]')!;
+  const champ = document.querySelector<HTMLInputElement>('#cp')!;
+  const modele = document.querySelector<HTMLTemplateElement>('#modele-depute')!;
+  const fiches = [...document.querySelectorAll<HTMLElement>('[data-annuaire] > li')];
+  let cpCourant = '';
+
+  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, texte = '', classe = '') => {
+    const e = document.createElement(tag);
+    if (texte) e.textContent = texte;
+    if (classe) e.className = classe;
+    return e;
+  };
+  const afficher = (...enfants: Node[]) => {
+    zone.hidden = false;
+    zone.replaceChildren(...enfants);
+  };
+  const json = async <T,>(url: string): Promise<T | null> => {
+    try {
+      const r = await fetch(url);
+      return r.ok ? ((await r.json()) as T) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // La carte d'un député trouvé, avec « C'est mon député ».
+  const carte = (li: HTMLElement, surTitre: string) => {
+    const c = modele.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const elle = li.dataset.civ === 'Mme';
+    const lien = `/deputes/${li.dataset.uid}/`;
+    c.querySelector('[data-ini]')!.textContent = li.querySelector('.avatar')!.textContent;
+    c.querySelector('[data-sur-titre]')!.textContent = surTitre;
+    const nom = c.querySelector<HTMLAnchorElement>('[data-nom]')!;
+    nom.textContent = li.dataset.nom!;
+    nom.href = lien;
+    c.querySelector('[data-detail]')!.textContent = `${li.dataset.sigle || 'Sans groupe'} · ${li.dataset.libelle}`;
+    c.querySelector<HTMLAnchorElement>('[data-voir]')!.href = lien;
+    const bouton = c.querySelector<HTMLButtonElement>('[data-choisir]')!;
+    const maj = () => {
+      const mien = deputeChoisi() === li.dataset.uid;
+      bouton.setAttribute('aria-pressed', String(mien));
+      bouton.textContent = mien ? `✓ ${elle ? 'Ta députée' : 'Ton député'}`
+        : `C'est ${elle ? 'ma députée' : 'mon député'}`;
+    };
+    bouton.addEventListener('click', () => {
+      choisirDepute(deputeChoisi() === li.dataset.uid ? null : li.dataset.uid!);
+      maj();
+    });
+    maj();
+    return c;
+  };
+
+  const deputeDe = (circo: string) =>
+    fiches.find((f) => f.dataset.circo === circo && f.dataset.enExercice === '1');
+
+  const montrerCirco = (circo: string, precision = '') => {
+    const li = deputeDe(circo);
+    const [dep] = circo.split('-');
+    const lieu = `${libelleCirco(circo)}${dep === '099' ? ' des Français de l\'étranger' : ''}`;
+    if (!li) {
+      afficher(el('p', `${lieu} : le siège est vacant en ce moment, la circonscription n'a pas de député.`, 'message'));
+      return;
+    }
+    const enfants: Node[] = [carte(li, `${li.dataset.civ === 'Mme' ? 'Ta députée' : 'Ton député'} · ${lieu}`)];
+    if (precision) enfants.push(el('p', precision, 'discret'));
+    afficher(...enfants);
+  };
+
+  // Plusieurs députés possibles : la liste, pour choisir soi-même.
+  const listeCandidats = (candidates: string[]) => {
+    const details = el('details', '', 'candidats');
+    details.append(el('summary', `Ou choisis parmi les ${candidates.length} circonscriptions possibles`));
+    const ul = el('ul');
+    for (const circo of candidates) {
+      const li = deputeDe(circo);
+      const item = el('li');
+      if (li) {
+        const a = el('a', `${libelleCirco(circo)} : ${li.dataset.nom} (${li.dataset.sigle || 'sans groupe'})`);
+        a.setAttribute('href', `/deputes/${li.dataset.uid}/`);
+        item.append(a);
+      } else {
+        item.textContent = `${libelleCirco(circo)} : siège vacant`;
+      }
+      ul.append(item);
+    }
+    details.append(ul);
+    return details;
+  };
+
+  // Situer une adresse : géocodage public (IGN), puis contours des circonscriptions.
+  const demanderAdresse = (candidates: string[], commune: string) => {
+    const form = el('form', '', 'adresse');
+    const intro = el('p', `${commune} est partagée entre ${candidates.length} circonscriptions. Indique ta rue pour trouver la tienne :`);
+    if (candidates.length === 1) intro.textContent = `Indique ta rue pour confirmer ta circonscription à ${commune} :`;
+    const ligne = el('div', '', 'adresse-ligne');
+    const label = el('label', 'Numéro et rue', 'visuellement-cache');
+    label.setAttribute('for', 'adresse');
+    const input = el('input');
+    input.id = 'adresse';
+    input.placeholder = 'Numéro et rue';
+    input.autocomplete = 'address-line1';
+    input.required = true;
+    const bouton = el('button', 'Situer');
+    bouton.type = 'submit';
+    ligne.append(label, input, bouton);
+    const note = el('p', 'Ton adresse est envoyée au service public de géocodage de l\'IGN pour la situer ; le site ne la garde pas.', 'discret');
+    const sortie = el('div');
+    sortie.setAttribute('aria-live', 'polite');
+    form.append(intro, ligne, note, sortie);
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      sortie.replaceChildren(el('p', 'Recherche de l\'adresse…', 'discret'));
+      const url = `${GEOCODAGE}?index=address&limit=1&q=${encodeURIComponent(input.value)}&postcode=${cpCourant}`;
+      const r = await json<{ features: { geometry: { coordinates: [number, number] }; properties: { label: string; score: number } }[] }>(url);
+      const f = r?.features?.[0];
+      if (!f || f.properties.score < 0.4) {
+        sortie.replaceChildren(el('p', r ? 'Adresse introuvable dans ce code postal : vérifie le numéro et la rue.' : 'Le service de géocodage ne répond pas. Réessaie, ou choisis dans la liste.', 'message'));
+        return;
+      }
+      const deps = [...new Set(candidates.map(departementDe))];
+      let trouvee: string | null = null;
+      for (const dep of deps) {
+        const contours = await json<Record<string, Geometrie>>(`/donnees/contours/${dep}.json`);
+        if (contours) trouvee = circoDuPoint(contours, f.geometry.coordinates, candidates)
+          ?? circoDuPoint(contours, f.geometry.coordinates);
+        if (trouvee) break;
+      }
+      if (!trouvee) {
+        sortie.replaceChildren(el('p', 'Impossible de situer cette adresse dans une circonscription. Choisis dans la liste.', 'message'));
+        return;
+      }
+      montrerCirco(trouvee, `Adresse retenue : ${f.properties.label}.`);
+    });
+    const enfants: Node[] = [form];
+    if (candidates.length > 1 && candidates.length <= 30) enfants.push(listeCandidats(candidates));
+    afficher(...enfants);
+    input.focus();
+  };
+
+  const suivre = (issue: Issue, commune = '') => {
+    if (issue.type === 'inconnu') {
+      afficher(el('p', 'Ce code postal n\'existe pas dans la base de La Poste. Vérifie-le.', 'message'));
+    } else if (issue.type === 'trouve') {
+      montrerCirco(issue.circo);
+    } else if (issue.type === 'adresse') {
+      demanderAdresse(issue.candidates, commune || 'Ta commune');
+    } else {
+      const p = el('p', 'Ce code postal couvre plusieurs communes. Laquelle est la tienne ?');
+      const liste = el('div', '', 'communes');
+      for (const c of issue.communes) {
+        const b = el('button', c.n);
+        b.type = 'button';
+        b.addEventListener('click', () => suivre(conclureCommune(c), c.n));
+        liste.append(b);
+      }
+      afficher(p, liste);
+      liste.querySelector('button')?.focus();
+    }
+  };
+
+  const chercher = async (cp: string) => {
+    if (!codePostalValide(cp)) {
+      afficher(el('p', 'Un code postal compte 5 chiffres.', 'message'));
+      return;
+    }
+    cpCourant = cp;
+    history.replaceState(null, '', `#cp=${cp}`);
+    afficher(el('p', 'Recherche…', 'discret'));
+    const fichier = await json<Record<string, Commune[]>>(`/donnees/cp/${prefixe(cp)}.json`);
+    if (!fichier) {
+      afficher(el('p', 'La recherche par code postal est indisponible pour le moment. Cherche ton député par son nom ci-dessous.', 'message'));
+      return;
+    }
+    const communes = fichier[cp];
+    suivre(conclure(communes), communes?.[0]?.n);
+  };
+
+  document.querySelector('[data-form-cp-local]')!.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    chercher(champ.value.trim());
+  });
+  // Au chargement (#cp= ou ?cp=), et quand le fragment change (lien depuis une autre page
+  // déjà ouverte, retour arrière).
+  const depuisAdresse = () => {
+    const cp = new URLSearchParams(location.hash.slice(1)).get('cp')
+      ?? new URLSearchParams(location.search).get('cp');
+    if (!cp || cp === cpCourant) return;
+    champ.value = cp;
+    if (location.search) history.replaceState(null, '', `${location.pathname}#cp=${cp}`);
+    chercher(cp);
+  };
+  window.addEventListener('hashchange', depuisAdresse);
+  depuisAdresse();
+
+  // Annuaire : recherche par nom, groupe ou département ; anciens députés en option.
+  const recherche = document.querySelector<HTMLInputElement>('[data-recherche-depute]')!;
+  const anciens = document.querySelector<HTMLInputElement>('[data-anciens]')!;
+  const compte = document.querySelector<HTMLElement>('[data-compte-deputes]')!;
+  const videAnnuaire = document.querySelector<HTMLElement>('[data-vide-annuaire]')!;
+  const filtrer = () => {
+    const mots = normaliser(recherche.value).split(' ').filter(Boolean);
+    let n = 0;
+    for (const f of fiches) {
+      const ok = (anciens.checked || f.dataset.enExercice === '1')
+        && mots.every((m) => (f.dataset.recherche ?? '').includes(m));
+      f.hidden = !ok;
+      if (ok) n += 1;
+    }
+    compte.textContent = `${n} député${n > 1 ? 's' : ''}`;
+    videAnnuaire.hidden = n > 0;
+  };
+  recherche.addEventListener('input', filtrer);
+  anciens.addEventListener('change', filtrer);
+</script>
+
+<style>
+  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--gris-legende); }
+  .fil a { text-decoration: none; font-weight: 700; }
+  .accroche {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px 32px;
+    align-items: flex-start;
+    padding: clamp(20px, 3vw, 30px);
+    border-radius: 30px;
+    background: var(--violet-voile);
+  }
+  .accroche-texte { flex: 1 1 380px; min-width: 0; }
+  .accroche h1 { font-size: clamp(30px, 3.4vw, 40px); }
+  .accroche .sous-titre { margin: 8px 0 18px; font-size: 17px; }
+  .cp { display: flex; gap: 8px; max-width: 420px; }
+  .cp input, .adresse input {
+    flex: 1;
+    min-width: 0;
+    min-height: 56px;
+    padding: 0 16px;
+    border-radius: 16px;
+    border: 2px solid #C9B8FF;
+    background: var(--fond);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: var(--texte);
+  }
+  .adresse input { letter-spacing: 0; font-size: 17px; }
+  .cp input:focus, .adresse input:focus { border-color: var(--violet); outline: none; }
+  .cp button, .adresse button {
+    min-height: 56px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--violet);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--violet-fonce);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .discret { margin: 10px 0 0; font-size: 14px; color: var(--gris); }
+  .resultat {
+    flex: 1 1 420px;
+    min-width: 0;
+    padding: 20px;
+    border-radius: 24px;
+    background: var(--fond);
+    box-shadow: 0 5px 0 #E3DAFF;
+  }
+  .resultat :global(.message) { margin: 0; font-size: 16px; color: var(--texte-doux); }
+  .resultat :global(p) { margin: 0 0 12px; }
+  .resultat :global(.communes) { display: flex; flex-wrap: wrap; gap: 8px; }
+  .resultat :global(.communes button) {
+    min-height: 44px; padding: 0 14px; border: 2px solid #E3DAFF; border-radius: 14px;
+    background: var(--fond); font-family: var(--police-titre); font-weight: 600; font-size: 15px;
+    color: var(--violet-fonce); cursor: pointer;
+  }
+  .resultat :global(.communes button:hover) { border-color: var(--violet); }
+  .resultat :global(.adresse-ligne) { display: flex; gap: 8px; }
+  .resultat :global(.candidats) { margin-top: 14px; font-size: 15px; }
+  .resultat :global(.candidats summary) { cursor: pointer; font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); min-height: 40px; display: flex; align-items: center; }
+  .resultat :global(.candidats ul) { margin: 6px 0 0; padding-left: 20px; }
+  .resultat :global(.candidats li) { margin-bottom: 6px; }
+  .resultat :global(.trouve) { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; }
+  .resultat :global(.trouve-texte) { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .resultat :global(.sur-titre) { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet); }
+  .resultat :global(.trouve-nom) { font-family: var(--police-titre); font-weight: 700; font-size: 24px; color: var(--texte); text-decoration: none; }
+  .resultat :global(.trouve-nom:hover) { color: var(--violet-fonce); }
+  .resultat :global(.trouve-detail) { font-size: 15px; color: var(--gris); }
+  .resultat :global(.trouve-actions) { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+  .resultat :global(.choisir) {
+    min-height: 46px; padding: 0 16px; border: 2px solid #C9B8FF; border-radius: 14px;
+    background: var(--fond); box-shadow: 0 4px 0 #E3DAFF; font-family: var(--police-titre);
+    font-weight: 600; font-size: 15px; color: var(--violet-fonce); cursor: pointer;
+  }
+  .resultat :global(.choisir[aria-pressed='true']) { background: #DFF7EC; border-color: #9BE3C4; color: #0C7F57; box-shadow: 0 4px 0 #BCEBD6; }
+  .resultat :global(.voir) { text-align: center; font-family: var(--police-titre); font-weight: 600; font-size: 15px; }
+  .avatar, .resultat :global(.avatar) {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--violet-voile);
+    color: var(--violet-fonce);
+    font-family: var(--police-titre);
+    font-weight: 700;
+    font-size: 22px;
+  }
+  .avatar.petit { width: 44px; height: 44px; border-radius: 14px; font-size: 16px; }
+
+  .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 12px; }
+  .titre-section span { font-size: 14px; color: var(--gris); }
+  .outils { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 14px; }
+  .recherche {
+    flex: 1 1 340px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 16px;
+    border: 2px solid var(--bord);
+    border-radius: 16px;
+    color: var(--gris-legende);
+  }
+  .recherche:focus-within { border-color: var(--violet); }
+  .recherche input { flex: 1; min-width: 0; border: 0; outline: none; font: inherit; font-size: 17px; color: var(--texte); background: transparent; }
+  .anciens { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; color: var(--texte-doux); cursor: pointer; }
+  .anciens input { width: 20px; height: 20px; accent-color: var(--violet); }
+  .annuaire {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 8px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .annuaire a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 16px;
+    color: inherit;
+    text-decoration: none;
+  }
+  .annuaire a:hover { background: var(--fond-doux); }
+  .annuaire a:hover .annuaire-nom { color: var(--violet-fonce); }
+  .annuaire-texte { display: flex; flex-direction: column; min-width: 0; }
+  .annuaire-nom { font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
+  .annuaire-detail { font-size: 13px; color: var(--gris); }
+  .vide { padding: 16px; border-radius: 16px; background: var(--fond-doux); }
+</style>

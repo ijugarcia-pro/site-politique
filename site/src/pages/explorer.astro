@@ -1,25 +1,359 @@
 ---
+// Explorer (frame V5 « Explorer ») : chercher un vote, retrouver son député, les votes qui
+// divisent, les plus serrés, puis tous les votes qui ont une page, filtrables.
+// Les thèmes (t28) et « les plus suivis » (comptes, reportés) viendront plus tard : en
+// attendant, les filtres portent sur le type de vote.
 import Base from '../layouts/Base.astro';
-import CarteScrutin from '../components/CarteScrutin.astro';
-import { solennels } from '../lib/donnees.ts';
+import LigneVote from '../components/LigneVote.astro';
+import { scrutins } from '../lib/donnees.ts';
+import { FAMILLES, famille, normaliser, type Famille } from '../lib/votes.ts';
 
-const scrutins = solennels();
+const tous = scrutins();
+// Un seul vote par dossier dans les deux encarts : les lectures successives d'un même texte
+// ne doivent pas occuper toute la liste.
+const unParDossier = (liste: typeof tous) => {
+  const vus = new Set<string>();
+  return liste.filter((v) => {
+    const cle = v.dossier ?? v.uid;
+    if (vus.has(cle)) return false;
+    vus.add(cle);
+    return true;
+  });
+};
+const divisent = unParDossier([...tous].sort((a, b) => b.dissidents - a.dissidents)).slice(0, 5);
+const serres = unParDossier(tous
+  .filter((v) => !v.motion_censure && v.voix_pour_inverser && v.voix_pour_inverser > 0)
+  .sort((a, b) => a.voix_pour_inverser! - b.voix_pour_inverser! || b.numero - a.numero))
+  .slice(0, 5);
+const nombre = (f: Famille) => tous.filter((v) => famille(v) === f).length;
+const filtres: { id: string; label: string; n: number }[] = [
+  { id: '', label: 'Tous', n: tous.length },
+  { id: 'solennel', label: 'Solennels', n: tous.filter((v) => v.solennel).length },
+  ...(Object.keys(FAMILLES) as Famille[]).map((f) => ({
+    id: f, label: { texte: 'Textes', budget: 'Budget', resolution: 'Résolutions',
+      declaration: 'Déclarations', censure: 'Censures' }[f], n: nombre(f),
+  })),
+].filter((f) => f.n > 0);
+// Suggestions de recherche : seulement celles qui trouvent au moins un vote.
+const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'sécurité sociale',
+  'Nouvelle-Calédonie'].filter((m) => tous.some((v) =>
+  normaliser(`${v.titre} ${v.dossier ?? ''}`).includes(normaliser(m)))).slice(0, 4);
 ---
 <Base titre="Explorer" onglet="explorer"
-  description="Les derniers votes solennels de l'Assemblée nationale, député par député.">
-  <div>
-    <h1>Explorer les votes</h1>
-    <p class="sous-titre">
-      Les {scrutins.length} derniers votes solennels, siège par siège. La recherche par thème,
-      par député et par code postal arrive bientôt.
+  description="Tous les votes de l'Assemblée nationale qui comptent : textes, budgets, résolutions, motions de censure, député par député.">
+  <section class="accroche">
+    <div class="accroche-texte">
+      <h1>Tous les votes, tous les députés</h1>
+      <p class="sous-titre">
+        {tous.length} votes de la 17<sup>e</sup> législature, siège par siège : chaque texte
+        voté dans son ensemble, les budgets, les résolutions et les motions de censure.
+      </p>
+      <label class="recherche">
+        <svg width="20" height="20" viewBox="0 0 18 18" aria-hidden="true">
+          <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
+          <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+        </svg>
+        <span class="visuellement-cache">Rechercher un vote</span>
+        <input type="search" id="recherche" placeholder="Une loi, un député, un mot…"
+          autocomplete="off" aria-controls="liste" />
+      </label>
+      <div class="res-deputes" data-res-deputes hidden>
+        <p class="res-titre">Députés</p>
+        <ul data-res-liste></ul>
+      </div>
+      {suggestions.length > 0 && (
+        <div class="suggestions">
+          <span>Par exemple :</span>
+          {suggestions.map((m) => <button type="button" data-suggestion={m}>{m}</button>)}
+        </div>
+      )}
+    </div>
+    <form class="carte-cp" action="/deputes/" method="get">
+      <h2>Qui te représente&#8239;?</h2>
+      <p>Ton code postal suffit.</p>
+      <div class="cp">
+        <label for="cp" class="visuellement-cache">Code postal</label>
+        <input id="cp" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
+          placeholder="Code postal" autocomplete="postal-code" required />
+        <button type="submit">Trouver</button>
+      </div>
+      <a href="/deputes/">Ou cherche un député par son nom</a>
+    </form>
+  </section>
+
+  <div class="duo">
+    <section aria-labelledby="titre-divisent">
+      <div class="titre-section">
+        <h2 id="titre-divisent">Les votes qui divisent</h2>
+        <span>Des députés contre leur propre groupe</span>
+      </div>
+      <ul class="liste">
+        {divisent.map((v) => <LigneVote vote={v} accent="dissidents" />)}
+      </ul>
+    </section>
+    <section class="serres" aria-labelledby="titre-serres">
+      <div class="titre-section">
+        <h2 id="titre-serres">Les plus serrés</h2>
+        <span>Le moins de voix pour faire basculer le résultat</span>
+      </div>
+      <ul class="liste">
+        {serres.map((v) => <LigneVote vote={v} accent="marge" />)}
+      </ul>
+    </section>
+  </div>
+
+  <section id="tous" aria-labelledby="titre-tous">
+    <div class="titre-section">
+      <h2 id="titre-tous">Tous les votes</h2>
+      <span aria-live="polite" data-compte>{tous.length} votes, du plus récent au plus ancien</span>
+    </div>
+    <div class="filtres" role="group" aria-label="Filtrer par type de vote">
+      {filtres.map((f, i) => (
+        <button type="button" data-filtre={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+          {f.label} <span class="n">{f.n}</span>
+        </button>
+      ))}
+    </div>
+    <ul class="liste" id="liste">
+      {tous.map((v) => <LigneVote vote={v} />)}
+    </ul>
+    <p class="vide" data-vide hidden>
+      Aucun vote ne correspond. Essaie un autre mot, ou <button type="button" data-tout-voir>montre-moi tous les votes</button>.
     </p>
-  </div>
-  <div class="liste">
-    {scrutins.map((s) => <CarteScrutin scrutin={s} />)}
-  </div>
+    <button type="button" class="bouton plus" data-plus hidden>Afficher plus de votes</button>
+  </section>
 </Base>
 
+<script>
+  import { normaliser } from '../lib/votes.ts';
+
+  const PAR_PAGE = 30;
+  const champ = document.querySelector<HTMLInputElement>('#recherche')!;
+  const lignes = [...document.querySelectorAll<HTMLElement>('#liste > li')];
+  const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
+  const compte = document.querySelector<HTMLElement>('[data-compte]')!;
+  const vide = document.querySelector<HTMLElement>('[data-vide]')!;
+  const plus = document.querySelector<HTMLButtonElement>('[data-plus]')!;
+  let filtre = '';
+  let limite = PAR_PAGE;
+
+  const appliquer = () => {
+    const mots = normaliser(champ.value).split(' ').filter(Boolean);
+    const retenues = lignes.filter((l) => {
+      const bonType = !filtre || (filtre === 'solennel' ? l.dataset.solennel === '1'
+        : l.dataset.famille === filtre);
+      const texte = l.dataset.recherche ?? '';
+      return bonType && mots.every((m) => texte.includes(m));
+    });
+    for (const l of lignes) l.hidden = true;
+    retenues.slice(0, limite).forEach((l) => { l.hidden = false; });
+    const n = retenues.length;
+    compte.textContent = n === lignes.length
+      ? `${n} votes, du plus récent au plus ancien`
+      : `${n} vote${n > 1 ? 's' : ''} sur ${lignes.length}`;
+    vide.hidden = n > 0;
+    plus.hidden = n <= limite;
+    plus.textContent = `Afficher plus de votes (${n - Math.min(n, limite)} restants)`;
+  };
+
+  champ.addEventListener('input', () => { limite = PAR_PAGE; appliquer(); chercherDeputes(); });
+
+  // Les députés qui correspondent à la recherche, au-dessus des votes. La liste n'est
+  // chargée qu'à la première recherche.
+  type D = { u: string; n: string; g: string | null; c: string; d: string; e?: 1 };
+  let liste: (D & { r: string })[] | null = null;
+  const blocDeputes = document.querySelector<HTMLElement>('[data-res-deputes]')!;
+  const ulDeputes = document.querySelector<HTMLElement>('[data-res-liste]')!;
+  const chercherDeputes = async () => {
+    const mots = normaliser(champ.value).split(' ').filter(Boolean);
+    if (mots.join('').length < 3) { blocDeputes.hidden = true; return; }
+    if (!liste) {
+      try {
+        const brut: D[] = await (await fetch('/donnees/deputes.json')).json();
+        liste = brut.map((d) => ({ ...d, r: normaliser(`${d.n} ${d.g ?? ''} ${d.d}`) }));
+      } catch { return; }
+    }
+    const trouves = liste.filter((d) => mots.every((m) => d.r.includes(m)))
+      .sort((a, b) => (b.e ?? 0) - (a.e ?? 0)).slice(0, 6);
+    ulDeputes.replaceChildren(...trouves.map((d) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = `/deputes/${d.u}/`;
+      const nom = document.createElement('strong');
+      nom.textContent = d.n;
+      a.append(nom, ` · ${d.g ?? 'sans groupe'} · ${d.d}${d.e ? '' : ' · ancien député'}`);
+      li.append(a);
+      return li;
+    }));
+    blocDeputes.hidden = trouves.length === 0;
+  };
+  for (const b of boutons) {
+    b.addEventListener('click', () => {
+      filtre = b.dataset.filtre ?? '';
+      for (const autre of boutons) autre.setAttribute('aria-pressed', String(autre === b));
+      limite = PAR_PAGE;
+      appliquer();
+    });
+  }
+  plus.addEventListener('click', () => {
+    const premiere = lignes.filter((l) => !l.hidden).length;
+    limite += PAR_PAGE;
+    appliquer();
+    lignes.filter((l) => !l.hidden)[premiere]?.querySelector('a')?.focus();
+  });
+  for (const s of document.querySelectorAll<HTMLButtonElement>('[data-suggestion]')) {
+    s.addEventListener('click', () => {
+      champ.value = s.dataset.suggestion ?? '';
+      limite = PAR_PAGE;
+      appliquer();
+      document.querySelector('#tous')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+  document.querySelector('[data-tout-voir]')?.addEventListener('click', () => {
+    champ.value = '';
+    boutons[0].click();
+  });
+  appliquer();
+</script>
+
 <style>
-  .liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
-    gap: 24px; }
+  .accroche {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px 28px;
+    align-items: center;
+    padding: clamp(20px, 3vw, 30px);
+    border-radius: 30px;
+    background: var(--violet-voile);
+  }
+  .accroche-texte { flex: 1 1 520px; min-width: 0; }
+  .accroche h1 { font-size: clamp(30px, 3.4vw, 40px); }
+  .accroche .sous-titre { margin: 8px 0 18px; font-size: 17px; }
+  .recherche {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 60px;
+    padding: 0 20px;
+    border: 2px solid #C9B8FF;
+    border-radius: 18px;
+    background: var(--fond);
+    color: var(--gris-legende);
+    box-shadow: 0 4px 0 #E3DAFF;
+  }
+  .recherche:focus-within { border-color: var(--violet); }
+  .recherche input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 18px;
+    color: var(--texte);
+  }
+  .res-deputes { margin-top: 10px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF; }
+  .res-titre { margin: 0 0 6px; font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet); }
+  .res-deputes ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .res-deputes :global(a) { display: block; padding: 6px 4px; border-radius: 10px; font-size: 15px; color: var(--texte-doux); text-decoration: none; }
+  .res-deputes :global(a:hover) { background: var(--fond-doux); }
+  .res-deputes :global(strong) { font-family: var(--police-titre); font-weight: 600; color: var(--texte); }
+  .suggestions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--gris); }
+  .suggestions button {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 2px solid #E3DAFF;
+    background: var(--fond);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--violet-fonce);
+    cursor: pointer;
+  }
+  .suggestions button:hover { border-color: var(--violet); }
+  .carte-cp {
+    flex: 0 1 340px;
+    min-width: min(100%, 260px);
+    padding: 20px;
+    border-radius: 24px;
+    background: var(--fond);
+    box-shadow: 0 5px 0 #E3DAFF;
+  }
+  .carte-cp h2 { font-size: 20px; }
+  .carte-cp p { margin: 4px 0 12px; font-size: 15px; color: var(--gris); }
+  .cp { display: flex; gap: 8px; }
+  .cp input {
+    flex: 1;
+    min-width: 0;
+    min-height: 50px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 2px solid var(--bord);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    color: var(--texte);
+  }
+  .cp input:focus { border-color: var(--violet); outline: none; }
+  .cp button {
+    min-height: 50px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--violet);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--violet-fonce);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .carte-cp > a { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 700; }
+
+  .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  @media (max-width: 1080px) { .duo { grid-template-columns: minmax(0, 1fr); } }
+  .serres { padding: 18px 20px; border-radius: 26px; background: var(--fond-doux); }
+  .serres :global(.ligne) { border-top-color: #E6E9F0; }
+  .serres :global(.ligne a:hover) { background: var(--fond); }
+  .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
+  .titre-section span { font-size: 14px; color: var(--gris); }
+  .liste { margin: 0; padding: 0; list-style: none; }
+  /* Dans les deux encarts, la ligne se replie comme sur mobile : ils sont étroits. */
+  .duo :global(.ligne a) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'haut haut' 'titre titre' 'mini accent';
+    gap: 8px 12px;
+  }
+  .duo :global(.haut) { flex-direction: row; align-items: center; gap: 10px; }
+
+  .filtres { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px; }
+  .filtres button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 2px solid var(--bord);
+    border-radius: 999px;
+    background: var(--fond);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--texte-doux);
+    cursor: pointer;
+  }
+  .filtres button:hover { border-color: var(--violet-pale); color: var(--violet-fonce); }
+  .filtres button[aria-pressed='true'] { background: var(--violet); border-color: var(--violet); color: #fff; }
+  .n { font-size: 13px; opacity: 0.75; }
+  @media (max-width: 700px) {
+    /* Sur téléphone, les filtres défilent sur une ligne au lieu d'en occuper trois. */
+    .filtres { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .filtres::-webkit-scrollbar { display: none; }
+    .filtres button { flex: none; }
+  }
+  .vide { padding: 20px; border-radius: 18px; background: var(--fond-doux); color: var(--texte-doux); }
+  .vide button { border: 0; background: none; padding: 0; font: inherit; color: var(--violet-fonce); text-decoration: underline; cursor: pointer; }
+  .plus { margin-top: 14px; }
 </style>

@@ -1,0 +1,30 @@
+---
+// Un petit hémicycle statique, pour une carte : 577 sièges colorés, sans interaction. Le
+// texte qui l'accompagne doit dire ce qu'il montre ; le dessin est une image décrite par
+// `titre`. `marque` entoure un siège (celui d'un député).
+import { HAUTEUR, LARGEUR, places, RAYON_SIEGE, SIEGES } from '../lib/hemicycle.ts';
+
+interface Props {
+  couleurs: string[];
+  titre: string;
+  marque?: number;
+}
+
+const { couleurs, titre, marque } = Astro.props;
+if (couleurs.length !== SIEGES) throw new Error(`Mini-hémicycle : ${couleurs.length} sièges`);
+const liste = places();
+---
+<svg class="mini-hemicycle" viewBox={`0 0 ${LARGEUR} ${HAUTEUR}`} role="img" aria-label={titre}>
+  {liste.map((p, i) => (
+    <circle cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={RAYON_SIEGE} fill={couleurs[i]}></circle>
+  ))}
+  {marque !== undefined && marque >= 0 && (
+    <circle class="marque" cx={liste[marque].x.toFixed(1)} cy={liste[marque].y.toFixed(1)}
+      r={RAYON_SIEGE + 6}></circle>
+  )}
+</svg>
+
+<style>
+  .mini-hemicycle { display: block; width: 100%; height: auto; }
+  .marque { fill: none; stroke: var(--texte); stroke-width: 4; }
+</style>

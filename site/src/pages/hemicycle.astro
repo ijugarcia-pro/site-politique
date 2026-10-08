@@ -1,32 +1,156 @@
 ---
+// Mon hémicycle (frame V5 « Mon hémicycle »). Le calcul de ta place, de ton groupe le plus
+// proche et de ton jumeau arrive avec le quiz d'entrée (t21) ; en attendant, la page montre
+// l'Assemblée du jour, tes réponses déjà données (gardées dans ton navigateur) et ton député.
 import Base from '../layouts/Base.astro';
 import Hemicycle from '../components/Hemicycle.astro';
-import { composition, dateLisible } from '../lib/donnees.ts';
+import { composition, dateLisible, lienVote, majuscule, scrutins } from '../lib/donnees.ts';
 
 const compo = composition();
 const occupes = compo.sieges.filter((s) => !s.vacant).length;
 const vacants = compo.sieges.length - occupes;
+// De quoi lister les réponses du visiteur : identifiant → [lien, titre].
+const titres = Object.fromEntries(scrutins().map((s) => {
+  const t = majuscule(s.titre).replace(/\.$/, '');
+  return [s.uid, [lienVote(s), t.length > 110 ? `${t.slice(0, 108)}…` : t]];
+}));
 ---
 <Base titre="Mon hémicycle" onglet="hemicycle"
-  description="La composition de l'Assemblée nationale aujourd'hui, siège par siège.">
-  <div>
-    <h1>Mon hémicycle</h1>
-    <p class="sous-titre">
-      Bientôt, tes réponses à de vrais votes dessineront ici ton hémicycle : les députés qui
-      votent comme toi, ton jumeau parmi les 577, et la précision de ton résultat.
-    </p>
-  </div>
+  description="Ton hémicycle : l'Assemblée nationale siège par siège, tes réponses à de vrais votes et ton député.">
+  <div class="haut">
+    <section class="salle" aria-labelledby="titre-hemicycle">
+      <div class="titre-section">
+        <h1 id="titre-hemicycle">Ton hémicycle</h1>
+        <span>L'Assemblée au {dateLisible(compo.date)}</span>
+      </div>
+      <p class="sous-titre">
+        {occupes} députés dans {compo.groupes.length} groupes{vacants > 0 && `, ${vacants} siège${vacants > 1 ? 's' : ''} vacant${vacants > 1 ? 's' : ''}`}.
+        Les groupes sont rangés dans l'ordre de leurs places dans la salle ; les non-inscrits,
+        dispersés, sont regroupés à droite. Touche un siège pour voir son député.
+      </p>
+      <div class="dessin">
+        <Hemicycle sieges={compo.sieges} groupes={compo.groupes} mode="composition"
+          titre="Composition de l'Assemblée nationale" />
+      </div>
+    </section>
 
-  <section class="carte" aria-labelledby="aujourdhui">
-    <h2 id="aujourdhui">L'Assemblée aujourd'hui</h2>
-    <p class="sous-titre">
-      {`${occupes} députés en exercice le ${dateLisible(compo.date)}, dans ${compo.groupes.length} groupes`}{vacants > 0 && `, et ${vacants} siège${vacants > 1 ? 's' : ''} vacant${vacants > 1 ? 's' : ''}`}.
-      Les groupes sont rangés dans l'ordre de leurs places dans la salle, d'après les numéros de
-      siège officiels ; les non-inscrits, dispersés dans la salle, sont regroupés à droite.
-    </p>
-    <div style="margin-top: 18px">
-      <Hemicycle sieges={compo.sieges} groupes={compo.groupes} mode="composition"
-        titre="Composition de l'Assemblée nationale" />
+    <div class="cote">
+      <section class="encadre place" aria-labelledby="titre-place">
+        <p class="sur-titre">Ta place · bientôt</p>
+        <h2 id="titre-place">Le 578<sup>e</sup> siège t'attend</h2>
+        <p>
+          Après un quiz de 10 vrais votes, tes réponses seront comparées une à une à celles des
+          577 députés : le groupe qui vote le plus comme toi, ton jumeau, et la précision de ton
+          résultat. Aucun axe gauche-droite : seulement des votes réels.
+        </p>
+      </section>
+
+      <section class="encadre reponses" aria-labelledby="titre-reponses">
+        <div class="titre-carte">
+          <h2 id="titre-reponses">Tes réponses</h2>
+          <span class="compteur" data-compteur>0</span>
+        </div>
+        <p data-texte-reponses>
+          Tu n'as encore tranché aucun vote. Chaque page de vote te demande : « Et toi,
+          qu'aurais-tu voté ? »
+        </p>
+        <ul class="liste-reponses" data-liste-reponses hidden></ul>
+        <a class="bouton-violet" href="/explorer/">Trancher des votes</a>
+        <p class="discret">Tes réponses restent dans ton navigateur : rien n'est envoyé.</p>
+      </section>
+
+      <section class="encadre" aria-labelledby="titre-depute" data-encadre-depute>
+        <h2 id="titre-depute">Ton député</h2>
+        <p data-depute-texte>Retrouve qui te représente et compare ses votes aux tiens.</p>
+        <a class="bouton" href="/deputes/" data-depute-lien>Trouver avec mon code postal</a>
+      </section>
     </div>
-  </section>
+  </div>
+  <script type="application/json" data-titres set:html={JSON.stringify(titres).replace(/</g, '\\u003c')}></script>
 </Base>
+
+<script>
+  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { libelleCirco } from '../lib/geo.ts';
+
+  const titres: Record<string, [string, string]> = JSON.parse(
+    document.querySelector('[data-titres]')?.textContent ?? '{}');
+  const mes = Object.entries(reponses())
+    .filter(([uid]) => titres[uid])
+    .sort((a, b) => b[1].le.localeCompare(a[1].le));
+  const n = mes.length;
+  document.querySelector('[data-compteur]')!.textContent = String(n);
+  if (n > 0) {
+    document.querySelector('[data-texte-reponses]')!.textContent =
+      `${n} vote${n > 1 ? 's' : ''} tranché${n > 1 ? 's' : ''}. Les plus récents :`;
+    const ul = document.querySelector<HTMLElement>('[data-liste-reponses]')!;
+    for (const [uid, r] of mes.slice(0, 6)) {
+      const li = document.createElement('li');
+      const pastille = document.createElement('span');
+      pastille.className = `pastille p-${r.v}`;
+      pastille.textContent = r.v;
+      const a = document.createElement('a');
+      a.href = titres[uid][0];
+      a.textContent = titres[uid][1];
+      li.append(pastille, a);
+      ul.append(li);
+    }
+    ul.hidden = false;
+  }
+
+  const uid = deputeChoisi();
+  if (uid) {
+    fetch('/donnees/deputes.json').then((r) => r.json()).then((liste: { u: string; n: string;
+      g: string | null; c: string; d: string }[]) => {
+      const d = liste.find((x) => x.u === uid);
+      if (!d) return;
+      document.querySelector('[data-depute-texte]')!.textContent =
+        `${d.n} (${d.g ?? 'sans groupe'}), ${libelleCirco(d.c)} · ${d.d}.`;
+      const lien = document.querySelector<HTMLAnchorElement>('[data-depute-lien]')!;
+      lien.href = `/deputes/${d.u}/`;
+      lien.textContent = 'Ses votes face aux tiens';
+    }).catch(() => {});
+  }
+</script>
+
+<style>
+  .haut { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  @media (max-width: 1080px) { .haut { grid-template-columns: minmax(0, 1fr); } }
+  .salle { padding: clamp(18px, 2.6vw, 26px); border-radius: 30px; background: var(--fond-doux); min-width: 0; }
+  .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+  .titre-section span { font-size: 14px; color: var(--gris); }
+  .salle .sous-titre { margin: 8px 0 0; max-width: 720px; }
+  .dessin { margin-top: 26px; }
+  .cote { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  @media (max-width: 1080px) {
+    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
+  }
+  .encadre { padding: 20px 22px; border: 2px solid var(--bord); border-radius: 26px; background: var(--fond); }
+  .encadre h2 { font-size: 21px; }
+  .encadre p { margin: 8px 0 0; font-size: 15px; color: var(--texte-doux); }
+  .sur-titre { margin: 0 !important; font-family: var(--police-titre); font-weight: 600; font-size: 13px !important; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet) !important; }
+  .place h2 { margin-top: 6px; font-size: clamp(24px, 2.4vw, 30px); }
+  .reponses { border: 0; background: #EFE9FF; }
+  .reponses h2, .reponses p { color: var(--violet-encre); }
+  .titre-carte { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .compteur { font-family: var(--police-titre); font-weight: 700; font-size: 34px; line-height: 1; color: var(--violet-fonce); }
+  .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .liste-reponses :global(li) { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
+  .liste-reponses :global(a) { color: var(--texte); text-decoration: none; line-height: 1.35; }
+  .liste-reponses :global(a:hover) { color: var(--violet-fonce); text-decoration: underline; }
+  .liste-reponses :global(.pastille) {
+    flex: none; padding: 2px 8px; border-radius: 8px; font-family: var(--police-titre); font-weight: 600;
+    font-size: 12px; color: #fff;
+  }
+  .liste-reponses :global(.p-pour) { background: var(--pour); }
+  .liste-reponses :global(.p-contre) { background: #E5552A; }
+  .bouton-violet {
+    display: flex; align-items: center; justify-content: center; min-height: 52px; margin-top: 16px;
+    border-radius: 14px; background: var(--violet); color: #fff; box-shadow: 0 5px 0 var(--violet-fonce);
+    font-family: var(--police-titre); font-weight: 600; font-size: 15px; letter-spacing: 0.04em;
+    text-transform: uppercase; text-decoration: none;
+  }
+  .bouton-violet:hover { color: #fff; background: var(--violet-fonce); }
+  .discret { font-size: 13px !important; color: var(--violet-fonce) !important; opacity: 0.8; }
+  [data-encadre-depute] .bouton { width: 100%; margin-top: 14px; }
+</style>

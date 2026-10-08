@@ -1,34 +1,338 @@
 ---
+// Accueil « Cette semaine » (frame V5 « Accueil »), avec ce qui existe déjà : le dernier
+// verdict solennel, les votes solennels précédents, le principe du site, l'Assemblée du jour
+// et la recherche de son député. La séance de la semaine (votes annoncés à l'agenda, t23-t24)
+// est annoncée comme à venir, sans données inventées.
 import Base from '../layouts/Base.astro';
-import CarteScrutin from '../components/CarteScrutin.astro';
-import { solennels } from '../lib/donnees.ts';
+import LigneVote from '../components/LigneVote.astro';
+import MiniHemicycle from '../components/MiniHemicycle.astro';
+import { composition, dateLisible, etat, lienVote, majuscule, scrutins } from '../lib/donnees.ts';
+import { marge, verdict } from '../lib/votes.ts';
 
-const [dernier] = solennels();
+const solennels = scrutins().filter((v) => v.solennel && !v.motion_censure);
+const dernier = solennels[0];
 if (!dernier) throw new Error('Aucun vote solennel exporté');
+const precedents = solennels.slice(1, 6);
+const compo = composition();
+const rang = new Map(compo.groupes.map((g, i) => [g.uid, i]));
+const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
+  : ['#B9C0CE', '#D6DBE4'][(rang.get(s.groupe ?? '') ?? 0) % 2]);
+const occupes = compo.sieges.filter((s) => !s.vacant).length;
+const maj = etat();
+const [jour, mois] = dateLisible(dernier.date).split(' ');
 ---
 <Base titre="Le 578e siège"
-  description="Les votes de l'Assemblée nationale rendus accessibles : chaque semaine, tranche 3 vrais votes avant les députés.">
-  <div>
+  description="Les votes de l'Assemblée nationale rendus accessibles : tranche de vrais votes, compare-toi aux 577 députés, retrouve ce qu'a voté le tien.">
+  <div class="titre-page">
     <h1>Cette semaine à l'Assemblée</h1>
-    <p class="sous-titre">Il reste un siège libre à l'Assemblée : le tien.</p>
+    <span>Données mises à jour le {dateLisible(maj.genere_le)}</span>
   </div>
 
-  <div class="encart" role="note">
-    <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true" style="flex: none">
-      <rect x="6" y="12" width="16" height="9" rx="3" fill="#FFC531"></rect>
-      <rect x="9" y="5" width="10" height="8" rx="3" fill="#FFC531"></rect>
-    </svg>
-    <p style="margin: 0">
-      <strong>Site en construction.</strong> Bientôt, chaque semaine, tu trancheras 3 vrais votes
-      avant les députés, puis tu découvriras leur verdict. En attendant, voici le dernier vote
-      solennel, tel que l'Assemblée l'a publié.
-    </p>
+  <div class="mise-en-page">
+    <div class="principal">
+      <section class="ticket" aria-labelledby="titre-seance">
+        <div class="ticket-gauche">
+          <p class="sur-titre">La séance de la semaine · bientôt</p>
+          <h2 id="titre-seance">3 vrais votes à trancher avant les députés</h2>
+          <p class="ticket-texte">
+            Chaque lundi, les votes solennels annoncés à l'agenda de l'Assemblée. Tu votes,
+            puis tu découvres le verdict des 577. En attendant, entraîne-toi sur le dernier.
+          </p>
+          <a class="ticket-bouton" href={`${lienVote(dernier)}#qui-a-vote`}>Trancher le dernier vote</a>
+        </div>
+        <a class="ticket-droite" href={lienVote(dernier)}>
+          <span class="petit">Le dernier verdict</span>
+          <span class="jour">{jour} {mois}</span>
+          <span class="tampon">{verdict(dernier)}</span>
+          <span class="score">{dernier.decompte.pour} – {dernier.decompte.contre}</span>
+          {marge(dernier) && <span class="pastille-ticket">{marge(dernier)}</span>}
+        </a>
+      </section>
+
+      <section class="dernier" aria-labelledby="titre-dernier">
+        <p class="sur-titre-gris">Le dernier vote solennel · {dateLisible(dernier.date)}</p>
+        <h2 id="titre-dernier"><a href={lienVote(dernier)}>{majuscule(dernier.titre).replace(/\.$/, '')}</a></h2>
+        <p class="resume">
+          {verdict(dernier)} par {dernier.decompte.pour} voix pour et {dernier.decompte.contre} contre
+          {dernier.dissidents > 0 && `, dont ${dernier.dissidents} contre la majorité de leur groupe`}.
+        </p>
+        <a class="lien-fort" href={lienVote(dernier)}>Qui a voté quoi →</a>
+      </section>
+
+      <div class="duo">
+        <section class="encadre" aria-labelledby="titre-precedents">
+          <div class="titre-section">
+            <h2 id="titre-precedents">Les votes solennels précédents</h2>
+            <a href="/explorer/">Tout voir</a>
+          </div>
+          <ul class="liste">
+            {precedents.map((v) => <LigneVote vote={v} />)}
+          </ul>
+        </section>
+        <section class="encadre principe" aria-labelledby="titre-principe">
+          <h2 id="titre-principe">Le principe</h2>
+          <ol>
+            <li><span class="num">1</span><span><strong>Tu tranches</strong> de vrais votes de l'Assemblée, pour ou contre.</span></li>
+            <li><span class="num">2</span><span><strong>Tu compares</strong> avec les 577 députés, siège par siège.</span></li>
+            <li><span class="num">3</span><span><strong>Ton hémicycle se dessine</strong> : les groupes et le député qui votent le plus comme toi.</span></li>
+          </ol>
+          <p class="note">
+            Aucun axe gauche-droite, aucun commentaire : seulement des votes réels. Tes réponses
+            restent dans ton navigateur.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <aside class="cote">
+      <a class="carte-lien" href="/hemicycle/">
+        <span class="carte-tete"><span class="carte-titre">Ton hémicycle</span><span class="discret" data-nb-reponses>0 vote tranché</span></span>
+        <MiniHemicycle couleurs={couleurs} titre={`L'Assemblée aujourd'hui : ${occupes} députés en exercice`} />
+        <span class="carte-texte">
+          Pour l'instant, l'Assemblée du jour : {occupes} députés, {compo.groupes.length} groupes.
+          Bientôt, tes réponses y dessineront ta place.
+        </span>
+      </a>
+      <a class="carte-lien" href="/deputes/" data-mon-depute hidden>
+        <span class="carte-tete"><span class="carte-titre" data-titre-depute>Ton député</span><span class="discret" data-groupe-depute></span></span>
+        <span class="depute-choisi">
+          <span class="avatar-depute" aria-hidden="true" data-ini-depute></span>
+          <span><span class="nom-depute" data-nom-depute></span><span class="discret" data-circo-depute></span></span>
+        </span>
+        <span class="carte-texte">Ses votes, sa participation, et ses votes face aux tiens →</span>
+      </a>
+      <form class="carte" action="/deputes/" method="get" data-carte-depute>
+        <span class="carte-titre">Ton député</span>
+        <p class="carte-texte">Retrouve qui te représente, et ce qu'il a voté.</p>
+        <div class="cp">
+          <label for="cp-accueil" class="visuellement-cache">Code postal</label>
+          <input id="cp-accueil" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
+            placeholder="Code postal" autocomplete="postal-code" required />
+          <button type="submit">Trouver</button>
+        </div>
+      </form>
+    </aside>
   </div>
-
-  <section aria-labelledby="dernier-vote">
-    <h2 id="dernier-vote" class="visuellement-cache">Le dernier vote solennel</h2>
-    <CarteScrutin scrutin={dernier} niveau="h3" />
-  </section>
-
-  <p><a class="bouton" href="/explorer/">Voir les derniers votes solennels</a></p>
 </Base>
+
+<script>
+  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { libelleCirco } from '../lib/geo.ts';
+
+  const n = Object.keys(reponses()).length;
+  const nb = document.querySelector<HTMLElement>('[data-nb-reponses]');
+  if (nb) nb.textContent = `${n} vote${n > 1 ? 's' : ''} tranché${n > 1 ? 's' : ''}`;
+
+  // Le député choisi par le visiteur, lu dans la liste publique des députés.
+  const uid = deputeChoisi();
+  if (uid) {
+    fetch('/donnees/deputes.json').then((r) => r.json()).then((liste: { u: string; n: string;
+      g: string | null; c: string; d: string }[]) => {
+      const d = liste.find((x) => x.u === uid);
+      if (!d) return;
+      const carte = document.querySelector<HTMLAnchorElement>('[data-mon-depute]')!;
+      carte.href = `/deputes/${d.u}/`;
+      const [prenom, ...reste] = d.n.split(' ');
+      carte.querySelector('[data-ini-depute]')!.textContent =
+        (prenom.charAt(0) + (reste.at(-1) ?? '').charAt(0)).toUpperCase();
+      carte.querySelector('[data-nom-depute]')!.textContent = d.n;
+      carte.querySelector('[data-groupe-depute]')!.textContent = d.g ?? '';
+      carte.querySelector('[data-circo-depute]')!.textContent = `${libelleCirco(d.c)} · ${d.d}`;
+      carte.hidden = false;
+      document.querySelector<HTMLElement>('[data-carte-depute]')!.hidden = true;
+    }).catch(() => {});
+  }
+</script>
+
+<style>
+  .titre-page { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+  .titre-page span { font-size: 15px; color: var(--gris); }
+  .mise-en-page { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: start; }
+  @media (max-width: 1080px) { .mise-en-page { grid-template-columns: minmax(0, 1fr); } }
+  .principal { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+  .ticket {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 28px;
+    background: var(--violet);
+    color: #fff;
+    box-shadow: 0 6px 0 var(--violet-fonce);
+    overflow: hidden;
+  }
+  .ticket-gauche { flex: 1 1 400px; padding: 26px 28px; }
+  .sur-titre {
+    margin: 0;
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .ticket h2 { margin-top: 6px; font-size: clamp(24px, 2.6vw, 30px); line-height: 1.1; }
+  .ticket-texte { margin: 12px 0 0; font-size: 16px; opacity: 0.92; max-width: 520px; }
+  .ticket-bouton {
+    display: inline-flex;
+    align-items: center;
+    min-height: 56px;
+    margin-top: 20px;
+    padding: 0 26px;
+    border-radius: 16px;
+    background: #fff;
+    color: var(--violet-fonce);
+    box-shadow: 0 5px 0 var(--violet-pale);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .ticket-bouton:hover { color: var(--violet-encre); }
+  .ticket-bouton:focus-visible, .ticket-droite:focus-visible { outline-color: #fff; }
+  .ticket-droite {
+    flex: 0 0 230px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 24px 18px;
+    background: #6A3DF0;
+    border-left: 3px dashed rgba(255, 255, 255, 0.35);
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+  }
+  .ticket-droite:hover { background: #6233EA; color: #fff; }
+  .ticket-droite::before, .ticket-droite::after {
+    content: '';
+    position: absolute;
+    left: -16px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--fond);
+  }
+  .ticket-droite::before { top: -16px; }
+  .ticket-droite::after { bottom: -16px; }
+  @media (max-width: 700px) {
+    .ticket-droite { flex-basis: 100%; border-left: 0; border-top: 3px dashed rgba(255, 255, 255, 0.35); }
+    .ticket-droite::before, .ticket-droite::after { display: none; }
+  }
+  .petit { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+  .jour { font-family: var(--police-titre); font-weight: 700; font-size: 20px; }
+  .tampon {
+    margin: 6px 0;
+    padding: 4px 14px;
+    border: 3px solid #fff;
+    border-radius: 12px;
+    font-family: var(--police-titre);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+  }
+  .score { font-family: var(--police-titre); font-weight: 700; font-size: 40px; line-height: 1; }
+  .pastille-ticket { margin-top: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); font-family: var(--police-titre); font-weight: 600; font-size: 14px; }
+
+  .dernier { padding: 4px 4px 0; }
+  .sur-titre-gris { margin: 0 0 6px; font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet-fonce); }
+  .dernier h2 { font-size: clamp(21px, 2.2vw, 26px); font-weight: 600; line-height: 1.25; }
+  .dernier h2 a { color: var(--texte); text-decoration: none; }
+  .dernier h2 a:hover { color: var(--violet-fonce); }
+  .resume { margin: 8px 0 6px; color: var(--texte-doux); }
+  .lien-fort { font-family: var(--police-titre); font-weight: 600; text-decoration: none; }
+
+  .duo { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .duo { grid-template-columns: minmax(0, 1fr); } }
+  .encadre { padding: 18px 20px; border: 2px solid var(--bord); border-radius: 24px; }
+  .encadre h2 { font-size: 20px; }
+  .titre-section { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .titre-section a { flex: none; font-family: var(--police-titre); font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; }
+  .liste { margin: 0; padding: 0; list-style: none; }
+  .duo :global(.ligne a) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'haut haut' 'titre titre' 'mini accent';
+    gap: 8px 12px;
+    padding: 12px 6px;
+  }
+  .duo :global(.haut) { flex-direction: row; align-items: center; gap: 10px; }
+  .principe ol { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .principe li { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; color: var(--texte-doux); }
+  .principe strong { color: var(--texte); }
+  .num {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--violet-voile);
+    color: var(--violet-fonce);
+    font-family: var(--police-titre);
+    font-weight: 700;
+  }
+  .note { margin: 16px 0 0; padding-top: 14px; border-top: 2px dashed var(--bord-leger); font-size: 14px; color: var(--gris); }
+
+  .cote { display: flex; flex-direction: column; gap: 16px; }
+  @media (max-width: 1080px) {
+    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
+  }
+  .carte-lien, .carte {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 2px solid var(--bord);
+    border-radius: 24px;
+    background: var(--fond);
+    box-shadow: 0 5px 0 var(--bord);
+    color: inherit;
+    text-decoration: none;
+  }
+  .carte-lien:hover { border-color: var(--violet-pale); }
+  .carte-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .carte-titre { font-family: var(--police-titre); font-weight: 700; font-size: 20px; }
+  .discret { font-size: 13px; color: var(--gris); }
+  .carte-texte { margin: 0; font-size: 15px; color: var(--texte-doux); }
+  .depute-choisi { display: flex; align-items: center; gap: 12px; }
+  .depute-choisi > span:last-child { display: flex; flex-direction: column; }
+  .avatar-depute {
+    flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;
+    border-radius: 50%; background: var(--violet-voile); color: var(--violet-fonce);
+    font-family: var(--police-titre); font-weight: 700; font-size: 17px;
+  }
+  .nom-depute { font-family: var(--police-titre); font-weight: 600; font-size: 18px; }
+  .cp { display: flex; gap: 8px; }
+  .cp input {
+    flex: 1;
+    min-width: 0;
+    min-height: 50px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 2px solid var(--bord);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+  }
+  .cp input:focus { border-color: var(--violet); outline: none; }
+  .cp button {
+    min-height: 50px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--violet);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--violet-fonce);
+    font-family: var(--police-titre);
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>

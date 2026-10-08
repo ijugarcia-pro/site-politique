@@ -59,7 +59,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [ ] t19 🤖 Fiche député + recherche par code postal *(livrée le 8 oct. 2026, branche `page-vote` ; à cocher après fusion et déploiement vert)*
 - [x] t20 👤 Valider les 10 votes du quiz d'entrée *(fait le 8 oct. 2026 : data/quiz.json ; branche `quiz-candidats`)*
 - [ ] t21 🤖 Quiz d'entrée, résultat, jumeau, stories *(livrée le 8 oct. 2026, branche `quiz` ; à cocher après fusion et déploiement vert)*
-- [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone)
+- [ ] t22 👤 Tester le parcours complet (ordinateur + téléphone) *(préparée le 8 oct. 2026 : docs/test-parcours.md)*
 
 ### Phase 3 — La séance de la semaine (S9–S10, 30 nov. → 13 déc.)
 - [ ] t23 🤖 Agenda et sélection automatique des 3 votes
@@ -325,6 +325,7 @@ site/          le site (Astro), créé en phase 2
 ### t22 👤 Tester le parcours complet — S8, 1 h
 - Faire le quiz comme « Jade », chercher sa députée comme « Marc », sur ordinateur et téléphone. Chaque friction → une issue GitHub étiquetée.
 - **Claude Code prépare** : la liste des scénarios à tester et un modèle d'issue.
+- **Préparé (8 oct.) :** `docs/test-parcours.md`, check-list à cocher : 6 scénarios « Jade » sur téléphone (accueil, quiz et neutralité des questions, résultat, partage des stories, Mon hémicycle, retour), 4 scénarios « Marc » sur ordinateur (code postal avec 8 cas aux résultats attendus vérifiés dans les données, fiche député, page de vote au clavier, recherche), vérifications de fond (ordre LIOT / SOC face au schéma officiel, zoom, état des données, navigation privée) et limites connues. Modèle d'issue : `.github/ISSUE_TEMPLATE/friction-parcours.md` (scénario, appareil, gestes, attendu, constaté, gravité), libellé `parcours`. **Reste pour Julien :** faire le test sur le site en ligne une fois les PR #8 à #11 fusionnées. **Reste à créer** le libellé `parcours` dans le dépôt (sans lui, les issues sont créées sans libellé).
 
 ---
 

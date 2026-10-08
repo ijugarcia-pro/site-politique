@@ -45,8 +45,8 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
             <svg width="28" height="28" viewBox="0 0 28 28"><rect x="6" y="12" width="16" height="9" rx="3" fill="#fff"></rect><rect x="9" y="5" width="10" height="8" rx="3" fill="#fff"></rect><rect x="8" y="20" width="3" height="5" rx="1.5" fill="#fff"></rect><rect x="17" y="20" width="3" height="5" rx="1.5" fill="#fff"></rect></svg>
           </span>
           <p>
-            Il reste un siège libre à l'Assemblée : <strong>le tien</strong>. Réponds à
-            {questions.length} vrais votes, on te montre quels députés ont voté comme toi. Tu
+            Il reste un siège libre à l'Assemblée : <strong>le tien</strong>.
+            {` Réponds à ${questions.length} vrais votes, on te montre quels députés ont voté comme toi.`} Tu
             peux toujours répondre « Je ne sais pas » ; tes réponses restent dans ton navigateur.
           </p>
         </div>
@@ -94,8 +94,8 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
           <button type="button" class="b-partager" data-ouvrir-partage>Partager</button>
         </div>
         <p class="recommencer">
-          <button type="button" data-recommencer>Recommencer le quiz</button>
-          · <a href="/explorer/">Trancher d'autres votes</a> pour affiner ton résultat
+          <button type="button" data-recommencer>Recommencer le quiz</button>{' · '}<a
+            href="/explorer/">Trancher d'autres votes</a> pour affiner ton résultat
         </p>
       </div>
     </section>
@@ -477,7 +477,8 @@ const donnees = JSON.stringify({ questions, deputes: deputesCompo }).replace(/</
   .choix button[aria-pressed='true'], .b-passer[aria-pressed='true'] { opacity: 1; outline: 4px solid var(--texte); outline-offset: 3px; }
   .lien-vote { margin: 18px 0 0; font-size: 15px; }
 
-  .revelation { position: sticky; bottom: 0; z-index: 5; margin: 24px calc(-1 * var(--gouttiere)) -56px; border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
+  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * var(--gouttiere)) -56px; border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
+  @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
   @keyframes monte { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
   .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; max-width: 1360px; margin: 0 auto; padding: 18px var(--gouttiere); }

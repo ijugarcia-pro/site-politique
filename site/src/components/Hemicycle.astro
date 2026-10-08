@@ -101,6 +101,7 @@ const resume = mode === 'vote' && censure
         <button type="button" data-filtre="dissidents" aria-pressed="false">Contre leur groupe</button>
       )}
       <button type="button" data-filtre="depute" aria-pressed="false">Ton député</button>
+      <button type="button" data-filtre="jumeau" aria-pressed="false">Ton jumeau</button>
     </div>
   )}
   <div class="cadre">
@@ -247,7 +248,19 @@ const resume = mode === 'vote' && censure
 <script>
   // Parcours au clavier et au survol. Sans JavaScript, le dessin, le résumé et le tableau
   // restent complets.
-  import { deputeChoisi } from '../lib/navigateur.ts';
+  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { profil, type Matrice } from '../lib/profil.ts';
+
+  // Le jumeau du visiteur, calculé une fois par page et seulement si on le demande.
+  let promesseJumeau: Promise<string | null> | null = null;
+  const jumeau = () => {
+    promesseJumeau ??= fetch('/donnees/matrice.json').then((r) => r.json())
+      .then((m: Matrice) => {
+        const reps = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
+        return profil(m, reps).jumeau?.ligne.u ?? null;
+      }).catch(() => null);
+    return promesseJumeau;
+  };
 
   for (const figure of document.querySelectorAll<HTMLElement>('[data-hemicycle]')) {
     const zone = figure.querySelector<HTMLElement>('.zone')!;
@@ -323,6 +336,24 @@ const resume = mode === 'vote' && censure
       texteRepere.textContent = texte;
       repere.hidden = false;
     };
+    const lien = (href: string, texte: string) => {
+      const a = document.createElement('a');
+      a.href = href;
+      a.textContent = texte;
+      return a;
+    };
+    const montrerDepute = (uid: string, qui: string) => {
+      const siege = sieges.find((s) => s.dataset.d === uid);
+      if (!siege) {
+        info.textContent = `${qui} ne siégeait pas à l'Assemblée lors de ce vote.`;
+        return;
+      }
+      siege.classList.add('choisi');
+      const texte = annonces[Number(siege.dataset.i)][0];
+      info.textContent = `${qui} : ${texte}`;
+      const [nom, , vote] = texte.split(' · ');
+      placerRepere(siege, vote ? `${nom} · ${vote}` : nom);
+    };
     const filtrer = (filtre: string) => {
       for (const b of boutons) b.setAttribute('aria-pressed', String(b.dataset.filtre === filtre));
       cadre.dataset.filtre = filtre;
@@ -335,22 +366,23 @@ const resume = mode === 'vote' && censure
           : '1 député a voté contre la majorité de son groupe.';
       } else if (filtre === 'depute') {
         const uid = deputeChoisi();
-        const siege = uid ? sieges.find((s) => s.dataset.d === uid) : undefined;
         if (!uid) {
           info.textContent = "Tu n'as pas encore choisi ton député. ";
-          const lien = document.createElement('a');
-          lien.href = '/deputes/';
-          lien.textContent = 'Trouve-le avec ton code postal';
-          info.append(lien, '.');
-        } else if (!siege) {
-          info.textContent = "Ton député ne siégeait pas à l'Assemblée lors de ce vote.";
+          info.append(lien('/deputes/', 'Trouve-le avec ton code postal'), '.');
         } else {
-          siege.classList.add('choisi');
-          const texte = annonces[Number(siege.dataset.i)][0];
-          info.textContent = `Ton député : ${texte}`;
-          const [nom, , vote] = texte.split(' · ');
-          placerRepere(siege, vote ? `${nom} · ${vote}` : nom);
+          montrerDepute(uid, 'Ton député');
         }
+      } else if (filtre === 'jumeau') {
+        info.textContent = 'Recherche de ton jumeau…';
+        jumeau().then((uid) => {
+          if (cadre.dataset.filtre !== 'jumeau') return;
+          if (!uid) {
+            info.textContent = "Tu n'as pas encore de jumeau : il faut avoir tranché au moins un vote. ";
+            info.append(lien('/quiz/', 'Fais le quiz d\'entrée'), '.');
+          } else {
+            montrerDepute(uid, 'Ton jumeau');
+          }
+        });
       } else {
         info.textContent = consigne;
       }
@@ -407,7 +439,9 @@ const resume = mode === 'vote' && censure
   .filtres button[aria-pressed='true'] { background: var(--violet); color: #fff; }
   .cadre[data-filtre='dissidents'] .siege:not(.dissident),
   .cadre[data-filtre='depute'] .siege:not(.choisi),
-  .cadre[data-filtre='depute'] .cercle-dissident { opacity: 0.16; }
+  .cadre[data-filtre='depute'] .cercle-dissident,
+  .cadre[data-filtre='jumeau'] .siege:not(.choisi),
+  .cadre[data-filtre='jumeau'] .cercle-dissident { opacity: 0.16; }
   .siege { transition: opacity 0.15s; }
   .siege.choisi { stroke: var(--texte); stroke-width: 2.5; }
   .repere {

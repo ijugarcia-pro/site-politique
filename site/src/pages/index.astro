@@ -36,9 +36,10 @@ const [jour, mois] = dateLisible(dernier.date).split(' ');
           <h2 id="titre-seance">3 vrais votes à trancher avant les députés</h2>
           <p class="ticket-texte">
             Chaque lundi, les votes solennels annoncés à l'agenda de l'Assemblée. Tu votes,
-            puis tu découvres le verdict des 577. En attendant, entraîne-toi sur le dernier.
+            puis tu découvres le verdict des 577. En attendant, prends ta place : 10 vrais
+            votes, et tu sais quels députés votent comme toi.
           </p>
-          <a class="ticket-bouton" href={`${lienVote(dernier)}#qui-a-vote`}>Trancher le dernier vote</a>
+          <a class="ticket-bouton" href="/quiz/" data-bouton-quiz>Prendre ma place · 2 min</a>
         </div>
         <a class="ticket-droite" href={lienVote(dernier)}>
           <span class="petit">Le dernier verdict</span>
@@ -89,8 +90,8 @@ const [jour, mois] = dateLisible(dernier.date).split(' ');
         <span class="carte-tete"><span class="carte-titre">Ton hémicycle</span><span class="discret" data-nb-reponses>0 vote tranché</span></span>
         <MiniHemicycle couleurs={couleurs} titre={`L'Assemblée aujourd'hui : ${occupes} députés en exercice`} />
         <span class="carte-texte">
-          Pour l'instant, l'Assemblée du jour : {occupes} députés, {compo.groupes.length} groupes.
-          Bientôt, tes réponses y dessineront ta place.
+          <span data-texte-hemicycle>L'Assemblée du jour : {occupes} députés, {compo.groupes.length}
+          groupes. Fais le quiz : tes réponses y dessineront ta place.</span>
         </span>
       </a>
       <a class="carte-lien" href="/deputes/" data-mon-depute hidden>
@@ -116,12 +117,21 @@ const [jour, mois] = dateLisible(dernier.date).split(' ');
 </Base>
 
 <script>
-  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { deputeChoisi, lireJSON, reponses } from '../lib/navigateur.ts';
   import { libelleCirco } from '../lib/geo.ts';
 
   const n = Object.keys(reponses()).length;
   const nb = document.querySelector<HTMLElement>('[data-nb-reponses]');
   if (nb) nb.textContent = `${n} vote${n > 1 ? 's' : ''} tranché${n > 1 ? 's' : ''}`;
+  // Quiz déjà fait : le ticket mène à ta place.
+  if (lireJSON<{ fini?: boolean }>('578e.quiz.v1', {}).fini) {
+    const bouton = document.querySelector<HTMLAnchorElement>('[data-bouton-quiz]');
+    if (bouton) { bouton.href = '/hemicycle/'; bouton.textContent = 'Voir ma place'; }
+  }
+  if (n > 0) {
+    const t = document.querySelector('[data-texte-hemicycle]');
+    if (t) t.textContent = 'Les députés qui votent comme toi, ton jumeau, ton opposé : tout est calculé dans ton navigateur.';
+  }
 
   // Le député choisi par le visiteur, lu dans la liste publique des députés.
   const uid = deputeChoisi();

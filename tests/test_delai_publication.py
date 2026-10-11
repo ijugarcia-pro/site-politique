@@ -74,14 +74,49 @@ def test_suivi_reference_puis_nouveaux_scrutins(tmp_path):
     assert nouveau["fin_seance"] == "2026-10-06T20:00:00.000+02:00"
     assert lire(tmp_path / "versions.csv")[-1]["nouveaux_scrutins"] == "1"
 
-    # Toutes les requêtes contournent le cache.
-    assert all("t=" in str(r.url.query) for r in serveur.requetes)
+    # La date de modification est toujours lue sans cache.
+    assert all("t=" in str(r.url.query) for r in serveur.requetes if r.method == "HEAD")
 
     rapport = tmp_path / "rapport.md"
     mesure.ecrire_rapport(tmp_path, rapport)
     texte = rapport.read_text(encoding="utf-8")
     assert "**Scrutins solennels** : 1 scrutins" in texte
     assert "Publiés au plus tard le lendemain du vote à 8 h : 0 sur 1" in texte
+
+
+def test_releve_malgre_une_coupure_et_un_cache_perime(tmp_path):
+    class Coupure(httpx.SyncByteStream):
+        def __iter__(self):
+            yield serveur.scrutins[:50]
+            raise httpx.RemoteProtocolError("peer closed connection")
+
+    serveur = Serveur()
+    perime = {"last-modified": "Tue, 06 Oct 2026 22:26:00 GMT"}
+    coupures = [True]
+
+    def reponse(requete: httpx.Request) -> httpx.Response:
+        if requete.method == "GET" and not requete.url.query:
+            return httpx.Response(200, headers=perime, content=b"ancienne version")
+        if requete.method == "GET" and "Scrutins" in requete.url.path and coupures:
+            coupures.pop()
+            return httpx.Response(200, headers={"last-modified": serveur.modification},
+                                  stream=Coupure())
+        if "range" in requete.headers:
+            debut = int(requete.headers["range"].removeprefix("bytes=").rstrip("-"))
+            total = len(serveur.scrutins)
+            return httpx.Response(206, content=serveur.scrutins[debut:], headers={
+                "last-modified": serveur.modification,
+                "content-range": f"bytes {debut}-{total - 1}/{total}"})
+        return serveur(requete)
+
+    client = httpx.Client(transport=httpx.MockTransport(reponse))
+    pauses = []
+    assert mesure.passage(client, tmp_path, pauses.append) is True
+    assert pauses == [5]
+    [version] = lire(tmp_path / "versions.csv")
+    assert version["derniere_modification"] == "2026-10-07T04:26:32+00:00"
+    assert version["taille"] == str(len(serveur.scrutins))
+    assert version["scrutins"] == "2"
 
 
 def test_lendemain_8h_a_l_heure_de_la_seance():

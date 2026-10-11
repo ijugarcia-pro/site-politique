@@ -6,6 +6,7 @@
 Chaque passage lit la date de modification de l'archive des scrutins sur le serveur d'origine
 (paramètre anti-cache). Quand elle change, on télécharge l'archive et on relève les scrutins
 qu'on n'avait jamais vus : leur date de publication est la date de modification de cette version.
+Le serveur coupe souvent les téléchargements : pipeline/telechargement.py reprend après coupure.
 L'heure exacte d'un vote n'est pas publiée ; on encadre donc le délai avec l'heure de début et de
 fin (prévue) de la séance, lues dans l'agenda.
 
@@ -27,21 +28,24 @@ import json
 import re
 import statistics
 import sys
+import tempfile
 import time
 import zipfile
 from collections import Counter
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import httpx
 
-from pipeline.an import URL_AGENDA, URL_SCRUTINS, champ, sans_cache, val
+from pipeline import telechargement
+from pipeline.an import URL_AGENDA, URL_SCRUTINS, champ, val
+from pipeline.telechargement import requete
 
 RACINE = Path(__file__).resolve().parent.parent
 SORTIE = RACINE / "data" / "mesures" / "delai_publication"
 RAPPORT = RACINE / "docs" / "delai-publication.md"
-TENTATIVES = 3
 NOM_SCRUTIN = re.compile(r"json/(VTANR5L17V(\d+))\.json")
 
 CHAMPS_VERSIONS = [
@@ -59,23 +63,18 @@ TRANCHES = [(1, "moins de 1 h"), (3, "1 à 3 h"), (6, "3 à 6 h"), (12, "6 à 12
 # --- Réseau -----------------------------------------------------------------------------------
 
 
-def requete(client: httpx.Client, methode: str, url: str) -> httpx.Response:
-    for tentative in range(1, TENTATIVES + 1):
-        try:
-            reponse = client.request(methode, sans_cache(url))
-            reponse.raise_for_status()
-            return reponse
-        except httpx.HTTPError as erreur:
-            if tentative == TENTATIVES:
-                raise
-            print(f"  échec ({erreur.__class__.__name__}), nouvelle tentative…", flush=True)
-            time.sleep(20 * tentative)
-    raise AssertionError("inatteignable")
+def telecharger(client: httpx.Client, url: str, pause: Callable[[float], None],
+                annonce=None) -> tuple[bytes, str | None]:
+    """Contenu d'une archive et sa date de modification (en-tête Last-Modified)."""
+    with tempfile.TemporaryDirectory() as dossier:
+        cible = Path(dossier) / "archive.zip"
+        _, modification = telechargement.telecharger(client, url, cible, pause, annonce)
+        return cible.read_bytes(), modification
 
 
-def date_http(reponse: httpx.Response) -> str:
+def date_http(modification: str) -> str:
     """Last-Modified du serveur d'origine, en ISO UTC."""
-    return iso(parsedate_to_datetime(reponse.headers["last-modified"]))
+    return iso(parsedate_to_datetime(modification))
 
 
 def iso(moment: datetime) -> str:
@@ -116,11 +115,14 @@ def est_connu(uid: str, numero: int, etat: dict, deja_vus: set[str]) -> bool:
     )
 
 
-def seances(client: httpx.Client, refs: set[str]) -> dict[str, tuple[str, str | None]]:
+def seances(client: httpx.Client, refs: set[str],
+            pause: Callable[[float], None]) -> dict[str, tuple[str, str | None]]:
     """seanceRef → (début, fin prévue), lus dans l'agenda."""
     if not refs:
         return {}
-    archive = zipfile.ZipFile(io.BytesIO(requete(client, "GET", URL_AGENDA).content))
+    tete = requete(client, "HEAD", URL_AGENDA, pause)
+    contenu, _ = telecharger(client, URL_AGENDA, pause, tete.headers)
+    archive = zipfile.ZipFile(io.BytesIO(contenu))
     noms = set(archive.namelist())
     trouvees = {}
     for ref in refs:
@@ -134,28 +136,29 @@ def seances(client: httpx.Client, refs: set[str]) -> dict[str, tuple[str, str | 
 # --- Passage ----------------------------------------------------------------------------------
 
 
-def passage(client: httpx.Client, sortie: Path) -> bool:
+def passage(client: httpx.Client, sortie: Path,
+            pause: Callable[[float], None] = time.sleep) -> bool:
     """Un relevé ; renvoie True si les mesures ont changé."""
     sortie.mkdir(parents=True, exist_ok=True)
     chemin_etat = sortie / "etat.json"
     versions = lire_csv(sortie / "versions.csv")
     scrutins = lire_csv(sortie / "scrutins.csv")
 
-    tete = requete(client, "HEAD", URL_SCRUTINS)
-    modification = date_http(tete)
+    tete = requete(client, "HEAD", URL_SCRUTINS, pause)
+    modification = date_http(tete.headers["last-modified"])
     if versions and modification <= versions[-1]["derniere_modification"]:
         print(f"Archive inchangée (modifiée le {modification}).")
         return False
 
     observee_le = maintenant()
-    reponse = requete(client, "GET", URL_SCRUTINS)
-    modification = date_http(reponse)
-    archive = zipfile.ZipFile(io.BytesIO(reponse.content))
+    contenu, modification_get = telecharger(client, URL_SCRUTINS, pause, tete.headers)
+    modification = date_http(modification_get)
+    archive = zipfile.ZipFile(io.BytesIO(contenu))
     presents = scrutins_de_l_archive(archive)
     version = {
         "derniere_modification": modification,
         "observee_le": observee_le,
-        "taille": len(reponse.content),
+        "taille": len(contenu),
         "scrutins": len(presents),
         "dernier_numero": max(presents.values()),
     }
@@ -201,7 +204,7 @@ def passage(client: httpx.Client, sortie: Path) -> bool:
     # Heures de séance : pour les nouveaux scrutins et ceux que l'agenda ne connaissait pas encore.
     sans_seance = {ligne["seance_ref"] for ligne in scrutins if not ligne["debut_seance"]}
     if sans_seance:
-        trouvees = seances(client, sans_seance)
+        trouvees = seances(client, sans_seance, pause)
         for ligne in scrutins:
             if not ligne["debut_seance"] and ligne["seance_ref"] in trouvees:
                 debut, fin = trouvees[ligne["seance_ref"]]

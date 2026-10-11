@@ -2,7 +2,7 @@ import json
 
 import httpx
 
-from pipeline import ingest
+from pipeline import ingest, telechargement
 
 SOURCES = [
     {"id": "scrutins", "nom": "Scrutins", "url": "https://an.test/Scrutins.json.zip",
@@ -51,7 +51,8 @@ def test_premiere_passe_telecharge_tout_et_note_les_empreintes(tmp_path):
     assert (tmp_path / "raw" / "Scrutins.json.zip").read_bytes() == b"scrutins v1"
     assert len(etat["scrutins"]["sha256"]) == 64
     assert etat["scrutins"]["derniere_modification"] == "Wed, 07 Oct 2026 04:26:32 GMT"
-    assert all("t=" in str(r.url.query) for r in serveur.requetes)  # anti-cache
+    # La date est lue sans cache ; la copie en cache n'est prise que si c'est cette version.
+    assert all("t=" in str(r.url.query) for r in serveur.requetes if r.method == "HEAD")
 
 
 def test_date_inchangee_aucun_telechargement(tmp_path):
@@ -108,7 +109,7 @@ def test_echec_de_telechargement_garde_la_version_precedente(tmp_path):
     pauses = []
     bilans, etat = passe(serveur, tmp_path, pauses)
     assert bilans["scrutins"].statut == "échec"
-    assert len(pauses) == ingest.TENTATIVES - 1  # nouvelles tentatives, avec attente
+    assert len(pauses) == telechargement.TENTATIVES - 1  # nouvelles tentatives, avec attente
     assert (tmp_path / "raw" / "Scrutins.json.zip").read_bytes() == b"scrutins v1"
     assert not (tmp_path / "raw" / "Scrutins.json.zip.part").exists()
     assert etat["scrutins"]["sha256"] == avant["scrutins"]["sha256"]

@@ -1,0 +1,50 @@
+name: Soirée de scrutin
+
+# Les soirs de vote solennel de la séance de la semaine (t25) : de 16 h à minuit (heure de
+# Paris), chaque heure, relancer le pipeline de nuit pour récupérer le scrutin dès que
+# l'Assemblée le publie. Les autres jours, ce workflow s'arrête aussitôt. Le site promet « le
+# verdict du matin » (décision de t10) : ces passages ne font que l'avancer quand c'est possible.
+# Heures UTC de 14 h 23 à 22 h 23 : de 16 h à minuit en été, de 15 h à 23 h en hiver.
+on:
+  schedule:
+    - cron: "23 14-22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: soiree
+  cancel-in-progress: false
+
+jobs:
+  soiree:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: data/semaines
+
+      - name: Un vote de la séance est-il prévu aujourd'hui ?
+        id: jour
+        run: |
+          aujourdhui=$(TZ=Europe/Paris date +%F)
+          lundi=$(TZ=Europe/Paris date -d "$aujourdhui -$(( $(TZ=Europe/Paris date +%u) - 1 )) days" +%F)
+          fichier="data/semaines/$lundi.json"
+          if [ -f "$fichier" ] && jq -e --arg j "$aujourdhui" \
+              '.votes[] | select(.type == "annonce" and .date == $j and (.retire | not))' \
+              "$fichier" > /dev/null; then
+            echo "vote=true" >> "$GITHUB_OUTPUT"
+            echo "Vote solennel de la séance prévu aujourd'hui ($aujourdhui)."
+          else
+            echo "vote=false" >> "$GITHUB_OUTPUT"
+            echo "Pas de vote de la séance aujourd'hui ($aujourdhui)."
+          fi
+
+      - name: Relancer le pipeline
+        if: steps.jour.outputs.vote == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run nuit.yml --ref main

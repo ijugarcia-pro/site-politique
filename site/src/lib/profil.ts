@@ -122,20 +122,22 @@ export function partCommeToi(matrice: Matrice, indice: number, reponse: Reponse)
   return exprimes ? Math.round((100 * pareils) / exprimes) : null;
 }
 
-/** Les teintes de l'hémicycle personnel : plus un siège est foncé, plus ce député vote comme
- *  toi. Gris : aucun vote en commun. */
-export const TEINTES = [
-  { jusqua: 0.35, couleur: '#EDE7FF', libelle: 'Rarement comme toi' },
-  { jusqua: 0.5, couleur: '#D3C4FF', libelle: 'Parfois' },
-  { jusqua: 0.65, couleur: '#A98BFF', libelle: 'Souvent' },
-  { jusqua: 0.8, couleur: '#7C4DFF', libelle: 'Très souvent' },
-  { jusqua: Infinity, couleur: '#4B2BC2', libelle: 'Presque toujours' },
+/** Les quatre niveaux de l'hémicycle personnel (frame V5) : plus un siège est foncé, plus ce
+ *  député vote comme toi, d'après l'accord lissé. Le dernier, « presque toujours », est celui
+ *  que compte le chiffre au centre de l'hémicycle. */
+export const NIVEAUX = [
+  { jusqua: 0.35, couleur: '#DFE3EB', libelle: 'Rarement comme toi', haut: false },
+  { jusqua: 0.5, couleur: '#D9CCFF', libelle: 'Parfois', haut: false },
+  { jusqua: 0.67, couleur: '#A98BFF', libelle: 'Souvent', haut: false },
+  { jusqua: Infinity, couleur: '#6A3DF0', libelle: 'Presque toujours', haut: true },
 ];
+/** Aucun vote en commun : un siège blanc, cerclé de gris. */
 export const SANS_VOTE_COMMUN = '#DFE3EB';
 
+export const niveau = (lisse: number) => NIVEAUX.find((t) => lisse < t.jusqua)!;
+
 export function teinte(lisse: number | null): string {
-  if (lisse === null) return SANS_VOTE_COMMUN;
-  return TEINTES.find((t) => lisse < t.jusqua)!.couleur;
+  return lisse === null ? '#FFFFFF' : niveau(lisse).couleur;
 }
 
 /** « Prénom Nom » → « PN » (le premier mot qui n'est pas une particule pour le nom). */

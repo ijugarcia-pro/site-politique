@@ -45,8 +45,8 @@ CHOIX = [988, 1308, 2257, 2957, 3061, 3260, 7454, 7987, 8280, 8431]
 LIEN = "https://www.assemblee-nationale.fr/dyn/17/scrutins/{numero}"
 N_QUIZ = 10
 NON_INSCRITS = "NI"
-# UDR est devenu UDDPLR le 5 septembre 2025 : même groupe pour comparer les votes.
-SUCCESSEURS = {"UDR": "UDDPLR"}
+# Les deux groupes UDR successifs (avant et après le 5 septembre 2025) portent le même sigle
+# affiché : ils se comparent comme un seul groupe, sans table de correspondance.
 PRISES_DE_POSITION = ("pour", "contre", "abstention")
 
 
@@ -257,9 +257,8 @@ def lire(con: duckdb.DuckDBPyConnection, numero: int) -> dict:
             SELECT g.sigle, pg.position, pg.pour, pg.contre, pg.abstentions, pg.membres
             FROM position_groupe pg JOIN groupe g ON g.uid = pg.groupe_uid
             WHERE pg.scrutin_uid = ? AND pg.membres > 0""", [uid]).fetchall():
-        groupes[SUCCESSEURS.get(sigle, sigle)] = {"position": position, "pour": p,
-                                                  "contre": c, "abstention": a,
-                                                  "membres": membres}
+        groupes[sigle] = {"position": position, "pour": p, "contre": c, "abstention": a,
+                          "membres": membres}
     dissidents, en_exercice = con.execute(
         "SELECT count(*) FILTER (WHERE dissident), count(*) FROM vote WHERE scrutin_uid = ?",
         [uid]).fetchone()

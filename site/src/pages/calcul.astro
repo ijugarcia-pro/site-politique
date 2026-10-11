@@ -1,0 +1,107 @@
+---
+// « Comment c'est calculé » (t34) : les définitions exactes du site (CLAUDE.md, § 4.3 du
+// planning, décisions), avec des exemples chiffrés. L'exemple des voix qui font basculer un
+// résultat vient d'un vrai scrutin ; l'exemple d'accord est un calcul d'école, présenté comme
+// tel.
+import Base from '../layouts/Base.astro';
+import { dateLisible, lienVote, scrutins } from '../lib/donnees.ts';
+import { lisse, NIVEAUX, precision } from '../lib/profil.ts';
+import { bascule } from '../lib/votes.ts';
+
+const exemple = scrutins().find((v) => v.solennel && !v.motion_censure && v.requis
+  && v.voix_pour_inverser && v.sort === 'adopté')!;
+const P = exemple.decompte.pour;
+const R = exemple.requis!;
+const pourcent = (x: number) => `${Math.round(100 * x)} %`;
+const niveaux = NIVEAUX.map((t, k) => ({
+  libelle: t.libelle, couleur: t.couleur,
+  borne: k === 0 ? `moins de ${t.jusqua.toLocaleString('fr-FR')}`
+    : t.jusqua === Infinity ? `${NIVEAUX[k - 1].jusqua.toLocaleString('fr-FR')} et plus`
+    : `de ${NIVEAUX[k - 1].jusqua.toLocaleString('fr-FR')} à ${t.jusqua.toLocaleString('fr-FR')}`,
+}));
+---
+<Base titre="Comment c'est calculé"
+  description="Les définitions exactes du 578e siège : cases de vote, absents, votes contre son groupe, voix qui font basculer un résultat, accord, jumeau, précision.">
+  <article class="texte">
+    <h1>Comment c'est calculé</h1>
+    <p class="chapo"> Tout ce que le site affiche vient des votes publiés par l'Assemblée nationale. Voici, règle par règle, ce que nous en faisons. Aucun axe gauche-droite, aucun score politique : seulement des votes réels, comptés. </p>
+
+    <h2 id="donnees">Les données</h2>
+    <p> Les scrutins, les députés, leurs groupes et l'agenda viennent des <a href="https://data.assemblee-nationale.fr/">données ouvertes de l'Assemblée nationale</a> (17<sup>e</sup> législature, Licence ouverte). Ils sont récupérés chaque nuit, puis contrôlés : chaque scrutin doit retrouver le décompte officiel, et un résultat déjà publié ne peut pas changer sans raison. Si un contrôle échoue, rien n'est publié : le site garde sa dernière version valide. L'<a href="/etat/">état des données</a> le montre chaque jour. </p>
+
+    <h2 id="cases">Une case par député et par scrutin</h2>
+    <p> Pour chaque scrutin, chaque député en exercice ce jour-là occupe exactement une case : <strong>pour</strong>, <strong>contre</strong>, <strong>abstention</strong>, <strong>non-votant</strong> ou <strong>absent</strong>. L'Assemblée ne publie pas la liste des absents : nous la reconstituons à partir des députés en exercice à la date du vote, de leur prise de fonction jusqu'à la fin de leur mandat. Un non-votant (par exemple la présidente de séance) n'est pas un absent. </p>
+
+    <h2 id="groupes">La position d'un groupe, et les votes « contre son groupe »</h2>
+    <p> La position d'un groupe sur un scrutin est celle de la majorité de ses membres qui ont voté pour, contre ou se sont abstenus. À égalité, ou si personne n'a voté, le groupe n'a pas de position. Un député vote <strong>contre son groupe</strong> quand il vote l'inverse de cette position (pour au lieu de contre, ou l'inverse). S'abstenir n'est pas voter contre son groupe, et les députés non inscrits n'ont pas de groupe. Cette notion n'est pas publiée par l'Assemblée : nous la calculons, et chaque page de vote montre le décompte du groupe à côté pour qu'elle soit vérifiable. </p>
+
+    <h2 id="bascule">Les voix qui auraient fait basculer le résultat</h2>
+    <p> Avec <em>P</em> les voix pour et <em>R</em> les suffrages requis pour l'adoption (publiés avec chaque scrutin) : il aurait fallu <strong>P − R + 1</strong> députés ayant voté pour qui votent contre pour qu'un texte adopté soit rejeté, et <strong>R − P</strong> députés ayant voté contre qui votent pour pour qu'un texte rejeté soit adopté. </p>
+    <p class="exemple"> <strong>Exemple réel.</strong> Le <a href={lienVote(exemple)}>scrutin n° {exemple.numero}</a> du {dateLisible(exemple.date)} : {P} voix pour, {R} suffrages requis. {P} − {R} + 1 = <strong>{P - R + 1}</strong>. {bascule(exemple)} </p>
+
+    <h2 id="accord">Ton accord avec un député ou un groupe</h2>
+    <p> Un vote compte « en commun » quand tu as répondu pour ou contre, et que le député (ou le groupe) a voté pour, contre ou s'est abstenu. Une abstention compte comme une réponse différente de la tienne. « Je ne sais pas », un absent ou un non-votant ne comptent pas. Avec <em>m</em> votes identiques sur <em>n</em> votes en commun : </p>
+    <ul>
+      <li>le <strong>taux d'accord</strong> affiché est <em>m</em> / <em>n</em> ;</li>
+      <li> le <strong>classement</strong> (ton jumeau, les groupes les plus proches, les couleurs de ton hémicycle) utilise l'accord lissé <strong>(m + 2) / (n + 4)</strong>, qui évite qu'un député avec un seul vote en commun passe devant tous les autres. </li>
+    </ul>
+    <p class="exemple"> <strong>Exemple de calcul</strong> (chiffres d'école) : 7 votes identiques sur 10 en commun donnent un taux de 70 % et un accord lissé de (7 + 2) / (10 + 4) = {lisse(7, 10).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ; 1 vote identique sur 1 donne 100 %, mais un accord lissé de seulement {lisse(1, 1).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}. </p>
+    <p> <strong>Ton jumeau</strong> est le député en exercice le mieux classé ; à égalité, celui qui a le plus de votes en commun avec toi. Il est montré dès un vote en commun, avec son nombre de votes en commun : la précision dit à quel point s'y fier. Le <strong>groupe le plus proche</strong> se calcule de la même façon, sur la position de chaque groupe. </p>
+    <p>Dans ton hémicycle, chaque siège prend une teinte selon l'accord lissé :</p>
+    <ul class="niveaux">
+      {niveaux.map((t) => <li><span style={`background: ${t.couleur}`}></span><strong>{t.libelle}</strong> : {t.borne}</li>)}
+    </ul>
+
+    <h2 id="precision">La précision</h2>
+    <p> Avec <em>n</em> votes tranchés (pour ou contre), la précision vaut <strong>1 − e<sup>−n/20</sup></strong> : elle monte vite au début, puis plus lentement. Elle devient fiable vers 25 votes. </p>
+    <table>
+      <thead><tr><th scope="col">Votes tranchés</th>{[10, 13, 16, 19, 22, 25, 40].map((n) => <th scope="col">{n}</th>)}</tr></thead>
+      <tbody><tr><th scope="row">Précision</th>{[10, 13, 16, 19, 22, 25, 40].map((n) => <td>{pourcent(precision(n))}</td>)}</tr></tbody>
+    </table>
+
+    <h2 id="censure">Les motions de censure</h2>
+    <p> Pour une motion de censure, l'Assemblée ne publie que les voix pour : on ne peut pas distinguer un député contre d'un absent. Les motions de censure ont leur page, mais ne comptent ni dans ton accord ni dans les votes contre son groupe. </p>
+
+    <h2 id="participation">La participation d'un député</h2>
+    <p> La participation d'un député est la part des scrutins de son mandat où il a voté pour, contre ou s'est abstenu, hors motions de censure. Comme la plupart des scrutins portent sur des amendements, la participation médiane des députés est faible ; la fiche de chaque député l'affiche donc à côté de cette médiane, et de sa participation aux seuls votes solennels. </p>
+
+    <h2 id="navigateur">Ce qui reste chez toi</h2>
+    <p> Tes réponses, tes pronostics et ton député sont gardés dans ton navigateur, et nulle part ailleurs : tous les calculs de cette page se font sur ton appareil. Les opinions politiques sont des données sensibles ; le site ne les envoie à aucun serveur. </p>
+    <p>
+      <button type="button" class="effacer" data-tout-effacer>Effacer toutes mes réponses de ce navigateur</button>
+      <span class="efface" data-efface hidden>C'est fait : ce navigateur ne garde plus rien de toi.</span>
+    </p>
+  </article>
+</Base>
+
+<script>
+  // Tout effacer : réponses, pronostics, député choisi, avancement du quiz, des lots et des
+  // séances. Rien d'autre à effacer : rien n'a été envoyé ailleurs.
+  const CLES = ['578e.reponses.v1', '578e.depute.v1', '578e.quiz.v1', '578e.lots.v1', '578e.seances.v1'];
+  document.querySelector('[data-tout-effacer]')?.addEventListener('click', () => {
+    if (!window.confirm('Effacer toutes tes réponses, tes pronostics et ton député de ce navigateur ?')) return;
+    for (const cle of CLES) {
+      try { localStorage.removeItem(cle); } catch { /* stockage indisponible */ }
+    }
+    document.querySelector<HTMLElement>('[data-efface]')!.hidden = false;
+  });
+</script>
+
+<style>
+  .texte { max-width: 760px; }
+  .texte h1 { font-size: clamp(32px, 3.4vw, 44px); }
+  .chapo { font-size: 19px; color: var(--texte-doux); }
+  .texte h2 { margin-top: 34px; font-size: 24px; }
+  .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--texte-doux); }
+  .effacer { min-height: 48px; padding: 0 18px; border: 2px solid var(--bord); border-radius: 14px; background: var(--fond);
+    font-family: var(--police-titre); font-weight: 600; font-size: 15px; color: #B83C0A; cursor: pointer; }
+  .efface { margin-left: 10px; font-size: 15px; color: #0C7F57; }
+  .exemple { padding: 14px 18px; border-radius: 16px; background: var(--fond-doux); }
+  .niveaux { list-style: none; padding: 0; }
+  .niveaux li { display: flex; align-items: center; gap: 10px; }
+  .niveaux span { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+  table { border-collapse: collapse; margin-top: 8px; font-size: 16px; }
+  th, td { padding: 8px 12px; border-bottom: 2px solid var(--bord-leger); text-align: center; }
+  th[scope="row"] { text-align: left; }
+  @media (max-width: 640px) { table { display: block; overflow-x: auto; } }
+</style>

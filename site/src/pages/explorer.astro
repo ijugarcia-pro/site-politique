@@ -129,6 +129,8 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
 
   const PAR_PAGE = 30;
   const champ = document.querySelector<HTMLInputElement>('#recherche')!;
+  // La loupe de l'en-tête mène ici (#recherche) : le champ est prêt à recevoir la saisie.
+  if (location.hash === '#recherche') champ.focus();
   const lignes = [...document.querySelectorAll<HTMLElement>('#liste > li')];
   const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
   const compte = document.querySelector<HTMLElement>('[data-compte]')!;

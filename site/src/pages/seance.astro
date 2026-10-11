@@ -1,0 +1,321 @@
+---
+// La séance de la semaine (t24, frames V5 « ⑥ Séance » et « ⑦ Séance terminée ») : les 3 votes
+// choisis par pipeline/semaine.py. Un vote annoncé se tranche avant les députés, avec un
+// pronostic facultatif ; un vote déjà tenu (vote passé, ou séance faite après le scrutin) est
+// révélé comme dans le quiz. Fin de séance : le tampon, la série (gelée pendant les vacances),
+// la précision, les pronostics en jeu et le rendez-vous du verdict. Tout reste dans le
+// navigateur (lib/seances.ts). Ce qui n'existe pas encore n'est pas montré : ni duel, ni
+// alerte, ni barre « utilisateurs du site » (il faudrait des agrégats, reportés, et au moins
+// 200 participants).
+import Base from '../layouts/Base.astro';
+import EnteteSeance from '../components/EnteteSeance.astro';
+import Seance from '../components/Seance.astro';
+import { dateLisible, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
+import { puceTheme } from '../lib/themes.ts';
+
+const sem = semaine();
+const votes = sem.votes.filter((v) => v.statut !== 'retiré');
+const retires = sem.votes.length - votes.length;
+const cartes = votes.map((v) => {
+  const q = questionSeance(v);
+  return { uid: v.statut === 'voté' ? v.scrutin?.uid ?? '' : '', numero: v.scrutin?.numero ?? 0,
+    theme: v.carte?.theme ?? 'Vote solennel', question: q.question, concretement: q.concretement,
+    quand: quandVote(v) };
+});
+const puces = votes.map((v) => (v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6'));
+const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
+  'oct.', 'nov.', 'déc.'];
+const tampon = `${Number(sem.lundi.slice(8, 10))} ${MOIS_COURTS[Number(sem.lundi.slice(5, 7)) - 1]}`;
+// Les rendez-vous du verdict : les votes annoncés pas encore tenus.
+const attendus = votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
+const premier = attendus[0];
+const donnees = JSON.stringify({
+  lundi: sem.lundi, cles: votes.map((v) => v.cle), retires,
+  quand: premier ? quandVote(premier) : null,
+  historique: sem.historique,
+}).replace(/</g, '\\u003c');
+const JOURS_COURTS = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+const tuile = premier ? {
+  jour: JOURS_COURTS[new Date(`${premier.date}T12:00:00Z`).getUTCDay()],
+  date: Number(premier.date.slice(8, 10)),
+  heure: premier.debut ? `${Number(premier.debut.slice(11, 13))} h` : '',
+} : null;
+---
+<Base titre="La séance de la semaine" focus
+  description="3 vrais votes de l'Assemblée à trancher avant les députés, puis le verdict.">
+  <EnteteSeance slot="entete" total={Math.max(1, votes.length)} libelle="Progression de la séance"
+    titre="Séance de la semaine" serie sortie={{ href: '/', texte: 'Quitter la séance' }} />
+
+  {sem.vacances || votes.length === 0 ? (
+    <section class="vacances">
+      <p class="sur-titre">Semaine du {dateLisible(sem.lundi)}</p>
+      <h1>Pas de séance cette semaine</h1>
+      <p>
+        {sem.vacances
+          ? 'L\'Assemblée ne siège pas : ce sont les vacances parlementaires. Ta série est gelée, elle reprendra à la prochaine séance.'
+          : 'Aucun vote n\'est prévu cette semaine.'}
+      </p>
+      <div class="actions">
+        <a class="b-principal" href="/lots/">Trancher des votes passés</a>
+        <a class="b-second" href="/">Retour à l'accueil</a>
+      </div>
+    </section>
+  ) : (
+    <Seance cartes={cartes} puces={puces} dates pronostic>
+      <div class="fin" slot="fin" data-ecran="fin" hidden>
+        <div class="tampon" data-tampon>
+          <span class="tampon-haut">Séance du</span>
+          <span class="tampon-grand">{tampon}</span>
+          <span class="tampon-a-vote">A voté</span>
+          <span class="tampon-bas" data-tampon-bas></span>
+        </div>
+        <h1 tabindex="-1" data-fin-titre>Séance terminée&nbsp;!</h1>
+        <p class="fin-texte" data-fin-texte></p>
+        <div class="cartes">
+          <div class="carte orange" data-carte-serie>
+            <span class="grand">
+              <svg width="26" height="28" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#FF9F1C"></path></svg>
+              <span data-fin-serie></span>
+            </span>
+            <span class="libelle" data-fin-serie-libelle></span>
+            <span class="petit" data-fin-serie-detail></span>
+          </div>
+          <div class="carte violette">
+            <span class="grand" data-fin-precision></span>
+            <span class="libelle">de précision</span>
+            <span class="petit" data-fin-gain></span>
+          </div>
+          <div class="carte jaune" data-carte-pronos hidden>
+            <span class="grand" data-fin-pronos></span>
+            <span class="libelle" data-fin-pronos-libelle></span>
+            <span class="petit">{premier ? `résultat ${quandVote(premier).replace(/ à .*/, '')}` : ''}</span>
+          </div>
+        </div>
+        {tuile && (
+          <div class="rendez-vous" data-rendez-vous>
+            <span class="tuile">
+              <span class="tuile-jour">{tuile.jour}</span>
+              <span class="tuile-date">{tuile.date}</span>
+              <span class="tuile-heure">{tuile.heure}</span>
+            </span>
+            <span class="rdv-texte">
+              <span class="rdv-titre">Rendez-vous pour le verdict</span>
+              <span>Les députés votent {quandVote(premier)}. Le verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</span>
+            </span>
+          </div>
+        )}
+        <div class="carnet">
+          <div class="carnet-tete">
+            <span class="carnet-titre">Ton carnet de séances</span>
+            <span class="carnet-compte" data-carnet-compte></span>
+          </div>
+          <ol class="tampons" data-tampons aria-label="Tes dernières séances"></ol>
+        </div>
+        <div class="actions">
+          <a class="b-principal" href="/verdict/" data-fin-principal>Voir le verdict →</a>
+          <a class="b-second" href="/">Retour à l'accueil</a>
+        </div>
+      </div>
+    </Seance>
+  )}
+  <script type="application/json" data-donnees-semaine set:html={donnees}></script>
+</Base>
+
+<script>
+  import { repondre, reponses } from '../lib/navigateur.ts';
+  import { etatLots, prochainLot } from '../lib/lots.ts';
+  import { precision, type Matrice, type Reponse } from '../lib/profil.ts';
+  import { $, pluriel, seance } from '../lib/seance.ts';
+  import { etatSeance, sauverSeance, seancesFaites, serie, type Pronostic } from '../lib/seances.ts';
+
+  const { lundi, cles, historique } = JSON.parse($('[data-donnees-semaine]').textContent!) as {
+    lundi: string; cles: string[]; quand: string | null;
+    historique: { lundi: string; vacances: boolean }[];
+  };
+  const vacances = new Set(historique.filter((h) => h.vacances).map((h) => h.lundi));
+  const afficherSerie = () => {
+    const n = serie(seancesFaites(), vacances, lundi);
+    const el = document.querySelector<HTMLElement>('[data-serie]');
+    if (!el) return n;
+    el.hidden = n === 0;
+    $('[data-serie-texte]').textContent = pluriel(n, 'semaine');
+    return n;
+  };
+  afficherSerie();
+
+  if (document.querySelector('[data-donnees-seance]')) {
+    const etat = etatSeance(lundi);
+    const s = seance({
+      libelleContinuer: (i) => (i + 1 < cles.length ? 'Vote suivant' : 'Fin de la séance'),
+    });
+    const { questions } = s;
+    const sauver = () => sauverSeance(lundi, etat);
+
+    const suivant = () => {
+      etat.i += 1;
+      sauver();
+      if (etat.i < questions.length) s.poser(etat.i);
+      else fin();
+    };
+
+    const fin = async () => {
+      etat.fini = true;
+      sauver();
+      s.finir('fin');
+      const m: Matrice = s.matrice() ?? await s.chargement;
+      const reps = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
+      const p = s.tonHemicycle(m)!;
+      s.panneauHemicycle('Plus un siège est foncé, plus ce député a voté comme toi');
+      const tranches = cles.filter((c) => etat.reponses[c]).length;
+      const comptees = questions.filter((q) => !q.attente && reps[q.uid]).length;
+      const gain = Math.round(100 * p.precision) - Math.round(100 * precision(p.reponses - comptees));
+      const enAttente = questions.filter((q, k) => q.attente && etat.reponses[cles[k]]).length;
+      $('[data-tampon-bas]').textContent = `${pluriel(tranches, 'vote')} · 578e siège`;
+      $('[data-fin-texte]').textContent = enAttente
+        ? `Tes ${pluriel(enAttente, 'vote')} ${enAttente > 1 ? 'sont enregistrés' : 'est enregistré'} avant ceux des députés. `
+          + 'Le verdict arrive dès la publication du scrutin, le lendemain matin au plus tard.'
+        : 'Tes réponses comptent dans ton hémicycle.';
+      // La série, gelée pendant les vacances.
+      const n = afficherSerie();
+      $('[data-fin-serie]').textContent = String(n);
+      $('[data-fin-serie-libelle]').textContent = n > 1 ? 'semaines d\'affilée' : 'semaine d\'affilée';
+      $('[data-fin-serie-detail]').textContent = '+1 cette semaine';
+      $('[data-fin-precision]').textContent = `${Math.round(100 * p.precision)} %`;
+      $('[data-fin-gain]').textContent = `${gain > 0 ? `+${gain} point${gain > 1 ? 's' : ''} · ` : ''}`
+        + pluriel(p.reponses, 'vote');
+      const pronos = Object.keys(etat.pronostics).length;
+      $('[data-carte-pronos]').hidden = pronos === 0;
+      $('[data-fin-pronos]').textContent = String(pronos);
+      $('[data-fin-pronos-libelle]').textContent = pronos > 1 ? 'pronostics en jeu' : 'pronostic en jeu';
+      // Le carnet : les 8 dernières semaines.
+      const faites = seancesFaites();
+      const semaines = [...historique.map((h) => h.lundi), lundi].slice(-8);
+      $('[data-carnet-compte]').textContent = pluriel(faites.size, 'séance');
+      $('[data-tampons]').replaceChildren(...semaines.map((l) => {
+        const li = document.createElement('li');
+        const [, mm, jj] = l.split('-');
+        li.className = l === lundi ? 'vient' : faites.has(l) ? 'fait' : vacances.has(l) ? 'vacances' : 'manque';
+        const mini = document.createElement('span');
+        mini.className = 'mini';
+        mini.textContent = vacances.has(l) ? 'vac.' : 'séance';
+        li.append(mini, `${Number(jj)}/${Number(mm)}`);
+        return li;
+      }));
+      // L'action principale : le verdict s'il y en a un, sinon des votes passés.
+      const principal = $<HTMLAnchorElement>('[data-fin-principal]');
+      const auMoinsUnVerdict = questions.some((q) => !q.attente);
+      if (!auMoinsUnVerdict) {
+        const lot = prochainLot(etatLots().faits, 5);
+        principal.href = lot === null ? '/explorer/' : '/lots/';
+        principal.textContent = lot === null ? 'Trancher d\'autres votes' : 'En attendant : 3 votes passés →';
+      }
+      $('[data-tampon]').classList.add('anime');
+      $('[data-fin-titre]').focus();
+    };
+
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
+      b.addEventListener('click', () => {
+        const q = questions[etat.i];
+        const v = (b.dataset.reponse || null) as Reponse | null;
+        etat.reponses[cles[etat.i]] = v;
+        sauver();
+        if (q.attente) {
+          s.attendre(etat.i, v);
+        } else {
+          repondre(q.uid, v);
+          s.reveler(etat.i, v);
+        }
+      });
+    }
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-prono]')) {
+      b.addEventListener('click', () => {
+        const cle = cles[etat.i];
+        const choix = b.dataset.prono as Pronostic;
+        if (etat.pronostics[cle] === choix) delete etat.pronostics[cle];
+        else etat.pronostics[cle] = choix;
+        sauver();
+        for (const x of document.querySelectorAll<HTMLButtonElement>('[data-prono]')) {
+          x.classList.toggle('choisi', etat.pronostics[cle] === x.dataset.prono);
+        }
+      });
+    }
+    $('[data-suivant]').addEventListener('click', suivant);
+    $('[data-continuer]').addEventListener('click', suivant);
+    if (etat.fini || etat.i >= questions.length) fin();
+    else s.poser(etat.i);
+  }
+</script>
+
+<style>
+  /* Cotes reprises de la frame V5 « ⑦ Séance terminée » ; sans duel ni alerte « Me prévenir »
+     (reportés) : l'écran se resserre, à gauche de ton hémicycle. */
+  .vacances { max-width: 640px; margin: 40px auto; text-align: center; }
+  .vacances .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--violet-fonce); }
+  .vacances h1 { margin: 10px 0 12px; font-size: clamp(34px, 3.4vw, 46px); }
+  .vacances p { font-size: 18px; color: var(--gris); }
+  .vacances .actions { justify-content: center; }
+
+  .fin { display: flex; flex-direction: column; align-items: flex-start; }
+  .tampon { align-self: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--violet); color: var(--violet-fonce);
+    background: #FFFFFF; box-shadow: inset 0 0 0 7px #FFFFFF, inset 0 0 0 10px #D9CCFF, 0 10px 0 #EFE9FF;
+    transform: rotate(-8deg); }
+  .tampon:global(.anime) { animation: tampon .6s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes tampon { 0% { transform: rotate(-8deg) scale(1.6); opacity: 0; }
+    70% { transform: rotate(-8deg) scale(.94); opacity: 1; } 100% { transform: rotate(-8deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .tampon:global(.anime) { animation: none; } }
+  .tampon-haut { font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .tampon-grand { font-family: var(--police-titre); font-weight: 700; font-size: 44px; line-height: 1.05; }
+  .tampon-a-vote { margin-top: 8px; padding: 4px 16px; border: 3px solid var(--violet); border-radius: 10px;
+    font-family: var(--police-titre); font-weight: 700; font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .tampon-bas { margin-top: 10px; font-size: 13px; font-weight: 700; }
+  .fin h1 { margin: 28px 0 0; font-weight: 700; font-size: clamp(36px, 3.4vw, 46px); line-height: 1; outline: none; }
+  .fin-texte { margin: 12px 0 0; font-size: 18px; line-height: 1.5; color: var(--gris); }
+  .cartes { align-self: stretch; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-top: 20px; }
+  .carte { display: flex; flex-direction: column; padding: 18px; border-radius: 22px; }
+  .carte[hidden] { display: none; }
+  .carte .grand { display: flex; align-items: center; gap: 6px; font-family: var(--police-titre); font-weight: 700; font-size: 40px; line-height: 1; }
+  .carte .libelle { margin-top: 6px; font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
+  .carte .petit { font-size: 13px; }
+  .orange { background: #FFF1E0; box-shadow: 0 5px 0 #FFD9AE; color: #7A3F00; }
+  .orange .grand { color: #B85E00; }
+  .violette { background: #EFE9FF; box-shadow: 0 5px 0 #D9CCFF; color: #3D1FA8; }
+  .violette .grand, .violette .petit { color: var(--violet-fonce); }
+  .jaune { background: #FFF8E1; box-shadow: 0 5px 0 #FFE08A; color: #7A4A00; }
+  .jaune .grand, .jaune .petit { color: #9A5B00; }
+  .rendez-vous { align-self: stretch; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin-top: 18px;
+    padding: 18px 20px; border-radius: 24px; border: 2px solid #C9B8FF; background: #FBF9FF; }
+  .tuile { flex: none; display: flex; flex-direction: column; align-items: center; width: 76px; height: 80px; border-radius: 16px;
+    background: #FFFFFF; border: 2px solid var(--bord); overflow: hidden; }
+  .tuile-jour { align-self: stretch; padding: 3px 0; background: var(--contre); color: #FFFFFF; text-align: center;
+    font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .tuile-date { font-family: var(--police-titre); font-weight: 700; font-size: 30px; line-height: 1.2; }
+  .tuile-heure { font-size: 12px; font-weight: 700; color: var(--gris-legende); }
+  .rdv-texte { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.4; color: var(--gris); }
+  .rdv-titre { font-family: var(--police-titre); font-weight: 700; font-size: 20px; color: var(--texte); }
+  .carnet { align-self: stretch; margin-top: 18px; padding: 18px 20px; border-radius: 24px; border: 2px solid var(--bord); }
+  .carnet-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .carnet-titre { font-family: var(--police-titre); font-weight: 700; font-size: 19px; }
+  .carnet-compte { font-size: 14px; color: var(--gris-legende); }
+  .tampons { display: flex; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .tampons :global(li) { flex: 1; max-width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    aspect-ratio: 1 / 1; border-radius: 50%; font-family: var(--police-titre); font-weight: 700; font-size: 13px; line-height: 1.05;
+    text-align: center; border: 2px dashed #DCE0E8; color: var(--gris-legende); }
+  .tampons :global(.mini) { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; opacity: .8; }
+  .tampons :global(li.fait) { border: 3px solid var(--violet); color: var(--violet-fonce); background: #FFFFFF; transform: rotate(-8deg); }
+  .tampons :global(li.vient) { border: 3px solid var(--violet); color: #FFFFFF; background: var(--violet);
+    transform: rotate(-8deg); box-shadow: 0 0 0 4px #D9CCFF; }
+  .tampons :global(li.vacances) { border: 2px dashed #B4BAC8; color: var(--gris); background: var(--fond-doux); }
+  .actions { align-self: stretch; display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
+  .b-principal { flex: 1 1 260px; min-height: 62px; display: flex; align-items: center; justify-content: center; padding: 0 22px;
+    border-radius: 18px; background: var(--violet); color: #fff; box-shadow: 0 6px 0 var(--violet-fonce);
+    font-family: var(--police-titre); font-weight: 600; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase;
+    text-decoration: none; text-align: center; }
+  .b-principal:hover { color: #fff; background: var(--violet-fonce); }
+  .b-second { flex: 0 1 220px; min-height: 62px; display: flex; align-items: center; justify-content: center; padding: 0 18px;
+    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond); box-shadow: 0 4px 0 var(--bord);
+    font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--violet-fonce); text-decoration: none; }
+  @media (max-width: 640px) { .b-second { flex: 1 1 100%; } }
+</style>

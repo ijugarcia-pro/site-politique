@@ -1,0 +1,147 @@
+[
+ {
+  "lot": 1,
+  "cartes": [
+   {
+    "uid": "VTANR5L17V4745",
+    "numero": 4745,
+    "theme": "Logement",
+    "titre": "L'encadrement des loyers rendu permanent",
+    "question": "Faut-il rendre permanent l'encadrement des loyers et l'ouvrir à toutes les communes où se loger est difficile ?",
+    "concretement": "L'encadrement des loyers ne serait plus une expérimentation : les villes où l'offre de logements ne suffit pas à la demande pourraient l'appliquer durablement, sur tout ou partie de leur territoire."
+   },
+   {
+    "uid": "VTANR5L17V600",
+    "numero": 600,
+    "theme": "Santé",
+    "titre": "Un nombre minimum de soignants à l'hôpital",
+    "question": "Faut-il fixer un nombre minimum de soignants par patient dans les hôpitaux ?",
+    "concretement": "Pour chaque spécialité, un décret fixerait, après avis de la Haute Autorité de santé, un nombre minimum de soignants par lit. Un hôpital public qui ne peut le respecter plus de trois jours devrait prévenir l'agence régionale de santé."
+   },
+   {
+    "uid": "VTANR5L17V1624",
+    "numero": 1624,
+    "theme": "Sécurité",
+    "titre": "La justice des mineurs délinquants durcie",
+    "question": "Faut-il durcir les règles de la justice pénale pour les mineurs délinquants et leurs parents ?",
+    "concretement": "Le texte permet de juger en comparution immédiate les mineurs de plus de seize ans déjà suivis par la justice, limite pour les récidivistes l'atténuation des peines liée à l'âge, et punit de trois ans de prison les parents dont la défaillance a conduit l'enfant à commettre des infractions."
+   }
+  ]
+ },
+ {
+  "lot": 2,
+  "cartes": [
+   {
+    "uid": "VTANR5L17V3273",
+    "numero": 3273,
+    "theme": "Économie",
+    "titre": "Le pays d'origine sur toutes les étiquettes",
+    "question": "Faut-il rendre obligatoire l'indication du pays d'origine sur tous les produits alimentaires ?",
+    "concretement": "L'étiquette de tout produit agricole ou alimentaire, brut ou transformé, devrait indiquer son pays d'origine, ainsi que celui de l'ingrédient principal et de chaque ingrédient qui représente 10 % ou plus du produit."
+   },
+   {
+    "uid": "VTANR5L17V2256",
+    "numero": 2256,
+    "theme": "Santé",
+    "titre": "Le don du sang sur le temps de travail",
+    "question": "Faut-il permettre aux salariés de donner leur sang pendant leurs heures de travail, sans perte de salaire ?",
+    "concretement": "Les salariés et les agents publics pourraient s'absenter, sans perte de salaire, pour donner leur sang, leurs plaquettes ou leur plasma, dans la limite de huit absences par an. L'employeur peut s'y opposer pour des raisons d'organisation."
+   },
+   {
+    "uid": "VTANR5L17V606",
+    "numero": 606,
+    "theme": "Éducation",
+    "titre": "Le repas à 1 euro pour tous les étudiants",
+    "question": "Faut-il plafonner à 1 euro le prix du repas étudiant dans tous les restaurants universitaires ?",
+    "concretement": "Le repas à tarif modéré servi aux étudiants dans tous les restaurants des Crous ne pourrait pas coûter plus de 1 euro, sur place comme à emporter."
+   }
+  ]
+ },
+ {
+  "lot": 3,
+  "cartes": [
+   {
+    "uid": "VTANR5L17V7494",
+    "numero": 7494,
+    "theme": "Environnement",
+    "titre": "La publicité pour la mode ultra-express interdite",
+    "question": "Faut-il interdire la publicité pour la mode ultra-express, y compris par les influenceurs ?",
+    "concretement": "Le texte définit la mode ultra-express, qui met en vente un très grand nombre de nouveaux vêtements peu réparables, et en interdit la publicité, y compris par les influenceurs, à partir du 1er janvier 2027."
+   },
+   {
+    "uid": "VTANR5L17V2958",
+    "numero": 2958,
+    "theme": "Immigration",
+    "titre": "La rétention des étrangers condamnés allongée",
+    "question": "Faut-il pouvoir retenir jusqu'à deux cent dix jours avant leur expulsion les étrangers condamnés pour des faits graves ?",
+    "concretement": "Les étrangers condamnés pour certains crimes ou délits graves, ou dont le comportement menace gravement l'ordre public, pourront être maintenus en rétention administrative jusqu'à deux cent dix jours, le temps d'organiser leur départ."
+   },
+   {
+    "uid": "VTANR5L17V3055",
+    "numero": 3055,
+    "theme": "Travail",
+    "titre": "L'emploi des salariés expérimentés",
+    "question": "Faut-il créer un contrat de travail spécial pour embaucher les demandeurs d'emploi de soixante ans et plus ?",
+    "concretement": "À titre expérimental pendant cinq ans, une entreprise pourrait embaucher en CDI un demandeur d'emploi d'au moins soixante ans, puis le mettre à la retraite dès qu'il peut partir à taux plein. Les entreprises devraient aussi négocier sur l'emploi des salariés expérimentés."
+   }
+  ]
+ },
+ {
+  "lot": 4,
+  "cartes": [
+   {
+    "uid": "VTANR5L17V852",
+    "numero": 852,
+    "theme": "Environnement",
+    "titre": "Les PFAS interdits dans cosmétiques et vêtements",
+    "question": "Faut-il interdire les cosmétiques, les farts et les vêtements contenant des substances PFAS ?",
+    "concretement": "Le texte interdit à partir du 1er janvier 2026 la fabrication et la vente de cosmétiques, de farts et de vêtements contenant des PFAS, sauf équipements de protection, et fixe une trajectoire de réduction de leurs rejets."
+   },
+   {
+    "uid": "VTANR5L17V4723",
+    "numero": 4723,
+    "theme": "Droits",
+    "titre": "Les jeunes isolés hébergés pendant leur recours",
+    "question": "Faut-il continuer d'héberger un jeune qui se dit mineur et isolé tant que le juge n'a pas tranché son recours ?",
+    "concretement": "Un jeune qui se dit mineur et isolé, mais n'a pas été reconnu comme tel, resterait hébergé en urgence pendant son recours devant le juge. Le texte interdit aussi d'évaluer son âge par un examen des os, des dents ou de la puberté."
+   },
+   {
+    "uid": "VTANR5L17V4244",
+    "numero": 4244,
+    "theme": "Économie",
+    "titre": "S'opposer à l'accord avec le Mercosur",
+    "question": "Faut-il demander au Gouvernement de s'opposer à l'accord de libre-échange entre l'Union européenne et le Mercosur ?",
+    "concretement": "Cette résolution, qui n'a pas force de loi, invite le Gouvernement à s'opposer à l'accord de libre-échange entre l'Union européenne et les pays du Mercosur, en réunissant une minorité de blocage au Conseil de l'Union, et à saisir la Cour de justice de l'Union."
+   }
+  ]
+ },
+ {
+  "lot": 5,
+  "cartes": [
+   {
+    "uid": "VTANR5L17V2217",
+    "numero": 2217,
+    "theme": "Sécurité",
+    "titre": "Le délit d'homicide routier",
+    "question": "Faut-il créer un délit d'homicide routier pour les conducteurs qui tuent en ayant bu, pris des stupéfiants ou commis une faute délibérée ?",
+    "concretement": "Un conducteur qui cause la mort sans le vouloir commettrait un « homicide routier », puni de sept ans de prison et de 100 000 euros d'amende, s'il conduisait ivre ou drogué, ou en violant délibérément une règle de sécurité."
+   },
+   {
+    "uid": "VTANR5L17V2880",
+    "numero": 2880,
+    "theme": "Éducation",
+    "titre": "La lutte contre l'antisémitisme à l'université",
+    "question": "Faut-il imposer aux universités un dispositif de signalement et de sanction des actes antisémites et racistes ?",
+    "concretement": "Chaque université aurait une mission chargée de lutter contre l'antisémitisme et le racisme, avec un référent et un dispositif de signalement anonyme ; les étudiants pourraient être jugés par une section disciplinaire commune à leur région académique."
+   },
+   {
+    "uid": "VTANR5L17V1304",
+    "numero": 1304,
+    "theme": "Institutions",
+    "titre": "Le scrutin de liste dans toutes les communes",
+    "question": "Faut-il élire les conseils municipaux au scrutin de liste dans toutes les communes, même celles de moins de 1 000 habitants ?",
+    "concretement": "Ce vote porte sur la loi organique qui accompagne la réforme : elle adapte les règles des listes aux communes de moins de 1 000 habitants et garde ce seuil pour limiter le cumul d'un mandat de député avec celui de conseiller municipal."
+   }
+  ]
+ }
+]

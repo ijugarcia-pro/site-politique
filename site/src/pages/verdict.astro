@@ -1,0 +1,280 @@
+---
+// Le verdict de la séance de la semaine (t25, frame V5 « ⑧ Verdict ») : adopté ou rejeté, à
+// combien de voix près, et ta place dans le résultat : ton vote, ton pronostic, ta voix de
+// 578e, ton député et ton jumeau. Formulation du délai : « le verdict du matin » (décision de
+// t10, en attendant la mesure du délai de publication) — le scrutin est récupéré la nuit, et
+// les soirs de vote solennel à chaque heure (soiree.yml). Pas de comparaison avec les
+// utilisateurs du site : il faudrait des agrégats (reportés).
+import Base from '../layouts/Base.astro';
+import Salle from '../components/Salle.astro';
+import { composition, dateLisible, lienVote, quandVote, questionSeance, scrutinPublie, semaine }
+  from '../lib/donnees.ts';
+import { marge, verdict } from '../lib/votes.ts';
+import { puceTheme } from '../lib/themes.ts';
+
+const sem = semaine();
+const compo = composition();
+const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A',
+  non_votant: 'N', absent: '-' };
+const verdicts = sem.votes.flatMap((v) => {
+  const s = v.statut === 'voté' && v.scrutin ? scrutinPublie(v.scrutin.uid) : null;
+  if (!s) return [];
+  const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
+  return [{
+    cle: v.cle, uid: s.uid, numero: s.numero, titre: questionSeance(v).titre,
+    theme: v.carte?.theme ?? 'Vote solennel',
+    puce: v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6',
+    quand: `${s.solennel ? 'Scrutin solennel' : 'Vote'} du ${dateLisible(s.date)}`,
+    verdict: verdict(s), adopte: s.sort === 'adopté', marge: marge(s), decompte: s.decompte,
+    inverser: s.voix_pour_inverser, lien: lienVote(s),
+    sieges: compo.sieges.map((c) => {
+      if (c.vacant || !c.depute) return 'V';
+      const x = votes.get(c.depute);
+      if (!x) return 'x';
+      const l = LETTRES[x.vote ?? 'absent'] ?? '-';
+      return x.dissident ? l.toLowerCase() : l;
+    }).join(''),
+  }];
+});
+const attendus = sem.votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
+const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\u003c');
+---
+<Base titre="Le verdict" onglet="semaine"
+  description="Le verdict des votes de la semaine à l'Assemblée, face à tes réponses.">
+  <p class="fil"><a href="/">Cette semaine</a> › Verdict</p>
+  {verdicts.length === 0 ? (
+    <section class="attente">
+      <h1>Pas encore de verdict</h1>
+      {attendus.length > 0 ? (
+        <>
+          <p>Les députés n'ont pas encore voté :</p>
+          <ul>
+            {attendus.map((v) => <li><strong>{questionSeance(v).titre}</strong> · {quandVote(v)}</li>)}
+          </ul>
+          <p>Le verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</p>
+          <a class="b-principal" href="/seance/">Trancher avant eux · 2 min</a>
+        </>
+      ) : (
+        <>
+          <p>Aucun vote de la séance de cette semaine n'a encore été tenu.</p>
+          <a class="b-principal" href="/explorer/">Les derniers votes</a>
+        </>
+      )}
+    </section>
+  ) : (
+    <div class="verdict">
+      <section class="gauche">
+        {verdicts.length > 1 && (
+          <div class="onglets" role="tablist" aria-label="Les verdicts de ta séance">
+            {verdicts.map((v, k) => (
+              <button type="button" role="tab" data-onglet={k} aria-selected={k === 0 ? 'true' : 'false'}>{k + 1}. {v.titre}</button>
+            ))}
+          </div>
+        )}
+        {verdicts.map((v, k) => (
+          <article class="un-verdict" data-verdict={k} hidden={k > 0}>
+            <div class="puces">
+              <span class="puce-theme" style={`background: ${v.puce.split(':')[0]}; color: ${v.puce.split(':')[1]}`}>{v.theme}</span>
+              <span class="puce-date">{v.quand}</span>
+            </div>
+            <h1>{v.titre}</h1>
+            <div class="boite">
+              <span class="tampon">{v.verdict}</span>
+              <span>
+                <span class="marge">{v.marge ?? `${v.decompte.pour} – ${v.decompte.contre}`}</span>
+                <span class="decompte">{v.decompte.pour} pour · {v.decompte.contre} contre · {v.decompte.abstention} abstention{v.decompte.abstention > 1 ? 's' : ''}</span>
+              </span>
+            </div>
+            <ul class="lignes" data-lignes={k}></ul>
+            <div class="actions">
+              <a class="b-principal" href={v.lien}>Tout le détail →</a>
+              <a class="b-second" href="/hemicycle/">Mon hémicycle</a>
+            </div>
+          </article>
+        ))}
+      </section>
+      <section class="panneau">
+        <div class="panneau-tete">
+          <h2>Comment l'Assemblée a voté</h2>
+          <span data-signales>En couleur : pour, contre, abstention</span>
+        </div>
+        <div class="cadre-salle">
+          <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale"
+            chiffre="" legende="" />
+        </div>
+        <ul class="legende">
+          <li><span style="background: var(--pour)"></span>Pour</li>
+          <li><span style="background: var(--contre)"></span>Contre</li>
+          <li><span style="background: var(--abstention)"></span>Abstention</li>
+          <li><span style="background: var(--non-votant)"></span>Non-votant</li>
+          <li><span style="background: var(--absent)"></span>Absent</li>
+          <li><span class="anneau"></span>Contre son groupe</li>
+        </ul>
+      </section>
+    </div>
+  )}
+  <script type="application/json" data-donnees-verdict set:html={donnees}></script>
+</Base>
+
+<script>
+  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { profil, type Matrice } from '../lib/profil.ts';
+  import { Salle } from '../lib/salle.ts';
+  import { etatSeance } from '../lib/seances.ts';
+
+  interface Verdict {
+    cle: string; uid: string; titre: string; verdict: string; adopte: boolean;
+    decompte: { pour: number; contre: number; abstention: number }; inverser: number | null;
+    sieges: string;
+  }
+  const { lundi, verdicts } = JSON.parse(
+    document.querySelector('[data-donnees-verdict]')!.textContent!) as { lundi: string; verdicts: Verdict[] };
+  const racine = document.querySelector<HTMLElement>('[data-salle]');
+  if (racine && verdicts.length) {
+    const salle = new Salle(racine);
+    const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', N: '#9AA1B2', '-': '#DFE3EB' };
+    const MOTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention' };
+    const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+    const seance = etatSeance(lundi);
+    const mes = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
+    const monDepute = deputeChoisi();
+    let matrice: Matrice | null = null;
+    const ICONES = {
+      ok: ['#1CB37A', 'M5 10.5l3.5 3.5L15 7'], non: ['#FF6A3D', 'M6 6l8 8M14 6l-8 8'],
+      neutre: ['#C9CFDA', 'M5 10h10'], prono: ['#FFC531', 'M10 3l2 4.4 4.8.6-3.5 3.3.9 4.7L10 13.7 5.8 16l.9-4.7L3.2 8l4.8-.6z'],
+      voix: ['#7C4DFF', 'M3 15a7 7 0 0 1 14 0M7 15a3 3 0 0 1 6 0'],
+    } as const;
+    const ligne = (icone: keyof typeof ICONES, titre: string, detail: string) => {
+      const li = document.createElement('li');
+      const ic = document.createElement('span');
+      ic.className = 'icone';
+      ic.style.background = ICONES[icone][0];
+      ic.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="${ICONES[icone][1]}" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+      const t = document.createElement('span');
+      const b = document.createElement('span');
+      b.className = 'ligne-titre';
+      b.textContent = titre;
+      const d = document.createElement('span');
+      d.className = 'ligne-detail';
+      d.textContent = detail;
+      t.append(b, d);
+      li.append(ic, t);
+      return li;
+    };
+
+    const montrer = (k: number) => {
+      const v = verdicts[k];
+      for (const a of document.querySelectorAll<HTMLElement>('[data-verdict]')) a.hidden = a.dataset.verdict !== String(k);
+      for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
+        o.setAttribute('aria-selected', o.dataset.onglet === String(k) ? 'true' : 'false');
+      }
+      salle.colorer((i) => {
+        const brut = v.sieges[i];
+        if (brut === 'x') return { sansCommun: true };
+        const l = brut.toUpperCase();
+        return { fond: COULEURS[l] ?? '#DFE3EB', contreGroupe: brut !== l };
+      });
+      salle.centre(`${v.decompte.pour} – ${v.decompte.contre}`, `${v.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`);
+      salle.libre(false);
+      // Ta place dans le résultat.
+      const a = mes[v.uid] ?? seance.reponses[v.cle] ?? null;
+      const gagnant = v.adopte ? 'pour' : 'contre';
+      const p = matrice ? profil(matrice, mes) : null;
+      const k2 = matrice ? matrice.votes.indexOf(v.uid) : -1;
+      const jumeau = p?.jumeau ?? null;
+      const lettre = (s: string | undefined) => (k2 >= 0 && s ? s[k2] : '-');
+      const depute = monDepute && matrice ? matrice.deputes.find((d) => d.u === monDepute) : null;
+      salle.jumeau(jumeau?.ligne.u ?? null);
+      const lignes = [];
+      if (a) {
+        const comme = a === 'pour' ? v.decompte.pour : v.decompte.contre;
+        const jum = jumeau ? (MOTS[lettre(jumeau.ligne.s)] === a ? ', dont ton jumeau' : ', mais pas ton jumeau') : '';
+        const dep = depute ? ` ; ton député, ${depute.n}, a voté ${MOTS[lettre(depute.s)] ?? 'absent'}` : '';
+        lignes.push(ligne(a === gagnant ? 'ok' : 'non',
+          `Tu avais voté ${a} : tu es ${a === gagnant ? 'du côté de la majorité' : 'dans la minorité'}`,
+          `Comme ${comme} députés${jum}${dep}.`));
+      } else {
+        lignes.push(ligne('neutre', 'Tu n’avais pas tranché ce vote',
+          depute ? `Ton député, ${depute.n}, a voté ${MOTS[lettre(depute.s)] ?? 'absent'}.` : 'Il ne compte pas dans ton hémicycle.'));
+      }
+      const pr = seance.pronostics[v.cle];
+      if (pr) {
+        const juste = (pr === 'adopte') === v.adopte;
+        lignes.push(ligne('prono', `Pronostic ${juste ? 'juste' : 'raté'} : tu avais dit « ${pr === 'adopte' ? 'adopté' : 'rejeté'} »`,
+          'Ton pronostic reste dans ton navigateur, comme tes réponses.'));
+      }
+      if (a) {
+        lignes.push(ligne('voix', 'Ta voix de 578e',
+          `Avec la tienne : ${v.decompte.pour + (a === 'pour' ? 1 : 0)} pour, ${v.decompte.contre + (a === 'contre' ? 1 : 0)} contre.`
+          + (v.inverser ? ` Il aurait suffi que ${pluriel(v.inverser, 'député')} change${v.inverser > 1 ? 'nt' : ''} d’avis pour que le texte soit ${v.adopte ? 'rejeté' : 'adopté'}.` : '')));
+      }
+      document.querySelector(`[data-lignes="${k}"]`)!.replaceChildren(...lignes);
+      const sig = [jumeau ? 'ton jumeau signalé' : null].filter(Boolean);
+      document.querySelector('[data-signales]')!.textContent = sig.length ? 'En couleur : pour, contre ; ' + sig.join(', ') : 'En couleur : pour, contre, abstention';
+    };
+
+    for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
+      o.addEventListener('click', () => montrer(Number(o.dataset.onglet)));
+    }
+    montrer(0);
+    if (Object.keys(mes).length || monDepute) {
+      fetch('/donnees/matrice.json').then((r) => r.json()).then((m: Matrice) => {
+        matrice = m;
+        const actif = document.querySelector<HTMLElement>('[data-onglet][aria-selected="true"]');
+        montrer(Number(actif?.dataset.onglet ?? 0));
+      }).catch(() => {});
+    }
+  }
+</script>
+
+<style>
+  /* Cotes reprises de la frame V5 « ⑧ Verdict » ; sans « Partager ma semaine », « Suivre ce
+     texte » ni comparaison avec les utilisateurs du site (reportés). */
+  .fil { margin: 0; font-size: 14px; color: var(--gris-legende); }
+  .attente { max-width: 680px; }
+  .attente h1 { margin: 14px 0 12px; font-size: clamp(34px, 3.2vw, 46px); }
+  .attente p, .attente li { font-size: 17px; color: var(--gris); }
+  .verdict { display: flex; flex-wrap: wrap; gap: 28px 40px; align-items: flex-start; }
+  .gauche { flex: 1 1 480px; min-width: 0; max-width: 600px; }
+  .onglets { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  .onglets button { max-width: 100%; padding: 8px 14px; border: 2px solid var(--bord); border-radius: 999px; background: var(--fond);
+    font-family: var(--police-titre); font-weight: 600; font-size: 14px; color: var(--gris); cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .onglets button[aria-selected="true"] { border-color: var(--violet); background: #EFE9FF; color: var(--violet-fonce); }
+  .un-verdict[hidden] { display: none; }
+  .puces { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .puce-theme, .puce-date { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px;
+    font-family: var(--police-titre); font-weight: 600; font-size: 13px; }
+  .puce-theme { letter-spacing: 0.06em; text-transform: uppercase; }
+  .puce-date { background: var(--fond-doux); color: #3A4152; font-size: 14px; }
+  .un-verdict h1 { margin: 14px 0 18px; font-weight: 700; font-size: clamp(30px, 3vw, 42px); line-height: 1.05; letter-spacing: -0.015em; }
+  .boite { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; padding: 20px 24px; border-radius: 24px;
+    background: var(--texte); color: #FFFFFF; box-shadow: 0 6px 0 #0B0E17; }
+  .tampon { flex: none; padding: 8px 16px; border: 3px solid #FFFFFF; border-radius: 12px; font-family: var(--police-titre);
+    font-weight: 700; font-size: 28px; letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-4deg); }
+  .marge { display: block; font-family: var(--police-titre); font-weight: 700; font-size: 32px; line-height: 1; }
+  .decompte { display: block; margin-top: 6px; font-size: 15px; color: #C9CFDA; }
+  .lignes { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .lignes :global(li) { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 18px; border: 2px solid var(--bord); }
+  .lignes :global(.icone) { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; }
+  .lignes :global(.ligne-titre) { display: block; font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
+  .lignes :global(.ligne-detail) { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--gris); }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+  .b-principal { display: inline-flex; align-items: center; min-height: 56px; padding: 0 22px; border-radius: 16px; background: var(--violet);
+    color: #fff; box-shadow: 0 5px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 16px;
+    letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; }
+  .b-principal:hover { color: #fff; background: var(--violet-fonce); }
+  .b-second { display: inline-flex; align-items: center; min-height: 56px; padding: 0 20px; border: 2px solid var(--bord);
+    border-radius: 16px; background: var(--fond); box-shadow: 0 4px 0 var(--bord); font-family: var(--police-titre);
+    font-weight: 600; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--violet-fonce); text-decoration: none; }
+  .panneau { flex: 1.2 1 520px; min-width: 0; padding: 22px 24px; border-radius: 30px; background: var(--fond-doux); }
+  .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+  .panneau h2 { font-size: 22px; font-weight: 600; }
+  .panneau-tete span { font-size: 14px; color: var(--gris-legende); }
+  .cadre-salle { margin-top: 20px; }
+  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
+    list-style: none; font-size: 14px; color: var(--texte-doux); }
+  .legende li { display: inline-flex; align-items: center; gap: 7px; }
+  .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
+</style>

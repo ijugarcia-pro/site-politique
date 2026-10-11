@@ -1,0 +1,3041 @@
+{
+ "lots_proposes": [
+  [
+   4745,
+   600,
+   1624
+  ],
+  [
+   3273,
+   2256,
+   606
+  ],
+  [
+   7494,
+   2958,
+   3055
+  ],
+  [
+   852,
+   4723,
+   4244
+  ],
+  [
+   2217,
+   2880,
+   1304
+  ]
+ ],
+ "candidats": [
+  {
+   "uid": "VTANR5L17V2958",
+   "numero": 2958,
+   "theme": "Immigration",
+   "titre": "l'ensemble de la proposition de loi visant à faciliter le maintien en rétention des personnes condamnées pour des faits d’une particulière gravité et présentant de forts risques de récidive (première lecture).",
+   "question": "Faut-il pouvoir retenir jusqu'à deux cent dix jours avant leur expulsion les étrangers condamnés pour des faits graves ?",
+   "concretement": "Les étrangers condamnés pour certains crimes ou délits graves, ou dont le comportement menace gravement l'ordre public, pourront être maintenus en rétention administrative jusqu'à deux cent dix jours, le temps d'organiser leur départ.",
+   "date": "2025-07-08",
+   "dossier": "Proposition de loi visant à faciliter le maintien en rétention des personnes condamnées pour des faits d’une particulière gravité et présentant de forts risques de récidive",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 303,
+    "contre": 168,
+    "abstention": 1
+   },
+   "participation": 82,
+   "voix_pour_inverser": 68,
+   "dissidents": 2,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 108,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 48,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 25,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 59,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 58,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 61,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 93
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 33,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 24,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V5106",
+   "numero": 5106,
+   "theme": "Sécurité",
+   "titre": "l'article unique de la proposition de résolution européenne visant à inscrire la mouvance des frères musulmans sur la liste européenne des organisations terroristes.",
+   "question": "Faut-il demander l'inscription des Frères musulmans sur la liste européenne des organisations terroristes ?",
+   "concretement": "Cette résolution, qui n'a pas force de loi, invite la Commission européenne à proposer l'inscription de la mouvance des Frères musulmans et de ses responsables sur la liste européenne des organisations terroristes.",
+   "date": "2026-01-22",
+   "dossier": "Inscrire la mouvance des frères musulmans sur la liste européenne des organisations terroristes",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 157,
+    "contre": 101,
+    "abstention": 1
+   },
+   "participation": 45,
+   "voix_pour_inverser": 28,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 65,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 40,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 6,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 25,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 47,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 22,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 23,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 9,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V7905",
+   "numero": 7905,
+   "theme": "Sécurité",
+   "titre": "l'ensemble du projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense (texte de la commission mixte paritaire).",
+   "question": "Faut-il ajouter 36 milliards d'euros de ressources aux armées pour les années 2026 à 2030 ?",
+   "concretement": "Le texte actualise la programmation militaire 2024-2030 : il prévoit 36 milliards d'euros de ressources nouvelles pour les armées sur la période 2026-2030.",
+   "date": "2026-07-01",
+   "dossier": "Projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 375,
+    "contre": 113,
+    "abstention": 2
+   },
+   "participation": 85,
+   "voix_pour_inverser": 131,
+   "dissidents": 2,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 97,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 44,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 14,
+     "abstention": 1,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 46,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 62,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 86,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 36,
+     "abstention": 1,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V881",
+   "numero": 881,
+   "theme": "Économie",
+   "titre": "l'ensemble de la proposition de loi instaurant un impôt plancher de 2 % sur le patrimoine des ultra riches (première lecture).",
+   "question": "Faut-il que les personnes dont le patrimoine dépasse 100 millions d'euros paient au moins 2 % de sa valeur en impôts ?",
+   "concretement": "Le texte crée un impôt plancher sur la fortune : les personnes dont le patrimoine dépasse 100 millions d'euros devraient payer, au total, des impôts égaux à au moins 2 % de sa valeur.",
+   "date": "2025-02-20",
+   "dossier": "Impôt plancher de 2 % sur le patrimoine des ultra riches",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 116,
+    "contre": 39,
+    "abstention": 31
+   },
+   "participation": 32,
+   "voix_pour_inverser": 39,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 28,
+     "membres": 124
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 9,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 36,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 37,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 16,
+     "abstention": 0,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 38,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 7,
+     "abstention": 3,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V852",
+   "numero": 852,
+   "theme": "Environnement",
+   "titre": "l'ensemble de la proposition de loi visant à protéger la population des risques liés aux substances perfluoroalkylées et polyfluoroalkylées (deuxième lecture).",
+   "question": "Faut-il interdire les cosmétiques, les farts et les vêtements contenant des substances PFAS ?",
+   "concretement": "Le texte interdit à partir du 1er janvier 2026 la fabrication et la vente de cosmétiques, de farts et de vêtements contenant des PFAS, sauf équipements de protection, et fixe une trajectoire de réduction de leurs rejets.",
+   "date": "2025-02-20",
+   "dossier": "Protéger la population des risques liés aux substances per- et polyfluoroalkylées (PFAS)",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 231,
+    "contre": 51,
+    "abstention": 7
+   },
+   "participation": 50,
+   "voix_pour_inverser": 90,
+   "dissidents": 1,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 50,
+     "abstention": 0,
+     "membres": 124
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 22,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 46,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 45,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 7,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 39,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 38,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V7380",
+   "numero": 7380,
+   "theme": "Économie",
+   "titre": "l'ensemble de la proposition de loi visant à la nationalisation d'ArcelorMittal France afin de préserver la souveraineté industrielle de la France (deuxième lecture).",
+   "question": "Faut-il nationaliser la société ArcelorMittal France ?",
+   "concretement": "L'État achèterait la société ArcelorMittal France, à un prix fixé par une commission et plafonné à la valeur moyenne de ses actions entre le 1er octobre 2024 et le 30 septembre 2025.",
+   "date": "2026-06-11",
+   "dossier": "Nationalisation d'ArcelorMittal France",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 106,
+    "contre": 49,
+    "abstention": 47
+   },
+   "participation": 35,
+   "voix_pour_inverser": 29,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 45,
+     "membres": 122
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 5,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 25,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 45,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 30,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 7,
+     "abstention": 2,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V2256",
+   "numero": 2256,
+   "theme": "Santé",
+   "titre": "l'ensemble de la proposition de loi permettant aux salariés de participer aux collectes de sang, de plaquettes ou de plasma sur leur temps de travail (première lecture).",
+   "question": "Faut-il permettre aux salariés de donner leur sang pendant leurs heures de travail, sans perte de salaire ?",
+   "concretement": "Les salariés et les agents publics pourraient s'absenter, sans perte de salaire, pour donner leur sang, leurs plaquettes ou leur plasma, dans la limite de huit absences par an. L'employeur peut s'y opposer pour des raisons d'organisation.",
+   "date": "2025-06-04",
+   "dossier": "Permettre aux salariés de participer aux collectes de sang, de plaquettes ou de plasma sur leur temps de travail",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 125,
+    "contre": 12,
+    "abstention": 8
+   },
+   "participation": 25,
+   "voix_pour_inverser": 57,
+   "dissidents": 2,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 30,
+     "contre": 0,
+     "abstention": 3,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 7,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 12,
+     "contre": 2,
+     "abstention": 4,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V606",
+   "numero": 606,
+   "theme": "Éducation",
+   "titre": "l'ensemble de la proposition de loi visant à rendre accessible à tous les étudiants le repas à 1 euro (première lecture).",
+   "question": "Faut-il plafonner à 1 euro le prix du repas étudiant dans tous les restaurants universitaires ?",
+   "concretement": "Le repas à tarif modéré servi aux étudiants dans tous les restaurants des Crous ne pourrait pas coûter plus de 1 euro, sur place comme à emporter.",
+   "date": "2025-01-23",
+   "dossier": "Rendre accessible à tous les étudiants le repas à 1 euro",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 149,
+    "contre": 5,
+    "abstention": 19
+   },
+   "participation": 30,
+   "voix_pour_inverser": 72,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 24,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 124
+    },
+    "DR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 5,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 2,
+     "abstention": 11,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 27,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 1,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V600",
+   "numero": 600,
+   "theme": "Santé",
+   "titre": "l'ensemble de la proposition de loi, adoptée par le Sénat, relative à l'instauration d'un nombre minimum de soignants par patient hospitalisé (première lecture).",
+   "question": "Faut-il fixer un nombre minimum de soignants par patient dans les hôpitaux ?",
+   "concretement": "Pour chaque spécialité, un décret fixerait, après avis de la Haute Autorité de santé, un nombre minimum de soignants par lit. Un hôpital public qui ne peut le respecter plus de trois jours devrait prévenir l'agence régionale de santé.",
+   "date": "2025-01-23",
+   "dossier": "Proposition de loi relative à l'instauration d'un nombre minimum de soignants par patient hospitalisé",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 138,
+    "contre": 3,
+    "abstention": 70
+   },
+   "participation": 37,
+   "voix_pour_inverser": 68,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 30,
+     "membres": 124
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 6,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 62,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 1,
+     "abstention": 26,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 27,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 2,
+     "abstention": 7,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V4244",
+   "numero": 4244,
+   "theme": "Économie",
+   "titre": "la proposition de résolution invitant le Gouvernement de la République française à s’opposer à l’adoption de l’accord commercial entre l’Union européenne et le Mercosur (article 34-1 de la Constitution).",
+   "question": "Faut-il demander au Gouvernement de s'opposer à l'accord de libre-échange entre l'Union européenne et le Mercosur ?",
+   "concretement": "Cette résolution, qui n'a pas force de loi, invite le Gouvernement à s'opposer à l'accord de libre-échange entre l'Union européenne et les pays du Mercosur, en réunissant une minorité de blocage au Conseil de l'Union, et à saisir la Cour de justice de l'Union.",
+   "date": "2025-11-27",
+   "dossier": "S’opposer à l’adoption de l’accord commercial entre l’Union européenne et le Mercosur",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 244,
+    "contre": 1,
+    "abstention": 5
+   },
+   "participation": 43,
+   "voix_pour_inverser": 122,
+   "dissidents": 1,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 64,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 11,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 68,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 5,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 26,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V6045",
+   "numero": 6045,
+   "theme": "Institutions",
+   "titre": "l'ensemble de la proposition de loi visant à simplifier le millefeuille territorial par la collectivité unique (première lecture).",
+   "question": "Faut-il que l'Alsace devienne une collectivité unique, avec les compétences d'un département et d'une région ?",
+   "concretement": "La Collectivité européenne d'Alsace deviendrait « l'Alsace », une collectivité à statut particulier qui exercerait les compétences des départements et des régions, avec une assemblée élue en même temps que les conseils régionaux.",
+   "date": "2026-04-08",
+   "dossier": "Simplifier le millefeuille territorial par la collectivité unique",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 131,
+    "contre": 100,
+    "abstention": 12
+   },
+   "participation": 42,
+   "voix_pour_inverser": 16,
+   "dissidents": 13,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 64,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 9,
+     "contre": 4,
+     "abstention": 1,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "abstention",
+     "pour": 6,
+     "contre": 4,
+     "abstention": 8,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 32,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": null,
+     "pour": 4,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 27,
+     "abstention": 0,
+     "membres": 70
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 3,
+     "abstention": 1,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 3,
+     "contre": 3,
+     "abstention": 1,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 5,
+     "contre": 8,
+     "abstention": 1,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V3273",
+   "numero": 3273,
+   "theme": "Économie",
+   "titre": "l'ensemble de la proposition de loi visant à rendre systématique l'information du consommateur sur l'origine des denrées alimentaires par le moyen de l'étiquetage (première lecture).",
+   "question": "Faut-il rendre obligatoire l'indication du pays d'origine sur tous les produits alimentaires ?",
+   "concretement": "L'étiquette de tout produit agricole ou alimentaire, brut ou transformé, devrait indiquer son pays d'origine, ainsi que celui de l'ingrédient principal et de chaque ingrédient qui représente 10 % ou plus du produit.",
+   "date": "2025-10-30",
+   "dossier": "Rendre systématique l’information du consommateur sur l’origine des denrées alimentaires par le moyen de l’étiquetage",
+   "sort": "rejeté",
+   "solennel": false,
+   "decompte": {
+    "pour": 149,
+    "contre": 174,
+    "abstention": 8
+   },
+   "participation": 57,
+   "voix_pour_inverser": 13,
+   "dissidents": 1,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 119,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 50
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "contre",
+     "pour": 1,
+     "contre": 8,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 46,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 1,
+     "abstention": 2,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 48,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 12,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 41,
+     "abstention": 0,
+     "membres": 92
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 26,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 1,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 4,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V7408",
+   "numero": 7408,
+   "theme": "Logement",
+   "titre": "l'ensemble de la proposition de loi visant à améliorer l'accès au logement des travailleurs des services publics (texte de la commission mixte paritaire).",
+   "question": "Faut-il qu'un agent public logé grâce à son employeur puisse perdre ce logement quand il quitte son poste ?",
+   "concretement": "Un agent public, ou un salarié des transports publics dans les zones tendues, logé sur proposition de son employeur pourrait voir son bail résilié dans l'année qui suit la fin de son emploi, avec un préavis d'au moins six mois.",
+   "date": "2026-06-17",
+   "dossier": "Améliorer l'accès au logement des travailleurs des services publics",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 292,
+    "contre": 160,
+    "abstention": 14
+   },
+   "participation": 81,
+   "voix_pour_inverser": 66,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 89,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 42,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 24,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 51,
+     "abstention": 0,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "abstention",
+     "pour": 2,
+     "contre": 2,
+     "abstention": 12,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 63,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 80,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 31,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 33,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V4745",
+   "numero": 4745,
+   "theme": "Logement",
+   "titre": "l'ensemble de la proposition de loi pour retrouver la confiance et l'équilibre dans les rapports locatifs (première lecture).",
+   "question": "Faut-il rendre permanent l'encadrement des loyers et l'ouvrir à toutes les communes où se loger est difficile ?",
+   "concretement": "L'encadrement des loyers ne serait plus une expérimentation : les villes où l'offre de logements ne suffit pas à la demande pourraient l'appliquer durablement, sur tout ou partie de leur territoire.",
+   "date": "2025-12-11",
+   "dossier": "Retrouver la confiance et l’équilibre dans les rapports locatifs",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 105,
+    "contre": 56,
+    "abstention": 4
+   },
+   "participation": 29,
+   "voix_pour_inverser": 25,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 28,
+     "abstention": 1,
+     "membres": 123
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 54,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 30,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 3,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 6,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V2244",
+   "numero": 2244,
+   "theme": "Institutions",
+   "titre": "l'ensemble de la proposition de loi relative au droit de vote par correspondance des personnes détenues (première lecture).",
+   "question": "Faut-il limiter le vote par correspondance des personnes détenues aux élections européennes et aux référendums ?",
+   "concretement": "Une personne détenue ne pourrait plus voter par correspondance, depuis la commune de sa prison, qu'aux élections où la France forme une seule circonscription, comme les européennes, et aux référendums.",
+   "date": "2025-06-04",
+   "dossier": "Proposition de loi relative au droit de vote par correspondance des personnes détenues",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 109,
+    "contre": 60,
+    "abstention": 2
+   },
+   "participation": 30,
+   "voix_pour_inverser": 25,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 53,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 18,
+     "abstention": 2,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 26,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 13,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V1330",
+   "numero": 1330,
+   "theme": "Institutions",
+   "titre": "l'ensemble de la proposition de loi visant à réformer le mode d'élection des membres du Conseil de Paris et des conseils municipaux de Lyon et Marseille (première lecture).",
+   "question": "Faut-il élire le conseil municipal de Paris, Lyon et Marseille séparément des conseils d'arrondissement ?",
+   "concretement": "À Paris, Lyon et Marseille, le conseil de la ville et les conseils d'arrondissement seraient élus par deux scrutins distincts, au lieu d'un seul vote par secteur. La liste arrivée en tête dans la ville aurait une prime d'un quart des sièges.",
+   "date": "2025-04-09",
+   "dossier": "Réformer le mode d'élection des membres du Conseil de Paris et des conseils municipaux de Lyon et Marseille",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 183,
+    "contre": 53,
+    "abstention": 17
+   },
+   "participation": 44,
+   "voix_pour_inverser": 65,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 1,
+     "abstention": 2,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 6,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 2,
+     "contre": 22,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 3,
+     "abstention": 1,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 50,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 28,
+     "contre": 0,
+     "abstention": 2,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 20,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 12,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V2272",
+   "numero": 2272,
+   "theme": "Économie",
+   "titre": "l'ensemble de la proposition de loi visant à accorder le versement des allocations familiales dès le premier enfant (première lecture).",
+   "question": "Faut-il verser les allocations familiales dès le premier enfant ?",
+   "concretement": "Les familles toucheraient les allocations familiales dès leur premier enfant, et non plus à partir du deuxième.",
+   "date": "2025-06-05",
+   "dossier": "Accorder le versement des allocations familiales dès le premier enfant",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 103,
+    "contre": 17,
+    "abstention": 5
+   },
+   "participation": 22,
+   "voix_pour_inverser": 43,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 24,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 15,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": null,
+     "pour": 0,
+     "contre": 1,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 22,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 2,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 19,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 2,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V7494",
+   "numero": 7494,
+   "theme": "Environnement",
+   "titre": "l’ensemble de la proposition de loi visant à réduire l’impact environnemental de l’industrie textile (texte de la commission mixte paritaire).",
+   "question": "Faut-il interdire la publicité pour la mode ultra-express, y compris par les influenceurs ?",
+   "concretement": "Le texte définit la mode ultra-express, qui met en vente un très grand nombre de nouveaux vêtements peu réparables, et en interdit la publicité, y compris par les influenceurs, à partir du 1er janvier 2027.",
+   "date": "2026-06-24",
+   "dossier": "Réduire l’impact environnemental de l’industrie textile",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 338,
+    "contre": 0,
+    "abstention": 151
+   },
+   "participation": 85,
+   "voix_pour_inverser": 169,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 98,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 44,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "abstention",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 12,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 54,
+     "membres": 68
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 50,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 89,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 35,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 33,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V1306",
+   "numero": 1306,
+   "theme": "Énergie",
+   "titre": "l'ensemble de la proposition de loi visant à convertir des centrales à charbon vers des combustibles moins émetteurs en dioxyde de carbone pour permettre une transition écologique plus juste socialement (première lecture).",
+   "question": "Faut-il faciliter la conversion des centrales électriques au charbon vers des combustibles moins émetteurs ?",
+   "concretement": "Les centrales au charbon converties pour émettre moins de 550 grammes de dioxyde de carbone par kilowattheure seraient traitées comme de nouvelles installations ; les entreprises publiques qui en exploitent présenteraient un plan avant fin 2026.",
+   "date": "2025-04-07",
+   "dossier": "Proposition de loi visant à convertir des centrales à charbon vers des combustibles moins émetteurs en dioxyde de carbone pour permettre une transition écologique plus juste socialement",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 145,
+    "contre": 0,
+    "abstention": 6
+   },
+   "participation": 26,
+   "voix_pour_inverser": 73,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 46,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 11,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 6,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V6124",
+   "numero": 6124,
+   "theme": "Sécurité",
+   "titre": "l'ensemble de la proposition de loi visant à renforcer la pénalisation de l’organisation de rave-parties (première lecture).",
+   "question": "Faut-il punir de prison l'organisation d'une rave-party non déclarée ou interdite ?",
+   "concretement": "Aider à organiser une rave-party d'au moins 250 personnes sans déclaration ou malgré une interdiction serait puni de six mois de prison et de 30 000 euros d'amende, avec confiscation du matériel.",
+   "date": "2026-04-09",
+   "dossier": "Renforcer la pénalisation de l’organisation de rave-parties",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 78,
+    "contre": 67,
+    "abstention": 0
+   },
+   "participation": 25,
+   "voix_pour_inverser": 6,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 18,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 122
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 37
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 10,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 34,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 21,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 27,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 35
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V2217",
+   "numero": 2217,
+   "theme": "Sécurité",
+   "titre": "l'ensemble de la proposition de loi créant l'homicide routier et visant à lutter contre la violence routière (deuxième lecture).",
+   "question": "Faut-il créer un délit d'homicide routier pour les conducteurs qui tuent en ayant bu, pris des stupéfiants ou commis une faute délibérée ?",
+   "concretement": "Un conducteur qui cause la mort sans le vouloir commettrait un « homicide routier », puni de sept ans de prison et de 100 000 euros d'amende, s'il conduisait ivre ou drogué, ou en violant délibérément une règle de sécurité.",
+   "date": "2025-06-03",
+   "dossier": "Création d'un homicide routier et visant à lutter contre la violence routière",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 194,
+    "contre": 6,
+    "abstention": 3
+   },
+   "participation": 35,
+   "voix_pour_inverser": 94,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 23,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 28,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 6,
+     "abstention": 3,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 9,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 9,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V4754",
+   "numero": 4754,
+   "theme": "Immigration",
+   "titre": "l'ensemble de la proposition de loi visant à garantir un renouvellement automatique des titres de séjour de longue durée (première lecture).",
+   "question": "Faut-il renouveler automatiquement les titres de séjour de longue durée des étrangers ?",
+   "concretement": "La carte de séjour pluriannuelle et la carte de résident seraient renouvelées automatiquement ; sans réponse de l'administration quatre mois après une demande de renouvellement, celle-ci serait acceptée.",
+   "date": "2025-12-11",
+   "dossier": "Garantir un renouvellement automatique des titres de séjour de longue durée",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 98,
+    "contre": 37,
+    "abstention": 2
+   },
+   "participation": 24,
+   "voix_pour_inverser": 31,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 20,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 2,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": null,
+     "pour": 0,
+     "contre": 2,
+     "abstention": 2,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 50,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 9,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V4723",
+   "numero": 4723,
+   "theme": "Droits",
+   "titre": "l'ensemble de la proposition de loi visant à protéger les mineurs isolés et à lutter contre le sans-abrisme (première lecture).",
+   "question": "Faut-il continuer d'héberger un jeune qui se dit mineur et isolé tant que le juge n'a pas tranché son recours ?",
+   "concretement": "Un jeune qui se dit mineur et isolé, mais n'a pas été reconnu comme tel, resterait hébergé en urgence pendant son recours devant le juge. Le texte interdit aussi d'évaluer son âge par un examen des os, des dents ou de la puberté.",
+   "date": "2025-12-11",
+   "dossier": "Protéger les mineurs isolés et à lutter contre le sans-abrisme",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 144,
+    "contre": 100,
+    "abstention": 2
+   },
+   "participation": 43,
+   "voix_pour_inverser": 22,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 48,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 6,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 7,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 3,
+     "abstention": 2,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 63,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 1,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 51,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 28,
+     "abstention": 0,
+     "membres": 91
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 23,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 10,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V5358",
+   "numero": 5358,
+   "theme": "Sécurité",
+   "titre": "l'ensemble de la proposition de loi améliorant la protection des personnes ciblées par les réseaux de criminalité organisée (première lecture).",
+   "question": "Faut-il que l'État protège les personnes menacées parce qu'elles agissent contre la criminalité organisée ?",
+   "concretement": "Les personnes mises en danger parce qu'elles rassemblent des preuves contre la criminalité organisée, aident ses victimes ou agissent pour la faire reculer, ainsi que leurs proches, seraient protégées par la police et la gendarmerie.",
+   "date": "2026-02-12",
+   "dossier": "Améliorer la protection des personnes ciblées par les réseaux de criminalité organisée",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 123,
+    "contre": 0,
+    "abstention": 133
+   },
+   "participation": 44,
+   "voix_pour_inverser": 62,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 65,
+     "membres": 122
+    },
+    "DR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 15,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 3,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 7,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 28,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 48,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 7,
+     "membres": 17
+    },
+    "EPR": {
+     "position": "abstention",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 26,
+     "membres": 92
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 37,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 0,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 10
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 12,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V1624",
+   "numero": 1624,
+   "theme": "Sécurité",
+   "titre": "l'ensemble de la proposition de loi visant à renforcer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents (texte de la commission mixte paritaire).",
+   "question": "Faut-il durcir les règles de la justice pénale pour les mineurs délinquants et leurs parents ?",
+   "concretement": "Le texte permet de juger en comparution immédiate les mineurs de plus de seize ans déjà suivis par la justice, limite pour les récidivistes l'atténuation des peines liée à l'âge, et punit de trois ans de prison les parents dont la défaillance a conduit l'enfant à commettre des infractions.",
+   "date": "2025-05-13",
+   "dossier": "Restaurer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 341,
+    "contre": 187,
+    "abstention": 8
+   },
+   "participation": 93,
+   "voix_pour_inverser": 77,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 119,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 45,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 48
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 13,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 62,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 6,
+     "abstention": 3,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 67,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 16,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 80,
+     "contre": 1,
+     "abstention": 4,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 36,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 32,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 33
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V3055",
+   "numero": 3055,
+   "theme": "Travail",
+   "titre": "l'ensemble du projet de loi portant transposition des accords nationaux interprofessionnels en faveur de l'emploi des salariés expérimentés et relatif à l'évolution du dialogue social (texte de la commission mixte paritaire).",
+   "question": "Faut-il créer un contrat de travail spécial pour embaucher les demandeurs d'emploi de soixante ans et plus ?",
+   "concretement": "À titre expérimental pendant cinq ans, une entreprise pourrait embaucher en CDI un demandeur d'emploi d'au moins soixante ans, puis le mettre à la retraite dès qu'il peut partir à taux plein. Les entreprises devraient aussi négocier sur l'emploi des salariés expérimentés.",
+   "date": "2025-10-15",
+   "dossier": "Projet de loi portant transposition des accords nationaux interprofessionnels en faveur de l’emploi des salariés expérimentés et relatif à l’évolution du dialogue social",
+   "sort": "adopté",
+   "solennel": false,
+   "decompte": {
+    "pour": 143,
+    "contre": 25,
+    "abstention": 8
+   },
+   "participation": 31,
+   "voix_pour_inverser": 59,
+   "dissidents": 0,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 61,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 11,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 50
+    },
+    "GDR": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 3,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 8,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 10,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 69
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 2,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 22
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 25,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 31,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 92
+    },
+    "EcoS": {
+     "position": "abstention",
+     "pour": 0,
+     "contre": 0,
+     "abstention": 5,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 4,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 9
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 15,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V2880",
+   "numero": 2880,
+   "theme": "Éducation",
+   "titre": "l'ensemble de la proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur (texte de la commission mixte paritaire).",
+   "question": "Faut-il imposer aux universités un dispositif de signalement et de sanction des actes antisémites et racistes ?",
+   "concretement": "Chaque université aurait une mission chargée de lutter contre l'antisémitisme et le racisme, avec un référent et un dispositif de signalement anonyme ; les étudiants pourraient être jugés par une section disciplinaire commune à leur région académique.",
+   "date": "2025-07-02",
+   "dossier": "Proposition de loi relative à la lutte contre l'antisémitisme dans l'enseignement supérieur",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 366,
+    "contre": 88,
+    "abstention": 7
+   },
+   "participation": 80,
+   "voix_pour_inverser": 139,
+   "dissidents": 7,
+   "groupes": {
+    "RN": {
+     "position": "pour",
+     "pour": 117,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "pour",
+     "pour": 40,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 49
+    },
+    "GDR": {
+     "position": "contre",
+     "pour": 3,
+     "contre": 12,
+     "abstention": 0,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 23,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "pour",
+     "pour": 17,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 65,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "pour",
+     "pour": 14,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 79,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 93
+    },
+    "EcoS": {
+     "position": "contre",
+     "pour": 4,
+     "contre": 11,
+     "abstention": 7,
+     "membres": 38
+    },
+    "NI": {
+     "position": "pour",
+     "pour": 5,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 11
+    },
+    "HOR": {
+     "position": "pour",
+     "pour": 29,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 34
+    }
+   }
+  },
+  {
+   "uid": "VTANR5L17V1304",
+   "numero": 1304,
+   "theme": "Institutions",
+   "titre": "l'ensemble de la proposition de loi organique visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité (première lecture).",
+   "question": "Faut-il élire les conseils municipaux au scrutin de liste dans toutes les communes, même celles de moins de 1 000 habitants ?",
+   "concretement": "Ce vote porte sur la loi organique qui accompagne la réforme : elle adapte les règles des listes aux communes de moins de 1 000 habitants et garde ce seuil pour limiter le cumul d'un mandat de député avec celui de conseiller municipal.",
+   "date": "2025-04-07",
+   "dossier": "Proposition de loi organique visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité",
+   "sort": "adopté",
+   "solennel": true,
+   "decompte": {
+    "pour": 204,
+    "contre": 180,
+    "abstention": 24
+   },
+   "participation": 71,
+   "voix_pour_inverser": 12,
+   "dissidents": 10,
+   "groupes": {
+    "RN": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 114,
+     "abstention": 0,
+     "membres": 123
+    },
+    "DR": {
+     "position": "contre",
+     "pour": 2,
+     "contre": 41,
+     "abstention": 0,
+     "membres": 47
+    },
+    "GDR": {
+     "position": "pour",
+     "pour": 6,
+     "contre": 0,
+     "abstention": 1,
+     "membres": 17
+    },
+    "Dem": {
+     "position": "pour",
+     "pour": 20,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 36
+    },
+    "SOC": {
+     "position": "pour",
+     "pour": 35,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 66
+    },
+    "LIOT": {
+     "position": "contre",
+     "pour": 4,
+     "contre": 8,
+     "abstention": 3,
+     "membres": 23
+    },
+    "LFI": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 71
+    },
+    "UDR": {
+     "position": "contre",
+     "pour": 0,
+     "contre": 9,
+     "abstention": 0,
+     "membres": 16
+    },
+    "EPR": {
+     "position": "pour",
+     "pour": 57,
+     "contre": 2,
+     "abstention": 1,
+     "membres": 94
+    },
+    "EcoS": {
+     "position": "pour",
+     "pour": 18,
+     "contre": 0,
+     "abstention": 0,
+     "membres": 38
+    },
+    "NI": {
+     "position": null,
+     "pour": 4,
+     "contre": 4,
+     "abstention": 0,
+     "membres": 12
+    },
+    "HOR": {
+     "position": "abstention",
+     "pour": 1,
+     "contre": 0,
+     "abstention": 18,
+     "membres": 33
+    }
+   }
+  }
+ ],
+ "quiz": {
+  "8280": {
+   "theme": "Santé",
+   "titre": "L'aide à mourir"
+  },
+  "8431": {
+   "theme": "Numérique",
+   "titre": "Les réseaux sociaux interdits avant 15 ans"
+  },
+  "7987": {
+   "theme": "Sécurité",
+   "titre": "La légitime défense présumée des forces de l'ordre"
+  },
+  "7454": {
+   "theme": "Institutions",
+   "titre": "Un statut d'autonomie pour la Corse"
+  },
+  "1308": {
+   "theme": "Immigration",
+   "titre": "La nationalité des enfants nés à Mayotte"
+  },
+  "3260": {
+   "theme": "Immigration",
+   "titre": "Dénoncer l'accord franco-algérien de 1968"
+  },
+  "988": {
+   "theme": "Sécurité",
+   "titre": "Plus de soutien à l'Ukraine"
+  },
+  "2257": {
+   "theme": "Travail",
+   "titre": "L'abrogation de la réforme des retraites"
+  },
+  "3061": {
+   "theme": "Droits",
+   "titre": "Le consentement dans la définition du viol"
+  },
+  "2957": {
+   "theme": "Environnement",
+   "titre": "Des dérogations pour les néonicotinoïdes"
+  }
+ }
+}

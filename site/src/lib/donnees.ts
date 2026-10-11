@@ -241,4 +241,73 @@ export function questionsQuiz(): QuestionQuiz[] {
   return JSON.parse(readFileSync(chemin, 'utf-8')) as QuestionQuiz[];
 }
 
+/** Une carte de vote (pipeline/cartes.py) : thème, titre court, question, « Concrètement ». */
+export interface CarteVote extends QuestionQuiz {
+  titre: string;
+}
+
+/** Les 5 lots de 3 votes qui suivent le quiz (data/lots.json, choix de Julien, t43), dans
+ *  l'ordre de passage. */
+export function lotsDeVotes(): CarteVote[][] {
+  const chemin = resolve(process.cwd(), '..', 'data', 'lots.json');
+  const lots = JSON.parse(readFileSync(chemin, 'utf-8')) as { lot: number; cartes: CarteVote[] }[];
+  return lots.map((l) => l.cartes);
+}
+
 export const matrice = () => lire<Matrice>('site/matrice.json', EXPORT_SITE);
+
+/** Un vote de la séance de la semaine (pipeline/semaine.py). */
+export interface VoteSemaine {
+  cle: string;
+  type: 'annonce' | 'passe';
+  date: string;
+  debut: string | null;
+  objet: string;
+  nature: 'ensemble' | 'partie' | null;
+  dossier_uid: string | null;
+  dossier: string | null;
+  statut: 'à venir' | 'voté' | 'retiré';
+  carte: { theme: string; titre: string; question: string; concretement: string } | null;
+  scrutin: { uid: string; numero: number } | null;
+}
+
+export interface Semaine {
+  lundi: string;
+  vacances: boolean;
+  votes: VoteSemaine[];
+  /** Les semaines passées ; `tranches` : clé du vote annoncé → scrutin qui l'a tranché. */
+  historique: { lundi: string; vacances: boolean; tranches?: Record<string, string> }[];
+}
+
+export const semaine = () =>
+  lire<Semaine>('site/semaine.json', 'uv run python -m pipeline.semaine');
+
+/** Le scrutin s'il a sa page exportée (un scrutin mis de côté par les contrôles n'en a pas). */
+export const scrutinPublie = (uid: string): Scrutin | null =>
+  existsSync(resolve(EXPORT, `site/scrutins/${uid}.json`)) ? scrutin(uid) : null;
+
+const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+
+/** Quand les députés votent : « le mardi 13 octobre à 15 h » (heure de Paris, celle de
+ *  l'agenda). */
+export function quandVote(v: Pick<VoteSemaine, 'date' | 'debut'>): string {
+  const jour = JOURS[new Date(`${v.date}T12:00:00Z`).getUTCDay()];
+  const date = dateLisible(v.date).replace(/ \d{4}$/, '');
+  if (!v.debut) return `le ${jour} ${date}`;
+  const [h, m] = v.debut.slice(11, 16).split(':');
+  return `le ${jour} ${date} à ${Number(h)} h${m !== '00' ? ` ${m}` : ''}`;
+}
+
+/** La question d'un vote de la séance : celle de sa carte, sinon une question fermée tirée de
+ *  l'objet officiel (« Faut-il adopter la proposition de loi … ? »), sans rien inventer. */
+export function questionSeance(v: VoteSemaine): { titre: string; question: string; concretement: string } {
+  if (v.carte) return v.carte;
+  const objet = v.objet.replace(/^Vote solennel sur\s+/i, '').replace(/\s*\((première|deuxième|nouvelle) lecture\)/i, '')
+    .replace(/\.$/, '').trim();
+  return {
+    titre: v.dossier ?? majuscule(objet),
+    question: `Faut-il adopter ${objet} ?`,
+    concretement: 'Le résumé de ce texte n\'est pas encore rédigé : il est présenté par son titre '
+      + `officiel.${v.dossier ? ` Dossier législatif : « ${v.dossier} ».` : ''}`,
+  };
+}

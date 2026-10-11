@@ -154,5 +154,25 @@ tbody tr:last-child td { border-bottom: 0; }
 .ok { color: #1F7A45; font-weight: 700; }
 .alerte { color: #B23A0E; font-weight: 700; }
 
+/* Un groupe : son sigle, précédé d'un point à la couleur que l'Assemblée lui associe (--c). */
+.pastille-groupe {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--texte);
+  white-space: nowrap;
+}
+.pastille-groupe::before {
+  content: '';
+  flex: none;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--c, #9AA1B2);
+}
+
 /* L'attribut hidden l'emporte toujours, même sur un composant qui fixe son display. */
 [hidden] { display: none !important; }

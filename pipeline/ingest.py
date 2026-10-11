@@ -6,8 +6,9 @@ Usage :
 Pour chaque source de pipeline/sources.py :
 1. une requête HEAD (avec paramètre anti-cache) lit la date de modification ; si elle n'a pas
    bougé et que le fichier local est là, rien n'est téléchargé ;
-2. sinon, l'archive est téléchargée (plusieurs tentatives), et son empreinte SHA-256 comparée à
-   celle de la version connue : une archive régénérée à l'identique n'est pas un changement ;
+2. sinon, l'archive est téléchargée (copie en cache si elle est à jour, sinon serveur d'origine
+   avec reprise après coupure : pipeline/telechargement.py), et son empreinte SHA-256 comparée
+   à celle de la version connue : une archive régénérée à l'identique n'est pas un changement ;
 3. un échec garde le fichier et l'état précédents, et compte les nuits d'échec d'affilée.
 
 Le pipeline ne recalcule rien si aucune empreinte n'a changé. Sortie : code 1 si une source
@@ -22,7 +23,6 @@ Produit :
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import sys
@@ -34,13 +34,12 @@ from pathlib import Path
 
 import httpx
 
-from pipeline.an import sans_cache
 from pipeline.sources import SOURCES, nom_fichier
+from pipeline.telechargement import requete, telecharger
 
 RACINE = Path(__file__).resolve().parent.parent
 RAW = RACINE / "data" / "raw"
 ETAT = RACINE / "data" / "sources" / "etat.json"
-TENTATIVES = 4
 SEUIL_ALERTE = 3
 
 
@@ -57,44 +56,6 @@ def maintenant() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
-def requete(client: httpx.Client, methode: str, url: str, pause: Callable[[float], None]):
-    """HEAD avec nouvelles tentatives (le serveur de l'Assemblée renvoie parfois des 503)."""
-    for tentative in range(1, TENTATIVES + 1):
-        try:
-            reponse = client.request(methode, sans_cache(url))
-            reponse.raise_for_status()
-            return reponse
-        except httpx.HTTPError:
-            if tentative == TENTATIVES:
-                raise
-            pause(15 * tentative)
-
-
-def telecharger(client: httpx.Client, url: str, cible: Path,
-                pause: Callable[[float], None]) -> tuple[str, str | None]:
-    """Télécharge dans un fichier temporaire, puis remplace la cible ; renvoie (empreinte,
-    date de modification). Un échec laisse la cible intacte."""
-    partiel = cible.with_name(cible.name + ".part")
-    for tentative in range(1, TENTATIVES + 1):
-        empreinte = hashlib.sha256()
-        try:
-            with client.stream("GET", sans_cache(url)) as reponse:
-                reponse.raise_for_status()
-                modification = reponse.headers.get("last-modified")
-                with partiel.open("wb") as sortie:
-                    for bloc in reponse.iter_bytes(1 << 20):
-                        sortie.write(bloc)
-                        empreinte.update(bloc)
-            partiel.replace(cible)
-            return empreinte.hexdigest(), modification
-        except httpx.HTTPError:
-            partiel.unlink(missing_ok=True)
-            if tentative == TENTATIVES:
-                raise
-            pause(15 * tentative)
-    raise AssertionError("inaccessible")
-
-
 def recuperer(client: httpx.Client, source: dict, raw: Path, connu: dict | None,
               pause: Callable[[float], None]) -> tuple[Bilan, dict]:
     chemin = raw / nom_fichier(source)
@@ -105,7 +66,8 @@ def recuperer(client: httpx.Client, source: dict, raw: Path, connu: dict | None,
             and chemin.stat().st_size == connu.get("taille")):
         return Bilan(source["id"], "inchangée", source["requise"]), connu
 
-    empreinte, modification_get = telecharger(client, source["url"], chemin, pause)
+    empreinte, modification_get = telecharger(client, source["url"], chemin, pause,
+                                               tete.headers)
     meta = {
         "url": source["url"],
         "fichier": chemin.name,

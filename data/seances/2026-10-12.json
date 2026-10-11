@@ -1,0 +1,14 @@
+{
+ "lundi": "2026-10-12",
+ "validation": "Julien, 12 octobre 2026 : carte de la réserve (data/reserve.json), n° 6124",
+ "cartes": {
+  "scrutin:VTANR5L17V6124": {
+   "uid": "VTANR5L17V6124",
+   "numero": 6124,
+   "theme": "Sécurité",
+   "titre": "Les rave-parties non déclarées punies de prison",
+   "question": "Faut-il punir de prison l'organisation d'une rave-party non déclarée ou interdite ?",
+   "concretement": "Aider à organiser une rave-party d'au moins 250 personnes sans déclaration ou malgré une interdiction serait puni de six mois de prison et de 30 000 euros d'amende, avec confiscation du matériel."
+  }
+ }
+}

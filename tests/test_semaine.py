@@ -45,13 +45,15 @@ def passe(con, numero, pour, contre, titre="Proposition de loi", dossier=None, j
     return uid
 
 
-def lancer(con, tmp_path, jour=LUNDI, jours_seance=None, auteurs=None, monkeypatch=None):
+def lancer(con, tmp_path, jour=LUNDI, jours_seance=None, auteurs=None, monkeypatch=None,
+           lots=()):
     monkeypatch.setattr(s, "jours_de_seance", lambda _: jours_seance
                         if jours_seance is not None else {LUNDI, date(2026, 10, 13)})
     monkeypatch.setattr(s, "auteurs", lambda _, __: auteurs or {})
     monkeypatch.setattr(s, "archive", lambda raw, source: tmp_path / source)
     monkeypatch.setattr(s, "deja_proposes", lambda _: set())
     monkeypatch.setattr(s, "reserve", lambda: [])
+    monkeypatch.setattr(s, "cartes_des_lots", lambda: list(lots))
     return s.semaine(con, jour, raw=tmp_path, semaines=tmp_path / "semaines",
                      seances=tmp_path / "seances")
 
@@ -110,6 +112,69 @@ def test_semaine_creuse_completee_par_des_votes_passes(con, tmp_path, monkeypatc
                                               "scrutin:VTANR5L17V10"]
     assert r["votes"][1]["statut"] == "voté"
     assert r["votes"][1]["scrutin"] == {"uid": "VTANR5L17V11", "numero": 11}
+
+
+def carte_de_lot(numero, theme="Santé"):
+    return {"uid": f"VTANR5L17V{numero}", "numero": numero, "theme": theme,
+            "titre": f"Le vote {numero}", "question": f"Faut-il adopter le texte {numero} ?",
+            "concretement": f"Le texte {numero} change ceci."}
+
+
+def test_semaine_creuse_completee_d_abord_par_les_cartes_des_lots(con, tmp_path, monkeypatch):
+    annoncer(con, "PT0", "2026-10-13", "Vote solennel sur la proposition de loi climat", "D0",
+             "Proposition de loi climat")
+    passe(con, 11, 51, 49)                    # le plus serré, sans carte : en dernier recours
+    passe(con, 91, 90, 10, dossier="D91")     # lot 9, déjà passé par une séance
+    passe(con, 92, 90, 10, dossier="D0")      # lot 9, même dossier que le vote annoncé
+    passe(con, 93, 90, 10, dossier="D93")     # lot 9
+    passe(con, 81, 90, 10, dossier="D81")     # lot 8
+    (tmp_path / "semaines").mkdir()
+    (tmp_path / "semaines" / "2026-10-05.json").write_text(json.dumps({
+        "lundi": "2026-10-05", "vacances": False,
+        "votes": [{"cle": "scrutin:VTANR5L17V91", "type": "passe",
+                   "scrutin_uid": "VTANR5L17V91", "numero": 91}]}), encoding="utf-8")
+    # Du dernier lot au premier ; le n° 94 n'est pas dans la base.
+    lots = [(9, carte_de_lot(91)), (9, carte_de_lot(92)), (9, carte_de_lot(93)),
+            (9, carte_de_lot(94)), (8, carte_de_lot(81, "Logement")), (1, carte_de_lot(11))]
+    r = lancer(con, tmp_path, monkeypatch=monkeypatch, lots=lots)
+    assert [v["cle"] for v in r["votes"]] == ["PT0", "scrutin:VTANR5L17V93",
+                                              "scrutin:VTANR5L17V81"]
+    # La carte du lot est jointe toute seule, et le vote est déjà tenu.
+    assert r["votes"][1]["carte"] == carte_de_lot(93)
+    assert r["votes"][2]["carte"]["theme"] == "Logement"
+    assert r["votes"][1]["statut"] == "voté"
+    fige = json.loads((tmp_path / "semaines" / "2026-10-12.json").read_text("utf-8"))
+    assert [v.get("lot") for v in fige["votes"]] == [None, 9, 8]
+
+
+def test_lots_epuises_la_seance_se_complete_par_un_vote_qui_divise(con, tmp_path, monkeypatch):
+    annoncer(con, "PT0", "2026-10-13", "Vote solennel sur la proposition de loi climat", "D0",
+             "Proposition de loi climat")
+    passe(con, 10, 60, 40)
+    passe(con, 93, 90, 10, dossier="D93")
+    r = lancer(con, tmp_path, monkeypatch=monkeypatch, lots=[(9, carte_de_lot(93))])
+    assert [v["cle"] for v in r["votes"]] == ["PT0", "scrutin:VTANR5L17V93",
+                                              "scrutin:VTANR5L17V10"]
+    assert r["votes"][2]["carte"] is None
+
+
+def test_une_carte_de_seance_remplace_celle_du_lot(con, tmp_path, monkeypatch):
+    annoncer(con, "PT0", "2026-10-13", "Vote solennel sur la loi A", "D0", "Loi A")
+    annoncer(con, "PT1", "2026-10-13", "Vote solennel sur la loi B", "D1", "Loi B")
+    passe(con, 93, 90, 10, dossier="D93")
+    (tmp_path / "seances").mkdir()
+    revue = carte_de_lot(93) | {"titre": "Le vote 93, revu pour la séance"}
+    (tmp_path / "seances" / "2026-10-12.json").write_text(json.dumps(
+        {"lundi": "2026-10-12", "cartes": {"scrutin:VTANR5L17V93": revue}}), encoding="utf-8")
+    r = lancer(con, tmp_path, monkeypatch=monkeypatch, lots=[(9, carte_de_lot(93))])
+    assert r["votes"][2]["carte"] == revue
+
+
+def test_cartes_des_lots_du_dernier_lot_au_premier():
+    lots = s.cartes_des_lots()
+    assert [n for n, _ in lots] == sorted((n for n, _ in lots), reverse=True)
+    # Dans un lot, l'ordre du lot : le lot 9 commence par les titres de séjour.
+    assert lots[0][0] == 9 and lots[0][1]["numero"] == 4754
 
 
 def test_vacances_parlementaires(con, tmp_path, monkeypatch):

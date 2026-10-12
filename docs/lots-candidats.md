@@ -1,22 +1,22 @@
-# Lots de votes : candidats et choix (t42, t43)
+# Lots de votes : candidats et choix (t42, t43, t47)
 
-> Généré par `uv run python -m scripts.preparer_lots`. Ne pas modifier à la main : le choix est dans `CHOIX`, et les lots retenus dans `data/lots.json`.
+> Généré par `uv run python -m scripts.preparer_lots`. Ne pas modifier à la main : le choix est dans `CHOIX` et `FACULTATIFS`, et les lots retenus dans `data/lots.json`.
 
-Après le quiz d'entrée, l'utilisateur continue avec des **lots de 3 votes**, au format d'une séance (ta décision du 8 octobre 2026). 10 votes du quiz + 5 lots de 3 = **25 votes** : la précision passe de 39 % à 71 %, le seuil où elle devient fiable. Comme pour le quiz, c'est un choix éditorial : tu retiens 15 votes et tu corriges ce que tu veux. **Choix fait le 9 octobre 2026** : voir ci-dessous.
+Après le quiz d'entrée, l'utilisateur continue avec des **lots de 3 votes**, au format d'une séance (ta décision du 8 octobre 2026). 10 votes du quiz + 5 lots de 3 = **25 votes** : la précision passe de 39 % à 71 %, le seuil où elle devient fiable. Comme pour le quiz, c'est un choix éditorial : tu retiens 15 votes et tu corriges ce que tu veux. **Choix fait le 9 octobre 2026** : voir ci-dessous. Depuis le 12 octobre 2026, 4 lots facultatifs les suivent, pour affiner jusqu'à 37 votes.
 
 ## La carte de vote
 
 Chaque vote se présente sous la même forme partout (quiz, lots, séances, pages de vote) : un **thème**, un **titre court**, une **question fermée** (« oui » veut dire voter pour) et une phrase **« Concrètement »**. Le titre officiel reste dans « Pour aller plus loin ». Format et contrôles : `pipeline/cartes.py`.
 
 - **Les 12 thèmes** (liste fermée, celle de l'écran Explorer des maquettes) : Numérique, Droits, Travail, Économie, Immigration, Environnement, Éducation, Institutions, Énergie, Sécurité, Logement, Santé.
-- **Les lots** iront dans `data/lots.json` après ton choix : 5 lots numérotés dans l'ordre où on les propose, 3 cartes chacun. Les 10 cartes du quiz restent dans `data/quiz.json`, au même format : il leur faut un thème de la liste et un titre court (proposés plus bas, à valider aussi).
+- **Les lots** sont dans `data/lots.json` : les 5 lots du parcours, numérotés dans l'ordre où on les propose, 3 cartes chacun, puis les lots facultatifs (`"facultatif": true`). Les 10 cartes du quiz restent dans `data/quiz.json`, au même format : il leur faut un thème de la liste et un titre court (proposés plus bas, à valider aussi).
 - **Question pour toi.** La liste n'a pas de thème « International » ni « Défense » : je range le soutien à l'Ukraine (quiz) et la programmation militaire sous « Sécurité ». Autre solution : remplacer un thème peu servi par « International ».
 
 ## Critères
 
 - **Les tiens, comme pour le quiz** : des sujets de société, à objet unique, compris en une phrase. Quand un texte en contient plusieurs, la carte retient la mesure principale et la réserve le dit.
 - **Départager les groupes que le quiz sépare mal** : Dem / EPR (0), EcoS / SOC (0), DR / HOR (1) ; entre parenthèses, le nombre de votes du quiz où leurs positions diffèrent.
-- **Varier les thèmes** : 3 thèmes différents par lot, pas plus de 2 votes par thème sur les 15.
+- **Varier les thèmes** : 3 thèmes différents par lot, pas plus de 2 votes par thème sur les 15 votes du parcours.
 - **Rédigé d'après le texte adopté** par l'Assemblée, lu en entier (à défaut, le texte de la commission, quand c'est lui qui a été voté). Chaque carte passe les contrôles 2, 4, 5 et 6 des fiches : longueurs, question fermée, vocabulaire neutre, chiffres présents dans le texte. « Vérifié » dit ce qui a été lu ; « Réserve », ce que la carte simplifie.
 - **Une participation d'au moins 20 %** : en dessous, trop peu de députés à comparer.
 
@@ -38,9 +38,24 @@ Sur le quiz seul, la paire la moins séparée l'est 0 fois ; avec les 5 lots, 2 
 
 Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %, 71 %.
 
+## Les 4 lots facultatifs (6 à 9), validés par Julien le 12 octobre 2026
+
+12 cartes de la réserve, validées sans correction. Ces lots suivent le lot 5 pour qui veut affiner sa place : la fin du lot 5 les propose, rien n'y oblige. Dans l'ordre de passage ; dans chaque lot, 3 thèmes différents, le vote le plus concret ou le plus connu en premier. Le plafond de 2 votes par thème ne vaut que pour le parcours : ici reviennent Sécurité (3), Économie (3), Institutions (3).
+
+| Lot | Votes | Paires les moins séparées qu'il départage | Votes tranchés | Précision après | Députés comparables (au moins 10 votes) |
+|---|---|---|---|---|---|
+| 6 | Logement · Le logement social lié à l'emploi public (n° 7408) ; Sécurité · 36 milliards d'euros de plus pour les armées (n° 7905) ; Économie · Un impôt plancher sur les très grands patrimoines (n° 881) | EcoS / SOC (2 → 3), GDR / SOC (4 → 5), RN / UDR (4 → 5), LFI / SOC (5 → 6) | 28 | 75 % | 542 |
+| 7 | Sécurité · Les Frères musulmans sur la liste terroriste de l'UE (n° 5106) ; Économie · La nationalisation d'ArcelorMittal France (n° 7380) ; Institutions · L'Alsace, une collectivité unique (n° 6045) | Dem / EPR (2 → 3), DR / HOR (5 → 6), RN / UDR (5 → 6), Dem / HOR (6 → 7) | 31 | 79 % | 548 |
+| 8 | Sécurité · Protéger ceux qui agissent contre les réseaux (n° 5358) ; Économie · Les allocations familiales dès le premier enfant (n° 2272) ; Institutions · Le vote par correspondance des détenus limité (n° 2244) | DR / HOR (6 → 7), DR / EPR (7 → 8), DR / LIOT (7 → 9), HOR / LIOT (7 → 10) | 34 | 82 % | 554 |
+| 9 | Immigration · Les titres de séjour renouvelés automatiquement (n° 4754) ; Énergie · Les centrales à charbon converties (n° 1306) ; Institutions · Paris, Lyon, Marseille : deux votes municipaux (n° 1330) | EcoS / GDR (2 → 3), EcoS / SOC (3 → 4), EcoS / LFI (4 → 6), GDR / LFI (4 → 5) | 37 | 84 % | 558 |
+
+Sur les 37 votes, la paire la moins séparée l'est 3 fois ; 55 paires sur 55 sont séparées au moins trois fois. Les paires les moins séparées : Dem / EPR (3), EcoS / GDR (3), EcoS / SOC (4), DR / UDR (5).
+
+Précision après 28, 31, 34 et 37 votes : 75 %, 79 %, 82 %, 84 %.
+
 ## Les candidats
 
-28 cartes : les 6 candidats du quiz non retenus, les 18 rédigés le 8 octobre, puis les 4 ajoutés par Julien le 9 octobre. Les cases cochées sont les votes retenus.
+28 cartes : les 6 candidats du quiz non retenus, les 18 rédigés le 8 octobre, puis les 4 ajoutés par Julien le 9 octobre. Les cases cochées sont les votes retenus, dans un lot du parcours ou dans un lot facultatif.
 
 ### 1. Immigration · La rétention des étrangers condamnés allongée · n° 2958 · **retenu**
 
@@ -55,9 +70,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte de la commission (première lecture à l'Assemblée), articles 1er à 3 : durée maximale de rétention de « deux cent dix jours ».
 - **Réserve** : « Expulsion » est le mot courant ; le texte parle d'éloignement.
 
-### 2. Sécurité · Les Frères musulmans sur la liste terroriste de l'UE · n° 5106
+### 2. Sécurité · Les Frères musulmans sur la liste terroriste de l'UE · n° 5106 · **lot facultatif 7**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il demander l'inscription des Frères musulmans sur la liste européenne des organisations terroristes ? »
 - **Concrètement** : Cette résolution, qui n'a pas force de loi, invite la Commission européenne à proposer l'inscription de la mouvance des Frères musulmans et de ses responsables sur la liste européenne des organisations terroristes.
 - **Le vote** : scrutin ordinaire, adopté le 22 janvier 2026 ; 157 pour, 101 contre, 1 abstention ; participation 45 % ; 0 vote contre leur groupe. [Scrutin n° 5106](https://www.assemblee-nationale.fr/dyn/17/scrutins/5106).
@@ -68,9 +83,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Proposition de résolution européenne, texte de la commission, point 5.
 - **Réserve** : Participation faible : moins de la moitié des députés ont voté.
 
-### 3. Sécurité · 36 milliards d'euros de plus pour les armées · n° 7905
+### 3. Sécurité · 36 milliards d'euros de plus pour les armées · n° 7905 · **lot facultatif 6**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il ajouter 36 milliards d'euros de ressources aux armées pour les années 2026 à 2030 ? »
 - **Concrètement** : Le texte actualise la programmation militaire 2024-2030 : il prévoit 36 milliards d'euros de ressources nouvelles pour les armées sur la période 2026-2030.
 - **Le vote** : scrutin solennel, adopté le 1 juillet 2026 ; 375 pour, 113 contre, 2 abstentions ; participation 85 % ; 2 votes contre leur groupe. [Scrutin n° 7905](https://www.assemblee-nationale.fr/dyn/17/scrutins/7905).
@@ -81,9 +96,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte de la commission mixte paritaire, article 2.
 - **Réserve** : Le texte contient aussi d'autres mesures de défense (43 articles) : la question retient la principale.
 
-### 4. Économie · Un impôt plancher sur les très grands patrimoines · n° 881
+### 4. Économie · Un impôt plancher sur les très grands patrimoines · n° 881 · **lot facultatif 6**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il que les personnes dont le patrimoine dépasse 100 millions d'euros paient au moins 2 % de sa valeur en impôts ? »
 - **Concrètement** : Le texte crée un impôt plancher sur la fortune : les personnes dont le patrimoine dépasse 100 millions d'euros devraient payer, au total, des impôts égaux à au moins 2 % de sa valeur.
 - **Le vote** : scrutin ordinaire, adopté le 20 février 2025 ; 116 pour, 39 contre, 31 abstentions ; participation 32 % ; 0 vote contre leur groupe. [Scrutin n° 881](https://www.assemblee-nationale.fr/dyn/17/scrutins/881).
@@ -110,9 +125,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte de la commission (deuxième lecture), articles 1er et 1er bis.
 - **Réserve** : Participation faible (la moitié des députés).
 
-### 6. Économie · La nationalisation d'ArcelorMittal France · n° 7380
+### 6. Économie · La nationalisation d'ArcelorMittal France · n° 7380 · **lot facultatif 7**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il nationaliser la société ArcelorMittal France ? »
 - **Concrètement** : L'État achèterait la société ArcelorMittal France, à un prix fixé par une commission et plafonné à la valeur moyenne de ses actions entre le 1er octobre 2024 et le 30 septembre 2025.
 - **Le vote** : scrutin ordinaire, adopté le 11 juin 2026 ; 106 pour, 49 contre, 47 abstentions ; participation 35 % ; 0 vote contre leur groupe. [Scrutin n° 7380](https://www.assemblee-nationale.fr/dyn/17/scrutins/7380).
@@ -177,9 +192,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Proposition de résolution (article 34-1 de la Constitution) : dispositif.
 - **Réserve** : Le Mercosur réunit des pays d'Amérique du Sud ; la carte ne le dit pas, faute de le lire dans le texte.
 
-### 11. Institutions · L'Alsace, une collectivité unique · n° 6045
+### 11. Institutions · L'Alsace, une collectivité unique · n° 6045 · **lot facultatif 7**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il que l'Alsace devienne une collectivité unique, avec les compétences d'un département et d'une région ? »
 - **Concrètement** : La Collectivité européenne d'Alsace deviendrait « l'Alsace », une collectivité à statut particulier qui exercerait les compétences des départements et des régions, avec une assemblée élue en même temps que les conseils régionaux.
 - **Le vote** : scrutin ordinaire, adopté le 8 avril 2026 ; 131 pour, 100 contre, 12 abstentions ; participation 42 % ; 13 votes contre leur groupe. [Scrutin n° 6045](https://www.assemblee-nationale.fr/dyn/17/scrutins/6045).
@@ -206,9 +221,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte de la commission (texte voté), article 1er.
 - **Réserve** : Texte rejeté. Il prévoyait aussi des sanctions, et un étiquetage des produits importés faits avec des produits phytosanitaires interdits dans l'Union.
 
-### 13. Logement · Le logement social lié à l'emploi public · n° 7408
+### 13. Logement · Le logement social lié à l'emploi public · n° 7408 · **lot facultatif 6**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il qu'un agent public logé grâce à son employeur puisse perdre ce logement quand il quitte son poste ? »
 - **Concrètement** : Un agent public, ou un salarié des transports publics dans les zones tendues, logé sur proposition de son employeur pourrait voir son bail résilié dans l'année qui suit la fin de son emploi, avec un préavis d'au moins six mois.
 - **Le vote** : scrutin solennel, adopté le 17 juin 2026 ; 292 pour, 160 contre, 14 abstentions ; participation 81 % ; 0 vote contre leur groupe. [Scrutin n° 7408](https://www.assemblee-nationale.fr/dyn/17/scrutins/7408).
@@ -233,9 +248,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte adopté, article 1er.
 - **Réserve** : Le texte double aussi les amendes des bailleurs qui ne respectent pas l'encadrement et oblige à justifier un congé pour vente : la question retient la mesure principale.
 
-### 15. Institutions · Le vote par correspondance des détenus limité · n° 2244
+### 15. Institutions · Le vote par correspondance des détenus limité · n° 2244 · **lot facultatif 8**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il limiter le vote par correspondance des personnes détenues aux élections européennes et aux référendums ? »
 - **Concrètement** : Une personne détenue ne pourrait plus voter par correspondance, depuis la commune de sa prison, qu'aux élections où la France forme une seule circonscription, comme les européennes, et aux référendums.
 - **Le vote** : scrutin ordinaire, adopté le 4 juin 2025 ; 109 pour, 60 contre, 2 abstentions ; participation 30 % ; 0 vote contre leur groupe. [Scrutin n° 2244](https://www.assemblee-nationale.fr/dyn/17/scrutins/2244).
@@ -246,9 +261,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte adopté, article unique (code électoral, article L. 12-1).
 - **Réserve** : Le texte de la commission disait l'inverse (bureau de vote dans chaque prison) : la séance l'a réécrit. Les européennes ne sont pas nommées dans le texte.
 
-### 16. Institutions · Paris, Lyon, Marseille : deux votes municipaux · n° 1330
+### 16. Institutions · Paris, Lyon, Marseille : deux votes municipaux · n° 1330 · **lot facultatif 9**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il élire le conseil municipal de Paris, Lyon et Marseille séparément des conseils d'arrondissement ? »
 - **Concrètement** : À Paris, Lyon et Marseille, le conseil de la ville et les conseils d'arrondissement seraient élus par deux scrutins distincts, au lieu d'un seul vote par secteur. La liste arrivée en tête dans la ville aurait une prime d'un quart des sièges.
 - **Le vote** : scrutin ordinaire, adopté le 9 avril 2025 ; 183 pour, 53 contre, 17 abstentions ; participation 44 % ; 7 votes contre leur groupe. [Scrutin n° 1330](https://www.assemblee-nationale.fr/dyn/17/scrutins/1330).
@@ -260,9 +275,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte adopté, articles 1er (L. 271, L. 272-4-1) et 4.
 - **Réserve** : Première lecture ; la loi a été adoptée définitivement le 10 juillet 2025 (scrutin n° 3018, participation plus faible).
 
-### 17. Économie · Les allocations familiales dès le premier enfant · n° 2272
+### 17. Économie · Les allocations familiales dès le premier enfant · n° 2272 · **lot facultatif 8**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il verser les allocations familiales dès le premier enfant ? »
 - **Concrètement** : Les familles toucheraient les allocations familiales dès leur premier enfant, et non plus à partir du deuxième.
 - **Le vote** : scrutin ordinaire, adopté le 5 juin 2025 ; 103 pour, 17 contre, 5 abstentions ; participation 22 % ; 0 vote contre leur groupe. [Scrutin n° 2272](https://www.assemblee-nationale.fr/dyn/17/scrutins/2272).
@@ -286,9 +301,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte adopté (commission mixte paritaire), articles 1er, 3 et 3 bis.
 - **Réserve** : Le texte contient d'autres mesures (affichage du lieu de fabrication, éco-contribution modulée) : la question retient la plus visible.
 
-### 19. Énergie · Les centrales à charbon converties · n° 1306
+### 19. Énergie · Les centrales à charbon converties · n° 1306 · **lot facultatif 9**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il faciliter la conversion des centrales électriques au charbon vers des combustibles moins émetteurs ? »
 - **Concrètement** : Les centrales au charbon converties pour émettre moins de 550 grammes de dioxyde de carbone par kilowattheure seraient traitées comme de nouvelles installations ; les entreprises publiques qui en exploitent présenteraient un plan avant fin 2026.
 - **Le vote** : scrutin ordinaire, adopté le 7 avril 2025 ; 145 pour, 0 contre, 6 abstentions ; participation 26 % ; 0 vote contre leur groupe. [Scrutin n° 1306](https://www.assemblee-nationale.fr/dyn/17/scrutins/1306).
@@ -326,9 +341,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
 - **Vérifié** : Texte adopté (deuxième lecture), article 1er (article 221-18 du code pénal).
 - **Réserve** : Le texte compte d'autres cas (sans permis, grand excès de vitesse, délit de fuite…) et d'autres mesures de sécurité routière.
 
-### 22. Immigration · Les titres de séjour renouvelés automatiquement · n° 4754
+### 22. Immigration · Les titres de séjour renouvelés automatiquement · n° 4754 · **lot facultatif 9**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il renouveler automatiquement les titres de séjour de longue durée des étrangers ? »
 - **Concrètement** : La carte de séjour pluriannuelle et la carte de résident seraient renouvelées automatiquement ; sans réponse de l'administration quatre mois après une demande de renouvellement, celle-ci serait acceptée.
 - **Le vote** : scrutin ordinaire, adopté le 11 décembre 2025 ; 98 pour, 37 contre, 2 abstentions ; participation 24 % ; 0 vote contre leur groupe. [Scrutin n° 4754](https://www.assemblee-nationale.fr/dyn/17/scrutins/4754).
@@ -351,9 +366,9 @@ Précision après 10, 13, 16, 19, 22 et 25 votes : 39 %, 48 %, 55 %, 61 %, 67 %,
   - Contre : DR (0-6-0), Dem (0-3-2), EPR (0-28-0), HOR (0-10-0), LIOT (0-1-0), RN (0-48-0), UDR (0-4-0)
 - **Vérifié** : Texte adopté, articles 1er et 1er ter.
 
-### 24. Sécurité · Protéger ceux qui agissent contre les réseaux · n° 5358
+### 24. Sécurité · Protéger ceux qui agissent contre les réseaux · n° 5358 · **lot facultatif 8**
 
-- [ ] **Je le retiens**
+- [x] **Je le retiens**
 - **Question** : « Faut-il que l'État protège les personnes menacées parce qu'elles agissent contre la criminalité organisée ? »
 - **Concrètement** : Les personnes mises en danger parce qu'elles rassemblent des preuves contre la criminalité organisée, aident ses victimes ou agissent pour la faire reculer, ainsi que leurs proches, seraient protégées par la police et la gendarmerie.
 - **Le vote** : scrutin ordinaire, adopté le 12 février 2026 ; 123 pour, 0 contre, 133 abstentions ; participation 44 % ; 0 vote contre leur groupe. [Scrutin n° 5358](https://www.assemblee-nationale.fr/dyn/17/scrutins/5358).
@@ -451,6 +466,22 @@ Nombre de votes où les deux groupes n'ont pas la même position : sur les 10 du
 | **RN** | 4 → 7 | 7 → 12 | 7 → 12 | 9 → 20 | 8 → 19 | 5 → 9 | 9 → 21 | 5 → 9 | — | 9 → 18 | 2 → 4 |
 | **SOC** | 7 → 15 | 4 → 12 | 4 → 12 | 0 → 2 | 2 → 4 | 6 → 15 | 2 → 5 | 4 → 10 | 9 → 18 | — | 9 → 19 |
 | **UDR** | 2 → 5 | 5 → 8 | 5 → 10 | 9 → 21 | 8 → 20 | 3 → 7 | 10 → 23 | 5 → 10 | 2 → 4 | 9 → 19 | — |
+
+Puis sur les 25 du parcours et sur les 37 avec les lots facultatifs.
+
+| | DR | Dem | EPR | EcoS | GDR | HOR | LFI | LIOT | RN | SOC | UDR |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **DR** | — | 7 → 8 | 7 → 8 | 17 → 28 | 18 → 28 | 5 → 8 | 20 → 29 | 6 → 9 | 7 → 9 | 15 → 24 | 5 → 5 |
+| **Dem** | 7 → 8 | — | 2 → 3 | 14 → 24 | 16 → 25 | 6 → 8 | 17 → 25 | 8 → 11 | 12 → 15 | 12 → 20 | 8 → 9 |
+| **EPR** | 7 → 8 | 2 → 3 | — | 14 → 26 | 16 → 27 | 6 → 8 | 17 → 27 | 8 → 12 | 12 → 15 | 12 → 22 | 10 → 11 |
+| **EcoS** | 17 → 28 | 14 → 24 | 14 → 26 | — | 2 → 3 | 17 → 28 | 4 → 6 | 12 → 18 | 20 → 31 | 2 → 4 | 21 → 32 |
+| **GDR** | 18 → 28 | 16 → 25 | 16 → 27 | 2 → 3 | — | 19 → 29 | 4 → 5 | 14 → 19 | 19 → 29 | 4 → 5 | 20 → 30 |
+| **HOR** | 5 → 8 | 6 → 8 | 6 → 8 | 17 → 28 | 19 → 29 | — | 20 → 30 | 6 → 11 | 9 → 14 | 15 → 24 | 7 → 10 |
+| **LFI** | 20 → 29 | 17 → 25 | 17 → 27 | 4 → 6 | 4 → 5 | 20 → 30 | — | 15 → 19 | 21 → 30 | 5 → 7 | 23 → 32 |
+| **LIOT** | 6 → 9 | 8 → 11 | 8 → 12 | 12 → 18 | 14 → 19 | 6 → 11 | 15 → 19 | — | 9 → 13 | 10 → 14 | 10 → 13 |
+| **RN** | 7 → 9 | 12 → 15 | 12 → 15 | 20 → 31 | 19 → 29 | 9 → 14 | 21 → 30 | 9 → 13 | — | 18 → 27 | 4 → 6 |
+| **SOC** | 15 → 24 | 12 → 20 | 12 → 22 | 2 → 4 | 4 → 5 | 15 → 24 | 5 → 7 | 10 → 14 | 18 → 27 | — | 19 → 28 |
+| **UDR** | 5 → 5 | 8 → 9 | 10 → 11 | 21 → 32 | 20 → 30 | 7 → 10 | 23 → 32 | 10 → 13 | 4 → 6 | 19 → 28 | — |
 
 ## Regardés et écartés
 

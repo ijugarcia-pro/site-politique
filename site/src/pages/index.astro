@@ -7,7 +7,7 @@
 // dépend du visiteur est calculé dans son navigateur.
 import Base from '../layouts/Base.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
-import { avancementSeance, composition, dateLisible, etat, lienVote, lotsDeVotes, majuscule,
+import { avancementSeance, composition, dateLisible, etat, lienVote, lotsDeVotes, lotsDuParcours, majuscule,
   questionSeance, quandVote, scrutins, semaine } from '../lib/donnees.ts';
 import { adopte, marge, verdict } from '../lib/votes.ts';
 import { puceTheme } from '../lib/themes.ts';
@@ -55,6 +55,7 @@ const donnees = JSON.stringify({
       puce: v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6', titre: questionSeance(v).titre })) },
   lots: lots.map((l) => l.map((c) => ({ uid: c.uid, theme: c.theme, titre: c.titre,
     puce: puceTheme(c.theme) }))),
+  parcours: lotsDuParcours(),
   derniers: derniers.map(({ uid, gagnant, pour, contre }) => ({ uid, gagnant, pour, contre })),
   sieges: compo.sieges.map((s) => [s.depute ?? null, s.groupe ?? null]),
 }).replace(/</g, '\\u003c');
@@ -190,17 +191,17 @@ const donnees = JSON.stringify({
 <script>
   import { deputeChoisi, lireJSON, reponse, reponses } from '../lib/navigateur.ts';
   import { libelleCirco } from '../lib/geo.ts';
-  import { etatLots, prochainLot } from '../lib/lots.ts';
+  import { ANCRE_AFFINER, etatLots, prochainLot } from '../lib/lots.ts';
   import { etatSeance, seancesFaites, serie } from '../lib/seances.ts';
   import { initiales, niveau, profil, teinte, type Matrice } from '../lib/profil.ts';
   import { places, point, R_INTERIEUR } from '../lib/hemicycle.ts';
 
   interface Carte { uid: string; theme: string; titre: string; puce: string }
-  const { seance, lots, derniers, sieges } = JSON.parse(
+  const { seance, lots, parcours, derniers, sieges } = JSON.parse(
     document.querySelector('[data-donnees-accueil]')!.textContent!) as {
     seance: { lundi: string; attente: boolean; historique: [string, boolean][];
       votes: { cle: string; theme: string; puce: string; titre: string }[] };
-    lots: Carte[][]; derniers: { uid: string; gagnant: 'pour' | 'contre'; pour: number; contre: number }[];
+    lots: Carte[][]; parcours: number; derniers: { uid: string; gagnant: 'pour' | 'contre'; pour: number; contre: number }[];
     sieges: [string | null, string | null][];
   };
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
@@ -254,20 +255,29 @@ const donnees = JSON.stringify({
     const etat = etatLots();
     const k = etat.lot ?? prochainLot(etat.faits, lots.length);
     const bouton = $<HTMLAnchorElement>('[data-ticket-bouton]');
+    const enCours = etat.lot !== null && etat.i > 0;
     if (k === null) {
-      $('[data-ticket-titre]').textContent = 'Tu as tranché les 5 lots de votes';
+      $('[data-ticket-titre]').textContent = `Tu as tranché les ${lots.length} lots de votes`;
       $('[data-ticket-texte]').textContent = 'Chaque lundi, tu trancheras les votes solennels '
         + 'annoncés à l\'agenda, avant les députés. En attendant, chaque vote passé que tu '
         + 'tranches affine ta place.';
       bouton.href = '/explorer/';
       bouton.textContent = 'Trancher d\'autres votes';
+    } else if (k >= parcours) {
+      // Le parcours est fait : les lots facultatifs se proposent, sans s'imposer.
+      $('[data-ticket-sur-titre]').textContent =
+        `Votes passés · lot ${k + 1} sur ${lots.length} · facultatif`;
+      $('[data-ticket-titre]').textContent = '3 votes de plus pour affiner ta place';
+      remplirItems(lots[k].map((c) => ({ ...c, fait: !!reponse(c.uid) })));
+      bouton.href = enCours ? '/lots/' : `/lots/${ANCRE_AFFINER}`;
+      bouton.textContent = enCours ? 'Reprendre · 2 min' : 'Affiner encore · 2 min';
     } else {
       $('[data-ticket-sur-titre]').textContent =
-        `Votes passés · lot ${k + 1} sur ${lots.length} · en attendant la séance`;
+        `Votes passés · lot ${k + 1} sur ${parcours} · en attendant la séance`;
       $('[data-ticket-titre]').textContent = '3 vrais votes à trancher';
       remplirItems(lots[k].map((c) => ({ ...c, fait: !!reponse(c.uid) })));
       bouton.href = '/lots/';
-      bouton.textContent = etat.lot !== null && etat.i > 0 ? 'Reprendre · 2 min' : 'Commencer · 2 min';
+      bouton.textContent = enCours ? 'Reprendre · 2 min' : 'Commencer · 2 min';
     }
   }
 

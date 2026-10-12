@@ -70,5 +70,23 @@ def test_lire_lots(tmp_path):
             cartes.lire_lots(chemin)
 
 
+def test_lots_facultatifs_apres_ceux_du_parcours(tmp_path):
+    chemin = tmp_path / "lots.json"
+    donnees = lots((1, 2, 3), (4, 5, 6), (7, 8, 9))
+    donnees[2]["facultatif"] = True
+    chemin.write_text(json.dumps(donnees), encoding="utf-8")
+    assert len(cartes.lire_lots(chemin)) == 3
+    assert cartes.lots_du_parcours(chemin) == 2
+    # Un lot du parcours ne suit jamais un lot facultatif ; aucun champ inconnu.
+    donnees[1]["facultatif"], donnees[2]["facultatif"] = True, False
+    chemin.write_text(json.dumps(donnees), encoding="utf-8")
+    with pytest.raises(ValueError):
+        cartes.lire_lots(chemin)
+    chemin.write_text(json.dumps(lots((1, 2, 3))[:1] + [{"lot": 2, "optionnel": True,
+                      "cartes": lots((4, 5, 6))[0]["cartes"]}]), encoding="utf-8")
+    with pytest.raises(ValueError):
+        cartes.lire_lots(chemin)
+
+
 def test_douze_themes_distincts():
     assert len(set(cartes.THEMES)) == 12

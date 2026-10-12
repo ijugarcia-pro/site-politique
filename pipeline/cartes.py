@@ -31,6 +31,7 @@ THEMES = ("Numérique", "Droits", "Travail", "Économie", "Immigration", "Enviro
 CHAMPS = ("uid", "numero", "theme", "titre", "question", "concretement")
 UID = re.compile(r"^VTANR5L17V(\d+)$")
 VOTES_PAR_LOT = 3
+CLES_LOT = {"lot", "cartes", "facultatif"}
 
 
 @dataclass(frozen=True)
@@ -89,15 +90,21 @@ def vers_json(carte: Carte) -> dict:
 
 def lire_lots(chemin: Path) -> list[list[Carte]]:
     """`data/lots.json` : une liste de lots, chacun `{"lot": n, "cartes": [3 cartes]}`, dans
-    l'ordre où on les propose. Vérifie la numérotation, la taille des lots, l'unicité des votes
-    et le format de chaque carte (le vocabulaire et les chiffres, qui demandent les textes,
-    sont contrôlés à la préparation)."""
+    l'ordre où on les propose. Les lots du parcours viennent d'abord ; ceux qui les suivent
+    pour affiner portent `"facultatif": true`. Vérifie la numérotation, la taille des lots,
+    l'unicité des votes et le format de chaque carte (le vocabulaire et les chiffres, qui
+    demandent les textes, sont contrôlés à la préparation)."""
     lots = json.loads(chemin.read_text(encoding="utf-8"))
     vus: set[int] = set()
     resultat = []
+    facultatif = False
     for i, lot in enumerate(lots, 1):
-        if lot.get("lot") != i or len(lot.get("cartes", [])) != VOTES_PAR_LOT:
-            raise ValueError(f"lot {i} : numéro ou nombre de cartes inattendu")
+        if (set(lot) - CLES_LOT or lot.get("lot") != i
+                or len(lot.get("cartes", [])) != VOTES_PAR_LOT):
+            raise ValueError(f"lot {i} : champ, numéro ou nombre de cartes inattendu")
+        if facultatif and not lot.get("facultatif"):
+            raise ValueError(f"lot {i} : un lot du parcours après un lot facultatif")
+        facultatif = lot.get("facultatif", False)
         cartes = [depuis_json(c) for c in lot["cartes"]]
         for c in cartes:
             if c.numero in vus:
@@ -107,3 +114,18 @@ def lire_lots(chemin: Path) -> list[list[Carte]]:
                 raise ValueError(f"n° {c.numero} : {' ; '.join(erreurs)}")
         resultat.append(cartes)
     return resultat
+
+
+def scrutins_avec_carte(racine: Path) -> set[str]:
+    """Les scrutins qui ont une carte de vote versionnée : ceux du quiz (`data/quiz.json`) et
+    des lots (`data/lots.json`). Le site leur doit une page et une colonne dans la matrice."""
+    uids = {q["uid"] for q in json.loads((racine / "data" / "quiz.json").read_text("utf-8"))}
+    lots = racine / "data" / "lots.json"
+    if lots.exists():
+        uids |= {c["uid"] for lot in json.loads(lots.read_text("utf-8")) for c in lot["cartes"]}
+    return uids
+
+
+def lots_du_parcours(chemin: Path) -> int:
+    """Le nombre de lots du parcours dans `data/lots.json` : ceux qui ne sont pas facultatifs."""
+    return sum(not lot.get("facultatif") for lot in json.loads(chemin.read_text("utf-8")))

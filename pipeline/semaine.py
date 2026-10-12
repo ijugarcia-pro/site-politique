@@ -7,16 +7,20 @@ Chaque semaine (du lundi au dimanche), le pipeline lit les votes solennels annon
      validée donne le thème) ;
   3. des groupes d'origine variés (groupe du député qui a déposé le texte) ;
   4. puis l'ordre de l'agenda.
-Moins de 3 votes annoncés : la séance est complétée par des votes passés qui divisent (votes à
-page, hors quiz, lots et séances précédentes ; écart le plus serré d'abord). Aucune séance
-publique dans la semaine : ce sont les vacances parlementaires, il n'y a pas de séance et la
-série est gelée.
+Moins de 3 votes annoncés : la séance est complétée par des votes passés. D'abord ceux des
+lots (`data/lots.json`), dont la carte est déjà validée par Julien : du dernier lot au premier,
+les lots facultatifs d'abord, ceux auxquels le moins de visiteurs ont déjà répondu (décision de
+Julien du 12 octobre 2026) ; jamais un vote déjà passé par une séance. Puis, s'il n'en reste
+pas, des votes passés qui divisent (votes à page, hors quiz, lots et séances précédentes ; la
+réserve, puis l'écart le plus serré d'abord). Aucune séance publique dans la semaine : ce sont
+les vacances parlementaires, il n'y a pas de séance et la série est gelée.
 
 La sélection est figée au premier passage de la semaine (`data/semaines/{lundi}.json`, commité
 par le pipeline) : un vote ajouté à l'agenda en cours de semaine n'entre pas dans la séance, un
 vote retiré y reste marqué « retiré », un vote déplacé dans la semaine suit sa nouvelle date.
 Les cartes (thème, titre, question, « Concrètement ») viennent de la session hebdomadaire de
-Julien (`data/seances/{lundi}.json`, t27) ; sans carte, la séance montre l'objet officiel.
+Julien (`data/seances/{lundi}.json`, t27) ; un vote pris dans les lots garde la carte de son
+lot ; sans carte, la séance montre l'objet officiel.
 
 Usage :
     uv run python -m pipeline.semaine [--jour AAAA-MM-JJ]
@@ -206,9 +210,57 @@ def passes_qui_divisent(con: duckdb.DuckDBPyConnection, exclus: set[str], n: int
     return choisis
 
 
+def cartes_des_lots(racine: Path = RACINE) -> list[tuple[int, dict]]:
+    """Les cartes validées des lots (`data/lots.json`), chacune avec le numéro de son lot, du
+    dernier lot au premier : les lots facultatifs d'abord, ceux auxquels le moins de visiteurs
+    ont déjà répondu ; dans un lot, l'ordre du lot."""
+    chemin = racine / "data" / "lots.json"
+    if not chemin.exists():
+        return []
+    lots = json.loads(chemin.read_text("utf-8"))
+    return [(lot["lot"], c) for lot in reversed(lots) for c in lot["cartes"]]
+
+
+def votes_des_lots(con: duckdb.DuckDBPyConnection, lots: list[tuple[int, dict]],
+                   exclus: set[str], dossiers_pris: set[str], n: int) -> list[dict]:
+    """Des votes passés qui ont déjà leur carte validée, pour compléter une semaine creuse :
+    ceux des lots, dans l'ordre de `lots`. Jamais un vote déjà passé par une séance (`exclus`),
+    ni un dossier déjà dans la séance, ni un scrutin absent de la base."""
+    choisis: list[dict] = []
+    for numero_lot, carte in lots:
+        if len(choisis) == n:
+            break
+        if carte["uid"] in exclus:
+            continue
+        ligne = con.execute(
+            "SELECT s.numero, s.date, s.titre, s.dossier_uid, d.titre FROM scrutin s "
+            "LEFT JOIN dossier d ON d.uid = s.dossier_uid WHERE s.uid = ?",
+            [carte["uid"]]).fetchone()
+        if ligne is None:
+            continue
+        numero, jour, titre, dossier, dossier_titre = ligne
+        if dossier and (dossier in dossiers_pris
+                        or any(dossier == x["dossier_uid"] for x in choisis)):
+            continue
+        choisis.append({"cle": f"scrutin:{carte['uid']}", "type": "passe",
+                        "scrutin_uid": carte["uid"], "numero": numero, "date": jour.isoformat(),
+                        "objet": titre, "dossier_uid": dossier, "dossier": dossier_titre,
+                        "reserve": False, "lot": numero_lot})
+    return choisis
+
+
 def reserve(racine: Path = RACINE) -> list[int]:
     chemin = racine / "data" / "reserve.json"
     return [c["numero"] for c in json.loads(chemin.read_text("utf-8"))] if chemin.exists() else []
+
+
+def deja_en_seance(semaines: Path) -> set[str]:
+    """Les scrutins déjà passés par une séance : les votes passés des séances figées."""
+    uids: set[str] = set()
+    for chemin in sorted(semaines.glob("*.json")) if semaines.exists() else []:
+        uids |= {v["scrutin_uid"] for v in json.loads(chemin.read_text("utf-8"))["votes"]
+                 if v.get("scrutin_uid")}
+    return uids
 
 
 def deja_proposes(semaines: Path, racine: Path = RACINE) -> set[str]:
@@ -217,10 +269,7 @@ def deja_proposes(semaines: Path, racine: Path = RACINE) -> set[str]:
     lots = racine / "data" / "lots.json"
     if lots.exists():
         uids |= {c["uid"] for lot in json.loads(lots.read_text("utf-8")) for c in lot["cartes"]}
-    for chemin in sorted(semaines.glob("*.json")) if semaines.exists() else []:
-        uids |= {v["scrutin_uid"] for v in json.loads(chemin.read_text("utf-8"))["votes"]
-                 if v.get("scrutin_uid")}
-    return uids
+    return uids | deja_en_seance(semaines)
 
 
 def cartes_seance(seances: Path, lundi: date) -> dict[str, dict]:
@@ -239,8 +288,11 @@ def themes_recents(seances: Path, lundi: date) -> dict[str, int]:
 
 def selectionner(con: duckdb.DuckDBPyConnection, lundi: date, jours_seance: set[date],
                  auteurs_dossiers: dict[str, str], exclus: set[str],
-                 cartes: dict[str, dict], recents: dict[str, int]) -> dict:
-    """La séance d'une semaine qui n'en a pas encore : vacances, ou 3 votes."""
+                 cartes: dict[str, dict], recents: dict[str, int],
+                 lots: list[tuple[int, dict]] = (), en_seance: set[str] = frozenset()) -> dict:
+    """La séance d'une semaine qui n'en a pas encore : vacances, ou 3 votes. `lots` : les cartes
+    des lots où puiser quand l'agenda annonce moins de 3 votes ; `en_seance` : les scrutins
+    déjà passés par une séance."""
     semaine = {lundi + timedelta(days=k) for k in range(7)}
     if not semaine & jours_seance:
         return {"lundi": lundi.isoformat(), "vacances": True, "votes": []}
@@ -250,7 +302,14 @@ def selectionner(con: duckdb.DuckDBPyConnection, lundi: date, jours_seance: set[
         auteur = auteurs_dossiers.get(c["dossier_uid"] or "")
         c["groupe"] = groupe_a(con, auteur, date.fromisoformat(c["date"])) if auteur else None
     votes = choisir(candidats, recents)
-    votes += passes_qui_divisent(con, exclus, VOTES - len(votes), reserve())
+    # Semaine creuse : d'abord un vote dont la carte est déjà validée (lots), sinon un vote
+    # passé qui divise (réserve, puis les plus serrés), sans carte tant que Julien n'en valide.
+    votes += votes_des_lots(con, list(lots), en_seance,
+                            {v["dossier_uid"] for v in votes if v["dossier_uid"]},
+                            VOTES - len(votes))
+    votes += passes_qui_divisent(con, exclus | {v["scrutin_uid"] for v in votes
+                                                if v.get("scrutin_uid")},
+                                 VOTES - len(votes), reserve())
     for v in votes:
         v.pop("theme", None)
     return {"lundi": lundi.isoformat(), "vacances": False, "votes": votes}
@@ -305,7 +364,9 @@ def semaine(con: duckdb.DuckDBPyConnection, jour: date, raw: Path = RAW,
     """La séance de la semaine de `jour` : choisie au premier passage, puis revue."""
     lundi = lundi_de(jour)
     chemin = semaines / f"{lundi.isoformat()}.json"
-    cartes = cartes_seance(seances, lundi)
+    lots = cartes_des_lots()
+    # Un vote pris dans les lots garde la carte de son lot ; une carte de la séance la remplace.
+    cartes = {**{f"scrutin:{c['uid']}": c for _, c in lots}, **cartes_seance(seances, lundi)}
     if chemin.exists():
         selection = mettre_a_jour(json.loads(chemin.read_text("utf-8")), con)
     else:
@@ -313,7 +374,8 @@ def semaine(con: duckdb.DuckDBPyConnection, jour: date, raw: Path = RAW,
         uids = {a["dossier_uid"] for a in annonces(con, lundi) if a["dossier_uid"]}
         selection = selectionner(con, lundi, jours, auteurs(archive(raw, "dossiers_legislatifs"),
                                                              uids),
-                                 deja_proposes(semaines), cartes, themes_recents(seances, lundi))
+                                 deja_proposes(semaines), cartes, themes_recents(seances, lundi),
+                                 lots, deja_en_seance(semaines))
     semaines.mkdir(parents=True, exist_ok=True)
     chemin.write_text(json.dumps(selection, ensure_ascii=False, indent=1) + "\n", "utf-8")
     resultat = exporter(selection, con, cartes)

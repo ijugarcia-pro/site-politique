@@ -10,7 +10,7 @@
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
 import Seance from '../components/Seance.astro';
-import { avancementSeance, dateLisible, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
+import { avancementSeance, dateLisible, lotsDuParcours, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
 import { puceTheme } from '../lib/themes.ts';
 
 const sem = semaine();
@@ -35,6 +35,8 @@ const donnees = JSON.stringify({
   lundi: sem.lundi, cles: votes.map((v) => v.cle), retires,
   quand: premier ? quandVote(premier) : null,
   historique: sem.historique,
+  // Les lots du parcours : la fin de séance y renvoie en attendant le verdict.
+  parcours: lotsDuParcours(),
 }).replace(/</g, '\\u003c');
 const JOURS_COURTS = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
 const tuile = premier ? {
@@ -130,8 +132,8 @@ const tuile = premier ? {
   import { $, pluriel, seance } from '../lib/seance.ts';
   import { etatSeance, sauverSeance, seancesFaites, serie, type Pronostic } from '../lib/seances.ts';
 
-  const { lundi, cles, historique } = JSON.parse($('[data-donnees-semaine]').textContent!) as {
-    lundi: string; cles: string[]; quand: string | null;
+  const { lundi, cles, historique, parcours } = JSON.parse($('[data-donnees-semaine]').textContent!) as {
+    lundi: string; cles: string[]; quand: string | null; parcours: number;
     historique: { lundi: string; vacances: boolean }[];
   };
   const vacances = new Set(historique.filter((h) => h.vacances).map((h) => h.lundi));
@@ -207,7 +209,7 @@ const tuile = premier ? {
       const principal = $<HTMLAnchorElement>('[data-fin-principal]');
       const auMoinsUnVerdict = questions.some((q) => !q.attente);
       if (!auMoinsUnVerdict) {
-        const lot = prochainLot(etatLots().faits, 5);
+        const lot = prochainLot(etatLots().faits, parcours);
         principal.href = lot === null ? '/explorer/' : '/lots/';
         principal.textContent = lot === null ? 'Trancher d\'autres votes' : 'En attendant : 3 votes passés →';
       }

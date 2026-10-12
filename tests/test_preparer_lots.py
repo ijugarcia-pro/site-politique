@@ -1,3 +1,5 @@
+import json
+
 from pipeline import cartes
 from scripts import preparer_lots as pl
 from scripts import preparer_quiz as pq
@@ -27,6 +29,8 @@ def test_cartes_du_quiz_completes():
 def test_precision():
     assert pl.precision(10) == 39
     assert pl.precision(25) == 71
+    # Les lots facultatifs : 28, 31, 34 et 37 votes.
+    assert [pl.precision(n) for n in (28, 31, 34, 37)] == [75, 79, 82, 84]
 
 
 def test_un_lot_separe_d_abord_les_groupes_les_moins_separes():
@@ -66,6 +70,40 @@ def test_choix_de_julien_respecte_les_regles_des_lots():
     assert max(compte.values()) <= pl.MAX_PAR_THEME
 
 
+def test_lots_facultatifs_valides_par_julien():
+    lots = pl.FACULTATIFS
+    numeros = [n for lot in lots for n in lot]
+    assert len(numeros) == len(set(numeros)) == 12
+    themes = {c.numero: c.theme for c in pl.tous_les_candidats()}
+    assert set(numeros) <= set(themes)
+    assert not set(numeros) & (set(pq.CHOIX) | {n for lot in pl.CHOIX for n in lot}
+                               | pl.EN_SEANCE)
+    for lot in lots:
+        assert len(lot) == cartes.VOTES_PAR_LOT == len({themes[n] for n in lot})
+
+
 def test_data_lots_json_conforme_au_choix():
     lus = cartes.lire_lots(pl.LOTS)
-    assert [[c.numero for c in lot] for lot in lus] == pl.CHOIX
+    assert [[c.numero for c in lot] for lot in lus] == pl.CHOIX + pl.FACULTATIFS
+    assert cartes.lots_du_parcours(pl.LOTS) == pl.N_LOTS == len(pl.CHOIX)
+
+
+def test_chaque_carte_des_lots_a_un_scrutin_a_exporter():
+    avec_carte = cartes.scrutins_avec_carte(pl.RACINE)
+    for lot in pl.CHOIX + pl.FACULTATIFS:
+        assert {pl.uid(n) for n in lot} <= avec_carte
+    assert {pl.uid(n) for n in pq.CHOIX} <= avec_carte
+
+
+def test_reserve_sans_les_cartes_validees():
+    reserve = {c["numero"] for c in json.loads(pl.RESERVE.read_text(encoding="utf-8"))}
+    valides = {n for lot in pl.CHOIX + pl.FACULTATIFS for n in lot} | pl.EN_SEANCE
+    assert not reserve & valides
+    assert reserve == {c.numero for c in pl.tous_les_candidats()} - valides
+
+
+def test_comparables_et_paires_les_moins_separees():
+    votes = [{"deputes": ["PA1", "PA2"]}] * 9 + [{"deputes": ["PA1"]}]
+    assert pl.comparables(votes) == 1  # PA1 : 10 votes ; PA2 : 9
+    separations = {("A", "B"): 4, ("A", "C"): 3, ("B", "C"): 7}
+    assert pl.moins_separees(separations, 2) == "A / C (3), A / B (4)"

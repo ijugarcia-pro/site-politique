@@ -1,19 +1,22 @@
 ---
-// Les lots de votes (t44) : après le quiz, 5 lots de 3 votes passés (data/lots.json, choix de
+// Les lots de votes (t44) : après le quiz, des lots de 3 votes passés (data/lots.json, choix de
 // Julien), à trancher comme une séance (frame V5 « ⑥ Séance », sans pronostic ni série tant que
 // la séance de la semaine n'existe pas), avec la révélation du vrai vote après chaque réponse.
 // Fin de lot (frame « ⑦ Séance terminée ») : le tampon, la précision gagnée, ton carnet de lots
-// et « Lot suivant » ; jamais plus de 3 votes d'affilée. Où en est le visiteur : lib/lots.ts,
-// dans son navigateur.
+// et « Lot suivant » ; jamais plus de 3 votes d'affilée. Après les lots du parcours viennent les
+// lots facultatifs (t47) : la fin de lot propose « Affiner encore », rien ne les impose, et un
+// lot facultatif ne démarre jamais seul. Où en est le visiteur : lib/lots.ts, dans son
+// navigateur.
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
 import Seance from '../components/Seance.astro';
-import { lotsDeVotes } from '../lib/donnees.ts';
+import { lotsDeVotes, lotsDuParcours } from '../lib/donnees.ts';
 import { puceTheme } from '../lib/themes.ts';
 
 const lots = lotsDeVotes();
 const cartes = lots.flat();
 const parLot = lots[0].length;
+const parcours = lotsDuParcours();
 ---
 <Base titre="Votes passés" focus
   description="Tranche de vrais votes de l'Assemblée, 3 par 3, et regarde ta place se préciser dans l'hémicycle.">
@@ -41,8 +44,16 @@ const parLot = lots[0].length;
           <span class="carnet-compte" data-carnet-compte></span>
         </div>
         <ol class="tampons" data-tampons aria-label="Tes lots de votes">
-          {lots.map((_, k) => <li data-case={k}><span class="mini">lot</span>{k + 1}</li>)}
+          {lots.slice(0, parcours).map((_, k) => <li data-case={k}><span class="mini">lot</span>{k + 1}</li>)}
         </ol>
+        {lots.length > parcours && (
+          <div data-carnet-facultatifs hidden>
+            <p class="carnet-suite">Pour affiner · facultatif</p>
+            <ol class="tampons" aria-label="Les lots facultatifs">
+              {lots.slice(parcours).map((_, k) => <li data-case={parcours + k}><span class="mini">lot</span>{parcours + k + 1}</li>)}
+            </ol>
+          </div>
+        )}
       </div>
       <div class="actions">
         <button type="button" class="b-principal" data-lot-suivant>Lot suivant →</button>
@@ -51,16 +62,17 @@ const parLot = lots[0].length;
     </div>
   </Seance>
 
-  <script type="application/json" data-par-lot set:html={String(parLot)}></script>
+  <script type="application/json" data-par-lot set:html={JSON.stringify({ parLot, parcours })}></script>
 </Base>
 
 <script>
   import { repondre } from '../lib/navigateur.ts';
-  import { etatLots, prochainLot, sauverLots } from '../lib/lots.ts';
-  import { precision, type Reponse } from '../lib/profil.ts';
+  import { ANCRE_AFFINER, etatLots, sauverLots, suiteDesLots } from '../lib/lots.ts';
+  import { precision, VOTES_FIABLES, type Reponse } from '../lib/profil.ts';
   import { $, mesReps, pluriel, seance } from '../lib/seance.ts';
 
-  const parLot = Number($('[data-par-lot]').textContent);
+  const { parLot, parcours } = JSON.parse($('[data-par-lot]').textContent!) as {
+    parLot: number; parcours: number };
   const etat = etatLots();
   const s = seance({
     libelleContinuer: (i) => (i % parLot + 1 < parLot ? 'Continuer' : 'Fin du lot'),
@@ -68,7 +80,8 @@ const parLot = lots[0].length;
   });
   const nLots = s.questions.length / parLot;
   const titre = (k: number) => {
-    $('[data-titre-seance]').textContent = `Votes passés · lot ${k + 1} sur ${nLots}`;
+    $('[data-titre-seance]').textContent = k < parcours
+      ? `Votes passés · lot ${k + 1} sur ${parcours}` : `Pour affiner · lot ${k + 1} sur ${nLots}`;
   };
 
   const commencer = (k: number) => {
@@ -80,7 +93,8 @@ const parLot = lots[0].length;
     $('[data-question]').focus();
   };
 
-  /** La fin d'un lot (k), ou l'écran « tout est fait » quand on arrive sans lot à faire. */
+  /** La fin d'un lot (k), ou, quand on arrive sans lot du parcours à faire, l'écran « tout est
+   *  fait » : il propose les lots facultatifs tant qu'il en reste. */
   const fin = async (k: number | null) => {
     s.finir('fin');
     const m = s.matrice() ?? await s.chargement;
@@ -91,23 +105,36 @@ const parLot = lots[0].length;
     const dansLot = k === null ? 0
       : s.questions.slice(k * parLot, (k + 1) * parLot).filter((q) => reps[q.uid]).length;
     const gain = Math.round(100 * precision(n)) - Math.round(100 * precision(n - dansLot));
-    const suivant = prochainLot(etat.faits, nLots);
+    const suite = suiteDesLots(etat.faits, parcours, nLots);
+    const suivant = suite.lot;
     const faits = etat.faits.length;
+    const manque = VOTES_FIABLES - n;
+    const facultatifs = `${pluriel(suite.resteFacultatifs, 'lot')} `
+      + `facultatif${suite.resteFacultatifs > 1 ? 's' : ''} de ${parLot} votes`;
     $('[data-tampon-lot]').textContent = k === null ? `${faits} lots` : `Lot ${k + 1}`;
     $('[data-tampon-bas]').textContent = k === null ? `${pluriel(faits * parLot, 'vote')} tranchés`
       : `${pluriel(dansLot, 'vote')} · 578e siège`;
-    $('[data-fin-titre]').textContent = k === null ? 'Tous les lots sont faits !' : 'Lot terminé !';
+    $('[data-fin-titre]').textContent = k !== null ? 'Lot terminé !'
+      : suivant === null ? 'Tous les lots sont faits !'
+      : faits === parcours ? `Les ${parcours} lots sont faits !` : `${faits} lots sur ${nLots} sont faits`;
     $('[data-fin-texte]').textContent = (k === null || dansLot
       ? 'Tes réponses comptent dans ton hémicycle. '
       : 'Tu n\'as tranché aucun de ces votes : ton hémicycle ne change pas. ')
       + (suivant === null
-        ? (n >= 25 ? 'Ta place est fiable : chaque vote l\'affine encore.'
-          : `Pour une place fiable, il faut 25 votes : encore ${25 - n} à trancher dans Explorer.`)
-        : `Encore ${pluriel(nLots - faits, 'lot')} de ${parLot} votes.`);
+        ? (manque <= 0 ? 'Ta place est fiable : chaque vote l\'affine encore.'
+          : `Pour une place fiable, il faut ${VOTES_FIABLES} votes : encore ${manque} à trancher dans Explorer.`)
+        : suite.facultatif
+          ? (manque <= 0 ? `Ta place est fiable. Pour l'affiner encore, si tu veux : ${facultatifs}.`
+            : `Pour une place fiable, il faut ${VOTES_FIABLES} votes : encore ${manque} à trancher. Il reste ${facultatifs}.`)
+          : `Encore ${pluriel(suite.resteParcours, 'lot')} de ${parLot} votes.`);
     $('[data-fin-precision]').textContent = `${Math.round(100 * p.precision)} %`;
     $('[data-fin-gain]').textContent = k === null ? pluriel(n, 'vote')
       : `+${gain} point${gain > 1 ? 's' : ''} · ${pluriel(n, 'vote')}`;
-    $('[data-carnet-compte]').textContent = `${faits} sur ${nLots}`;
+    // Le carnet : les lots du parcours ; les facultatifs s'y ajoutent une fois le parcours fait.
+    $('[data-carnet-compte]').textContent = faits > parcours ? `${faits} sur ${nLots}`
+      : `${parcours - suite.resteParcours} sur ${parcours}`;
+    const rang = document.querySelector<HTMLElement>('[data-carnet-facultatifs]');
+    if (rang) rang.hidden = suite.resteParcours > 0;
     for (const li of document.querySelectorAll<HTMLElement>('[data-case]')) {
       const c = Number(li.dataset.case);
       li.className = c === k ? 'vient' : etat.faits.includes(c) ? 'fait'
@@ -116,7 +143,8 @@ const parLot = lots[0].length;
     const bouton = $<HTMLButtonElement>('[data-lot-suivant]');
     const second = $<HTMLAnchorElement>('[data-fin-second]');
     bouton.hidden = suivant === null;
-    bouton.textContent = `Lot suivant · ${parLot} votes →`;
+    bouton.textContent = suite.facultatif ? `Affiner encore · lot ${suivant! + 1} →`
+      : `Lot suivant · ${parLot} votes →`;
     bouton.onclick = () => commencer(suivant!);
     // Tout est fait : après le dernier lot, voir sa place ; en arrivant, trancher d'autres votes.
     second.href = suivant === null && k === null ? '/explorer/' : '/hemicycle/';
@@ -154,21 +182,24 @@ const parLot = lots[0].length;
     fin(k);
   });
 
-  // Reprendre le lot en cours, sinon le prochain lot ; tout est fait : l'écran de fin.
+  // Reprendre le lot en cours, sinon le prochain lot du parcours. Le parcours fait : l'écran de
+  // fin, qui propose la suite ; un lot facultatif ne démarre que par un lien « Affiner encore ».
   if (etat.lot !== null && etat.lot < nLots && etat.i < parLot) {
     titre(etat.lot);
     s.poser(etat.lot * parLot + etat.i);
   } else {
-    const k = prochainLot(etat.faits, nLots);
-    if (k === null) {
+    const suite = suiteDesLots(etat.faits, parcours, nLots);
+    if (suite.lot === null || (suite.facultatif && location.hash !== ANCRE_AFFINER)) {
       $('[data-titre-seance]').textContent = 'Votes passés';
       fin(null);
     } else {
-      etat.lot = k;
+      // L'ancre a servi : un rechargement ne doit pas lancer le lot facultatif suivant.
+      if (location.hash) history.replaceState(null, '', location.pathname);
+      etat.lot = suite.lot;
       etat.i = 0;
       sauverLots(etat);
-      titre(k);
-      s.poser(k * parLot);
+      titre(suite.lot);
+      s.poser(suite.lot * parLot);
     }
   }
 </script>
@@ -204,6 +235,9 @@ const parLot = lots[0].length;
   .carnet-titre { font-family: var(--police-titre); font-weight: 700; font-size: 19px; }
   .carnet-compte { font-size: 14px; color: var(--gris-legende); }
   .tampons { display: flex; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .carnet-suite { margin: 16px 0 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--gris-legende); }
+  .carnet-suite + .tampons { margin-top: 8px; }
   .tampons li { flex: 1; max-width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     aspect-ratio: 1 / 1; border-radius: 50%; font-family: var(--police-titre); font-weight: 700; font-size: 18px; line-height: 1.05;
     border: 2px dashed #DCE0E8; color: var(--gris-legende); }

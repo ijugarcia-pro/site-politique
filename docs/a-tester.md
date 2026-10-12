@@ -17,6 +17,26 @@ Ce que toi seul peux décider (rien ne bloque le site) :
 2. **Les points juridiques non confirmés**, listés à la fin de `docs/mentions-legales.md` et de `docs/confidentialite.md` : faire relire par un juriste ou consulter la CNIL, ou les garder tels quels.
 3. **La mesure d'audience** : reportée à la fin du projet (t46). Rien à faire d'ici là.
 
+## 0 bis. Mise à jour du 12 octobre : les lots facultatifs 6 à 9 (pas encore en ligne)
+
+Tes 12 cartes de la réserve sont devenues 4 lots facultatifs, à la suite des 5 lots du parcours (t47). Le travail est commité en local sur la branche `lots-facultatifs`, sans être poussé : **dis-moi quand le mettre en ligne**. À tester ensuite sur le site :
+
+- [ ] **Fin du lot 5.** La précision est à **71 %** (25 votes). Le texte dit « Ta place est fiable. Pour l'affiner encore, si tu veux : 4 lots facultatifs de 3 votes. » Le gros bouton dit **« Affiner encore · lot 6 → »**, le second « Mon hémicycle ». Le carnet montre une deuxième rangée, « Pour affiner · facultatif » (lots 6 à 9).
+- [ ] **Rien n'est imposé.** Reviens sur `/lots/` sans cliquer : tu vois « Les 5 lots sont faits ! », pas une question. Le résultat du quiz mène à Mon hémicycle, pas au lot 6.
+- [ ] **Lots 6 à 9.** L'en-tête dit « Pour affiner · lot 6 sur 9 ». La précision monte à **75 %, 79 %, 82 % puis 84 %** (28, 31, 34 et 37 votes).
+- [ ] **Fin du lot 9.** Plus de bouton « Affiner encore » : « Voir mon hémicycle → ». En revenant sur `/lots/` : « Tous les lots sont faits ! » et « Trancher d'autres votes → ».
+- [ ] **Accueil**, une fois le parcours et la séance faits : le ticket dit « Votes passés · lot 6 sur 9 · facultatif », « 3 votes de plus pour affiner ta place », bouton « Affiner encore · 2 min ». Les 9 lots faits : « Tu as tranché les 9 lots de votes ».
+- [ ] **`/calcul/`**, section « La précision » : le tableau va de 10 à 37 votes.
+- [ ] **Sur ton téléphone** : le carnet à deux rangées et les boutons de fin de lot.
+- [ ] **Lundi 19 octobre** (si c'est en ligne avant) : l'agenda n'annonçait qu'un vote solennel au 9 octobre (le budget). La séance devrait être complétée par 2 votes du lot 9, avec leur carte (titres de séjour, centrales à charbon), sans intervention.
+
+Ce que tu dois savoir :
+
+1. **La réserve est vide** (`data/reserve.json`). Une semaine creuse est complétée par les cartes des lots, du lot 9 au lot 1 (ton choix du 12 octobre). Un visiteur qui a déjà fait le lot 9 retrouve donc ce vote dans la séance.
+2. **Le n° 5106** (Frères musulmans, lot 7) est le vote de l'article unique d'une résolution européenne. Il n'avait pas de page : sa réponse n'aurait pas compté. C'est corrigé ; sa page est étiquetée « Vote sur un article ».
+3. **Thèmes des lots 6 à 9** : Sécurité, Économie et Institutions reviennent 3 fois chacun (le plafond de 2 par thème ne vaut que pour les lots 1 à 5).
+4. **Un défaut qui existait déjà**, hors de cette tâche : sur « Mon hémicycle », le script commun de l'en-tête s'arrête sur une erreur (deux éléments portent le même attribut `data-tranches`). L'anneau de précision de l'en-tête ne s'y affiche pas. Signalé à la session qui travaille sur l'en-tête.
+
 ## 1. Ce qui a été fait
 
 | Tâche | Ce qui existe maintenant |
@@ -24,7 +44,7 @@ Ce que toi seul peux décider (rien ne bloque le site) :
 | **t43** · tes 15 votes | Tes 5 lots figés dans `data/lots.json` ; 4 cartes ajoutées (n° 1624, 3055, 2880, 1304), dont la censure partielle du n° 1624 (Conseil constitutionnel, 19 juin 2025) dans « Vérifié ». |
 | **t44** · les lots | Page `/lots/` : 3 votes par lot, révélation après chaque réponse, fin de lot (tampon, précision gagnée, carnet), « Lot suivant ». Le quiz enchaîne sur le lot 1. |
 | **t45** · l'accueil | Accueil d'après la maquette ⑤ : le ticket suit le visiteur (quiz → séance → lot → Explorer), les derniers verdicts face à ses réponses, son hémicycle, son député. |
-| **t23** · la séance choisie | Chaque lundi, le pipeline choisit 3 votes parmi les votes solennels annoncés à l'agenda ; il complète avec la réserve (tes 13 candidats non retenus) ; il détecte les vacances. La sélection est figée pour la semaine. Pour la semaine du 12 octobre : les 2 votes du mardi 13 (violences sexuelles et sexistes ; loi organique sur l'autorité judiciaire) + 1 vote passé. |
+| **t23** · la séance choisie | Chaque lundi, le pipeline choisit 3 votes parmi les votes solennels annoncés à l'agenda ; il complète avec la réserve (tes 13 candidats non retenus ; depuis le 12 octobre, avec les cartes des lots, voir le § 0 bis) ; il détecte les vacances. La sélection est figée pour la semaine. Pour la semaine du 12 octobre : les 2 votes du mardi 13 (violences sexuelles et sexistes ; loi organique sur l'autorité judiciaire) + 1 vote passé. |
 | **t24** · la séance | Page `/seance/` : voter avant les députés, pronostic facultatif, tampon, série (gelée pendant les vacances), rendez-vous du verdict. Ta réponse rejoint ton hémicycle dès que le scrutin est publié. |
 | **t25** · le verdict | Page `/verdict/` : verdict, marge, ta réponse face au résultat, ton pronostic, ta voix de 578e, ton député, ton jumeau. Le pipeline est relancé chaque heure les soirs de vote (`soiree.yml`). Formule : « le verdict du matin ». |
 | **t34** · méthode et brouillons | Page `/calcul/` « Comment c'est calculé », avec un bouton pour tout effacer ; brouillons de mentions légales et de confidentialité (devenus `docs/mentions-legales.md` et `docs/confidentialite.md` le 12 octobre, pages en ligne). |
@@ -45,7 +65,7 @@ Pour repartir de zéro comme un nouveau visiteur : page « Comment c'est calcul�
 - [ ] Quiz : 10 questions, la révélation après chaque réponse, puis « Ta place est prête ».
 - [ ] Le gros bouton du résultat dit **« Continuer → 3 votes de plus »** et mène au **lot 1**.
 - [ ] Lot 1 : 3 votes (encadrement des loyers, soignants à l'hôpital, justice des mineurs), puis l'écran « Lot terminé » avec le tampon et le carnet.
-- [ ] Les 5 lots d'affilée : la précision doit finir à **71 %** (25 votes).
+- [ ] Les 5 lots d'affilée : la précision doit arriver à **71 %** (25 votes). Les lots facultatifs 6 à 9 la portent ensuite à 84 % (voir le § 0 bis).
 - [ ] Les questions et « Concrètement » des 4 nouvelles cartes (1624, 3055, 2880, 1304) te conviennent. **C'est un choix éditorial : relis-les.**
 
 ### La séance de la semaine

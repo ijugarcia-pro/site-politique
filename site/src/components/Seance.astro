@@ -83,10 +83,11 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       <h1 data-question tabindex="-1"></h1>
       <p class="concretement"><strong>Concrètement :</strong> <span data-concretement></span></p>
       <div class="choix">
-        <button type="button" class="b-pour" data-reponse="pour">Pour</button>
-        <button type="button" class="b-contre" data-reponse="contre">Contre</button>
+        <button type="button" class="b-pour" data-reponse="pour"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Pour</button>
+        <button type="button" class="b-contre" data-reponse="contre"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Contre</button>
       </div>
-      <button type="button" class="b-passer" data-reponse="">Je ne sais pas</button>
+      <button type="button" class="b-passer" data-reponse=""><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Je ne sais pas</button>
+      <span class="visuellement-cache" data-annonce-vote></span>
       {pronostic && (
         <div class="pronostic" data-pronostic hidden>
           <div class="prono-tete">
@@ -223,7 +224,22 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     box-shadow: 0 4px 0 var(--bord); color: var(--gris); font-size: 17px; }
   .choix button:disabled, .b-passer:disabled { cursor: default; }
   .choix button:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
-  .b-passer:global(.estompe) { opacity: .35; box-shadow: none; }
+  .b-passer:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
+  /* Le geste de vote (A2 + A3, docs/animations-lot-1.md § 1) : la même animation pour chaque
+     choix. Le bouton choisi rebondit et une coche se trace ; les autres s'éteignent. */
+  .choix button, .b-passer { position: relative; }
+  .choix button:global(.choisi), .b-passer:global(.choisi) { animation: ressort var(--dur-s) var(--ease-ressort) both; }
+  .choix button:global(.estompe), .b-passer:global(.estompe) { transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
+  .coche { position: absolute; left: 7px; top: calc(50% - 9px); width: 18px; height: 18px; opacity: 0; pointer-events: none; }
+  .coche path { fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1; }
+  :global(.choisi) > .coche { opacity: 1; }
+  :global(.choisi) > .coche path { animation: trace 300ms ease-out 50ms both; }
+  @media (prefers-reduced-motion: reduce) {
+    .choix button:global(.choisi), .b-passer:global(.choisi) { animation: none; }
+    :global(.choisi) > .coche path { animation: none; stroke-dashoffset: 0; }
+    .choix button:global(.estompe), .b-passer:global(.estompe) { transition: none; }
+  }
 
   .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
     border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }

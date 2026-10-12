@@ -71,7 +71,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 ### Animations · lot 1 (ajoutées le 13 oct. 2026 à la demande de Julien ; spec : docs/animations-lot-1.md)
 - [x] t47 bis 🤖 Socle : `motion.css` et `lib/motion.ts` *(livrée le 13 oct. 2026, PR #25, en attente de fusion)*
 - [x] t48 🤖 Geste de vote : ressort et coche (A2 + A3) *(livrée le 13 oct. 2026, PR #26, en attente de fusion)*
-- [x] t49 🤖 Enchaînement des cartes (A4 + A1) *(livrée le 13 oct. 2026, PR #27, en attente de fusion ; chronométrage d'une séance de 3 votes à faire sur téléphone)*
+- [x] t49 🤖 Enchaînement des cartes (A4 + A1) *(livrée le 13 oct. 2026, PR #27 ; retour de Julien : envol retiré, retour en haut de page, PR #29 ; chronométrage d'une séance de 3 votes à faire sur téléphone)*
 - [x] t50 🤖 Jauge de précision (R4) *(livrée le 13 oct. 2026, PR #28, en attente de fusion)*
 - [ ] t51 🤖 Hémicycle en ondes et compteur des voix (R1 + R5) — session B
 - [ ] t52 🤖 « Ta voix en plus » (R3) — session B

@@ -4,7 +4,6 @@
 import { reponses as mesReponses } from './navigateur.ts';
 import { colonnes, niveau, precision, profil, type Matrice, type Profil, type Reponse } from './profil.ts';
 import { jauge } from './jauge.ts';
-import { mouvementReduit } from './motion.ts';
 import { Salle } from './salle.ts';
 import { voix578 } from './votes.ts';
 
@@ -118,44 +117,27 @@ export function seance({ libelleContinuer, rang }: Options) {
     $('[data-annonce-vote]').textContent = 'Vote enregistré';
   };
 
-  /** A4 + A1 : la carte affichée, recopiée, s'envole toujours vers le haut ; la suivante monte
-   *  à la fin. Un appui pendant l'envol passe directement à la carte suivante, sans compter
-   *  comme une réponse : un double appui ne fait jamais sauter deux questions. */
-  let finirEnvol: (() => void) | null = null;
-  const envoler = (carte: HTMLElement) => {
-    finirEnvol?.();
-    const reduit = mouvementReduit();
-    const fantome = carte.cloneNode(true) as HTMLElement;
-    // La copie ne doit répondre à aucun sélecteur de la page (le style Astro excepté).
-    for (const e of [fantome, ...fantome.querySelectorAll('*')]) {
-      for (const a of [...e.attributes]) {
-        if (a.name === 'id' || a.name === 'tabindex' || /^data-(?!astro)/.test(a.name)) e.removeAttribute(a.name);
-      }
-    }
-    fantome.setAttribute('aria-hidden', 'true');
-    fantome.classList.remove('arrive');
-    Object.assign(fantome.style, { position: 'absolute', top: `${carte.offsetTop}px`, left: `${carte.offsetLeft}px`,
-      width: `${carte.offsetWidth}px`, pointerEvents: 'none' });
-    carte.after(fantome);
-    carte.style.opacity = '0';
-    const sortie = fantome.animate(reduit
-      ? [{ opacity: 1 }, { opacity: 0 }]
-      : [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-56px) rotate(-2deg) scale(.96)', opacity: 0 }],
-    { duration: reduit ? 150 : 280, easing: reduit ? 'linear' : 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
-    const intercepter = (e: Event) => { e.preventDefault(); e.stopPropagation(); fin(false); };
-    const fin = (monte: boolean) => {
-      if (finirEnvol !== finir) return;
-      finirEnvol = null;
+  /** A1, retour de Julien du 13 oct. : la page revient en haut (la progression reste visible)
+   *  et la nouvelle carte monte. Un appui pendant l'arrivée la termine sans compter comme une
+   *  réponse : un double appui sur « Continuer » ne vote jamais à la question suivante. */
+  let finirArrivee: (() => void) | null = null;
+  const arriver = (carte: HTMLElement) => {
+    finirArrivee?.();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    carte.classList.remove('arrive');
+    void carte.offsetWidth;
+    carte.classList.add('arrive');
+    const intercepter = (e: Event) => { e.preventDefault(); e.stopPropagation(); finir(); };
+    const finir = () => {
+      if (finirArrivee !== finir) return;
+      finirArrivee = null;
       document.removeEventListener('click', intercepter, true);
-      fantome.remove();
-      carte.style.opacity = '';
-      carte.classList.remove('arrive');
-      if (monte) { void carte.offsetWidth; carte.classList.add('arrive'); }
+      carte.getAnimations().forEach((x) => x.finish());
     };
-    const finir = () => fin(false);
-    finirEnvol = finir;
+    finirArrivee = finir;
     document.addEventListener('click', intercepter, true);
-    sortie.finished.then(() => fin(true), () => fin(false));
+    carte.addEventListener('animationend', finir, { once: true });
+    setTimeout(finir, 600);
   };
 
   // Un appui pendant la révélation la termine : la jauge passe à sa valeur finale.
@@ -170,7 +152,6 @@ export function seance({ libelleContinuer, rang }: Options) {
     const carte = $('[data-carte]');
     // Une carte était à l'écran (on vient d'une révélation ou d'un pronostic) : elle s'envole.
     const enchaine = !$('[data-ecran="question"]').hidden && !!$('[data-question]').textContent;
-    if (enchaine) envoler(carte);
     montrer('question');
     $('[data-revelation]').hidden = true;
     $('[data-pied-focus]').hidden = false;
@@ -209,8 +190,8 @@ export function seance({ libelleContinuer, rang }: Options) {
       if (!matrice) chargement.then((m) => { if (!$('[data-ecran="question"]').hidden) tonHemicycle(m); });
     }
     if (enchaine) {
-      // Le focus passe au titre de la nouvelle question ; la carte revient à l'écran si besoin.
-      carte.scrollIntoView({ block: 'nearest' });
+      // Le focus passe au titre de la nouvelle question, la page étant revenue en haut.
+      arriver(carte);
       titre.focus({ preventScroll: true });
     } else if (i > 0) titre.focus();
   };
@@ -291,6 +272,7 @@ export function seance({ libelleContinuer, rang }: Options) {
   /** Quitte la révélation pour l'écran de fin de la page. */
   const finir = (ecran: string) => {
     montrer(ecran);
+    window.scrollTo({ top: 0, behavior: 'instant' });
     $('[data-revelation]').hidden = true;
     $('[data-pied-focus]').hidden = false;
     const pronostic = document.querySelector<HTMLElement>('[data-pronostic]');

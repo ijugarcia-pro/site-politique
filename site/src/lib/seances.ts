@@ -52,6 +52,52 @@ export function serie(faites: Set<string>, vacances: Set<string>, lundi: string)
   return n;
 }
 
+const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
+  'oct.', 'nov.', 'déc.'];
+
+/** Quand les députés votent, en court : « mardi 13 oct., 15 h » (heure de Paris, celle de
+ *  l'agenda ; `debut` : « 2026-10-13 15:00:00+02 »). */
+export function quandCourt(date: string, debut: string | null): string {
+  const jour = JOURS[new Date(`${date}T12:00:00Z`).getUTCDay()];
+  const texte = `${jour} ${Number(date.slice(8, 10))} ${MOIS_COURTS[Number(date.slice(5, 7)) - 1]}`;
+  if (!debut) return texte;
+  const [h, m] = debut.slice(11, 16).split(':');
+  return `${texte}, ${Number(h)} h${m !== '00' ? ` ${m}` : ''}`;
+}
+
+/** Un vote de la séance, vu du verdict : jugé quand son scrutin est publié. */
+export interface VoteJuge { juge: boolean; date: string; debut: string | null }
+
+export interface Avancement {
+  total: number;
+  juges: number;
+  /** aucun : pas encore de verdict ; partiel : la séance n'est tranchée qu'en partie ;
+   *  complet : tous ses votes sont jugés. */
+  etat: 'aucun' | 'partiel' | 'complet';
+  /** « 1/3 ». */
+  fraction: string;
+  /** Le bandeau du verdict partiel : « 1 vote sur 3 jugé · les 2 autres : mardi 13 oct.,
+   *  15 h » ; null si la séance n'est pas tranchée en partie. */
+  bandeau: string | null;
+}
+
+/** Où en est le verdict d'une séance (ses votes retirés de l'agenda ne comptent pas). Tant
+ *  qu'elle n'est tranchée qu'en partie, le verdict, l'accueil et la fin de séance le disent. */
+export function avancement(votes: VoteJuge[]): Avancement {
+  const total = votes.length;
+  const juges = votes.filter((v) => v.juge).length;
+  const etat = juges === 0 ? 'aucun' : juges < total ? 'partiel' : 'complet';
+  let bandeau: string | null = null;
+  if (etat === 'partiel') {
+    const reste = total - juges;
+    const quand = [...new Set(votes.filter((v) => !v.juge).map((v) => quandCourt(v.date, v.debut)))];
+    bandeau = `${juges} vote${juges > 1 ? 's' : ''} sur ${total} jugé${juges > 1 ? 's' : ''} · `
+      + `${reste > 1 ? `les ${reste} autres` : 'le dernier'} : ${quand.join(' et ')}`;
+  }
+  return { total, juges, etat, fraction: `${juges}/${total}`, bandeau };
+}
+
 /** Une fois le vote tenu, la réponse donnée avant le vote rejoint les autres réponses (et
  *  compte dans l'hémicycle). `tranches` : par lundi, la clé du vote et son scrutin. */
 export function reporterReponses(tranches: Record<string, Record<string, string>>): number {

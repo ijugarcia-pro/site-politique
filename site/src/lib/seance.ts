@@ -4,11 +4,12 @@
 import { reponses as mesReponses } from './navigateur.ts';
 import { niveau, precision, profil, type Matrice, type Profil, type Reponse } from './profil.ts';
 import { Salle } from './salle.ts';
+import { voix578 } from './votes.ts';
 
 export interface QuestionSeance {
   uid: string; numero: number; theme: string; question: string; concretement: string;
   date: string; lien: string; verdict: string; adopte: boolean; dissidents: number;
-  marge: number | null; puce: string; sieges: string;
+  marge: number | null; requis: number | null; puce: string; sieges: string;
   /** Vote annoncé, pas encore tenu : pas de révélation, un pronostic (séance de la semaine). */
   attente: boolean; quand: string;
   decompte: { pour: number; contre: number; abstention: number };
@@ -177,10 +178,18 @@ export function seance({ libelleContinuer, rang }: Options) {
     $('[data-rv-ligne]').textContent = `Le texte a été ${q.adopte ? 'adopté' : 'rejeté'} par ${d.pour} voix contre ${d.contre}.`
       + (q.dissidents ? ` ${pluriel(q.dissidents, 'député')} ${q.dissidents > 1 ? 'ont' : 'a'} voté contre leur propre groupe.` : '');
     $<HTMLAnchorElement>('[data-lien-vote]').href = q.lien;
-    $('[data-rv-voix]').textContent = (v
-      ? `Avec ta voix : ${d.pour + (v === 'pour' ? 1 : 0)} pour, ${d.contre + (v === 'contre' ? 1 : 0)} contre. `
-      : 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat. ')
-      + (q.marge ? `Pour inverser le résultat, il aurait fallu que ${pluriel(q.marge, 'député')} change${q.marge > 1 ? 'nt' : ''} d'avis.` : '');
+    // Avec ta voix, la majorité requise est recalculée (lib/votes.ts) ; sans réponse, la marge
+    // reste celle du résultat officiel.
+    const inverser = (n: number, quoi: string) =>
+      `Pour inverser ${quoi}, il aurait fallu que ${pluriel(n, 'député')} change${n > 1 ? 'nt' : ''} d'avis.`;
+    const x = v ? voix578(d, q.requis, v) : null;
+    const avec = v ? `Avec ta voix : ${d.pour + (v === 'pour' ? 1 : 0)} pour, ${d.contre + (v === 'contre' ? 1 : 0)} contre` : '';
+    $('[data-rv-voix]').textContent = !v
+      ? 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat. ' + (q.marge ? inverser(q.marge, 'le résultat') : '')
+      : !x ? `${avec}.`
+        : x.adopte !== q.adopte
+          ? `${avec} : ta voix aurait changé le résultat, le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
+          : `${avec}. ${inverser(x.inverser, 'ce résultat')}`;
     $('[data-revelation]').hidden = false;
     $('[data-pied-focus]').hidden = true;
     $('[data-continuer]').textContent = libelleContinuer(i);

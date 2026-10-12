@@ -1,0 +1,57 @@
+---
+// Mentions légales (t35) : qui édite le site, qui l'héberge, d'où viennent les données. Texte
+// de référence : docs/mentions-legales.md, validé par Julien le 12 octobre 2026 (identité de
+// l'éditeur, contact, dépôt). Rien n'y est affirmé qui n'ait été vérifié ; pour le reste, la
+// page renvoie aux pages officielles (Cloudflare, Assemblée nationale, IGN).
+import Base from '../layouts/Base.astro';
+
+const DEPOT = 'https://github.com/ijugarcia-pro/site-politique';
+---
+<Base titre="Mentions légales"
+  description="Qui édite Le 578e siège, qui l'héberge, d'où viennent ses données et sous quelles licences.">
+  <article class="texte">
+    <h1>Mentions légales</h1>
+    <p class="chapo">Qui édite ce site, qui l'héberge, et d'où viennent ses données.</p>
+
+    <h2 id="editeur">Éditeur du site</h2>
+    <ul>
+      <li><strong>Le 578<sup>e</sup> siège</strong> : https://le578esiege.pages.dev</li>
+      <li> Éditeur et directeur de la publication : <strong>Julien Garcia</strong>. Le site est un projet personnel, édité à titre non professionnel, sans publicité et sans compte utilisateur. </li>
+      <li> Contact : le site n'a pas encore d'adresse électronique de contact. Pour signaler une erreur ou poser une question, tu peux ouvrir un ticket sur le <a href={`${DEPOT}/issues`}>dépôt GitHub du projet</a>. Ces messages sont publics : n'y écris rien de personnel. </li>
+    </ul>
+
+    <h2 id="hebergeur">Hébergeur</h2>
+    <ul>
+      <li> Le site est hébergé par <strong>Cloudflare, Inc.</strong> (service Cloudflare Pages), 101 Townsend St., San Francisco, CA 94107, États-Unis ; téléphone : +1 (650) 319-8930 ; <a href="https://www.cloudflare.com/fr-fr/">www.cloudflare.com</a>. </li>
+      <li> Le code source est publié sur GitHub (GitHub, Inc.) : <a href={DEPOT}>github.com/ijugarcia-pro/site-politique</a>. </li>
+    </ul>
+
+    <h2 id="donnees">Données et licences</h2>
+    <ul>
+      <li> <strong>Votes, députés, groupes, agenda et dossiers législatifs</strong> : <a href="https://data.assemblee-nationale.fr/">données ouvertes de l'Assemblée nationale</a>, publiées sous <a href="https://data.assemblee-nationale.fr/licence-ouverte-open-licence">Licence ouverte</a>. Elles sont retraitées chaque nuit ; la méthode est décrite sur la page « <a href="/calcul/">Comment c'est calculé</a> ». Le site n'est pas affilié à l'Assemblée nationale. </li>
+      <li> <strong>Codes postaux, communes, circonscriptions et leurs contours</strong> : données ouvertes de La Poste et du ministère de l'Intérieur, diffusées sur data.gouv.fr. </li>
+      <li> La page « <a href="/etat/">État des données</a> » donne, pour chaque source, son producteur, sa licence et son adresse. </li>
+      <li> <strong>Recherche d'une adresse</strong> : service de géocodage de la Géoplateforme de l'IGN, appelé seulement quand tu saisis une adresse (voir la page « <a href="/confidentialite/">Confidentialité</a> »). </li>
+      <li> <strong>Polices</strong> : Fredoka et Nunito, sous licence SIL Open Font License 1.1, servies par le site lui-même. </li>
+      <li> <strong>Résumés des textes</strong> (les questions et « Concrètement ») : rédigés à partir du texte officiel, contrôlés, puis validés par l'éditeur avant publication. Ils ne remplacent pas le texte : chaque vote renvoie à sa page, qui renvoie au dossier officiel de l'Assemblée nationale. </li>
+    </ul>
+
+    <h2 id="neutralite">Neutralité</h2>
+    <p> Le site n'exprime aucune opinion politique et ne classe pas les députés sur un axe : il compare des réponses à des votes réels. Les notions qu'il calcule (votes « contre son groupe », voix qui font basculer un résultat, accord) ne sont pas publiées par l'Assemblée ; leur définition est donnée sur la page « <a href="/calcul/">Comment c'est calculé</a> ». </p>
+
+    <h2 id="code">Code source</h2>
+    <p> Le code source du site est publié sous licence MIT (fichier <code>LICENSE</code> du <a href={DEPOT}>dépôt</a>). </p>
+
+    <p class="maj">Dernière mise à jour : 12 octobre 2026.</p>
+  </article>
+</Base>
+
+<style>
+  .texte { max-width: 760px; }
+  .texte h1 { font-size: clamp(32px, 3.4vw, 44px); }
+  .chapo { font-size: 19px; color: var(--texte-doux); }
+  .texte h2 { margin-top: 34px; font-size: 24px; }
+  .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--texte-doux); }
+  .texte li { margin-bottom: 8px; overflow-wrap: anywhere; }
+  .maj { margin-top: 34px; font-size: 15px; color: var(--gris); }
+</style>

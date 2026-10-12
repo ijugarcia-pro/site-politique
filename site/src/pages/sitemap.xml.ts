@@ -5,7 +5,7 @@ import type { APIRoute } from 'astro';
 import { deputes, scrutins } from '../lib/donnees.ts';
 
 const FIXES = ['/', '/quiz/', '/lots/', '/seance/', '/verdict/', '/hemicycle/', '/explorer/',
-  '/deputes/', '/calcul/', '/etat/'];
+  '/deputes/', '/calcul/', '/etat/', '/mentions-legales/', '/confidentialite/'];
 
 export const GET: APIRoute = ({ site }) => {
   const url = (chemin: string) => new URL(chemin, site).href;

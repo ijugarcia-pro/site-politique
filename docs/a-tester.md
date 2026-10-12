@@ -17,9 +17,9 @@ Ce que toi seul peux décider (rien ne bloque le site) :
 2. **Les points juridiques non confirmés**, listés à la fin de `docs/mentions-legales.md` et de `docs/confidentialite.md` : faire relire par un juriste ou consulter la CNIL, ou les garder tels quels.
 3. **La mesure d'audience** : reportée à la fin du projet (t46). Rien à faire d'ici là.
 
-## 0 bis. Mise à jour du 12 octobre : les lots facultatifs 6 à 9 (pas encore en ligne)
+## 0 bis. Mise à jour du 13 octobre : les lots facultatifs 6 à 9 (en ligne)
 
-Tes 12 cartes de la réserve sont devenues 4 lots facultatifs, à la suite des 5 lots du parcours (t47). Le travail est commité en local sur la branche `lots-facultatifs`, sans être poussé : **dis-moi quand le mettre en ligne**. À tester ensuite sur le site :
+Tes 12 cartes de la réserve sont devenues 4 lots facultatifs, à la suite des 5 lots du parcours (t47). **C'est en ligne depuis le 13 octobre** (PR #23), à ta demande. J'ai refait le parcours lot 5 → lot 9 sur le site en ligne, sur ordinateur. À tester de ton côté, surtout sur ton téléphone :
 
 - [ ] **Fin du lot 5.** La précision est à **71 %** (25 votes). Le texte dit « Ta place est fiable. Pour l'affiner encore, si tu veux : 4 lots facultatifs de 3 votes. » Le gros bouton dit **« Affiner encore · lot 6 → »**, le second « Mon hémicycle ». Le carnet montre une deuxième rangée, « Pour affiner · facultatif » (lots 6 à 9).
 - [ ] **Rien n'est imposé.** Reviens sur `/lots/` sans cliquer : tu vois « Les 5 lots sont faits ! », pas une question. Le résultat du quiz mène à Mon hémicycle, pas au lot 6.
@@ -28,7 +28,7 @@ Tes 12 cartes de la réserve sont devenues 4 lots facultatifs, à la suite des 5
 - [ ] **Accueil**, une fois le parcours et la séance faits : le ticket dit « Votes passés · lot 6 sur 9 · facultatif », « 3 votes de plus pour affiner ta place », bouton « Affiner encore · 2 min ». Les 9 lots faits : « Tu as tranché les 9 lots de votes ».
 - [ ] **`/calcul/`**, section « La précision » : le tableau va de 10 à 37 votes.
 - [ ] **Sur ton téléphone** : le carnet à deux rangées et les boutons de fin de lot.
-- [ ] **Lundi 19 octobre** (si c'est en ligne avant) : l'agenda n'annonçait qu'un vote solennel au 9 octobre (le budget). La séance devrait être complétée par 2 votes du lot 9, avec leur carte (titres de séjour, centrales à charbon), sans intervention.
+- [ ] **Lundi 19 octobre** : l'agenda n'annonçait qu'un vote solennel au 9 octobre (le budget). La séance devrait être complétée par 2 votes du lot 9, avec leur carte (titres de séjour, centrales à charbon), sans intervention.
 
 Ce que tu dois savoir :
 

@@ -9,6 +9,7 @@
 // 200 participants).
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
+import JaugePrecision from '../components/JaugePrecision.astro';
 import Seance from '../components/Seance.astro';
 import { avancementSeance, dateLisible, lotsDuParcours, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
 import { puceTheme } from '../lib/themes.ts';
@@ -85,7 +86,7 @@ const tuile = premier ? {
             <span class="petit" data-fin-serie-detail></span>
           </div>
           <div class="carte violette">
-            <span class="grand" data-fin-precision></span>
+            <JaugePrecision grand />
             <span class="libelle">de précision</span>
             <span class="petit" data-fin-gain></span>
           </div>
@@ -129,6 +130,7 @@ const tuile = premier ? {
   import { repondre, reponses } from '../lib/navigateur.ts';
   import { etatLots, prochainLot } from '../lib/lots.ts';
   import { precision, type Matrice, type Reponse } from '../lib/profil.ts';
+  import { jauge } from '../lib/jauge.ts';
   import { $, pluriel, seance } from '../lib/seance.ts';
   import { etatSeance, sauverSeance, seancesFaites, serie, type Pronostic } from '../lib/seances.ts';
 
@@ -184,7 +186,7 @@ const tuile = premier ? {
       $('[data-fin-serie]').textContent = String(n);
       $('[data-fin-serie-libelle]').textContent = n > 1 ? 'semaines d\'affilée' : 'semaine d\'affilée';
       $('[data-fin-serie-detail]').textContent = '+1 cette semaine';
-      $('[data-fin-precision]').textContent = `${Math.round(100 * p.precision)} %`;
+      jauge($('.violette [data-jauge]'), p.reponses - comptees, p.reponses);
       $('[data-fin-gain]').textContent = `${gain > 0 ? `+${gain} point${gain > 1 ? 's' : ''} · ` : ''}`
         + pluriel(p.reponses, 'vote');
       const pronos = Object.keys(etat.pronostics).length;

@@ -9,6 +9,7 @@
 // navigateur.
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
+import JaugePrecision from '../components/JaugePrecision.astro';
 import Seance from '../components/Seance.astro';
 import { lotsDeVotes, lotsDuParcours } from '../lib/donnees.ts';
 import { puceTheme } from '../lib/themes.ts';
@@ -34,7 +35,7 @@ const parcours = lotsDuParcours();
       <h1 tabindex="-1" data-fin-titre>Lot terminé&nbsp;!</h1>
       <p class="fin-texte" data-fin-texte></p>
       <div class="carte-precision">
-        <span class="grand" data-fin-precision></span>
+        <JaugePrecision grand />
         <span class="libelle">de précision</span>
         <span class="petit" data-fin-gain></span>
       </div>
@@ -69,6 +70,7 @@ const parcours = lotsDuParcours();
   import { repondre } from '../lib/navigateur.ts';
   import { ANCRE_AFFINER, etatLots, sauverLots, suiteDesLots } from '../lib/lots.ts';
   import { precision, VOTES_FIABLES, type Reponse } from '../lib/profil.ts';
+  import { jauge } from '../lib/jauge.ts';
   import { $, mesReps, pluriel, seance } from '../lib/seance.ts';
 
   const { parLot, parcours } = JSON.parse($('[data-par-lot]').textContent!) as {
@@ -127,7 +129,7 @@ const parcours = lotsDuParcours();
           ? (manque <= 0 ? `Ta place est fiable. Pour l'affiner encore, si tu veux : ${facultatifs}.`
             : `Pour une place fiable, il faut ${VOTES_FIABLES} votes : encore ${manque} à trancher. Il reste ${facultatifs}.`)
           : `Encore ${pluriel(suite.resteParcours, 'lot')} de ${parLot} votes.`);
-    $('[data-fin-precision]').textContent = `${Math.round(100 * p.precision)} %`;
+    jauge($('.carte-precision [data-jauge]'), n - dansLot, n);
     $('[data-fin-gain]').textContent = k === null ? pluriel(n, 'vote')
       : `+${gain} point${gain > 1 ? 's' : ''} · ${pluriel(n, 'vote')}`;
     // Le carnet : les lots du parcours ; les facultatifs s'y ajoutent une fois le parcours fait.
@@ -225,7 +227,6 @@ const parcours = lotsDuParcours();
   .fin-texte { margin: 12px 0 0; font-size: 18px; line-height: 1.5; color: var(--gris); }
   .carte-precision { display: flex; flex-direction: column; margin-top: 20px; padding: 18px; border-radius: 22px;
     background: #EFE9FF; box-shadow: 0 5px 0 #D9CCFF; }
-  .carte-precision .grand { font-family: var(--police-titre); font-weight: 700; font-size: 40px; line-height: 1; color: var(--violet-fonce); }
   .carte-precision .libelle { margin-top: 6px; font-family: var(--police-titre); font-weight: 600; font-size: 16px; color: #3D1FA8; }
   .carte-precision .petit { font-size: 13px; color: var(--violet-fonce); }
   .carnet { align-self: stretch; margin-top: 18px; padding: 18px 20px; border-radius: 24px; border: 2px solid var(--bord); }

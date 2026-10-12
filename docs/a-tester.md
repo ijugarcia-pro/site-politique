@@ -2,6 +2,21 @@
 
 > Rapport de Claude Code pour Julien. **Mise à jour du 12 octobre : tout est en ligne** sur https://le578esiege.pages.dev (PR #18 et #19 fusionnées). Les tests ci-dessous se font désormais sur le site en ligne. Deux corrections au rapport : le 3e vote de la séance est le n° 6124 (rave-parties), avec sa carte, et non le logement ; le point 1 de « Ce que toi seul peux faire » est fait.
 
+## 0. Mise à jour du 12 octobre : tes retours du premier test
+
+Tu as fait la séance le 12 octobre, sur ordinateur et sur téléphone : tout marche. Tes retours sont traités. À vérifier sur le site en ligne (https://le578esiege.pages.dev) :
+
+- [ ] **Verdict d'une séance tranchée en partie.** `/verdict/` affiche en tête « 1 vote sur 3 jugé · les 2 autres : mardi 13 oct., 15 h », et un onglet grisé « Verdict après le vote » pour chacun des 2 votes du mardi. Sur l'accueil, le ticket dit « Verdict 1/3 · 1 vote déjà jugé → » ; à la fin de la séance, le bouton dit « Voir le verdict · 1/3 → ».
+- [ ] **Ta voix de 578e.** Sur `/verdict/`, vote n° 6124 (rave-parties), toi contre : « Avec la tienne : 78 pour, 68 contre. Il aurait alors suffi que 5 députés changent d'avis… ». Si tu avais voté pour : 79 pour, 67 contre, 6 députés. La même phrase est corrigée à la révélation du quiz, des lots et de la séance.
+- [ ] **Mentions légales et confidentialité.** Les liens sont dans le pied de page. Relis `/mentions-legales/` et `/confidentialite/` : ton nom, l'absence d'adresse de contact (renvoi vers les tickets du dépôt GitHub), le lien du dépôt. **Dis-moi si le rendu te convient : je cocherai alors t35.**
+- [ ] **Mardi 13 au soir ou mercredi 14 au matin.** Le bandeau et les onglets grisés doivent avoir disparu : les 3 verdicts sont là, avec ta réponse et ton pronostic en face. C'est la porte t26 : je ne la coche pas sans ton accord.
+
+Ce que toi seul peux décider (rien ne bloque le site) :
+
+1. **Une adresse de contact** dédiée au projet, pour les deux pages.
+2. **Les points juridiques non confirmés**, listés à la fin de `docs/mentions-legales.md` et de `docs/confidentialite.md` : faire relire par un juriste ou consulter la CNIL, ou les garder tels quels.
+3. **La mesure d'audience** : reportée à la fin du projet (t46). Rien à faire d'ici là.
+
 ## 1. Ce qui a été fait
 
 | Tâche | Ce qui existe maintenant |
@@ -12,8 +27,8 @@
 | **t23** · la séance choisie | Chaque lundi, le pipeline choisit 3 votes parmi les votes solennels annoncés à l'agenda ; il complète avec la réserve (tes 13 candidats non retenus) ; il détecte les vacances. La sélection est figée pour la semaine. Pour la semaine du 12 octobre : les 2 votes du mardi 13 (violences sexuelles et sexistes ; loi organique sur l'autorité judiciaire) + 1 vote passé. |
 | **t24** · la séance | Page `/seance/` : voter avant les députés, pronostic facultatif, tampon, série (gelée pendant les vacances), rendez-vous du verdict. Ta réponse rejoint ton hémicycle dès que le scrutin est publié. |
 | **t25** · le verdict | Page `/verdict/` : verdict, marge, ta réponse face au résultat, ton pronostic, ta voix de 578e, ton député, ton jumeau. Le pipeline est relancé chaque heure les soirs de vote (`soiree.yml`). Formule : « le verdict du matin ». |
-| **t34** · méthode et brouillons | Page `/calcul/` « Comment c'est calculé », avec un bouton pour tout effacer ; brouillons `docs/mentions-legales-brouillon.md` et `docs/confidentialite-brouillon.md`. |
-| **t36** · qualité | Contrastes corrigés, plan du site, balises de partage, données structurées des députés ; mesure d'audience prête à activer (`docs/audience.md`). |
+| **t34** · méthode et brouillons | Page `/calcul/` « Comment c'est calculé », avec un bouton pour tout effacer ; brouillons de mentions légales et de confidentialité (devenus `docs/mentions-legales.md` et `docs/confidentialite.md` le 12 octobre, pages en ligne). |
+| **t36** · qualité | Contrastes corrigés, plan du site, balises de partage, données structurées des députés ; mesure d'audience reportée à la fin du projet (t46, `docs/audience.md`). |
 
 Tous les tests passent (123 côté pipeline, 37 côté site), le style aussi, et le site se construit (926 pages). Chaque page a été vérifiée dans le navigateur, sur ordinateur et à la taille d'un téléphone.
 
@@ -38,7 +53,7 @@ Pour repartir de zéro comme un nouveau visiteur : page « Comment c'est calcul�
 - [ ] `/seance/` : les 2 votes du 13 octobre affichent « Les députés n'ont pas encore voté » ; après ta réponse, le **pronostic** (adopté / rejeté) est facultatif ; le 3e vote (déjà tenu) est révélé.
 - [ ] Sans carte rédigée, la question est tirée du titre officiel (« Faut-il adopter la proposition de loi… ? ») et « Concrètement » le dit. **Cette formulation de repli te convient-elle ?**
 - [ ] Fin de séance : tampon « Séance du 12 oct. », série, précision, pronostic en jeu, rendez-vous du verdict, carnet.
-- [ ] `/verdict/` avant le vote : « Pas encore de verdict », avec les votes attendus.
+- [ ] `/verdict/` avant le vote du mardi : le verdict du vote déjà tenu (n° 6124), avec le bandeau « 1 vote sur 3 jugé » (voir le § 0). L'écran « Pas encore de verdict » ne s'affiche que les semaines où aucun vote de la séance n'est encore tenu.
 
 ### Le reste
 - [ ] Accueil : « Les derniers verdicts » montre « Tu avais voté pour · du côté de la majorité » sur les votes auxquels tu as répondu.
@@ -55,8 +70,8 @@ Pour repartir de zéro comme un nouveau visiteur : page « Comment c'est calcul�
 
 1. **Me dire de mettre en ligne.** Pour cela, je pousse la branche et fusionne dans `main` les PR #12 et #13, puis celle de `lots-candidats` (la PR #12 est déjà fusionnée dans la branche). C'est une action sur GitHub, qui lance un déploiement : j'attends ton accord. **À faire avant lundi** pour que la séance du 12 octobre se prépare toute seule.
 2. **t26 (porte)** : vivre la vraie séance du 12-13 octobre (30 min) : la faire le lundi, regarder le verdict mardi soir ou mercredi matin.
-3. **t35** : relire les brouillons juridiques (`docs/mentions-legales-brouillon.md`, `docs/confidentialite-brouillon.md`) et compléter les **[À VALIDER]** (identité de l'éditeur, contact).
-4. **t36** : activer la mesure d'audience sans cookie dans Cloudflare (5 min, `docs/audience.md`), ou décider de ne rien mesurer.
+3. **t35** : fait en partie le 12 octobre : les pages sont en ligne avec tes trois choix. Reste à confirmer le rendu (voir le § 0).
+4. **t36** : faite côté code. La mesure d'audience est reportée à la fin du projet (t46).
 5. **Une question ouverte** : les 10 cartes du quiz n'ont toujours ni thème ni titre court (quiz figé). Faut-il un thème « International » pour l'Ukraine et la défense ?
 6. **Facultatif** : avant mardi, une courte session de rédaction des cartes pour les 2 votes du 13 octobre. Sans elle, la séance utilise la question de repli. C'est la future t27, normalement après la porte t26.
 

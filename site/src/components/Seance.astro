@@ -71,6 +71,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
           <p><slot name="bulle" /></p>
         </div>
       )}
+      <div class="carte-question" data-carte>
       <div class="puces">
         <span class="puce-theme" data-theme></span>
         {dates && (
@@ -82,6 +83,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       </div>
       <h1 data-question tabindex="-1"></h1>
       <p class="concretement"><strong>Concrètement :</strong> <span data-concretement></span></p>
+      </div>
       <div class="choix">
         <button type="button" class="b-pour" data-reponse="pour"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Pour</button>
         <button type="button" class="b-contre" data-reponse="contre"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Contre</button>
@@ -199,6 +201,10 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .bulle :global(strong) { color: var(--violet-fonce); }
   .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
     border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
+  /* L'enchaînement des cartes (A4 + A1) : la carte précédente, recopiée, s'envole par-dessus. */
+  .question { position: relative; }
+  .carte-question:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
+  @media (prefers-reduced-motion: reduce) { .carte-question:global(.arrive) { animation: fondu var(--dur-xs) linear both; } }
   .puces { display: flex; flex-wrap: wrap; gap: 8px; }
   .puce-theme, .puce-date { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
     border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px; }

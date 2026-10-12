@@ -102,6 +102,20 @@ export function seance({ libelleContinuer, rang }: Options) {
     salle.libre(true);
   };
 
+  /** Le geste de vote : le bouton choisi est marqué (même animation pour chaque choix), les
+   *  autres s'éteignent ; la section, zone aria-live, annonce « Vote enregistré ». */
+  const marquerChoix = (v: Reponse | null) => {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
+      b.disabled = true;
+      const choisi = (b.dataset.reponse || null) === v;
+      b.classList.toggle('choisi', choisi);
+      b.classList.toggle('estompe', !choisi);
+      if (choisi) b.setAttribute('aria-pressed', 'true');
+      else b.removeAttribute('aria-pressed');
+    }
+    $('[data-annonce-vote]').textContent = 'Vote enregistré';
+  };
+
   // --- Une question ---
   const poser = (i: number) => {
     const q = questions[i];
@@ -127,7 +141,9 @@ export function seance({ libelleContinuer, rang }: Options) {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
       b.disabled = false;
       b.classList.remove('choisi', 'estompe');
+      b.removeAttribute('aria-pressed');
     }
+    $('[data-annonce-vote]').textContent = '';
     const pronostic = document.querySelector<HTMLElement>('[data-pronostic]');
     if (pronostic) pronostic.hidden = true;
     salle.jumeau(null);
@@ -146,12 +162,7 @@ export function seance({ libelleContinuer, rang }: Options) {
   // --- La révélation du vote réel ---
   const reveler = (i: number, v: Reponse | null) => {
     const q = questions[i];
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
-      b.disabled = true;
-      const choisi = (b.dataset.reponse || null) === v;
-      b.classList.toggle('choisi', choisi);
-      b.classList.toggle('estompe', !choisi);
-    }
+    marquerChoix(v);
     // En couleur vive : les députés qui ont voté comme toi.
     const mienne = v === 'pour' ? 'P' : v === 'contre' ? 'C' : null;
     salle.colorer((k) => {
@@ -203,12 +214,7 @@ export function seance({ libelleContinuer, rang }: Options) {
    *  facultatif est proposé (frame ⑥). */
   const attendre = (i: number, v: Reponse | null) => {
     const q = questions[i];
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
-      b.disabled = true;
-      const choisi = (b.dataset.reponse || null) === v;
-      b.classList.toggle('choisi', choisi);
-      b.classList.toggle('estompe', !choisi);
-    }
+    marquerChoix(v);
     const pronostic = $('[data-pronostic]');
     $('[data-prono-question]').textContent = `Selon toi, ${q.quand}, le texte sera…`;
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-prono]')) b.classList.remove('choisi');

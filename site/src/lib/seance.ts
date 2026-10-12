@@ -2,7 +2,8 @@
 // révéler le vrai vote, colorer ton hémicycle. Tout est calculé dans le navigateur ; les
 // réponses y restent (lib/navigateur.ts). La page décide de l'enchaînement et de l'écran de fin.
 import { reponses as mesReponses } from './navigateur.ts';
-import { niveau, precision, profil, type Matrice, type Profil, type Reponse } from './profil.ts';
+import { colonnes, niveau, precision, profil, type Matrice, type Profil, type Reponse } from './profil.ts';
+import { jauge } from './jauge.ts';
 import { mouvementReduit } from './motion.ts';
 import { Salle } from './salle.ts';
 import { voix578 } from './votes.ts';
@@ -157,6 +158,12 @@ export function seance({ libelleContinuer, rang }: Options) {
     sortie.finished.then(() => fin(true), () => fin(false));
   };
 
+  // Un appui pendant la révélation la termine : la jauge passe à sa valeur finale.
+  document.addEventListener('click', () => {
+    const rv = $('[data-revelation]');
+    if (!rv.hidden) rv.getAnimations({ subtree: true }).forEach((a) => a.finish());
+  });
+
   // --- Une question ---
   const poser = (i: number) => {
     const q = questions[i];
@@ -252,6 +259,15 @@ export function seance({ libelleContinuer, rang }: Options) {
           : `${avec}. ${inverser(x.inverser, 'ce résultat')}`;
     $('[data-revelation]').hidden = false;
     $('[data-pied-focus]').hidden = true;
+    // La précision, avant et après ce vote (R4), 1,2 s après la révélation.
+    const bloc = $('[data-rv-precision]');
+    bloc.hidden = !matrice;
+    if (matrice) {
+      const reps = mesReps();
+      const apres = colonnes(matrice, reps).length;
+      delete reps[q.uid];
+      jauge(bloc.querySelector<HTMLElement>('[data-jauge]')!, colonnes(matrice, reps).length, apres, 1200);
+    }
     $('[data-continuer]').textContent = libelleContinuer(i);
     $('[data-continuer]').focus({ preventScroll: true });
     if (window.matchMedia('(max-width: 1000px)').matches) {

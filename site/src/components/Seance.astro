@@ -228,7 +228,6 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
     border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
   @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
-  @keyframes monte { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
   .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
     margin: 0 auto; padding: 22px clamp(16px, 3.4vw, 48px); }

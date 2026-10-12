@@ -1,7 +1,23 @@
 {
  "lundi": "2026-10-12",
- "validation": "Julien, 12 octobre 2026 : carte de la réserve (data/reserve.json), n° 6124",
+ "validation": "Julien, 12 octobre 2026 : carte de la réserve (data/reserve.json) pour le n° 6124 ; cartes des 2 votes solennels du 13 octobre, rédigées d'après le texte de la commission et les amendements adoptés en séance jusqu'au 9 octobre",
+ "sources": {
+  "RUANR5L17S2027IDS30940PT53237": ["PIONANR5L17BTC3190", "PIONANR5L17B3106", "amendements adoptés en séance sur PIONANR5L17BTC3190 (archive du 11 octobre 2026)"],
+  "RUANR5L17S2027IDS30940PT53238": ["PIONANR5L17BTC3191", "PIONANR5L17B3107"]
+ },
  "cartes": {
+  "RUANR5L17S2027IDS30940PT53237": {
+   "theme": "Droits",
+   "titre": "Une loi d'ensemble contre les violences sexuelles",
+   "question": "Faut-il créer des tribunaux spécialisés dans les violences sexuelles et consacrer 3 milliards d'euros par an à cette lutte ?",
+   "concretement": "Chaque tribunal aurait des juges spécialisés dans les violences sexuelles et intrafamiliales. L'inceste deviendrait une infraction à part, et chaque élève aurait à terme un entretien annuel de repérage des violences. La Nation s'engagerait sur 3 milliards d'euros par an de 2027 à 2032."
+  },
+  "RUANR5L17S2027IDS30940PT53238": {
+   "theme": "Institutions",
+   "titre": "Des juges formés aux violences sexuelles",
+   "question": "Faut-il inscrire dans le statut des magistrats un juge des violences sexuelles et intrafamiliales, formé tous les trois ans ?",
+   "concretement": "Ce texte accompagne la loi sur les violences sexuelles et sexistes. Il ajoute au statut des magistrats la fonction de juge des violences sexuelles et intrafamiliales. Ces juges, et les procureurs adjoints chargés de ces affaires, seraient formés avant leur prise de fonction, puis tous les trois ans."
+  },
   "scrutin:VTANR5L17V6124": {
    "uid": "VTANR5L17V6124",
    "numero": 6124,

@@ -124,6 +124,9 @@ def annonces(con: duckdb.DuckDBPyConnection, lundi: date) -> list[dict]:
     """Les votes solennels annoncés du lundi au dimanche, un par point de l'ordre du jour, avec
     leur dossier (celui de l'agenda, sinon retrouvé par le titre)."""
     dimanche = lundi + timedelta(days=6)
+    # L'heure du vote est publiée en heure de Paris, même sur une machine en temps universel
+    # (GitHub Actions) : le site l'affiche telle quelle (« mardi à 15 h »).
+    con.execute("SET TimeZone = 'Europe/Paris'")
     lignes = con.execute(
         "SELECT point_uid, CAST(debut AS VARCHAR), date, objet, dossier_uid FROM vote_prevu "
         "WHERE date BETWEEN ? AND ? ORDER BY debut, point_uid", [lundi, dimanche]).fetchall()

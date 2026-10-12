@@ -164,3 +164,15 @@ def test_historique_relie_les_votes_annonces_a_leur_scrutin(con, tmp_path, monke
     passe(con, 9000, 300, 200, dossier="D0", jour="2026-10-13")
     suivante = lancer(con, tmp_path, jour=date(2026, 10, 19), monkeypatch=monkeypatch)
     assert suivante["historique"][0]["tranches"] == {"PT0": "VTANR5L17V9000"}
+
+
+def test_heure_du_vote_en_heure_de_paris():
+    # La machine du pipeline est en temps universel : l'heure publiée reste celle de Paris.
+    c = duckdb.connect()
+    c.execute("SET TimeZone = 'UTC'")
+    c.execute("CREATE TABLE vote_prevu (reunion_uid VARCHAR, point_uid VARCHAR, "
+              "debut TIMESTAMPTZ, date DATE, objet VARCHAR, dossier_uid VARCHAR, etat VARCHAR)")
+    c.execute("CREATE TABLE dossier (uid VARCHAR, titre VARCHAR)")
+    c.execute("INSERT INTO vote_prevu VALUES ('R', 'PT0', '2026-10-13 15:00:00+02', '2026-10-13', "
+              "'Vote solennel sur la loi A', NULL, 'Confirmé')")
+    assert s.annonces(c, LUNDI)[0]["debut"] == "2026-10-13 15:00:00+02"

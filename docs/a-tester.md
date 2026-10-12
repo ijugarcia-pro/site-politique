@@ -1,6 +1,6 @@
 # À tester — session du 9 octobre 2026
 
-> Rapport de Claude Code pour Julien. Tout est sur la branche **`lots-candidats`**, dans ton dossier `site-politique`. **Rien n'est encore en ligne** : il faut d'abord pousser la branche et fusionner (voir « Ce que toi seul peux faire »).
+> Rapport de Claude Code pour Julien. **Mise à jour du 12 octobre : tout est en ligne** sur https://le578esiege.pages.dev (PR #18 et #19 fusionnées). Les tests ci-dessous se font désormais sur le site en ligne. Deux corrections au rapport : le 3e vote de la séance est le n° 6124 (rave-parties), avec sa carte, et non le logement ; le point 1 de « Ce que toi seul peux faire » est fait.
 
 ## 1. Ce qui a été fait
 

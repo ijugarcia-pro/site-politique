@@ -222,3 +222,8 @@
 - Décision (Julien) : la formule du verdict reste à trancher vers le 28 octobre 2026, même si t03 n'est cochée que vers le 2 novembre.
 - Raison : le critère posé le 7 octobre, un délai mesuré sur au moins trois mardis de votes solennels, sera rempli au 28 octobre (mardis 13, 20 et 27 octobre). Il ne dépend pas des trois semaines sans intervention de t03.
 - Conséquence : docs/faisabilite.md sera complété vers le 28 octobre avec les mesures disponibles à cette date. À lire avec la réserve du 12 octobre : le délai des scrutins 8661 à 8672 est peut-être surestimé de 6 h. D'ici là, « le verdict du matin » reste la formule par défaut.
+
+## 2026-10-12 · Séance : une carte de la réserve n'est montrée qu'une fois validée ; heure de Paris
+- Décision (Julien) : quand la séance est complétée par un vote de la réserve, sa carte n'est affichée que si Julien l'a validée ; elle est alors recopiée dans `data/seances/{lundi}.json`, comme les cartes de la session hebdomadaire. Celle du n° 6124 (rave-parties) est validée pour la séance du 12 octobre. Par ailleurs, l'heure d'un vote annoncé est toujours écrite en heure de Paris (`pipeline/semaine.py`).
+- Raison : les 13 cartes de la réserve ont passé les contrôles en t42, mais Julien ne les a pas validées une à une ; la règle « contrôles et validation » vaut aussi pour elles. Le pipeline tourne en temps universel sur GitHub Actions : le site en ligne annonçait le vote du 13 octobre à 13 h au lieu de 15 h.
+- Conséquence : sans validation, un vote de la réserve garde la question de repli. Les 12 autres cartes de la réserve restent à valider par Julien, en une fois, pour que le complément d'une semaine creuse ait toujours sa carte (à prévoir avec t27).

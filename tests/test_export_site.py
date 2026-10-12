@@ -183,6 +183,19 @@ def test_scrutins_mis_de_cote_exclus(base, tmp_path):
     assert [s["numero"] for s in donnees["index"]] == [14, 12, 10]
 
 
+def test_un_vote_avec_carte_a_sa_page_et_sa_colonne(base, tmp_path):
+    # L'amendement VT11 n'a pas de page ; avec une carte de vote (quiz, lots), il en a une,
+    # et une colonne dans la matrice : une réponse à sa carte compte dans l'hémicycle.
+    donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1),
+                                   avec_carte={"VT11"})
+    assert [s["numero"] for s in donnees["index"]] == [14, 13, 12, 11, 10]
+    assert donnees["matrice"]["votes"] == ["VT14", "VT13", "VT11", "VT10"]
+    # Mis de côté par les contrôles, il reste exclu.
+    donnees = export_site.exporter(base, tmp_path / "export", date(2025, 6, 1), {"VT11"},
+                                   {"VT11"})
+    assert [s["numero"] for s in donnees["index"]] == [14, 13, 12, 10]
+
+
 def test_trop_de_deputes_refuse():
     with pytest.raises(ValueError):
         export_site.completer([{"groupe": "PO1", "_place": 1, "_tri": "a"}] * 578, {})

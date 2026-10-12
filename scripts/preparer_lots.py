@@ -1,4 +1,4 @@
-"""Prépare les 5 lots de 3 votes qui suivent le quiz d'entrée (tâche t42).
+"""Prépare les lots de 3 votes qui suivent le quiz d'entrée (tâches t42, t43 et t47).
 
 Usage :
     uv run python -m scripts.preparer_lots [--base data/site.duckdb] [--textes data/raw/textes]
@@ -16,11 +16,16 @@ thèmes différents qui, ajouté au quiz et aux lots précédents, sépare le mi
 groupes encore les moins séparées. Le premier lot rapporte donc le plus à celui qui s'arrête
 tôt.
 
+Après ces 5 lots viennent 4 lots facultatifs (6 à 9, `FACULTATIFS`) : 12 cartes de la réserve
+validées par Julien le 12 octobre 2026, pour qui veut affiner sa place au-delà de 25 votes.
+
 Produit :
     docs/lots-candidats.md                 la grille à cocher par Julien (t43)
     data/mesures/lots/candidats.json       les candidats, leurs positions et la proposition
-    data/lots.json                         les 5 lots retenus par Julien (t43), lus par le site
-    data/reserve.json                      les candidats non retenus, réserve de la séance (t23)
+    data/lots.json                         les lots retenus par Julien, lus par le site : les 5
+                                           du parcours (t43), puis les facultatifs (t47)
+    data/reserve.json                      les candidats ni retenus ni déjà en séance : ce que
+                                           Julien n'a pas encore validé (réserve de la séance)
 """
 
 from __future__ import annotations
@@ -46,8 +51,10 @@ LOTS = RACINE / "data" / "lots.json"
 RESERVE = RACINE / "data" / "reserve.json"
 SORTIE = RACINE / "docs" / "lots-candidats.md"
 DONNEES = RACINE / "data" / "mesures" / "lots" / "candidats.json"
-N_LOTS = 5
-MAX_PAR_THEME = 2  # sur les 15 votes des lots
+N_LOTS = 5  # les lots du parcours ; les suivants sont facultatifs
+N_QUIZ = pq.N_QUIZ
+MAX_PAR_THEME = 2  # sur les 15 votes des lots du parcours
+JUMEAU_COMPARABLE = 10  # votes en commun pour qu'un député soit vraiment comparable
 PAIRES_AFFICHEES = 4
 PARTICIPATION_MINIMALE = 20  # en pour cent : en dessous, trop peu de députés à comparer
 RESOLUTION = pq.RESOLUTION
@@ -315,6 +322,14 @@ CHOIX = [[4745, 600, 1624], [3273, 2256, 606], [7494, 2958, 3055], [852, 4723, 4
 # Si un vote ne passe pas un contrôle : son remplaçant, de même thème (choix de Julien).
 REMPLACANTS = {3055: 7260, 1624: 1041, 600: 2685, 4723: 657}
 
+# Lots facultatifs, numérotés à la suite des lots du parcours (6 à 9) : 12 cartes de la réserve
+# validées par Julien le 12 octobre 2026, sans correction. Ordre de Julien ; dans chaque lot, le
+# vote le plus concret ou le plus connu en premier. Le plafond par thème ne s'y applique pas.
+FACULTATIFS = [[7408, 7905, 881], [5106, 7380, 6045], [5358, 2272, 2244], [4754, 1306, 1330]]
+# Carte de la réserve déjà validée et publiée avec une séance (12 octobre 2026,
+# data/seances/2026-10-12.json) : elle n'a plus sa place dans la réserve.
+EN_SEANCE = {6124}
+
 # Thèmes et titres courts proposés pour les 10 cartes du quiz (format commun, t42) : à valider
 # avec les lots (t43), puis reportés dans data/quiz.json.
 QUIZ_CARTES = {8280: ("Santé", "L'aide à mourir"),
@@ -373,6 +388,18 @@ def tous_les_candidats() -> list[Candidat]:
 def precision(n: int) -> int:
     """Précision V1 en pour cent après n votes (§ 4.3 du planning)."""
     return round(100 * (1 - math.exp(-n / 20)))
+
+
+def comparables(votes: list[dict]) -> int:
+    """Les députés qui ont pris position (pour, contre, abstention) sur au moins
+    JUMEAU_COMPARABLE de ces votes : ceux que l'on compare vraiment à qui a tout tranché."""
+    return sum(n for k, n in pq.couverture(votes).items() if k >= JUMEAU_COMPARABLE)
+
+
+def moins_separees(sep: dict[tuple[str, str], int], n: int = PAIRES_AFFICHEES) -> str:
+    """Les n paires de groupes les moins séparées, avec leur nombre de votes : « A / B (2) »."""
+    return ", ".join(f"{a} / {b} ({sep[(a, b)]})"
+                     for a, b in sorted(sep, key=lambda k: (sep[k], k))[:n])
 
 
 def vecteur(vote: dict, paires: list[tuple[str, str]]) -> tuple[int, ...]:
@@ -436,27 +463,56 @@ def matrice(sep: dict[tuple[str, str], int], groupes: list[str],
     return lignes
 
 
+def lignes_des_lots(lots: list[list[int]], premier: int, base: list[dict],
+                    votes: dict[int, dict], par_numero: dict[int, Candidat],
+                    groupes: list[str], jumeau: bool = False) -> list[str]:
+    """Une ligne de tableau par lot, numéroté à partir de `premier` : ses votes, les paires de
+    groupes les moins séparées jusque-là qu'il départage, la précision après lui et, avec
+    `jumeau`, le nombre de députés comparables. `base` : les votes tranchés avant ces lots."""
+    lignes = []
+    cumul = list(base)
+    for i, lot in enumerate(lots, premier):
+        avant = pq.separation(cumul, groupes)
+        cumul += [votes[n] for n in lot]
+        apres = pq.separation(cumul, groupes)
+        departage = sorted((k for k in avant if apres[k] > avant[k]),
+                           key=lambda k: (avant[k], k))[:PAIRES_AFFICHEES]
+        noms = " ; ".join(f"{par_numero[n].theme} · {par_numero[n].titre} (n° {n})"
+                          for n in lot)
+        paires = ", ".join(f"{a} / {b} ({avant[(a, b)]} → {apres[(a, b)]})"
+                           for a, b in departage) or "—"
+        fin = (f" {len(cumul)} | {precision(len(cumul))} % | {comparables(cumul)} |" if jumeau
+               else f" {precision(len(cumul))} % |")
+        lignes.append(f"| {i} | {noms} | {paires} |{fin}")
+    return lignes
+
+
 def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
-            questions_quiz: dict[int, str], groupes: list[str], lots: list[list[int]]) -> str:
+            questions_quiz: dict[int, str], groupes: list[str], lots: list[list[int]],
+            facultatifs: list[list[int]] = ()) -> str:
     sep_quiz = pq.separation(quiz, groupes)
     choisis = [votes[n] for lot in lots for n in lot]
     sep_fin = pq.separation(quiz + choisis, groupes)
     faibles = sorted((k for k, s in sep_quiz.items() if s <= 1), key=lambda k: (sep_quiz[k], k))
-    cover = pq.couverture(quiz + choisis)
-    au_moins_dix = sum(n for k, n in cover.items() if k >= 10)
+    au_moins_dix = comparables(quiz + choisis)
     par_numero = {c.numero: c for c in candidats}
+    n_parcours = len(quiz) + len(choisis)
+    tout = quiz + choisis + [votes[n] for lot in facultatifs for n in lot]
+    sep_tout = pq.separation(tout, groupes)
     lignes = [
-        "# Lots de votes : candidats et choix (t42, t43)",
+        "# Lots de votes : candidats et choix (t42, t43, t47)",
         "",
         "> Généré par `uv run python -m scripts.preparer_lots`. Ne pas modifier à la main : "
-        "le choix est dans `CHOIX`, et les lots retenus dans `data/lots.json`.",
+        "le choix est dans `CHOIX` et `FACULTATIFS`, et les lots retenus dans `data/lots.json`.",
         "",
         "Après le quiz d'entrée, l'utilisateur continue avec des **lots de 3 votes**, au format "
         "d'une séance (ta décision du 8 octobre 2026). 10 votes du quiz + 5 lots de 3 = "
         f"**25 votes** : la précision passe de {precision(10)} % à {precision(25)} %, le seuil "
         "où elle devient fiable. Comme pour le quiz, c'est un choix éditorial : tu retiens 15 "
         "votes et tu corriges ce que tu veux."
-        + (" **Choix fait le 9 octobre 2026** : voir ci-dessous." if CHOIX else ""),
+        + (" **Choix fait le 9 octobre 2026** : voir ci-dessous." if CHOIX else "")
+        + (f" Depuis le 12 octobre 2026, {len(facultatifs)} lots facultatifs les suivent, pour "
+           f"affiner jusqu'à {len(tout)} votes." if facultatifs else ""),
         "",
         "## La carte de vote",
         "",
@@ -467,8 +523,9 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         "",
         f"- **Les 12 thèmes** (liste fermée, celle de l'écran Explorer des maquettes) : "
         f"{', '.join(cartes.THEMES)}.",
-        "- **Les lots** iront dans `data/lots.json` après ton choix : 5 lots numérotés dans "
-        "l'ordre où on les propose, 3 cartes chacun. Les 10 cartes du quiz restent dans "
+        "- **Les lots** sont dans `data/lots.json` : les 5 lots du parcours, numérotés dans "
+        "l'ordre où on les propose, 3 cartes chacun, puis les lots facultatifs "
+        "(`\"facultatif\": true`). Les 10 cartes du quiz restent dans "
         "`data/quiz.json`, au même format : il leur faut un thème de la liste et un titre court "
         "(proposés plus bas, à valider aussi).",
         "- **Question pour toi.** La liste n'a pas de thème « International » ni « Défense » : "
@@ -484,7 +541,7 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         + ", ".join(f"{a} / {b} ({sep_quiz[(a, b)]})" for a, b in faibles)
         + " ; entre parenthèses, le nombre de votes du quiz où leurs positions diffèrent.",
         "- **Varier les thèmes** : 3 thèmes différents par lot, pas plus de "
-        f"{MAX_PAR_THEME} votes par thème sur les 15.",
+        f"{MAX_PAR_THEME} votes par thème sur les 15 votes du parcours.",
         "- **Rédigé d'après le texte adopté** par l'Assemblée, lu en entier (à défaut, le "
         "texte de la commission, quand c'est lui qui a été voté). Chaque carte passe les "
         "contrôles 2, 4, 5 et 6 des fiches : longueurs, question fermée, vocabulaire neutre, "
@@ -508,20 +565,7 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         "| Lot | Votes | Paires les moins séparées qu'il départage | Précision après |",
         "|---|---|---|---|",
     ]
-    cumul = list(quiz)
-    for i, lot in enumerate(lots, 1):
-        avant = pq.separation(cumul, groupes)
-        lot_votes = [votes[n] for n in lot]
-        cumul += lot_votes
-        apres = pq.separation(cumul, groupes)
-        # Les paires les moins séparées jusque-là que ce lot départage.
-        departage = sorted((k for k in avant if apres[k] > avant[k]),
-                           key=lambda k: (avant[k], k))[:PAIRES_AFFICHEES]
-        noms = " ; ".join(f"{par_numero[n].theme} · {par_numero[n].titre} (n° {n})"
-                          for n in lot)
-        paires = ", ".join(f"{a} / {b} ({avant[(a, b)]} → {apres[(a, b)]})"
-                           for a, b in departage) or "—"
-        lignes.append(f"| {i} | {noms} | {paires} | {precision(10 + 3 * i)} % |")
+    lignes += lignes_des_lots(lots, 1, quiz, votes, par_numero, groupes)
     restes = sorted((k for k, s in sep_fin.items() if s <= 1), key=lambda k: (sep_fin[k], k))
     lignes += [
         "",
@@ -529,32 +573,74 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         f"avec les 5 lots, {min(sep_fin.values())} fois"
         + (" (" + ", ".join(f"{a} / {b}" for a, b in restes) + ")." if restes else ".")
         + f" {sum(s >= 3 for s in sep_fin.values())} paires sur {len(sep_fin)} sont séparées "
-        "au moins trois fois sur les 25 votes.",
+        f"au moins trois fois sur les {n_parcours} votes.",
         "",
-        f"**Jumeau.** Sur ces 25 votes, **{au_moins_dix} députés** ont pris position (pour, "
-        "contre, abstention) sur au moins 10 : ce sont ceux qui pourront être comparés à "
-        "quelqu'un qui a tout tranché.",
+        f"**Jumeau.** Sur ces {n_parcours} votes, **{au_moins_dix} députés** ont pris position "
+        f"(pour, contre, abstention) sur au moins {JUMEAU_COMPARABLE} : ce sont ceux qui "
+        "pourront être comparés à quelqu'un qui a tout tranché.",
         "",
         "Précision après 10, 13, 16, 19, 22 et 25 votes : "
         + ", ".join(f"{precision(n)} %" for n in range(10, 26, 3)) + ".",
         "",
+    ]
+    if facultatifs:
+        compte: dict[str, int] = {}
+        for lot in facultatifs:
+            for n in lot:
+                compte[par_numero[n].theme] = compte.get(par_numero[n].theme, 0) + 1
+        repetes = [f"{t} ({k})" for t, k in compte.items() if k > MAX_PAR_THEME]
+        premier, dernier = len(lots) + 1, len(lots) + len(facultatifs)
+        tailles = [n_parcours + cartes.VOTES_PAR_LOT * k for k in range(1, len(facultatifs) + 1)]
+        lignes += [
+            f"## Les {len(facultatifs)} lots facultatifs ({premier} à {dernier}), validés par "
+            "Julien le 12 octobre 2026",
+            "",
+            f"{len(tout) - n_parcours} cartes de la réserve, validées sans correction. Ces lots "
+            f"suivent le lot {len(lots)} pour qui veut affiner sa place : la fin du lot "
+            f"{len(lots)} les propose, rien n'y oblige. Dans l'ordre de passage ; dans chaque "
+            "lot, 3 thèmes différents, le vote le plus concret ou le plus connu en premier."
+            + (f" Le plafond de {MAX_PAR_THEME} votes par thème ne vaut que pour le parcours : "
+               "ici reviennent " + ", ".join(repetes) + "." if repetes else ""),
+            "",
+            "| Lot | Votes | Paires les moins séparées qu'il départage | Votes tranchés | "
+            f"Précision après | Députés comparables (au moins {JUMEAU_COMPARABLE} votes) |",
+            "|---|---|---|---|---|---|",
+            *lignes_des_lots(facultatifs, premier, quiz + choisis, votes, par_numero, groupes,
+                             jumeau=True),
+            "",
+            f"Sur les {len(tout)} votes, la paire la moins séparée l'est "
+            f"{min(sep_tout.values())} fois ; {sum(s >= 3 for s in sep_tout.values())} paires "
+            f"sur {len(sep_tout)} sont séparées au moins trois fois. Les paires les moins "
+            f"séparées : {moins_separees(sep_tout)}.",
+            "",
+            "Précision après " + ", ".join(str(n) for n in tailles[:-1])
+            + f" et {tailles[-1]} votes : " + ", ".join(f"{precision(n)} %" for n in tailles)
+            + ".",
+            "",
+        ]
+    lignes += [
         "## Les candidats",
         "",
         f"{len(candidats)} cartes : les {len(REPRIS)} candidats du quiz non retenus, les "
         f"{len(NOUVEAUX)} rédigés le 8 octobre, puis les {len(AJOUTES)} ajoutés par Julien le "
-        "9 octobre. Les cases cochées sont les votes retenus.",
+        "9 octobre. Les cases cochées sont les votes retenus, dans un lot du parcours ou dans "
+        "un lot facultatif.",
         "",
     ]
     proposes = {n for lot in lots for n in lot}
+    lot_facultatif = {n: i for i, lot in enumerate(facultatifs, len(lots) + 1) for n in lot}
     for i, c in enumerate(candidats, 1):
         v = votes[c.numero]
         d = v["decompte"]
         marque = (" · **retenu**" if CHOIX else " · **proposé**") if c.numero in proposes else ""
+        if c.numero in lot_facultatif:
+            marque = f" · **lot facultatif {lot_facultatif[c.numero]}**"
         nature = "scrutin solennel" if v["solennel"] else "scrutin ordinaire"
         lignes += [
             f"### {i}. {c.theme} · {c.titre} · n° {c.numero}{marque}",
             "",
-            f"- [{'x' if c.numero in proposes else ' '}] **Je le retiens**",
+            f"- [{'x' if c.numero in proposes | set(lot_facultatif) else ' '}] "
+            "**Je le retiens**",
             f"- **Question** : « {c.question} »",
             f"- **Concrètement** : {c.concretement}",
             f"- **Le vote** : {nature}, {v['sort']} le {pq.date_lisible(v['date'])} ; "
@@ -586,6 +672,11 @@ def rapport(candidats: list[Candidat], votes: dict[int, dict], quiz: list[dict],
         "",
         *matrice(sep_fin, groupes, sep_quiz),
         "",
+        *([f"Puis sur les {n_parcours} du parcours et sur les {len(tout)} avec les lots "
+           "facultatifs.",
+           "",
+           *matrice(sep_tout, groupes, sep_fin),
+           ""] if facultatifs else []),
         "## Regardés et écartés",
         "",
         *(f"- {quels} : {raison}." for quels, raison in ECARTES),
@@ -627,16 +718,20 @@ def main(argv: list[str] | None = None) -> int:
     eligibles = [{**votes[c.numero], "theme": c.theme} for c in candidats
                  if votes[c.numero]["participation"] >= PARTICIPATION_MINIMALE]
     lots = CHOIX or composer(quiz, eligibles, groupes)
-    inconnus = {n for lot in lots for n in lot} - set(votes)
-    if inconnus:
-        print(f"CHOIX : votes sans carte {sorted(inconnus)}", file=sys.stderr)
+    facultatifs = FACULTATIFS if CHOIX else []
+    numeros = [n for lot in [*lots, *facultatifs] for n in lot]
+    inconnus = set(numeros) - set(votes)
+    if inconnus or len(numeros) != len(set(numeros)):
+        print(f"CHOIX, FACULTATIFS : votes sans carte {sorted(inconnus)} ou en double",
+              file=sys.stderr)
         return 1
     questions_quiz = {q["numero"]: q["question"] for q in quiz_json}
-    SORTIE.write_text(rapport(candidats, votes, quiz, questions_quiz, groupes, lots),
-                      encoding="utf-8")
+    SORTIE.write_text(rapport(candidats, votes, quiz, questions_quiz, groupes, lots,
+                              facultatifs), encoding="utf-8")
     DONNEES.parent.mkdir(parents=True, exist_ok=True)
     DONNEES.write_text(json.dumps({
         "lots_proposes": lots,
+        "lots_facultatifs": facultatifs,
         "candidats": [{**cartes.vers_json(c.carte(uid(c.numero))),
                        **{k: x for k, x in votes[c.numero].items()
                           if k not in ("deputes", "uid", "numero")}}
@@ -646,19 +741,20 @@ def main(argv: list[str] | None = None) -> int:
     if CHOIX:
         par_numero = {c.numero: c for c in candidats}
         LOTS.write_text(json.dumps(
-            [{"lot": i, "cartes": [cartes.vers_json(par_numero[n].carte(uid(n))) for n in lot]}
-             for i, lot in enumerate(lots, 1)], ensure_ascii=False, indent=1) + "\n",
-            encoding="utf-8")
+            [{"lot": i, **({"facultatif": True} if i > len(lots) else {}),
+              "cartes": [cartes.vers_json(par_numero[n].carte(uid(n))) for n in lot]}
+             for i, lot in enumerate([*lots, *facultatifs], 1)],
+            ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         cartes.lire_lots(LOTS)  # relu et contrôlé
-        # La réserve : les candidats contrôlés non retenus, où la séance de la semaine puise
-        # quand l'agenda annonce moins de 3 votes (pipeline/semaine.py). Ils restent à valider
-        # par Julien avant d'être montrés comme cartes.
-        retenus = {n for lot in lots for n in lot}
+        # La réserve : les candidats contrôlés que Julien n'a pas encore validés, où la séance
+        # de la semaine puise quand l'agenda annonce moins de 3 votes (pipeline/semaine.py).
+        # Une carte validée la quitte : pour un lot, ou pour la séance qui l'a publiée.
         RESERVE.write_text(json.dumps(
             [cartes.vers_json(c.carte(uid(c.numero))) for c in candidats
-             if c.numero not in retenus], ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+             if c.numero not in set(numeros) | EN_SEANCE], ensure_ascii=False, indent=1) + "\n",
+            encoding="utf-8")
         print(f"Écrit : {LOTS.relative_to(RACINE)} et {RESERVE.relative_to(RACINE)}")
-    print(f"{len(candidats)} candidats, lots : {lots}")
+    print(f"{len(candidats)} candidats, lots : {lots}, facultatifs : {facultatifs}")
     print(f"Écrit : {SORTIE.relative_to(RACINE)} et {DONNEES.relative_to(RACINE)}")
     return 0
 

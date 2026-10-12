@@ -38,7 +38,7 @@ from pathlib import Path
 
 import duckdb
 
-from pipeline import export_deputes
+from pipeline import cartes, export_deputes
 
 RACINE = Path(__file__).resolve().parent.parent
 BASE = RACINE / "data" / "site.duckdb"
@@ -286,13 +286,16 @@ def resume(s: dict) -> dict:
     return entree
 
 
-def scrutins_pages(con: duckdb.DuckDBPyConnection,
-                   exclus: set[str] = frozenset()) -> list[str]:
-    """Les scrutins qui ont une page, du plus récent au plus ancien, hors mis de côté."""
-    uids = [u for u, in con.execute(
-        "SELECT uid FROM scrutin WHERE solennel OR list_contains(?, categorie) "
-        "ORDER BY numero DESC", [list(CATEGORIES_PAGES)]).fetchall()]
-    return [u for u in uids if u not in exclus]
+def scrutins_pages(con: duckdb.DuckDBPyConnection, exclus: set[str] = frozenset(),
+                   avec_carte: set[str] = frozenset()) -> list[str]:
+    """Les scrutins qui ont une page, du plus récent au plus ancien, hors mis de côté : les
+    votes solennels, ceux des catégories de CATEGORIES_PAGES, et ceux qui ont une carte de vote
+    (`avec_carte` : quiz et lots), quelle que soit leur catégorie. Une réponse à une carte doit
+    compter dans la matrice : le n° 5106 est le vote de l'article unique d'une résolution."""
+    lignes = con.execute(
+        "SELECT uid, solennel OR list_contains(?, categorie) FROM scrutin "
+        "ORDER BY numero DESC", [list(CATEGORIES_PAGES)]).fetchall()
+    return [u for u, page in lignes if (page or u in avec_carte) and u not in exclus]
 
 
 def ecrire(chemin: Path, contenu) -> None:
@@ -300,12 +303,13 @@ def ecrire(chemin: Path, contenu) -> None:
                       encoding="utf-8")
 
 
-def exporter(base: Path, dossier: Path, jour: date, exclus: set[str] = frozenset()) -> dict:
+def exporter(base: Path, dossier: Path, jour: date, exclus: set[str] = frozenset(),
+             avec_carte: set[str] = frozenset()) -> dict:
     con = duckdb.connect(str(base), read_only=True)
     try:
         rangs = ordre_groupes(con)
         compo = composition(con, rangs, jour)
-        scrutins = [scrutin(con, u, rangs) for u in scrutins_pages(con, exclus)]
+        scrutins = [scrutin(con, u, rangs) for u in scrutins_pages(con, exclus, avec_carte)]
         mat = matrice(con, [x["uid"] for x in scrutins], compo)
     finally:
         con.close()
@@ -330,7 +334,7 @@ def main() -> int:
     if resultat.exists():
         exclus = {s["uid"] for s in
                   json.loads(resultat.read_text(encoding="utf-8"))["scrutins_mis_de_cote"]}
-    donnees = exporter(BASE, EXPORT, date.today(), exclus)
+    donnees = exporter(BASE, EXPORT, date.today(), exclus, cartes.scrutins_avec_carte(RACINE))
     compo = donnees["composition"]
     occupes = sum(not s.get("vacant") for s in compo["sieges"])
     print(f"Composition : {occupes} députés, {SIEGES - occupes} siège(s) vacant(s), "

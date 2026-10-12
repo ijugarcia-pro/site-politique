@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { barre, bascule, famille, ligneGroupe, marge, nature, normaliser, partExprimes, verdict,
-  type Chiffres } from './votes.ts';
+  voix578, type Chiffres } from './votes.ts';
 
 const decompte = { pour: 351, contre: 179, abstention: 7, non_votant: 2, absent: 38 };
 const adopteSolennel: Chiffres = {
@@ -70,4 +70,33 @@ test('familles de votes et recherche sans accents', () => {
   assert.equal(famille({ categorie: 'partie', motion_censure: false }), 'budget');
   assert.equal(famille({ categorie: 'motion de censure', motion_censure: true }), 'censure');
   assert.equal(normaliser("L'Aide à mourir — État"), 'l aide a mourir etat');
+});
+
+test('ta voix de 578e : la majorité est recalculée avec ta voix', () => {
+  // Scrutin n° 6124 : 78 pour, 67 contre, 73 requis, « à 6 voix près ».
+  const officiel = { pour: 78, contre: 67 };
+  // Tu votes contre : 146 exprimés, 74 requis ; 5 députés suffisent (73 – 73 : rejeté).
+  assert.deepEqual(voix578(officiel, 73, 'contre'), { pour: 78, contre: 68, adopte: true, inverser: 5 });
+  // Tu votes pour : 79 – 67, 74 requis ; il en faut 6 (73 – 73).
+  assert.deepEqual(voix578(officiel, 73, 'pour'), { pour: 79, contre: 67, adopte: true, inverser: 6 });
+  // Texte rejeté, 60 pour, 70 contre, 66 requis : avec ta voix, toujours 66 requis sur 131.
+  assert.deepEqual(voix578({ pour: 60, contre: 70 }, 66, 'pour'), { pour: 61, contre: 70, adopte: false, inverser: 5 });
+  assert.deepEqual(voix578({ pour: 60, contre: 70 }, 66, 'contre'), { pour: 60, contre: 71, adopte: false, inverser: 6 });
+});
+
+test('ta voix de 578e peut changer le sort d’un vote très serré', () => {
+  // Scrutin n° 3260 : 185 pour, 184 contre, 185 requis, adopté à 1 voix près.
+  assert.deepEqual(voix578({ pour: 185, contre: 184 }, 185, 'contre'),
+    { pour: 185, contre: 185, adopte: false, inverser: 1 });
+  assert.deepEqual(voix578({ pour: 185, contre: 184 }, 185, 'pour'),
+    { pour: 186, contre: 184, adopte: true, inverser: 1 });
+  // Égalité officielle (rejeté) : ta voix pour fait adopter le texte.
+  assert.deepEqual(voix578({ pour: 72, contre: 72 }, 73, 'pour'), { pour: 73, contre: 72, adopte: true, inverser: 1 });
+});
+
+test('ta voix de 578e : seuil fixe gardé, rien sans suffrages requis', () => {
+  // Motion de censure : 289 voix requises, quel que soit le nombre de votants.
+  assert.deepEqual(voix578({ pour: 271, contre: 0 }, 289, 'pour'), { pour: 272, contre: 0, adopte: false, inverser: 17 });
+  assert.equal(voix578({ pour: 78, contre: 67 }, null, 'pour'), null);
+  assert.equal(voix578({ pour: 78, contre: 67 }, 0, 'pour'), null);
 });

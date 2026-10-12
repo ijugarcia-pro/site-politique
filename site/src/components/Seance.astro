@@ -38,7 +38,7 @@ const questions = cartes.map((q, k) => {
       question: q.question.replace(/ ([?!:;])/g, ' $1'), attente: true, quand: q.quand ?? '',
       date: dates ? `Scrutin solennel · ${q.quand ?? ''}` : '', lien: '', verdict: '',
       adopte: false, decompte: { pour: 0, contre: 0, abstention: 0 }, dissidents: 0, marge: null,
-      puce: puces[k], sieges: '',
+      requis: null, puce: puces[k], sieges: '',
     };
   }
   const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
@@ -47,7 +47,8 @@ const questions = cartes.map((q, k) => {
     question: q.question.replace(/ ([?!:;])/g, ' $1'),
     date: dates ? `${s.solennel ? 'Scrutin solennel' : 'Vote'} du ${dateLisible(s.date)}` : '',
     lien: lienVote(s), verdict: verdict(s), adopte: s.sort === 'adopté', decompte: s.decompte,
-    dissidents: s.dissidents, marge: s.voix_pour_inverser, puce: puces[k], attente: false,
+    dissidents: s.dissidents, marge: s.voix_pour_inverser, requis: s.requis, puce: puces[k],
+    attente: false,
     quand: '', sieges: compo.sieges.map((c) => {
       if (c.vacant || !c.depute) return 'V';
       const x = votes.get(c.depute);

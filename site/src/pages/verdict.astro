@@ -29,7 +29,7 @@ const verdicts = seance.flatMap((v) => {
     puce: v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6',
     quand: `${s.solennel ? 'Scrutin solennel' : 'Vote'} du ${dateLisible(s.date)}`,
     verdict: verdict(s), adopte: s.sort === 'adopté', marge: marge(s), decompte: s.decompte,
-    inverser: s.voix_pour_inverser, lien: lienVote(s),
+    requis: s.requis, lien: lienVote(s),
     sieges: compo.sieges.map((c) => {
       if (c.vacant || !c.depute) return 'V';
       const x = votes.get(c.depute);
@@ -144,10 +144,11 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   import { profil, type Matrice } from '../lib/profil.ts';
   import { Salle } from '../lib/salle.ts';
   import { etatSeance } from '../lib/seances.ts';
+  import { voix578 } from '../lib/votes.ts';
 
   interface Verdict {
     cle: string; uid: string; titre: string; verdict: string; adopte: boolean;
-    decompte: { pour: number; contre: number; abstention: number }; inverser: number | null;
+    decompte: { pour: number; contre: number; abstention: number }; requis: number | null;
     sieges: string;
   }
   const { lundi, verdicts } = JSON.parse(
@@ -227,9 +228,13 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
           'Ton pronostic reste dans ton navigateur, comme tes réponses.'));
       }
       if (a) {
-        lignes.push(ligne('voix', 'Ta voix de 578e',
-          `Avec la tienne : ${v.decompte.pour + (a === 'pour' ? 1 : 0)} pour, ${v.decompte.contre + (a === 'contre' ? 1 : 0)} contre.`
-          + (v.inverser ? ` Il aurait suffi que ${pluriel(v.inverser, 'député')} change${v.inverser > 1 ? 'nt' : ''} d’avis pour que le texte soit ${v.adopte ? 'rejeté' : 'adopté'}.` : '')));
+        // Le décompte et la marge avec ta voix : la majorité requise est recalculée (lib/votes.ts).
+        const x = voix578(v.decompte, v.requis, a);
+        const avec = `Avec la tienne : ${v.decompte.pour + (a === 'pour' ? 1 : 0)} pour, ${v.decompte.contre + (a === 'contre' ? 1 : 0)} contre`;
+        lignes.push(ligne('voix', 'Ta voix de 578e', !x ? `${avec}.`
+          : x.adopte !== v.adopte
+            ? `${avec} : ta voix aurait changé le résultat, le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
+            : `${avec}. Il aurait alors suffi que ${pluriel(x.inverser, 'député')} change${x.inverser > 1 ? 'nt' : ''} d’avis pour que le texte soit ${x.adopte ? 'rejeté' : 'adopté'}.`));
       }
       document.querySelector(`[data-lignes="${k}"]`)!.replaceChildren(...lignes);
       const sig = [jumeau ? 'ton jumeau signalé' : null].filter(Boolean);

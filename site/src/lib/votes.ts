@@ -80,6 +80,32 @@ export function marge(s: Chiffres): string | null {
   return `à ${pluriel(n, 'voix', 'voix')} près`;
 }
 
+export interface Voix578 {
+  pour: number;
+  contre: number;
+  /** Le sort du texte si ta voix avait compté. */
+  adopte: boolean;
+  /** Les députés qui devraient alors changer de camp pour inverser ce sort. */
+  inverser: number;
+}
+
+/** « Ta voix de 578e » : le résultat si ta voix s'ajoutait à celles des députés. Les suffrages
+ *  exprimés augmentent d'un : la majorité requise est donc recalculée (la moitié des suffrages
+ *  exprimés, plus une voix), puis la règle du projet s'applique à ce nouveau décompte
+ *  (P − R + 1 si adopté, R − P si rejeté). Quand le seuil publié n'est pas cette majorité
+ *  (motion de censure : majorité des membres), il est gardé tel quel. Ta voix peut à elle seule
+ *  changer le sort d'un vote très serré : `adopte` le dit. */
+export function voix578(decompte: { pour: number; contre: number }, requis: number | null,
+  reponse: 'pour' | 'contre'): Voix578 | null {
+  if (requis === null || requis <= 0) return null;
+  const majorite = (exprimes: number) => Math.floor(exprimes / 2) + 1;
+  const pour = decompte.pour + (reponse === 'pour' ? 1 : 0);
+  const contre = decompte.contre + (reponse === 'contre' ? 1 : 0);
+  const r = requis === majorite(decompte.pour + decompte.contre) ? majorite(pour + contre) : requis;
+  const adopte = pour >= r;
+  return { pour, contre, adopte, inverser: adopte ? pour - r + 1 : r - pour };
+}
+
 /** Part des suffrages exprimés (pour + contre) qui va dans le sens d'une réponse. */
 export function partExprimes(s: Pick<Chiffres, 'decompte'>, reponse: 'pour' | 'contre'): number {
   const exprimes = s.decompte.pour + s.decompte.contre;

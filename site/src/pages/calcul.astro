@@ -4,8 +4,8 @@
 // résultat vient d'un vrai scrutin ; l'exemple d'accord est un calcul d'école, présenté comme
 // tel.
 import Base from '../layouts/Base.astro';
-import { dateLisible, lienVote, scrutins } from '../lib/donnees.ts';
-import { lisse, NIVEAUX, precision } from '../lib/profil.ts';
+import { dateLisible, lienVote, lotsDeVotes, lotsDuParcours, questionsQuiz, scrutins } from '../lib/donnees.ts';
+import { lisse, NIVEAUX, precision, VOTES_FIABLES } from '../lib/profil.ts';
 import { bascule } from '../lib/votes.ts';
 
 const exemple = scrutins().find((v) => v.solennel && !v.motion_censure && v.requis
@@ -13,6 +13,12 @@ const exemple = scrutins().find((v) => v.solennel && !v.motion_censure && v.requ
 const P = exemple.decompte.pour;
 const R = exemple.requis!;
 const pourcent = (x: number) => `${Math.round(100 * x)} %`;
+// Les paliers de la précision : après le quiz, puis après chaque lot (parcours et facultatifs).
+const lots = lotsDeVotes();
+const parLot = lots[0].length;
+const parcours = lotsDuParcours();
+const facultatifs = lots.length - parcours;
+const paliers = [0, ...lots].map((_, k) => questionsQuiz().length + parLot * k);
 const niveaux = NIVEAUX.map((t, k) => ({
   libelle: t.libelle, couleur: t.couleur,
   borne: k === 0 ? `moins de ${t.jusqua.toLocaleString('fr-FR')}`
@@ -54,10 +60,10 @@ const niveaux = NIVEAUX.map((t, k) => ({
     </ul>
 
     <h2 id="precision">La précision</h2>
-    <p> Avec <em>n</em> votes tranchés (pour ou contre), la précision vaut <strong>1 − e<sup>−n/20</sup></strong> : elle monte vite au début, puis plus lentement. Elle devient fiable vers 25 votes. </p>
+    <p> Avec <em>n</em> votes tranchés (pour ou contre), la précision vaut <strong>1 − e<sup>−n/20</sup></strong> : elle monte vite au début, puis plus lentement. Elle devient fiable vers {VOTES_FIABLES} votes : ceux du quiz et des {parcours} lots de {parLot} votes qui le suivent ({pourcent(precision(VOTES_FIABLES))}). {facultatifs > 0 && `Les ${facultatifs} lots facultatifs l'affinent ensuite, jusqu'à ${pourcent(precision(paliers[paliers.length - 1]))} après ${paliers[paliers.length - 1]} votes.`} </p>
     <table>
-      <thead><tr><th scope="col">Votes tranchés</th>{[10, 13, 16, 19, 22, 25, 40].map((n) => <th scope="col">{n}</th>)}</tr></thead>
-      <tbody><tr><th scope="row">Précision</th>{[10, 13, 16, 19, 22, 25, 40].map((n) => <td>{pourcent(precision(n))}</td>)}</tr></tbody>
+      <thead><tr><th scope="col">Votes tranchés</th>{paliers.map((n) => <th scope="col">{n}</th>)}</tr></thead>
+      <tbody><tr><th scope="row">Précision</th>{paliers.map((n) => <td>{pourcent(precision(n))}</td>)}</tr></tbody>
     </table>
 
     <h2 id="censure">Les motions de censure</h2>

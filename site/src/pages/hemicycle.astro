@@ -128,8 +128,8 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 
 <script>
   import { deputeChoisi, reponses } from '../lib/navigateur.ts';
-  import { comparer, colonnes, initiales, niveau, profil, type Classe, type LigneDepute,
-    type Matrice } from '../lib/profil.ts';
+  import { comparer, colonnes, initiales, niveau, profil, VOTES_FIABLES, type Classe,
+    type LigneDepute, type Matrice } from '../lib/profil.ts';
   import { libelleCirco } from '../lib/geo.ts';
   import { pastille, Salle } from '../lib/salle.ts';
 
@@ -227,9 +227,9 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     $('[data-precision]').textContent = `${prec} %`;
     document.querySelectorAll<HTMLElement>('[data-segments] span')
       .forEach((s, k) => s.classList.toggle('plein', k < Math.round(p.precision * 10)));
-    const reste = Math.max(0, 25 - p.reponses);
+    const reste = Math.max(0, VOTES_FIABLES - p.reponses);
     $('[data-precision-note]').textContent = reste
-      ? `Fiable à partir de 25 votes : encore ${reste} à trancher.`
+      ? `Fiable à partir de ${VOTES_FIABLES} votes : encore ${reste} à trancher.`
       : 'Ton résultat est fiable. Chaque vote l\'affine encore.';
 
     $('[data-trio]').hidden = false;

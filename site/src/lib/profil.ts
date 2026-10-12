@@ -48,6 +48,11 @@ export const lisse = (identiques: number, communs: number) => (identiques + 2) /
 
 export const precision = (n: number) => 1 - Math.exp(-n / 20);
 
+/** Le nombre de votes tranchés à partir duquel la place est dite fiable (précision de 71 %) :
+ *  ceux du quiz et des lots du parcours (data/quiz.json, data/lots.json ; lots.test.ts vérifie
+ *  que les deux restent d'accord). Les lots facultatifs affinent au-delà. */
+export const VOTES_FIABLES = 25;
+
 /** Tes réponses, traduites en [indice du vote dans la matrice, lettre]. */
 export function colonnes(matrice: Pick<Matrice, 'votes'>,
   reponses: Record<string, Reponse>): [number, string][] {

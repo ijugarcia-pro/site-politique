@@ -8,14 +8,15 @@
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
 import Seance from '../components/Seance.astro';
-import { lotsDeVotes, questionsQuiz } from '../lib/donnees.ts';
+import { lotsDuParcours, questionsQuiz } from '../lib/donnees.ts';
 
 // Les puces de thème de la maquette, dans l'ordre des questions.
 const PUCES = ['#E8E1FF:#5B35E6', '#FFE1EF:#B5175A', '#E3F6D5:#3B7F12', '#FFF1CC:#9A5B00',
   '#DDF1FF:#0B6AAE', '#D9F7EA:#0C7F57', '#FFE6DA:#B83C0A', '#E6E9F0:#3A4256',
   '#FFF6C2:#7A6000', '#E2E5FF:#3443B0'];
 const cartes = questionsQuiz();
-const nLots = lotsDeVotes().length;
+// La suite du quiz : les lots du parcours ; les lots facultatifs ne se proposent qu'après eux.
+const nLots = lotsDuParcours();
 ---
 <Base titre="Le quiz d'entrée" focus
   description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
@@ -93,7 +94,7 @@ const nLots = lotsDeVotes().length;
 <script>
   import { lireJSON, repondre } from '../lib/navigateur.ts';
   import { etatLots, prochainLot } from '../lib/lots.ts';
-  import { initiales, niveau, partCommeToi, teinte, type Reponse } from '../lib/profil.ts';
+  import { initiales, niveau, partCommeToi, teinte, VOTES_FIABLES, type Reponse } from '../lib/profil.ts';
   import { $, mesReps, pluriel, seance, segments } from '../lib/seance.ts';
   import { dessiner, enImage, type DonneesStories, type TypeStory } from '../lib/stories.ts';
   import { pastille } from '../lib/salle.ts';
@@ -169,9 +170,9 @@ const nLots = lotsDeVotes().length;
     }));
     $('[data-precision]').textContent = `${Math.round(100 * p.precision)} %`;
     segments('[data-segments]', p.precision);
-    const reste = Math.max(0, 25 - p.reponses);
+    const reste = Math.max(0, VOTES_FIABLES - p.reponses);
     $('[data-note-precision]').textContent = reste
-      ? `Fiable à partir de 25 votes : encore ${reste} à trancher.`
+      ? `Fiable à partir de ${VOTES_FIABLES} votes : encore ${reste} à trancher.`
       : 'Ton résultat est fiable. Chaque vote l\'affine encore.';
     // La suite (frame ③) : le prochain lot de 3 votes ; ton hémicycle quand les lots sont faits.
     if (prochainLot(etatLots().faits, nLots) === null) {

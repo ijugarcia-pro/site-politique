@@ -247,13 +247,20 @@ export interface CarteVote extends QuestionQuiz {
   titre: string;
 }
 
-/** Les 5 lots de 3 votes qui suivent le quiz (data/lots.json, choix de Julien, t43), dans
- *  l'ordre de passage. */
-export function lotsDeVotes(): CarteVote[][] {
+interface LotDeVotes { lot: number; facultatif?: boolean; cartes: CarteVote[] }
+
+function lireLots(): LotDeVotes[] {
   const chemin = resolve(process.cwd(), '..', 'data', 'lots.json');
-  const lots = JSON.parse(readFileSync(chemin, 'utf-8')) as { lot: number; cartes: CarteVote[] }[];
-  return lots.map((l) => l.cartes);
+  return JSON.parse(readFileSync(chemin, 'utf-8')) as LotDeVotes[];
 }
+
+/** Les lots de 3 votes qui suivent le quiz (data/lots.json, choix de Julien), dans l'ordre de
+ *  passage : ceux du parcours (t43), puis les lots facultatifs, pour affiner (t47). */
+export const lotsDeVotes = (): CarteVote[][] => lireLots().map((l) => l.cartes);
+
+/** Le nombre de lots du parcours : les premiers de data/lots.json ; les suivants sont
+ *  facultatifs, proposés après eux sans jamais être imposés. */
+export const lotsDuParcours = (): number => lireLots().filter((l) => !l.facultatif).length;
 
 export const matrice = () => lire<Matrice>('site/matrice.json', EXPORT_SITE);
 

@@ -248,6 +248,7 @@ site/          le site (Astro), créé en phase 2
 - Julien lit `docs/faisabilite.md` et tranche. Décision consignée dans `docs/decisions.md` et dans le journal du suivi.
 - **No-go ou go partiel :** Claude propose le scénario de repli (par ex. sans « Ce que ça change » sur les types de scrutins mal rattachés, ou verdict du matin).
 - **Réalisé (7 oct.) :** go de Julien pour la phase 1. La formule du verdict reste en suspens jusqu'à la fin du relevé de t03 (vers le 28 oct.) ; « le verdict du matin » s'applique par défaut d'ici là. Décision consignée dans `docs/decisions.md`.
+- **Précision (12 oct.) :** la fin du relevé de t03 est repoussée vers le 2 nov. (les trois semaines repartent du 12 oct.), mais Julien maintient la formule du verdict au 28 oct. : trois mardis de votes solennels (13, 20 et 27 oct.) auront été relevés. Voir `docs/decisions.md`.
 
 ---
 

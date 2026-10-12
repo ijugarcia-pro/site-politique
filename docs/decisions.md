@@ -216,4 +216,9 @@
 ## 2026-10-12 · Relevé du délai : les trois semaines repartent du 12 octobre
 - Décision (Julien) : les « trois semaines sans intervention » du critère de fin de t03 sont comptées à partir du 12 octobre 2026, date de la fusion du correctif des téléchargements (PR #14), et non plus du 7 octobre.
 - Raison : 4 relevés ont échoué les 10 et 11 octobre et il a fallu intervenir ; la période du 7 au 12 octobre ne compte donc pas comme un relevé sans intervention.
-- Conséquence : t03 sera cochée vers le 2 novembre au lieu du 28 octobre, si aucun relevé ne demande d'intervention d'ici là. Question ouverte : la formule du verdict devait être tranchée vers le 28 octobre, à la fin du relevé (décision du 7 octobre, t10) ; à Julien de dire si cette date suit, ou reste au 28 octobre, où trois mardis de votes solennels (13, 20 et 27 octobre) auront été relevés.
+- Conséquence : t03 sera cochée vers le 2 novembre au lieu du 28 octobre, si aucun relevé ne demande d'intervention d'ici là. La date de la formule du verdict ne suit pas : voir l'entrée suivante.
+
+## 2026-10-12 · Formule du verdict : la date du 28 octobre est maintenue
+- Décision (Julien) : la formule du verdict reste à trancher vers le 28 octobre 2026, même si t03 n'est cochée que vers le 2 novembre.
+- Raison : le critère posé le 7 octobre, un délai mesuré sur au moins trois mardis de votes solennels, sera rempli au 28 octobre (mardis 13, 20 et 27 octobre). Il ne dépend pas des trois semaines sans intervention de t03.
+- Conséquence : docs/faisabilite.md sera complété vers le 28 octobre avec les mesures disponibles à cette date. À lire avec la réserve du 12 octobre : le délai des scrutins 8661 à 8672 est peut-être surestimé de 6 h. D'ici là, « le verdict du matin » reste la formule par défaut.

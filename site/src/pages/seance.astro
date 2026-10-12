@@ -10,7 +10,7 @@
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
 import Seance from '../components/Seance.astro';
-import { dateLisible, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
+import { avancementSeance, dateLisible, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
 import { puceTheme } from '../lib/themes.ts';
 
 const sem = semaine();
@@ -29,6 +29,8 @@ const tampon = `${Number(sem.lundi.slice(8, 10))} ${MOIS_COURTS[Number(sem.lundi
 // Les rendez-vous du verdict : les votes annoncés pas encore tenus.
 const attendus = votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
 const premier = attendus[0];
+// Séance tranchée en partie : le lien vers le verdict dit « 1/3 ».
+const etape = avancementSeance(sem);
 const donnees = JSON.stringify({
   lundi: sem.lundi, cles: votes.map((v) => v.cle), retires,
   quand: premier ? quandVote(premier) : null,
@@ -112,7 +114,7 @@ const tuile = premier ? {
           <ol class="tampons" data-tampons aria-label="Tes dernières séances"></ol>
         </div>
         <div class="actions">
-          <a class="b-principal" href="/verdict/" data-fin-principal>Voir le verdict →</a>
+          <a class="b-principal" href="/verdict/" data-fin-principal>Voir le verdict{etape.etat === 'partiel' ? ` · ${etape.fraction}` : ''} →</a>
           <a class="b-second" href="/">Retour à l'accueil</a>
         </div>
       </div>

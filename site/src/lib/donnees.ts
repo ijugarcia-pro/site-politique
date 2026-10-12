@@ -2,6 +2,7 @@
 // si un fichier manque, le build échoue, et rien n'est publié.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Matrice } from './profil.ts';
+import { avancement, type Avancement } from './seances.ts';
 import { resolve } from 'node:path';
 
 const EXPORT = process.env.EXPORT_DIR ?? resolve(process.cwd(), '..', 'export');
@@ -285,6 +286,15 @@ export const semaine = () =>
 /** Le scrutin s'il a sa page exportée (un scrutin mis de côté par les contrôles n'en a pas). */
 export const scrutinPublie = (uid: string): Scrutin | null =>
   existsSync(resolve(EXPORT, `site/scrutins/${uid}.json`)) ? scrutin(uid) : null;
+
+/** Un vote de la séance est jugé quand son scrutin est publié : le verdict peut le montrer. */
+export const voteJuge = (v: VoteSemaine): boolean =>
+  v.statut === 'voté' && !!v.scrutin && existsSync(resolve(EXPORT, `site/scrutins/${v.scrutin.uid}.json`));
+
+/** Où en est le verdict de la séance (les votes retirés de l'agenda ne comptent pas). */
+export const avancementSeance = (sem: Semaine): Avancement =>
+  avancement(sem.votes.filter((v) => v.statut !== 'retiré')
+    .map((v) => ({ juge: voteJuge(v), date: v.date, debut: v.debut })));
 
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 

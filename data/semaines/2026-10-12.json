@@ -1,0 +1,39 @@
+{
+ "lundi": "2026-10-12",
+ "vacances": false,
+ "votes": [
+  {
+   "cle": "RUANR5L17S2027IDS30940PT53237",
+   "type": "annonce",
+   "date": "2026-10-13",
+   "debut": "2026-10-13 13:00:00+00",
+   "objet": "Vote solennel sur la proposition de loi apportant une réponse intégrale au phénomène de violences sexuelles et sexistes contre les femmes et les enfants",
+   "nature": "ensemble",
+   "dossier_uid": "DLR5L17N54776",
+   "dossier": "Apporter une réponse intégrale au phénomène des violences sexuelles et sexistes contre les femmes et les enfants",
+   "groupe": "SOC"
+  },
+  {
+   "cle": "RUANR5L17S2027IDS30940PT53238",
+   "type": "annonce",
+   "date": "2026-10-13",
+   "debut": "2026-10-13 13:00:00+00",
+   "objet": "Vote solennel sur la proposition de loi organique visant à adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
+   "nature": "ensemble",
+   "dossier_uid": "DLR5L17N54777",
+   "dossier": "Adapter l'autorité judiciaire à la lutte contre les violences sexuelles et intrafamiliales",
+   "groupe": "SOC"
+  },
+  {
+   "cle": "scrutin:VTANR5L17V6124",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V6124",
+   "numero": 6124,
+   "date": "2026-04-09",
+   "objet": "l'ensemble de la proposition de loi visant à renforcer la pénalisation de l’organisation de rave-parties (première lecture).",
+   "dossier_uid": "DLR5L17N51711",
+   "dossier": "Renforcer la pénalisation de l’organisation de rave-parties",
+   "reserve": true
+  }
+ ]
+}

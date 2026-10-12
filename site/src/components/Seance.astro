@@ -206,8 +206,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .bulle :global(strong) { color: var(--violet-fonce); }
   .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
     border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
-  /* L'enchaînement des cartes (A4 + A1) : la carte précédente, recopiée, s'envole par-dessus. */
-  .question { position: relative; }
+  /* L'arrivée de la carte suivante (A1). */
   .carte-question:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
   @media (prefers-reduced-motion: reduce) { .carte-question:global(.arrive) { animation: fondu var(--dur-xs) linear both; } }
   .puces { display: flex; flex-wrap: wrap; gap: 8px; }

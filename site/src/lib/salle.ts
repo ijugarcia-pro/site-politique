@@ -3,7 +3,7 @@
 // siège. Les positions sont celles du repère de lib/hemicycle.ts, converties en pourcentages.
 
 import { places, point, type Place } from './hemicycle.ts';
-import { quandVisible, sequence } from './motion.ts';
+import { mouvementReduit, quandVisible, sequence } from './motion.ts';
 import { initiales } from './profil.ts';
 
 export interface InfoGroupe { s: string; l: string; c: string; ni: boolean }
@@ -113,6 +113,8 @@ export class Salle {
       else { this.colorer(rendu); this.centre(`${centre.pour} – ${centre.contre}`, centre.legende); }
     };
     this.passerOnde = passer;
+    // Mouvement réduit : rien à attendre, l'état final tout de suite.
+    if (mouvementReduit()) { passer(); return { passer }; }
     quandVisible(this.racine, () => {
       if (fini) return;
       suite = sequence([

@@ -294,3 +294,8 @@
 - Décision (Julien, retour de test) : dans Explorer, chaque vote que le visiteur a déjà tranché porte une pastille « ✓ Tranché · pour » (ou « contre »), et un filtre « À trancher / Tranchés » s'ajoute aux filtres par type (un second appui retire le filtre). « À trancher » ne propose pas les motions de censure, qui ne comptent pas dans l'hémicycle. Les boutons « Trancher d'autres votes » (fin des lots, résultat du quiz, fin de séance, accueil) ouvrent `/explorer/#a-trancher`, filtre déjà appliqué.
 - Raison : une fois les lots faits, le visiteur arrivait sur la liste complète des votes sans savoir lesquels il avait déjà tranchés.
 - Conséquence : la pastille et le filtre se calculent dans le navigateur, à partir des réponses gardées sur l'appareil (`578e.reponses.v1`) : rien n'est envoyé. `LigneVote` porte désormais l'identifiant du scrutin (`data-uid`).
+
+## 2026-10-13 · Précision : la formule reste, le texte dit le chiffre
+- Décision (Julien) : la précision reste `1 − e^(−n/20)` (CLAUDE.md) : 71 % à 25 votes (seuil « fiable »), 84 % à 37, sans jamais atteindre 100 %. Une fois la place fiable, les textes de fin (lots, résultat du quiz, Mon hémicycle) disent le chiffre : « Ta place est fiable : 85 % de précision ; chaque vote l'affine encore. »
+- Raison : retour de test : à 38 votes, la jauge à 85 % semblait bloquée. Afficher 100 % après 25 votes promettrait une certitude que 25 votes ne donnent pas.
+- Conséquence : aucun changement de calcul ; seuls ces textes changent.

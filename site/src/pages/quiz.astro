@@ -174,7 +174,7 @@ const nLots = lotsDuParcours();
     const reste = Math.max(0, VOTES_FIABLES - p.reponses);
     $('[data-note-precision]').textContent = reste
       ? `Fiable à partir de ${VOTES_FIABLES} votes : encore ${reste} à trancher.`
-      : 'Ton résultat est fiable. Chaque vote l\'affine encore.';
+      : `Ton résultat est fiable : ${Math.round(100 * p.precision)} % de précision ; chaque vote l'affine encore.`;
     // La suite (frame ③) : le prochain lot de 3 votes ; ton hémicycle quand les lots sont faits.
     if (prochainLot(etatLots().faits, nLots) === null) {
       $<HTMLAnchorElement>('[data-suite]').href = '/hemicycle/';

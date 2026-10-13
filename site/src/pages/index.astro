@@ -7,6 +7,7 @@
 // dépend du visiteur est calculé dans son navigateur.
 import Base from '../layouts/Base.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
+import SerieGelee from '../components/SerieGelee.astro';
 import { avancementSeance, composition, dateLisible, etat, lienVote, lotsDeVotes, lotsDuParcours, majuscule,
   questionSeance, quandVote, scrutins, semaine } from '../lib/donnees.ts';
 import { adopte, marge, verdict } from '../lib/votes.ts';
@@ -49,7 +50,7 @@ const rdv = attendu ? {
   heure: attendu.debut ? `${Number(attendu.debut.slice(11, 13))} h` : '',
 } : null;
 const donnees = JSON.stringify({
-  seance: { lundi: sem.lundi, attente: !!attendu,
+  seance: { lundi: sem.lundi, attente: !!attendu, vacances: sem.vacances,
     historique: sem.historique.map((h) => [h.lundi, h.vacances]),
     votes: seance.map((v) => ({ cle: v.cle, theme: v.carte?.theme ?? 'Vote solennel',
       puce: v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6', titre: questionSeance(v).titre })) },
@@ -110,6 +111,7 @@ const donnees = JSON.stringify({
           </a>
         )}
       </section>
+      {sem.vacances && <SerieGelee />}
 
       <section class="encadre" aria-labelledby="titre-verdicts">
         <div class="titre-section">
@@ -193,13 +195,14 @@ const donnees = JSON.stringify({
   import { libelleCirco } from '../lib/geo.ts';
   import { ANCRE_AFFINER, etatLots, prochainLot } from '../lib/lots.ts';
   import { etatSeance, seancesFaites, serie } from '../lib/seances.ts';
+  import { montrerGel } from '../lib/gel.ts';
   import { initiales, niveau, profil, teinte, type Matrice } from '../lib/profil.ts';
   import { places, point, R_INTERIEUR } from '../lib/hemicycle.ts';
 
   interface Carte { uid: string; theme: string; titre: string; puce: string }
   const { seance, lots, parcours, derniers, sieges } = JSON.parse(
     document.querySelector('[data-donnees-accueil]')!.textContent!) as {
-    seance: { lundi: string; attente: boolean; historique: [string, boolean][];
+    seance: { lundi: string; attente: boolean; vacances: boolean; historique: [string, boolean][];
       votes: { cle: string; theme: string; puce: string; titre: string }[] };
     lots: Carte[][]; parcours: number; derniers: { uid: string; gagnant: 'pour' | 'contre'; pour: number; contre: number }[];
     sieges: [string | null, string | null][];
@@ -208,6 +211,12 @@ const donnees = JSON.stringify({
   const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   const n = Object.keys(reponses()).length;
   $('[data-nb-reponses]').textContent = pluriel(n, 'vote');
+
+  // Trêve parlementaire : la série est gelée, elle attend la reprise (F3).
+  if (seance.vacances) {
+    const vac = new Set(seance.historique.filter(([, v]) => v).map(([l]) => l));
+    montrerGel(serie(seancesFaites(), vac, seance.lundi), seance.lundi);
+  }
 
   // Les 3 lignes du ticket : la puce du thème, le titre, « ✓ voté » ou « ≈ 40 s ».
   const remplirItems = (lignes: { theme: string; puce: string; titre: string; fait: boolean }[]) => {

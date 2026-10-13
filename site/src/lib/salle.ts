@@ -3,6 +3,7 @@
 // siège. Les positions sont celles du repère de lib/hemicycle.ts, converties en pourcentages.
 
 import { places, point, type Place } from './hemicycle.ts';
+import { quandVisible, sequence } from './motion.ts';
 import { initiales } from './profil.ts';
 
 export interface InfoGroupe { s: string; l: string; c: string; ni: boolean }
@@ -72,6 +73,60 @@ export class Salle {
   centre(chiffre: string, legende: string) {
     this.el('chiffre').textContent = chiffre;
     this.el('legende').textContent = legende;
+  }
+
+  /** « pour – contre » au centre, comptés de 0 au total (R5). */
+  compter(pour: number, contre: number, legende: string, duree = 800) {
+    const lu = document.createElement('span');
+    lu.className = 'visuellement-cache';
+    lu.textContent = `${pour} – ${contre}`;
+    const vu = document.createElement('span');
+    vu.setAttribute('aria-hidden', 'true');
+    const nombre = (n: number) => {
+      const c = document.createElement('span');
+      c.className = 'compte';
+      c.style.cssText = `--from:0;--to:${n};--dur:${duree}ms`;
+      return c;
+    };
+    vu.append(nombre(pour), ' – ', nombre(contre));
+    this.el('chiffre').replaceChildren(lu, vu);
+    this.el('legende').textContent = legende;
+  }
+
+  private passerOnde: (() => void) | null = null;
+
+  /** La révélation d'un vote (R1 + R5) : quand la salle est à l'écran, les sièges prennent leur
+   *  couleur en onde, du rang intérieur vers l'extérieur, et le centre compte les voix ; à
+   *  1 150 ms, les sièges indiqués s'estompent. La même onde quel que soit ton vote. `passer()`
+   *  donne tout de suite l'état final. */
+  reveler(rendu: (i: number, depute: string) => Rendu,
+    centre: { pour: number; contre: number; legende: string; duree?: number }): { passer(): void } {
+    this.passerOnde?.();
+    const svg = this.el('svg');
+    let suite: { passer(): void } | null = null;
+    let fini = false;
+    const passer = () => {
+      if (fini) return;
+      fini = true;
+      if (this.passerOnde === passer) this.passerOnde = null;
+      if (suite) suite.passer();
+      else { this.colorer(rendu); this.centre(`${centre.pour} – ${centre.contre}`, centre.legende); }
+    };
+    this.passerOnde = passer;
+    quandVisible(this.racine, () => {
+      if (fini) return;
+      suite = sequence([
+        { a: 0, faire: () => {
+          this.colorer((i, d) => ({ ...rendu(i, d), estompe: false }));
+          svg.classList.remove('onde');
+          void svg.getBoundingClientRect();
+          svg.classList.add('onde');
+          this.compter(centre.pour, centre.contre, centre.legende, centre.duree);
+        } },
+        { a: 1150, faire: () => { this.colorer(rendu); fini = true; } },
+      ], this.racine);
+    });
+    return { passer };
   }
 
   libre(visible: boolean) {

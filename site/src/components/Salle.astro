@@ -5,7 +5,7 @@
 // la carte d'un siège et le chiffre du centre. Les pages colorent les sièges et placent les
 // repères avec lib/salle.ts.
 import type { Groupe, Siege } from '../lib/donnees.ts';
-import { arc, etiquettes, HAUTEUR, LARGEUR, milieu, parts, places, R_EXTERIEUR,
+import { arc, delaiOnde, etiquettes, HAUTEUR, LARGEUR, milieu, parts, places, R_EXTERIEUR,
   RAYON_SIEGE } from '../lib/hemicycle.ts';
 import { couleurGroupe, encreSur } from '../lib/couleurs.ts';
 
@@ -56,8 +56,8 @@ const occupes = sieges.filter((s) => !s.vacant).length;
     {liste.map((p, i) => (
       <circle data-i={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={RAYON_SIEGE}
         class:list={['siege', { vacant: sieges[i].vacant }]}
-        style={sieges[i].vacant || !couleursGroupes ? undefined
-          : `fill:${couleurGroupe(parUid.get(sieges[i].groupe ?? '')?.couleur)}`}></circle>
+        style={`--d:${delaiOnde(p.rangee, i)}ms` + (sieges[i].vacant || !couleursGroupes ? ''
+          : `;fill:${couleurGroupe(parUid.get(sieges[i].groupe ?? '')?.couleur)}`)}></circle>
     ))}
   </svg>
   {libelles.map((e) => (
@@ -104,6 +104,15 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .siege:global(.estompe) { opacity: .38; }
   .siege:global(.siege-jumeau) { r: 11.4px; fill: #6A3DF0 !important; stroke: #7C4DFF; stroke-width: 3; opacity: 1; }
   .siege:hover { stroke: var(--texte); stroke-width: 2.4; }
+  /* L'onde de la révélation (R1) : chaque siège prend sa couleur à son tour, du centre vers
+     l'extérieur. Repli mesuré (docs/decisions.md, 13 oct.) : la couleur seule, sans le
+     grossissement des sièges, qui faisait décrocher l'affichage. */
+  svg:global(.onde) .siege { animation: vague 320ms var(--ease-doux) var(--d) backwards; }
+  @keyframes vague { 0% { fill: #DFE3EB; } }
+  @media (prefers-reduced-motion: reduce) {
+    svg:global(.onde) .siege { animation: none; }
+    .siege { transition-duration: .2s; }
+  }
   /* Les étiquettes grandissent avec le dessin : elles gardent leur place entre voisines. */
   .etiquette {
     position: absolute; z-index: 1; padding: 0.08em 0.6em; border-radius: 999px;

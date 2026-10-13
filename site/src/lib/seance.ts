@@ -4,6 +4,7 @@
 import { reponses as mesReponses } from './navigateur.ts';
 import { colonnes, niveau, precision, profil, type Matrice, type Profil, type Reponse } from './profil.ts';
 import { jauge } from './jauge.ts';
+import { mouvementReduit, quandVisible } from './motion.ts';
 import { Salle } from './salle.ts';
 import { voix578 } from './votes.ts';
 
@@ -147,6 +148,7 @@ export function seance({ libelleContinuer, rang }: Options) {
     const rv = $('[data-revelation]');
     if (rv.hidden || (e.target as Element).closest?.('[data-reponse]')) return;
     onde?.passer();
+    $('[data-ta-voix]').classList.remove('attend');
     rv.getAnimations({ subtree: true }).forEach((a) => a.finish());
   });
 
@@ -235,13 +237,44 @@ export function seance({ libelleContinuer, rang }: Options) {
     const inverser = (n: number, quoi: string) =>
       `Pour inverser ${quoi}, il aurait fallu que ${pluriel(n, 'député')} change${n > 1 ? 'nt' : ''} d'avis.`;
     const x = v ? voix578(d, q.requis, v) : null;
-    const avec = v ? `Avec ta voix : ${d.pour + (v === 'pour' ? 1 : 0)} pour, ${d.contre + (v === 'contre' ? 1 : 0)} contre` : '';
-    $('[data-rv-voix]').textContent = !v
-      ? 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat. ' + (q.marge ? inverser(q.marge, 'le résultat') : '')
-      : !x ? `${avec}.`
-        : x.adopte !== q.adopte
-          ? `${avec} : ta voix aurait changé le résultat, le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
-          : `${avec}. ${inverser(x.inverser, 'ce résultat')}`;
+    const voix = $('[data-rv-voix]');
+    if (!v) {
+      voix.textContent = 'Tu n\'as pas tranché : ce vote ne compte pas dans ton résultat. '
+        + (q.marge ? inverser(q.marge, 'le résultat') : '');
+    } else {
+      // R3 : ta voix se pose (le rond) et le chiffre de ton choix prend +1 ; la même chose pour
+      // chaque choix.
+      const rond = document.createElement('span');
+      rond.className = 'rond-voix';
+      rond.setAttribute('aria-hidden', 'true');
+      const chiffre = (cote: Reponse, n: number) => {
+        if (cote !== v) return `${n} ${cote}`;
+        const plus = document.createElement('span');
+        plus.className = 'voix-plus';
+        const un = document.createElement('small');
+        un.textContent = ' +1';
+        plus.append(`${n + 1} ${cote}`, un);
+        return plus;
+      };
+      const suite = !x ? '.'
+        : x.adopte !== q.adopte ? ` : ta voix aurait changé le résultat, le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
+          : `. ${inverser(x.inverser, 'ce résultat')}`;
+      voix.replaceChildren(rond, 'Avec ta voix : ', chiffre('pour', d.pour), ', ', chiffre('contre', d.contre), suite);
+    }
+    // La carte « Ta voix de 578e » monte 900 ms après la révélation, quand elle est à l'écran.
+    const carteVoix = $('[data-ta-voix]');
+    const jeton = String(Number(carteVoix.dataset.jeton ?? 0) + 1);
+    carteVoix.dataset.jeton = jeton;
+    carteVoix.classList.remove('joue');
+    carteVoix.classList.toggle('attend', !mouvementReduit());
+    const ouvert = performance.now();
+    const jouer = () => {
+      if (carteVoix.dataset.jeton !== jeton) return;
+      carteVoix.style.setProperty('--r3', `${Math.max(0, 900 - (performance.now() - ouvert))}ms`);
+      carteVoix.classList.remove('attend');
+      carteVoix.classList.add('joue');
+    };
+    if (mouvementReduit()) jouer(); else quandVisible(carteVoix, jouer);
     $('[data-revelation]').hidden = false;
     $('[data-pied-focus]').hidden = true;
     // La précision, avant et après ce vote (R4), 1,2 s après la révélation.

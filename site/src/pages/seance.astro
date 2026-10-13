@@ -68,6 +68,7 @@ const tuile = premier ? {
   ) : (
     <Seance cartes={cartes} puces={puces} dates pronostic>
       <div class="fin" slot="fin" data-ecran="fin" hidden>
+        <button type="button" class="b-passer-seq" data-passer-seq hidden>Passer</button>
         <div class="tampon" data-tampon>
           <span class="tampon-haut">Séance du</span>
           <span class="tampon-grand">{tampon}</span>
@@ -131,6 +132,7 @@ const tuile = premier ? {
   import { etatLots, prochainLot } from '../lib/lots.ts';
   import { precision, type Matrice, type Reponse } from '../lib/profil.ts';
   import { jauge } from '../lib/jauge.ts';
+  import { mouvementReduit, sequence } from '../lib/motion.ts';
   import { $, pluriel, seance } from '../lib/seance.ts';
   import { etatSeance, sauverSeance, seancesFaites, serie, type Pronostic } from '../lib/seances.ts';
 
@@ -186,7 +188,8 @@ const tuile = premier ? {
       $('[data-fin-serie]').textContent = String(n);
       $('[data-fin-serie-libelle]').textContent = n > 1 ? 'semaines d\'affilée' : 'semaine d\'affilée';
       $('[data-fin-serie-detail]').textContent = '+1 cette semaine';
-      jauge($('.violette [data-jauge]'), p.reponses - comptees, p.reponses);
+      const jaugeFin = $('.violette [data-jauge]');
+      jauge(jaugeFin, p.reponses - comptees, p.reponses, 850);
       $('[data-fin-gain]').textContent = `${gain > 0 ? `+${gain} point${gain > 1 ? 's' : ''} · ` : ''}`
         + pluriel(p.reponses, 'vote');
       const pronos = Object.keys(etat.pronostics).length;
@@ -215,8 +218,41 @@ const tuile = premier ? {
         principal.href = lot === null ? '/explorer/' : '/lots/';
         principal.textContent = lot === null ? 'Trancher d\'autres votes' : 'En attendant : 3 votes passés →';
       }
-      $('[data-tampon]').classList.add('anime');
       $('[data-fin-titre]').focus();
+      cascade(() => jauge(jaugeFin, p.reponses, p.reponses));
+    };
+
+    /** F1 + F2 : le tampon, puis le bilan en cascade (les cartes à 650 ms, la précision à
+     *  850 ms, le rendez-vous à 1 500 ms) ; « Passer » ou un appui sur l'écran donne l'état
+     *  final. Le carnet est affiché sans animation. Mouvement réduit : un fondu de 200 ms. */
+    const cascade = (jaugeFinale: () => void) => {
+      const ecran = $('[data-ecran="fin"]');
+      const bouton = $('[data-passer-seq]');
+      const cartes = [...ecran.querySelectorAll<HTMLElement>('.cartes > .carte:not([hidden])')];
+      const rdv = document.querySelector<HTMLElement>('[data-rendez-vous]');
+      const montrer = (el: HTMLElement, delai: number) => {
+        el.style.setProperty('--delai-c', `${delai}ms`);
+        el.classList.add('apparait');
+      };
+      const finir = () => {
+        ecran.classList.remove('en-cascade');
+        bouton.hidden = true;
+        document.removeEventListener('click', appui);
+      };
+      const appui = () => { suite.passer(); jaugeFinale(); };
+      if (mouvementReduit()) ecran.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+      else {
+        ecran.classList.add('en-cascade');
+        bouton.hidden = false;
+        // Après le toucher qui a ouvert cet écran.
+        setTimeout(() => document.addEventListener('click', appui), 0);
+      }
+      const suite = sequence([
+        { a: 0, faire: () => $('[data-tampon]').classList.add('anime') },
+        { a: 650, faire: () => cartes.forEach((c, k) => montrer(c, 80 * k)) },
+        { a: 1500, faire: () => { if (rdv) montrer(rdv, 0); } },
+        { a: 1850, faire: finir },
+      ], ecran);
     };
 
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
@@ -262,7 +298,15 @@ const tuile = premier ? {
   .vacances p { font-size: 18px; color: var(--gris); }
   .vacances .actions { justify-content: center; }
 
-  .fin { display: flex; flex-direction: column; align-items: flex-start; }
+  .fin { position: relative; display: flex; flex-direction: column; align-items: flex-start; }
+  /* Le bilan en cascade (F2) : les cartes et le rendez-vous attendent leur tour, puis montent. */
+  .fin:global(.en-cascade) .cartes > .carte:not(:global(.apparait)),
+  .fin:global(.en-cascade) .rendez-vous:not(:global(.apparait)) { opacity: 0; }
+  .fin :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) var(--delai-c, 0ms) both; }
+  @media (prefers-reduced-motion: reduce) { .fin :global(.apparait) { animation: none; } }
+  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: 12px;
+    border: 2px solid var(--bord); background: var(--fond); box-shadow: 0 3px 0 var(--bord); color: var(--gris);
+    font-family: var(--police-titre); font-weight: 600; font-size: 15px; cursor: pointer; }
   .tampon { align-self: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--violet); color: var(--violet-fonce);
     background: #FFFFFF; box-shadow: inset 0 0 0 7px #FFFFFF, inset 0 0 0 10px #D9CCFF, 0 10px 0 #EFE9FF;

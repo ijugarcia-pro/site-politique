@@ -1,11 +1,11 @@
 {
  "agenda": {
-  "derniere_modification": "Tue, 13 Oct 2026 04:41:07 GMT",
+  "derniere_modification": "Tue, 13 Oct 2026 10:41:24 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Agenda.json.zip",
-  "recupere_le": "2026-10-13T10:49:19+00:00",
-  "sha256": "f2faa1d4a00896e032e505f8f95eac400f3c6128ee76c919af0476df88c7c2fc",
-  "taille": 8386226,
+  "recupere_le": "2026-10-13T11:04:53+00:00",
+  "sha256": "8ce007d855a3af8078ba497807fbe133c375d75d191fb61a4f2f187d7046409a",
+  "taille": 8389786,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
@@ -54,12 +54,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
  },
  "dossiers_legislatifs": {
-  "derniere_modification": "Tue, 13 Oct 2026 08:16:43 GMT",
+  "derniere_modification": "Tue, 13 Oct 2026 10:16:34 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-10-13T10:49:26+00:00",
-  "sha256": "c9c1744d4d9ba27574f08305995a1e048de772c84ab6b9b28852f7b2e4031c2b",
-  "taille": 10729270,
+  "recupere_le": "2026-10-13T11:04:57+00:00",
+  "sha256": "8cf67c9e6451060fddac96210f612065d24eff68172ea3ef8634e1b92da365e7",
+  "taille": 10731164,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
  },
  "historique_mandats": {
@@ -72,11 +72,11 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "derniere_modification": "Tue, 13 Oct 2026 04:26:15 GMT",
+  "derniere_modification": "Tue, 13 Oct 2026 10:26:34 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Scrutins.json.zip",
-  "recupere_le": "2026-10-13T10:49:13+00:00",
-  "sha256": "4d471a536cee2e0fd67fdf786f172c06331d169d1e5d63d92977c3d39690ab54",
+  "recupere_le": "2026-10-13T11:04:46+00:00",
+  "sha256": "8a1d3705ac34f4d2aaddb7bcd1c0c785281f92bf79c9997ec845a86f1f58435f",
   "taille": 27044762,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip"
  }

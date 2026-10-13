@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { avancement, quandCourt, serie } from './seances.ts';
+import { readFileSync } from 'node:fs';
+import { avancement, quandCourt, repriseApres, serie, texteGel } from './seances.ts';
 
 const f = (...l: string[]) => new Set(l);
 
@@ -50,4 +51,20 @@ test('séance 2/3 : un seul vote attendu, ou deux dates différentes', () => {
 test('séance 3/3 : l’état partiel disparaît', () => {
   const a = avancement([{ juge: true, ...mardi }, { juge: true, ...mardi }, { juge: true, ...passe }]);
   assert.deepEqual(a, { total: 3, juges: 3, etat: 'complet', fraction: '3/3', bandeau: null });
+});
+
+test('série gelée : jamais un mot de perte, la reprise quand elle est connue', () => {
+  const textes = [texteGel(1, null), texteGel(6, null), texteGel(6, 'le lundi 4 janvier')];
+  assert.equal(textes[0], 'Ta série de 1 semaine est gelée : elle t\'attend pour la reprise.');
+  assert.equal(textes[2], 'Ta série de 6 semaines est gelée : elle t\'attend pour la reprise, le lundi 4 janvier.');
+  for (const t of textes) assert.doesNotMatch(t, /perd|perte|perdu|cass|rompu|fini|termin|échou|plus de série|recommence|zéro/i);
+  const treves = [{ du: '2026-12-21', au: '2026-12-28', reprise: 'le lundi 4 janvier' }];
+  assert.equal(repriseApres('2026-12-28', treves), 'le lundi 4 janvier');
+  assert.equal(repriseApres('2027-01-04', treves), null);
+});
+
+test('les bleus du gel ne sont pas le bleu « Pour »', () => {
+  const css = readFileSync(new URL('../components/SerieGelee.astro', import.meta.url), 'utf-8');
+  assert.match(css, /#0B6AAE/);
+  assert.doesNotMatch(css, /#2F7BFF/i);
 });

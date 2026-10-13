@@ -52,6 +52,19 @@ export function serie(faites: Set<string>, vacances: Set<string>, lundi: string)
   return n;
 }
 
+/** Les trêves parlementaires et leur reprise (« le lundi 4 janvier »), en attendant de les lire
+ *  dans l'agenda : `du` et `au` sont des lundis. Vide tant que les dates ne sont pas confirmées :
+ *  la série gelée dit alors « pour la reprise », sans date. */
+export const TREVES: { du: string; au: string; reprise: string }[] = [];
+
+/** La reprise annoncée pour la semaine du `lundi`, s'il tombe dans une trêve connue. */
+export const repriseApres = (lundi: string, treves = TREVES) =>
+  treves.find((t) => t.du <= lundi && lundi <= t.au)?.reprise ?? null;
+
+/** Le texte de la série gelée : elle attend, elle ne se perd pas. */
+export const texteGel = (n: number, reprise: string | null) =>
+  `Ta série de ${n} semaine${n > 1 ? 's' : ''} est gelée : elle t'attend pour la reprise${reprise ? `, ${reprise}` : ''}.`;
+
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
   'oct.', 'nov.', 'déc.'];

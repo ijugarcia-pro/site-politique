@@ -10,6 +10,7 @@
 import Base from '../layouts/Base.astro';
 import EnteteSeance from '../components/EnteteSeance.astro';
 import JaugePrecision from '../components/JaugePrecision.astro';
+import SerieGelee from '../components/SerieGelee.astro';
 import Seance from '../components/Seance.astro';
 import { avancementSeance, dateLisible, lotsDuParcours, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
 import { puceTheme } from '../lib/themes.ts';
@@ -35,7 +36,7 @@ const etape = avancementSeance(sem);
 const donnees = JSON.stringify({
   lundi: sem.lundi, cles: votes.map((v) => v.cle), retires,
   quand: premier ? quandVote(premier) : null,
-  historique: sem.historique,
+  historique: sem.historique, vacances: sem.vacances,
   // Les lots du parcours : la fin de séance y renvoie en attendant le verdict.
   parcours: lotsDuParcours(),
 }).replace(/</g, '\\u003c');
@@ -57,9 +58,10 @@ const tuile = premier ? {
       <h1>Pas de séance cette semaine</h1>
       <p>
         {sem.vacances
-          ? 'L\'Assemblée ne siège pas : ce sont les vacances parlementaires. Ta série est gelée, elle reprendra à la prochaine séance.'
+          ? 'L\'Assemblée ne siège pas : ce sont les vacances parlementaires.'
           : 'Aucun vote n\'est prévu cette semaine.'}
       </p>
+      {sem.vacances && <SerieGelee />}
       <div class="actions">
         <a class="b-principal" href="/lots/">Trancher des votes passés</a>
         <a class="b-second" href="/">Retour à l'accueil</a>
@@ -80,8 +82,9 @@ const tuile = premier ? {
         <div class="cartes">
           <div class="carte orange" data-carte-serie>
             <span class="grand">
-              <svg width="26" height="28" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#FF9F1C"></path></svg>
-              <span data-fin-serie></span>
+              <svg class="flamme" width="26" height="28" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#FF9F1C"></path></svg>
+              <span class="odo" aria-hidden="true"><span class="odo-colonne"><span data-odo-avant></span><span data-fin-serie></span></span></span>
+              <span class="visuellement-cache" data-fin-serie-lu></span>
             </span>
             <span class="libelle" data-fin-serie-libelle></span>
             <span class="petit" data-fin-serie-detail></span>
@@ -133,11 +136,12 @@ const tuile = premier ? {
   import { precision, type Matrice, type Reponse } from '../lib/profil.ts';
   import { jauge } from '../lib/jauge.ts';
   import { mouvementReduit, sequence } from '../lib/motion.ts';
+  import { montrerGel } from '../lib/gel.ts';
   import { $, pluriel, seance } from '../lib/seance.ts';
   import { etatSeance, sauverSeance, seancesFaites, serie, type Pronostic } from '../lib/seances.ts';
 
-  const { lundi, cles, historique, parcours } = JSON.parse($('[data-donnees-semaine]').textContent!) as {
-    lundi: string; cles: string[]; quand: string | null; parcours: number;
+  const { lundi, cles, historique, parcours, vacances: enVacances } = JSON.parse($('[data-donnees-semaine]').textContent!) as {
+    lundi: string; cles: string[]; quand: string | null; parcours: number; vacances: boolean;
     historique: { lundi: string; vacances: boolean }[];
   };
   const vacances = new Set(historique.filter((h) => h.vacances).map((h) => h.lundi));
@@ -149,7 +153,8 @@ const tuile = premier ? {
     $('[data-serie-texte]').textContent = pluriel(n, 'semaine');
     return n;
   };
-  afficherSerie();
+  const n0 = afficherSerie();
+  if (enVacances) montrerGel(n0, lundi);
 
   if (document.querySelector('[data-donnees-seance]')) {
     const etat = etatSeance(lundi);
@@ -186,6 +191,8 @@ const tuile = premier ? {
       // La série, gelée pendant les vacances.
       const n = afficherSerie();
       $('[data-fin-serie]').textContent = String(n);
+      $('[data-odo-avant]').textContent = String(Math.max(0, n - 1));
+      $('[data-fin-serie-lu]').textContent = String(n);
       $('[data-fin-serie-libelle]').textContent = n > 1 ? 'semaines d\'affilée' : 'semaine d\'affilée';
       $('[data-fin-serie-detail]').textContent = '+1 cette semaine';
       const jaugeFin = $('.violette [data-jauge]');
@@ -297,6 +304,7 @@ const tuile = premier ? {
   .vacances h1 { margin: 10px 0 12px; font-size: clamp(34px, 3.4vw, 46px); }
   .vacances p { font-size: 18px; color: var(--gris); }
   .vacances .actions { justify-content: center; }
+  .vacances > :global(.serie-gelee) { max-width: 520px; margin: 22px auto 0; }
 
   .fin { position: relative; display: flex; flex-direction: column; align-items: flex-start; }
   /* Le bilan en cascade (F2) : les cartes et le rendez-vous attendent leur tour, puis montent. */
@@ -328,6 +336,18 @@ const tuile = premier ? {
   .carte .petit { font-size: 13px; }
   .orange { background: #FFF1E0; box-shadow: 0 5px 0 #FFD9AE; color: #7A3F00; }
   .orange .grand { color: #B85E00; }
+  /* La série qui roule (F3) : le chiffre passe de N à N + 1 comme un compteur kilométrique, la
+     flamme s'anime une fois, quand la carte du bilan monte. */
+  .odo { display: inline-block; height: 1em; overflow: hidden; }
+  .odo-colonne { display: flex; flex-direction: column; transform: translateY(-50%); }
+  .odo-colonne > span { height: 1em; }
+  .carte:global(.apparait) .odo-colonne { animation: odo 700ms var(--ease-odo) var(--delai-c, 0ms) both; }
+  .carte:global(.apparait) .flamme { transform-origin: 50% 90%; animation: flamme 600ms ease var(--delai-c, 0ms) both; }
+  @keyframes odo { 0%, 25% { transform: none; } 100% { transform: translateY(-50%); } }
+  @keyframes flamme { 60% { transform: scale(1.35) rotate(-6deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .carte:global(.apparait) .odo-colonne, .carte:global(.apparait) .flamme { animation: none; }
+  }
   .violette { background: #EFE9FF; box-shadow: 0 5px 0 #D9CCFF; color: #3D1FA8; }
   .violette .grand, .violette .petit { color: var(--violet-fonce); }
   .jaune { background: #FFF8E1; box-shadow: 0 5px 0 #FFE08A; color: #7A4A00; }

@@ -149,7 +149,7 @@ const parcours = lotsDuParcours();
       : `Lot suivant · ${parLot} votes →`;
     bouton.onclick = () => commencer(suivant!);
     // Tout est fait : après le dernier lot, voir sa place ; en arrivant, trancher d'autres votes.
-    second.href = suivant === null && k === null ? '/explorer/' : '/hemicycle/';
+    second.href = suivant === null && k === null ? '/explorer/#a-trancher' : '/hemicycle/';
     second.textContent = suivant !== null ? 'Mon hémicycle'
       : k === null ? 'Trancher d\'autres votes →' : 'Voir mon hémicycle →';
     second.classList.toggle('b-principal', suivant === null);

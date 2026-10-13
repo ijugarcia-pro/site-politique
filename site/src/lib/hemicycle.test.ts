@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { arc, etiquette, etiquettes, LARGEUR, parts, places, RAYON_SIEGE, SIEGES } from './hemicycle.ts';
+import { arc, delaiOnde, etiquette, etiquettes, LARGEUR, parts, places, RAYON_SIEGE, SIEGES } from './hemicycle.ts';
 
 test('577 places, de gauche à droite', () => {
   const liste = places();
@@ -47,4 +47,18 @@ test("les étiquettes restent au même rayon tant qu'elles ne se chevauchent pas
   const [a, b, c, d] = etiquettes(liste, lesParts, () => 50, 30);
   assert.ok(Math.abs(rayon(a) - rayon(b)) < 1e-6 && Math.abs(rayon(a) - rayon(c)) < 1e-6);
   assert.ok(rayon(d) > rayon(c) + 29); // trop proche de C : éloignée
+});
+
+test('onde de la révélation : délai déterministe, du centre vers l’extérieur', () => {
+  const liste = places();
+  const d = liste.map((p, i) => delaiOnde(p.rangee, i));
+  assert.deepEqual(d, liste.map((p, i) => delaiOnde(p.rangee, i)));
+  liste.forEach((p, i) => {
+    assert.ok(d[i] >= p.rangee * 55 && d[i] <= p.rangee * 55 + 70);
+  });
+  // Pas de balayage : dans une même rangée, le délai ne croît pas avec l'angle.
+  const rang = liste.map((p, i) => ({ p, d: d[i] })).filter((x) => x.p.rangee === 6);
+  const croissants = rang.slice(1).filter((x, k) => x.d >= rang[k].d).length;
+  assert.ok(croissants < rang.length * 0.8);
+  assert.ok(Math.max(...d) + 320 <= 1100);
 });

@@ -140,14 +140,19 @@ export function seance({ libelleContinuer, rang }: Options) {
     setTimeout(finir, 600);
   };
 
-  // Un appui pendant la révélation la termine : la jauge passe à sa valeur finale.
-  document.addEventListener('click', () => {
+  // Un appui pendant la révélation (autre que le vote qui l'ouvre) la termine : l'hémicycle,
+  // les chiffres et la jauge passent à leur état final.
+  let onde: { passer(): void } | null = null;
+  document.addEventListener('click', (e) => {
     const rv = $('[data-revelation]');
-    if (!rv.hidden) rv.getAnimations({ subtree: true }).forEach((a) => a.finish());
+    if (rv.hidden || (e.target as Element).closest?.('[data-reponse]')) return;
+    onde?.passer();
+    rv.getAnimations({ subtree: true }).forEach((a) => a.finish());
   });
 
   // --- Une question ---
   const poser = (i: number) => {
+    onde?.passer();
     const q = questions[i];
     const carte = $('[data-carte]');
     // Une carte était à l'écran (on vient d'une révélation ou d'un pronostic) : elle s'envole.
@@ -202,16 +207,15 @@ export function seance({ libelleContinuer, rang }: Options) {
     marquerChoix(v);
     // En couleur vive : les députés qui ont voté comme toi.
     const mienne = v === 'pour' ? 'P' : v === 'contre' ? 'C' : null;
-    salle.colorer((k) => {
+    const d = q.decompte;
+    onde = salle.reveler((k) => {
       const brut = q.sieges[k];
       if (brut === 'x') return { sansCommun: true };
       const l = brut.toUpperCase();
       return { fond: COULEURS[l] ?? '#DFE3EB', contreGroupe: brut !== l,
         estompe: !!mienne && l !== '-' && l !== mienne };
-    });
+    }, { pour: d.pour, contre: d.contre, legende: `${q.adopte ? 'Adopté' : 'Rejeté'} · pour – contre` });
     salle.libre(false);
-    const d = q.decompte;
-    salle.centre(`${d.pour} – ${d.contre}`, `${q.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`);
     $('[data-panneau-titre]').textContent = 'Comment l\'Assemblée a voté';
     $('[data-panneau-sous]').textContent = v ? 'En couleur vive : ceux qui ont voté comme toi'
       : 'Tu n\'as pas répondu à ce vote';
@@ -271,6 +275,7 @@ export function seance({ libelleContinuer, rang }: Options) {
 
   /** Quitte la révélation pour l'écran de fin de la page. */
   const finir = (ecran: string) => {
+    onde?.passer();
     montrer(ecran);
     window.scrollTo({ top: 0, behavior: 'instant' });
     $('[data-revelation]').hidden = true;

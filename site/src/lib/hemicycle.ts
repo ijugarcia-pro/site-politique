@@ -38,6 +38,11 @@ export function places(): Place[] {
   return brutes.map(({ x, y, angle, rangee }) => ({ x, y, angle, rangee }));
 }
 
+/** L'onde de la révélation (R1) : le délai d'un siège, du rang intérieur vers l'extérieur
+ *  (55 ms par rangée), plus un aléa de 0 à 70 ms tiré de son numéro, donc le même à chaque
+ *  affichage. Jamais de balayage de gauche à droite : l'aléa ne dépend pas de l'angle. */
+export const delaiOnde = (rangee: number, i: number) => rangee * 55 + (((i + 1) * 2654435761) >>> 0) % 71;
+
 export interface Etiquette {
   x: number;
   y: number;

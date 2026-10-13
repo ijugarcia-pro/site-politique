@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-10-12T18:12:50+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-10-13T00:52:24+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,18 +12,18 @@ Généré le 2026-10-12T18:12:50+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 17
+- Versions observées après la référence : 18
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 12,0 h
-- Heure (UTC) des versions : 04 h : 5 · 10 h : 3 · 16 h : 5 · 22 h : 4
+- Heure (UTC) des versions : 04 h : 5 · 10 h : 3 · 16 h : 5 · 22 h : 5
 
 ## Délais
 
-**Tous les scrutins** : 121 scrutins
+**Tous les scrutins** : 136 scrutins
 
-- Depuis la fin prévue de la séance (borne basse) : min 5,4 h · médiane 10,0 h · 90 % ≤ 10,0 h · max 10,0 h
+- Depuis la fin prévue de la séance (borne basse) : min 0,8 h · médiane 4,9 h · 90 % ≤ 10,0 h · max 10,0 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,4 h · 90 % ≤ 10,4 h · max 15,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 121 sur 121
-- Répartition depuis la fin prévue : 3 à 6 h : 3 · 6 à 12 h : 12
+- Publiés au plus tard le lendemain du vote à 8 h : 136 sur 136
+- Répartition depuis la fin prévue : moins de 1 h : 2 · 3 à 6 h : 16 · 6 à 12 h : 12
 
 Aucun scrutin solennel mesuré pour l'instant.
 
@@ -49,3 +49,4 @@ Aucun scrutin solennel mesuré pour l'instant.
 | 2026-10-11T22:26:56+00:00 | 2026-10-11T23:45:30+00:00 | 8672 | 8672 | 0 |
 | 2026-10-12T04:27:07+00:00 | 2026-10-12T07:29:12+00:00 | 8672 | 8672 | 0 |
 | 2026-10-12T16:26:46+00:00 | 2026-10-12T18:03:07+00:00 | 8681 | 8681 | 9 |
+| 2026-10-12T22:26:50+00:00 | 2026-10-13T00:51:44+00:00 | 8696 | 8696 | 15 |

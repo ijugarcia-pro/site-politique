@@ -3,7 +3,7 @@
   "derniere_modification": "Tue, 13 Oct 2026 10:41:24 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Agenda.json.zip",
-  "recupere_le": "2026-10-13T11:04:53+00:00",
+  "recupere_le": "2026-10-13T11:07:54+00:00",
   "sha256": "8ce007d855a3af8078ba497807fbe133c375d75d191fb61a4f2f187d7046409a",
   "taille": 8389786,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
@@ -57,7 +57,7 @@
   "derniere_modification": "Tue, 13 Oct 2026 10:16:34 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-10-13T11:04:57+00:00",
+  "recupere_le": "2026-10-13T11:08:05+00:00",
   "sha256": "8cf67c9e6451060fddac96210f612065d24eff68172ea3ef8634e1b92da365e7",
   "taille": 10731164,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
@@ -75,7 +75,7 @@
   "derniere_modification": "Tue, 13 Oct 2026 10:26:34 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Scrutins.json.zip",
-  "recupere_le": "2026-10-13T11:04:46+00:00",
+  "recupere_le": "2026-10-13T11:07:48+00:00",
   "sha256": "8a1d3705ac34f4d2aaddb7bcd1c0c785281f92bf79c9997ec845a86f1f58435f",
   "taille": 27044762,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip"

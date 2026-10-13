@@ -130,14 +130,14 @@ const tranches = JSON.stringify({
     </footer>
     )}
     <script type="application/json" data-hors-matrice set:html={horsMatrice}></script>
-    <script type="application/json" data-tranches set:html={tranches}></script>
+    <script type="application/json" data-tranches-seance set:html={tranches}></script>
     <script>
       import { reponses } from '../lib/navigateur.ts';
       import { precision } from '../lib/profil.ts';
       import { reporterReponses } from '../lib/seances.ts';
 
       reporterReponses(JSON.parse(
-        document.querySelector('[data-tranches]')?.textContent ?? '{}') as Record<string, Record<string, string>>);
+        document.querySelector('[data-tranches-seance]')?.textContent ?? '{}') as Record<string, Record<string, string>>);
 
       // L'anneau de précision de l'en-tête (frame V5) : calculé sur place, comme tout le profil.
       const anneau = document.querySelector<HTMLElement>('[data-precision-entete]');

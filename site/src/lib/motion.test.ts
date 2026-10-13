@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { mock, test } from 'node:test';
-import { mouvementReduit, quandVisible, sequence } from './motion.ts';
+import { estVisible, mouvementReduit, quandVisible, sequence } from './motion.ts';
 
 /** Un conteneur factice dont on compte les animations terminées ou arrêtées. */
 const conteneur = () => {
@@ -75,4 +75,16 @@ test('quandVisible : une seule fois, au seuil de 30 %', () => {
   assert.equal(n, 1);
   assert.equal(coupe, true);
   delete (globalThis as { IntersectionObserver?: unknown }).IntersectionObserver;
+});
+
+test('estVisible : au moins 30 % de la hauteur dans la fenêtre', () => {
+  (globalThis as { innerHeight?: number }).innerHeight = 800;
+  const boite = (top: number, height: number) =>
+    ({ getBoundingClientRect: () => ({ top, bottom: top + height, height }) }) as unknown as Element;
+  assert.equal(estVisible(boite(100, 300)), true);
+  assert.equal(estVisible(boite(700, 300)), true); // 100 px sur 300 : 33 %
+  assert.equal(estVisible(boite(750, 300)), false); // 50 px sur 300 : 17 %
+  assert.equal(estVisible(boite(900, 300)), false); // sous la ligne de flottaison
+  assert.equal(estVisible(boite(-250, 300)), false); // passée au-dessus
+  assert.equal(estVisible(boite(0, 0)), false);
 });

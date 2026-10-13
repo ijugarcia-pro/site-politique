@@ -77,8 +77,16 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
         <span>Leur verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</span>
       </p>
     )}
+    <script is:inline define:vars={{ uids: verdicts.map((v) => v.uid) }}>
+      // Un verdict pas encore découvert : il reste caché jusqu'au toucher (D1).
+      try {
+        const vus = JSON.parse(localStorage.getItem('578e.verdicts-vus.v1') || '[]');
+        if (uids.some((u) => !vus.includes(u))) document.documentElement.classList.add('verdict-cache');
+      } catch { document.documentElement.classList.add('verdict-cache'); }
+    </script>
     <div class="verdict">
       <section class="gauche">
+        <button type="button" class="b-passer-seq" data-passer-seq hidden>Passer</button>
         {onglets.length > 1 && (
           <div class="onglets" role="tablist" aria-label="Les verdicts de ta séance">
             {onglets.map((o, n) => (o.k >= 0 ? (
@@ -99,11 +107,14 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
               <span class="puce-theme" style={`background: ${v.puce.split(':')[0]}; color: ${v.puce.split(':')[1]}`}>{v.theme}</span>
               <span class="puce-date">{v.quand}</span>
             </div>
-            <h1>{v.titre}</h1>
+            <h1 tabindex="-1" data-titre-verdict>{v.titre}</h1>
+            <div class="decouvrir" data-decouvrir>
+              <button type="button" class="b-principal" data-decouvrir-bouton>Découvrir le verdict</button>
+            </div>
             <div class="boite">
               <span class="tampon">{v.verdict}</span>
               <span>
-                <span class="marge">{v.marge ?? `${v.decompte.pour} – ${v.decompte.contre}`}</span>
+                <span class="marge" data-ecart>{v.marge ?? `${v.decompte.pour} – ${v.decompte.contre}`}</span>
                 <span class="decompte">{v.decompte.pour} pour · {v.decompte.contre} contre · {v.decompte.abstention} abstention{v.decompte.abstention > 1 ? 's' : ''}</span>
               </span>
             </div>
@@ -142,6 +153,8 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
 <script>
   import { deputeChoisi, reponses } from '../lib/navigateur.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
+  import { mouvementReduit, sequence } from '../lib/motion.ts';
+  import { lireJSON } from '../lib/navigateur.ts';
   import { Salle } from '../lib/salle.ts';
   import { etatSeance } from '../lib/seances.ts';
   import { voix578 } from '../lib/votes.ts';
@@ -186,20 +199,33 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
       return li;
     };
 
-    const montrer = (k: number) => {
+    /** L'onglet k, et l'hémicycle de son vote ; `anime` : en onde, chiffres comptés (D1). */
+    let onde: { passer(): void } | null = null;
+    const peindre = (k: number, anime = false) => {
       const v = verdicts[k];
       for (const a of document.querySelectorAll<HTMLElement>('[data-verdict]')) a.hidden = a.dataset.verdict !== String(k);
       for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
         o.setAttribute('aria-selected', o.dataset.onglet === String(k) ? 'true' : 'false');
       }
-      salle.colorer((i) => {
+      onde?.passer();
+      const rendu = (i: number) => {
         const brut = v.sieges[i];
         if (brut === 'x') return { sansCommun: true };
         const l = brut.toUpperCase();
         return { fond: COULEURS[l] ?? '#DFE3EB', contreGroupe: brut !== l };
-      });
-      salle.centre(`${v.decompte.pour} – ${v.decompte.contre}`, `${v.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`);
+      };
+      const legende = `${v.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`;
+      if (anime) onde = salle.reveler(rendu, { pour: v.decompte.pour, contre: v.decompte.contre, legende, duree: 1000 });
+      else {
+        salle.colorer(rendu);
+        salle.centre(`${v.decompte.pour} – ${v.decompte.contre}`, legende);
+      }
       salle.libre(false);
+    };
+
+    /** Les lignes de l'onglet k : ta place dans le résultat, ton pronostic, ta voix. */
+    const remplir = (k: number) => {
+      const v = verdicts[k];
       // Ta place dans le résultat.
       const a = mes[v.uid] ?? seance.reponses[v.cle] ?? null;
       const gagnant = v.adopte ? 'pour' : 'contre';
@@ -241,15 +267,76 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
       document.querySelector('[data-signales]')!.textContent = sig.length ? 'En couleur : pour, contre ; ' + sig.join(', ') : 'En couleur : pour, contre, abstention';
     };
 
+    const html = document.documentElement;
     for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
-      o.addEventListener('click', () => montrer(Number(o.dataset.onglet)));
+      o.addEventListener('click', () => {
+        if (html.classList.contains('verdict-cache')) return;
+        peindre(Number(o.dataset.onglet));
+        remplir(Number(o.dataset.onglet));
+      });
     }
-    montrer(0);
+
+    // D1 : un verdict pas encore découvert attend le toucher. Avant, l'hémicycle est gris et
+    // « respire », un « ? » au centre ; aucun compte à rebours, aucune attente imposée.
+    const VUS = '578e.verdicts-vus.v1';
+    const vus = lireJSON<string[]>(VUS, []);
+    const k0 = verdicts.findIndex((v) => !vus.includes(v.uid));
+    if (k0 < 0) {
+      html.classList.remove('verdict-cache');
+      peindre(0);
+      remplir(0);
+    } else {
+      html.classList.add('verdict-cache');
+      peindre(k0);
+      remplir(k0);
+      onde?.passer();
+      salle.colorer(() => ({ fond: '#D6DBE4' }));
+      salle.centre('?', 'Le verdict est tombé');
+      const svg = racine.querySelector('[data-salle-svg]')!;
+      svg.classList.add('respire');
+      for (const b of document.querySelectorAll<HTMLButtonElement>('[data-decouvrir-bouton]')) {
+        b.addEventListener('click', () => decouvrir(k0, svg));
+      }
+    }
+
+    /** D1 + D3 : l'hémicycle en ondes (1 s), puis la carte sombre et son tampon, le chiffre de
+     *  l'écart qui grossit une fois, et tes lignes avec « Ta voix de 578e ». ADOPTÉ et REJETÉ :
+     *  la même chose. « Passer » ou un appui sur l'écran donnent l'état final. */
+    const decouvrir = (k: number, svg: Element) => {
+      try { localStorage.setItem(VUS, JSON.stringify([...new Set([...vus, ...verdicts.map((v) => v.uid)])])); } catch { /* */ }
+      svg.classList.remove('respire');
+      html.classList.remove('verdict-cache');
+      const article = document.querySelector<HTMLElement>(`[data-verdict="${k}"]`)!;
+      const conteneur = document.querySelector<HTMLElement>('.verdict')!;
+      const bouton = document.querySelector<HTMLElement>('[data-passer-seq]')!;
+      article.querySelector<HTMLElement>('[data-titre-verdict]')?.focus({ preventScroll: true });
+      const montrer = (sel: string) => article.querySelector(sel)?.classList.add('apparait');
+      const finir = () => {
+        article.classList.remove('en-revelation');
+        bouton.hidden = true;
+        document.removeEventListener('click', appui);
+      };
+      const appui = () => { onde?.passer(); suite.passer(); };
+      if (mouvementReduit()) conteneur.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+      else {
+        article.classList.add('en-revelation');
+        bouton.hidden = false;
+        setTimeout(() => document.addEventListener('click', appui), 0);
+      }
+      const suite = sequence([
+        { a: 0, faire: () => peindre(k, true) },
+        { a: 1000, faire: () => montrer('.boite') },
+        { a: 1500, faire: () => { montrer('.lignes'); montrer('.actions'); } },
+        { a: 1550, faire: () => article.querySelector('[data-ecart]')?.classList.add('grossit') },
+        { a: 1950, faire: finir },
+      ], conteneur);
+    };
+
     if (Object.keys(mes).length || monDepute) {
       fetch('/donnees/matrice.json').then((r) => r.json()).then((m: Matrice) => {
         matrice = m;
         const actif = document.querySelector<HTMLElement>('[data-onglet][aria-selected="true"]');
-        montrer(Number(actif?.dataset.onglet ?? 0));
+        remplir(Number(actif?.dataset.onglet ?? (k0 < 0 ? 0 : k0)));
       }).catch(() => {});
     }
   }
@@ -277,12 +364,38 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   .onglet-etat { flex: none; padding: 2px 9px; border-radius: 999px; background: var(--bord); color: var(--gris);
     font-size: 12px; }
   .un-verdict[hidden] { display: none; }
+  /* Le verdict au toucher (D1 + D3, docs/animations-lot-1.md § 8). */
+  .gauche { position: relative; }
+  .decouvrir { display: none; margin-top: 4px; }
+  .decouvrir .b-principal { border: 0; cursor: pointer; }
+  :global(html.verdict-cache) .decouvrir { display: block; }
+  :global(html.verdict-cache) .boite, :global(html.verdict-cache) .lignes,
+  :global(html.verdict-cache) .actions { display: none; }
+  :global(html.verdict-cache) .onglets { pointer-events: none; }
+  .panneau :global(svg.respire) { animation: respire 2.4s ease-in-out infinite alternate; }
+  @keyframes respire { from { opacity: .5; } to { opacity: 1; } }
+  .en-revelation .boite:not(:global(.apparait)), .en-revelation .lignes:not(:global(.apparait)),
+  .en-revelation .actions:not(:global(.apparait)) { opacity: 0; }
+  .un-verdict :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) both; }
+  .boite:global(.apparait) .tampon { animation: tampon-verdict 600ms cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes tampon-verdict { 0% { transform: rotate(-4deg) scale(1.6); opacity: 0; }
+    70% { transform: rotate(-4deg) scale(.94); opacity: 1; } 100% { transform: rotate(-4deg) scale(1); } }
+  .marge:global(.grossit) { animation: grossit 400ms ease both; }
+  @keyframes grossit { 45% { transform: scale(1.18); } }
+  .marge { transform-origin: left center; }
+  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: 12px;
+    border: 2px solid var(--bord); background: var(--fond); box-shadow: 0 3px 0 var(--bord); color: var(--gris);
+    font-family: var(--police-titre); font-weight: 600; font-size: 15px; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) {
+    .panneau :global(svg.respire) { animation: none; opacity: .6; }
+    .un-verdict :global(.apparait), .boite:global(.apparait) .tampon, .marge:global(.grossit) { animation: none; }
+  }
   .puces { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .puce-theme, .puce-date { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px;
     font-family: var(--police-titre); font-weight: 600; font-size: 13px; }
   .puce-theme { letter-spacing: 0.06em; text-transform: uppercase; }
   .puce-date { background: var(--fond-doux); color: #3A4152; font-size: 14px; }
-  .un-verdict h1 { margin: 14px 0 18px; font-weight: 700; font-size: clamp(30px, 3vw, 42px); line-height: 1.05; letter-spacing: -0.015em; }
+  .un-verdict h1 { outline: none; margin: 14px 0 18px; font-weight: 700; font-size: clamp(30px, 3vw, 42px); line-height: 1.05; letter-spacing: -0.015em; }
   .boite { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; padding: 20px 24px; border-radius: 24px;
     background: var(--texte); color: #FFFFFF; box-shadow: 0 6px 0 #0B0E17; }
   .tampon { flex: none; padding: 8px 16px; border: 3px solid #FFFFFF; border-radius: 12px; font-family: var(--police-titre);

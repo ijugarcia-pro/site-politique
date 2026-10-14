@@ -30,6 +30,14 @@ export function sequence(etapes: Etape[], conteneur: HTMLElement): { passer(): v
   return { passer };
 }
 
+/** Vrai si au moins 30 % de la hauteur de l'élément est dans la fenêtre, tout de suite (un
+ *  IntersectionObserver ne répond qu'après le premier affichage). */
+export function estVisible(el: Element, seuil = 0.3): boolean {
+  const r = el.getBoundingClientRect();
+  const vu = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
+  return r.height > 0 && vu / r.height >= seuil;
+}
+
 /** Appelle `fn` une seule fois, quand au moins 30 % de l'élément est visible. */
 export function quandVisible(el: Element, fn: () => void): void {
   if (typeof IntersectionObserver !== 'function') { fn(); return; }

@@ -3,7 +3,7 @@
 // siège. Les positions sont celles du repère de lib/hemicycle.ts, converties en pourcentages.
 
 import { places, point, type Place } from './hemicycle.ts';
-import { mouvementReduit, quandVisible, sequence } from './motion.ts';
+import { estVisible, mouvementReduit, quandVisible, sequence } from './motion.ts';
 import { initiales } from './profil.ts';
 
 export interface InfoGroupe { s: string; l: string; c: string; ni: boolean }
@@ -59,6 +59,9 @@ export class Salle {
 
   /** Colore chaque siège occupé ; `rendu` reçoit l'indice du siège et son député. */
   colorer(rendu: (i: number, depute: string) => Rendu) {
+    // Rien hors écran (docs/animations-lot-1.md, règle 6) : une salle qui n'est pas à l'écran
+    // prend ses couleurs sans transition.
+    this.racine.classList.toggle('sans-transition', !estVisible(this.racine));
     this.cercles.forEach((c, i) => {
       const depute = this.reglages.sieges[i][0];
       if (!depute) return;

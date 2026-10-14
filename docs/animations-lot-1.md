@@ -229,12 +229,12 @@ Référence visuelle : toile « Le 578e siège · animations » (planches 1 à 4
 
 ## Vérification finale du lot
 
-- [ ] Émulation « prefers-reduced-motion: reduce » : chaque écran du lot affiche son état final sans mouvement.
-- [ ] Une séance complète de 3 votes jouée en moins de 2 minutes, chronométrée.
-- [ ] Aucune animation au chargement d'un élément hors écran.
-- [ ] Aucun mouvement horizontal lié à un choix ; Pour / Contre / Abstention / Je ne sais pas et ADOPTÉ / REJETÉ identiques.
-- [ ] Aucun fichier JavaScript ajouté au-delà de `motion.ts` et du code des composants ; aucune dépendance ajoutée dans `package.json`.
-- [ ] Coche de chaque numéro dans `docs/PLANNING.md` et une entrée datée dans `docs/decisions.md` (« Animations lot 1 : … »).
+- [x] Émulation « prefers-reduced-motion: reduce » : chaque écran du lot affiche son état final sans mouvement. *(13 oct. : fondus de 150 à 200 ms seulement ; l'enfoncement des boutons, d'avant le lot, reste)*
+- [x] Une séance complète de 3 votes jouée en moins de 2 minutes, chronométrée. *(13 oct., navigateur automatisé : 40 s à rythme de lecture, 6,5 s sans lecture ; à refaire à la main sur téléphone)*
+- [x] Aucune animation au chargement d'un élément hors écran. *(13 oct. : 20 chargements de pages à 390 px, après 2 corrections)*
+- [x] Aucun mouvement horizontal lié à un choix ; Pour / Contre / Abstention / Je ne sais pas et ADOPTÉ / REJETÉ identiques. *(13 oct. : images clés comparées ; pas de bouton Abstention à l'écran)*
+- [x] Aucun fichier JavaScript ajouté au-delà de `motion.ts` et du code des composants ; aucune dépendance ajoutée dans `package.json`. *(13 oct. : `jauge.ts`, `salle.ts`, `gel.ts` portent le code de leurs composants, avec leurs tests)*
+- [x] Coche de chaque numéro dans `docs/PLANNING.md` et une entrée datée dans `docs/decisions.md` (« Animations lot 1 : … »).
 
 ## Hors de ce lot (pour mémoire)
 

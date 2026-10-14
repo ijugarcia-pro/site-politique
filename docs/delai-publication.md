@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-10-13T21:22:43+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-10-14T00:28:45+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,20 +12,25 @@ Généré le 2026-10-13T21:22:43+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 21
+- Versions observées après la référence : 22
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 12,0 h
-- Heure (UTC) des versions : 04 h : 6 · 10 h : 4 · 16 h : 6 · 22 h : 5
+- Heure (UTC) des versions : 04 h : 6 · 10 h : 4 · 16 h : 6 · 22 h : 6
 
 ## Délais
 
-**Tous les scrutins** : 144 scrutins
+**Tous les scrutins** : 147 scrutins
 
-- Depuis la fin prévue de la séance (borne basse) : min 0,8 h · médiane 4,9 h · 90 % ≤ 10,0 h · max 10,0 h
+- Depuis la fin prévue de la séance (borne basse) : min 0,8 h · médiane 4,4 h · 90 % ≤ 10,0 h · max 10,0 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,4 h · 90 % ≤ 10,4 h · max 15,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 144 sur 144
-- Répartition depuis la fin prévue : moins de 1 h : 2 · 3 à 6 h : 16 · 6 à 12 h : 12
+- Publiés au plus tard le lendemain du vote à 8 h : 147 sur 147
+- Répartition depuis la fin prévue : moins de 1 h : 2 · 3 à 6 h : 18 · 6 à 12 h : 12
 
-Aucun scrutin solennel mesuré pour l'instant.
+**Scrutins solennels** : 2 scrutins
+
+- Depuis la fin prévue de la séance (borne basse) : min 4,0 h · médiane 4,0 h · 90 % ≤ 4,0 h · max 4,0 h
+- Depuis le début de la séance (borne haute) : min 9,5 h · médiane 9,5 h · 90 % ≤ 9,5 h · max 9,5 h
+- Publiés au plus tard le lendemain du vote à 8 h : 2 sur 2
+- Répartition depuis la fin prévue : 3 à 6 h : 2
 
 ## Versions observées
 
@@ -53,3 +58,4 @@ Aucun scrutin solennel mesuré pour l'instant.
 | 2026-10-13T04:26:15+00:00 | 2026-10-13T07:50:15+00:00 | 8696 | 8696 | 0 |
 | 2026-10-13T10:26:34+00:00 | 2026-10-13T16:08:26+00:00 | 8696 | 8696 | 0 |
 | 2026-10-13T16:27:19+00:00 | 2026-10-13T21:21:39+00:00 | 8704 | 8704 | 8 |
+| 2026-10-13T22:27:08+00:00 | 2026-10-14T00:26:15+00:00 | 8707 | 8707 | 3 |

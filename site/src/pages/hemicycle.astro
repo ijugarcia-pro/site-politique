@@ -230,7 +230,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     const reste = Math.max(0, VOTES_FIABLES - p.reponses);
     $('[data-precision-note]').textContent = reste
       ? `Fiable à partir de ${VOTES_FIABLES} votes : encore ${reste} à trancher.`
-      : 'Ton résultat est fiable. Chaque vote l\'affine encore.';
+      : `Ton résultat est fiable : ${prec} % de précision ; chaque vote l'affine encore.`;
 
     $('[data-trio]').hidden = false;
     remplir('jumeau', p.jumeau);

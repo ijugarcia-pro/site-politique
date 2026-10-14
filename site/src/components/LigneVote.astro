@@ -20,7 +20,7 @@ const exprimes = d.pour + d.contre;
 const partPour = exprimes ? (100 * d.pour) / exprimes : 0;
 const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
 ---
-<li class="ligne" data-famille={f} data-solennel={v.solennel ? '1' : undefined}
+<li class="ligne" data-uid={v.uid} data-famille={f} data-solennel={v.solennel ? '1' : undefined}
   data-recherche={recherche}>
   <a href={lienVote(v)}>
     <span class="haut">
@@ -28,6 +28,7 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
         {v.solennel && f !== 'censure' ? 'Solennel' : FAMILLES[f]}
       </span>
       <span class="date">{dateLisible(v.date)}</span>
+      <span class="tranche" data-tranche hidden></span>
     </span>
     <Titre class="titre">{majuscule(v.titre).replace(/\.$/, '')}</Titre>
     <span class="bas">
@@ -86,6 +87,9 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
   .e-censure { background: #FFE6DA; color: #9C3207; }
   .e-budget { background: #FFF1CC; color: var(--jaune-encre); }
   .date { font-size: 13px; color: var(--gris); }
+  /* Ta réponse, quand tu as déjà tranché ce vote (remplie dans le navigateur, Explorer). */
+  .tranche { padding: 3px 9px; border-radius: 999px; background: #E8F7EF; color: #1F7A45;
+    font-family: var(--police-titre); font-weight: 600; font-size: 12px; white-space: nowrap; }
   .titre {
     grid-area: titre;
     margin: 0;

@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-10-16T12:35:57+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-10-16T17:37:16+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,18 +12,18 @@ Généré le 2026-10-16T12:35:57+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 30
+- Versions observées après la référence : 31
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 12,0 h
-- Heure (UTC) des versions : 04 h : 9 · 10 h : 6 · 16 h : 8 · 22 h : 7
+- Heure (UTC) des versions : 04 h : 9 · 10 h : 6 · 16 h : 9 · 22 h : 7
 
 ## Délais
 
-**Tous les scrutins** : 264 scrutins
+**Tous les scrutins** : 293 scrutins
 
-- Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 5,4 h · 90 % ≤ 10,4 h · max 10,4 h
+- Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 5,4 h · 90 % ≤ 10,0 h · max 10,4 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,4 h · 90 % ≤ 10,4 h · max 15,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 264 sur 264
-- Répartition depuis la fin prévue : moins de 1 h : 19 · 3 à 6 h : 44 · 6 à 12 h : 46
+- Publiés au plus tard le lendemain du vote à 8 h : 293 sur 293
+- Répartition depuis la fin prévue : moins de 1 h : 19 · 3 à 6 h : 52 · 6 à 12 h : 46
 
 **Scrutins solennels** : 2 scrutins
 
@@ -67,3 +67,4 @@ Généré le 2026-10-16T12:35:57+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-10-15T16:25:45+00:00 | 2026-10-15T19:15:37+00:00 | 8772 | 8772 | 40 |
 | 2026-10-16T04:25:14+00:00 | 2026-10-16T07:20:46+00:00 | 8806 | 8806 | 34 |
 | 2026-10-16T10:25:47+00:00 | 2026-10-16T12:35:36+00:00 | 8824 | 8824 | 18 |
+| 2026-10-16T16:25:10+00:00 | 2026-10-16T17:32:23+00:00 | 8853 | 8853 | 29 |

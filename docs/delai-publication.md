@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-10-18T11:24:46+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-10-18T18:46:17+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,9 +12,9 @@ Généré le 2026-10-18T11:24:46+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 38
+- Versions observées après la référence : 39
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 12,0 h
-- Heure (UTC) des versions : 04 h : 11 · 10 h : 8 · 16 h : 10 · 22 h : 9
+- Heure (UTC) des versions : 04 h : 11 · 10 h : 8 · 16 h : 11 · 22 h : 9
 
 ## Délais
 
@@ -75,3 +75,4 @@ Généré le 2026-10-18T11:24:46+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-10-17T22:25:57+00:00 | 2026-10-18T01:13:29+00:00 | 8877 | 8877 | 0 |
 | 2026-10-18T04:25:07+00:00 | 2026-10-18T06:04:48+00:00 | 8877 | 8877 | 0 |
 | 2026-10-18T10:25:46+00:00 | 2026-10-18T11:24:30+00:00 | 8877 | 8877 | 0 |
+| 2026-10-18T16:25:17+00:00 | 2026-10-18T18:43:41+00:00 | 8877 | 8877 | 0 |

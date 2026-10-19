@@ -19,7 +19,7 @@ const cartes = questionsQuiz();
 // La suite du quiz : les lots du parcours ; les lots facultatifs ne se proposent qu'après eux.
 const nLots = lotsDuParcours();
 ---
-<Base titre="Le quiz d'entrée" focus
+<Base titre="Le quiz d'entrée" focus theme="seance"
   description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
   <EnteteSeance slot="entete" total={cartes.length} libelle="Progression du quiz"
     sortie={{ href: '/explorer/', texte: 'Explorer tous les votes' }} />
@@ -30,9 +30,6 @@ const nLots = lotsDuParcours();
       {` Réponds à ${cartes.length} vrais votes, on te montre quels députés ont voté comme toi.`}
     </Fragment>
     <div class="resultat" slot="fin" data-ecran="resultat" hidden>
-      <span class="confetti c1" aria-hidden="true"></span>
-      <span class="confetti c2" aria-hidden="true"></span>
-      <span class="confetti c3" aria-hidden="true"></span>
       <span class="puce-resultat" data-sur-titre-resultat></span>
       <h1 tabindex="-1" data-titre-resultat>Ta place est prête&nbsp;!</h1>
       <p class="phrase" data-phrase-groupe></p>
@@ -261,73 +258,69 @@ const nLots = lotsDuParcours();
 </script>
 
 <style>
-  /* Cotes reprises des frames V5 « ③ Résultat » et « ④ Partage » ; la question et la
-     révélation sont dans components/Seance.astro. */
-  .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--violet); }
-  .puce-resultat { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
-    border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
-    letter-spacing: 0.06em; text-transform: uppercase; background: var(--panneau-2); color: var(--violet-fonce); }
+  /* Le résultat du quiz et le partage, en régie ; la question et la révélation sont dans
+     components/Seance.astro. Pas de confettis : ils prenaient les couleurs des votes. */
+  .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--lumiere); }
+  .puce-resultat { display: inline-flex; align-items: center; padding: 6px 8px; background: var(--direct);
+    color: var(--sur-direct); font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
   .resultat { position: relative; }
-  .confetti { position: absolute; }
-  .c1 { left: -26px; top: -18px; width: 14px; height: 14px; border-radius: 4px; background: var(--abstention); transform: rotate(18deg); }
-  .c2 { left: 300px; top: -30px; width: 10px; height: 10px; border-radius: 50%; background: var(--pour); }
-  .c3 { left: 470px; top: 30px; width: 16px; height: 6px; border-radius: 3px; background: var(--contre); transform: rotate(-24deg); }
-  @media (max-width: 640px) { .confetti { display: none; } }
-  .resultat h1 { margin: 14px 0 8px; font-weight: 700; font-size: clamp(40px, 4vw, 56px); line-height: 1;
-    letter-spacing: -0.02em; outline: none; }
-  .phrase { margin: 0 0 18px; font-size: 18px; line-height: 1.5; color: var(--gris); }
-  .phrase b { color: var(--texte); }
-  .jumeau { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: var(--rayon); border: 2px solid var(--filet);
-    background: var(--panneau-2); box-shadow: 0 5px 0 var(--filet); color: inherit; text-decoration: none; }
-  .jumeau:hover { border-color: var(--violet); color: inherit; }
-  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: var(--rayon);
-    background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 21px;
-    box-shadow: 0 4px 0 var(--violet-fonce); }
-  .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .jumeau-nom { font-family: var(--police-titre); font-weight: 700; font-size: 21px; }
-  .jumeau-detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 4px; font-size: 13px; color: var(--gris-legende); }
-  .petit { font-size: 12px; color: var(--gris-legende); }
-  .jumeau-score { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-family: var(--police-titre);
-    font-weight: 700; font-size: 28px; line-height: 1; color: var(--violet-fonce); }
+  .resultat h1 { margin: 18px 0 10px; font: 700 clamp(44px, 5vw, 72px)/0.92 var(--police-titre); text-transform: uppercase;
+    letter-spacing: -0.005em; outline: none; }
+  .phrase { margin: 0 0 18px; font-size: 18px; line-height: 1.5; color: var(--ivoire-2); }
+  .phrase b { color: var(--ivoire); }
+  /* Ton jumeau : un panneau, son repère en ivoire (la lumière est pour toi). */
+  .jumeau { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: var(--rayon);
+    border: 1px solid var(--filet); background: var(--panneau-2); color: inherit; text-decoration: none; }
+  .jumeau:hover { border-color: var(--ivoire-2); color: inherit; }
+  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px;
+    border-radius: 50%; border: 2px solid var(--ivoire); color: var(--ivoire); font: 600 21px/1 var(--police-titre); }
+  .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .jumeau-nom { font: 600 24px/1.1 var(--police-titre); text-transform: uppercase; }
+  .jumeau-detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 4px; font-size: 13px; color: var(--ivoire-2); }
+  .petit { font-size: 12px; color: var(--ivoire-2); }
+  .jumeau-score { flex: none; display: flex; flex-direction: column; align-items: flex-end; font: 600 34px/1 var(--police-titre);
+    font-variant-numeric: tabular-nums; color: var(--ivoire); }
   .jumeau-score .petit { margin-top: 3px; font-family: var(--police-texte); font-weight: 400; }
-  .groupes { display: flex; flex-direction: column; gap: 9px; margin: 20px 0 0; padding: 0; list-style: none; }
+  .groupes { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
   .groupes :global(li) { display: grid; grid-template-columns: 70px minmax(0, 1fr) 52px; gap: 12px; align-items: center; }
   .groupes :global(.sigle) { font-size: 16px; text-decoration: none; }
-  .groupes :global(.jauge) { height: 12px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; }
-  .groupes :global(.jauge span) { display: block; height: 100%; border-radius: 999px; background: var(--ivoire-2); }
-  .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 700; font-size: 16px; color: var(--violet-fonce); }
-  .precision { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 16px; border-radius: var(--rayon); background: var(--fond-doux); }
-  .precision-titre { font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); }
+  .groupes :global(.jauge) { height: 8px; background: var(--filet); overflow: hidden; }
+  .groupes :global(.jauge span) { display: block; height: 100%; background: var(--ivoire-2); }
+  .groupes :global(.pct) { text-align: right; font: 600 17px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+  .precision { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 12px 16px; background: var(--panneau-2); }
+  .precision-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ivoire-2); }
   .precision > :global(.jauge-precision) { flex: 1; }
-  .note { margin: 6px 0 0; font-size: 14px; color: var(--gris-legende); }
-  .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
+  .note { margin: 6px 0 0; font-size: 14px; color: var(--ivoire-2); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
   .b-principal { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
-    gap: 2px; min-height: 74px; padding: 0 24px; border-radius: var(--rayon); background: var(--violet); color: #fff;
-    box-shadow: 0 6px 0 var(--violet-fonce); text-decoration: none; font-family: var(--police-titre); font-weight: 600;
-    font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; }
-  .b-principal:hover { color: #fff; background: var(--violet-fonce); }
-  .b-principal .petit { color: #fff; opacity: .85; font-family: var(--police-texte); font-weight: 700; text-transform: none;
-    letter-spacing: 0; font-size: 14px; }
-  .b-partager { flex: 0 0 170px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 74px;
-    border: 2px solid var(--bord); border-radius: var(--rayon); background: var(--fond); box-shadow: 0 4px 0 var(--bord);
-    font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
-    color: var(--violet-fonce); cursor: pointer; }
+    gap: 4px; min-height: 72px; padding: 0 24px; border-radius: var(--rayon); background: var(--direct); color: var(--sur-direct);
+    text-decoration: none; font: 600 19px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; }
+  .b-principal:hover { color: var(--sur-direct); background: #9A0F27; }
+  .b-principal .petit { color: var(--sur-direct); opacity: .9; font: 500 14px/1.2 var(--police-texte); text-transform: none;
+    letter-spacing: 0; }
+  .b-partager { flex: 0 0 170px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 72px;
+    border: 1px solid var(--ivoire-2); border-radius: var(--rayon); background: transparent; color: var(--ivoire);
+    font: 600 16px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  .b-partager:hover { background: var(--panneau-2); }
   @media (max-width: 640px) { .b-partager { flex: 1 1 100%; } }
-  .recommencer { margin: 16px 0 0; font-size: 15px; color: var(--gris); }
-  .recommencer button { border: 0; background: none; padding: 0; font: inherit; color: var(--violet-fonce); text-decoration: underline; cursor: pointer; }
+  .recommencer { margin: 16px 0 0; font-size: 15px; color: var(--ivoire-2); }
+  .recommencer button { border: 0; background: none; padding: 0; font: inherit; color: var(--ivoire); text-decoration: underline;
+    text-underline-offset: 3px; cursor: pointer; }
 
-  .partage { width: min(1000px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; border-radius: var(--rayon);
-    padding: 28px clamp(18px, 3vw, 36px); box-shadow: 0 8px 0 #C9CFDA; }
-  .partage::backdrop { background: rgba(31, 36, 51, 0.55); }
+  .partage { width: min(1000px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 1px solid var(--filet);
+    border-radius: var(--rayon); padding: 28px clamp(18px, 3vw, 36px); background: var(--panneau); color: var(--ivoire);
+    box-shadow: var(--ombre-panneau); }
+  .partage::backdrop { background: rgba(8, 9, 12, 0.74); }
   .partage-tete { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-  .partage h2 { font-size: clamp(24px, 3vw, 34px); }
-  .partage > p { margin: 6px 0 20px; font-size: 17px; color: var(--gris); }
+  .partage h2 { font: 600 clamp(26px, 3vw, 34px)/1.05 var(--police-titre); text-transform: uppercase; }
+  .partage > p { margin: 6px 0 20px; font-size: 17px; color: var(--ivoire-2); }
   .fermer { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%;
-    border: 2px solid var(--bord); background: var(--fond); color: var(--gris); cursor: pointer; }
+    border: 1px solid var(--filet); background: transparent; color: var(--ivoire); cursor: pointer; }
   .stories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
   .stories figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
-  .stories img { width: 100%; aspect-ratio: 9 / 16; border-radius: var(--rayon); background: var(--fond-doux); object-fit: cover; }
-  .stories button { width: 100%; min-height: 46px; border: 2px solid var(--filet); border-radius: var(--rayon); background: var(--fond);
-    font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); cursor: pointer; }
+  .stories img { width: 100%; aspect-ratio: 9 / 16; border-radius: var(--rayon); background: var(--panneau-2); object-fit: cover; }
+  .stories button { width: 100%; min-height: 46px; border: 1px solid var(--ivoire-2); border-radius: var(--rayon); background: transparent;
+    font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ivoire); cursor: pointer; }
 </style>

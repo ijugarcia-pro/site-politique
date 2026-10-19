@@ -83,7 +83,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
         )}
       </div>
       <h1 data-question tabindex="-1"></h1>
-      <p class="concretement"><strong>Concrètement :</strong> <span data-concretement></span></p>
+      <p class="concretement"><span class="concretement-titre">Ce que ça change, concrètement</span> <span data-concretement></span></p>
       </div>
       <div class="choix">
         <button type="button" class="b-pour" data-reponse="pour"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Pour</button>
@@ -94,9 +94,6 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       {pronostic && (
         <div class="pronostic" data-pronostic hidden>
           <div class="prono-tete">
-            <span class="prono-icone" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 34 34"><path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z" fill="#FFFFFF" stroke="#1F2433" stroke-width="2.6" stroke-linejoin="round"></path></svg>
-            </span>
             <span class="prono-titre">Bonus : ton pronostic</span>
             <span class="facultatif">facultatif</span>
           </div>
@@ -149,7 +146,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
 <div class="revelation" data-revelation hidden>
   <div class="revelation-dedans">
     <span class="revelation-icone" aria-hidden="true">
-      <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="9" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="21" cy="10" r="3.5" fill="#7C4DFF"></circle><circle cx="15" cy="20" r="4.5" fill="#7C4DFF"></circle></svg>
+      <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="9" cy="10" r="3.5" fill="currentColor"></circle><circle cx="21" cy="10" r="3.5" fill="currentColor"></circle><circle cx="15" cy="20" r="4.5" fill="currentColor"></circle></svg>
     </span>
     <div class="revelation-texte">
       <p class="revelation-titre" data-rv-titre></p>
@@ -161,7 +158,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     </div>
     <div class="ta-voix" data-ta-voix>
       <p class="sur-titre">
-        <svg width="22" height="14" viewBox="0 0 40 24" aria-hidden="true"><circle cx="5" cy="20" r="3.2" fill="#C9B8FF"></circle><circle cx="9" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="17" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="26" cy="5" r="3.2" fill="#C9B8FF"></circle><circle cx="33" cy="11" r="3.2" fill="#C9B8FF"></circle><circle cx="36" cy="20" r="3.8" fill="#7C4DFF"></circle></svg>
+        <svg width="22" height="14" viewBox="0 0 40 24" aria-hidden="true"><circle cx="5" cy="20" r="3.2" fill="#6E6A63"></circle><circle cx="9" cy="11" r="3.2" fill="#6E6A63"></circle><circle cx="17" cy="5" r="3.2" fill="#6E6A63"></circle><circle cx="26" cy="5" r="3.2" fill="#6E6A63"></circle><circle cx="33" cy="11" r="3.2" fill="#6E6A63"></circle><circle cx="36" cy="20" r="3.8" fill="#F2C98A"></circle></svg>
         <span>Ta voix de 578<sup>e</sup></span>
       </p>
       <p data-rv-voix></p>
@@ -173,74 +170,91 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
 <script type="application/json" data-donnees-seance set:html={donnees}></script>
 
 <style>
-  /* Cotes reprises des frames V5 « ① Première question », « ② Révélation », « ⑥ Séance ». */
+  /* Le panneau de vote de « La Séance » (maquettes V6C-02 et V6C-05) : la question en Literata,
+     « Ce que ça change, concrètement », trois boutons identiques (une pastille de la couleur du
+     vote, « Ton vote » sur le choisi), le pronostic facultatif ; à droite, ton hémicycle. */
   :global(main.page.focus) { flex: 1; justify-content: center; max-width: 1320px;
-    padding: 12px clamp(16px, 3.4vw, 48px) 32px; }
+    padding: 16px var(--gouttiere) 32px; }
 
-  .quiz { display: flex; flex-wrap: wrap; gap: 32px 56px; align-items: center; }
-  .gauche { flex: 1 1 440px; min-width: 0; max-width: 560px; }
-  .panneau { flex: 1.25 1 560px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: var(--rayon);
-    background: var(--fond-doux); scroll-margin-top: 16px; }
+  .quiz { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+  .gauche { flex: 1 1 440px; min-width: 0; max-width: 600px; padding: 28px; border-radius: var(--rayon);
+    background: var(--panneau); box-shadow: var(--ombre-panneau); }
+  @media (max-width: 640px) { .gauche { padding: 20px 16px; } }
+  .panneau { flex: 1.25 1 520px; min-width: 0; padding: clamp(18px, 2.2vw, 28px); border-radius: var(--rayon);
+    background: var(--panneau); border: 1px solid var(--filet); scroll-margin-top: 16px; }
   .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
-  .panneau h2 { font-size: 24px; font-weight: 600; }
-  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris); }
+  .panneau h2 { font-size: 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--ivoire-2); }
   .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--rayon);
-    background: var(--fond); border: 2px solid var(--bord); }
-  .precision-tete-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); }
+    background: var(--panneau-2); border: 1px solid var(--filet); }
+  .precision-tete-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
   .precision-tete-segments { display: flex; gap: 3px; }
-  .precision-tete-segments span { width: 9px; height: 14px; border-radius: 3px; background: var(--bord); }
+  .precision-tete-segments span { width: 9px; height: 4px; background: var(--filet); }
   .precision-tete-segments :global(span.plein) { background: var(--lumiere); }
-  .precision-tete-pct { min-width: 36px; font-family: var(--police-titre); font-weight: 700; font-size: 14px; }
+  .precision-tete-pct { min-width: 36px; font: 600 15px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
   .cadre-salle { margin-top: 20px; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
-    list-style: none; font-size: 14px; color: var(--texte-doux); }
+    list-style: none; font-size: 14px; color: var(--ivoire-2); }
   .legende li { display: inline-flex; align-items: center; gap: 7px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
-  .legende .sans { background: #FFFFFF; border: 2px solid; }
+  .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--ivoire); }
+  .legende .sans { background: var(--panneau); border: 2px solid; }
 
-  .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 28px; }
-  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: var(--rayon);
-    font-size: 17px; line-height: 1.45; color: var(--texte-doux); }
-  .bulle :global(strong) { color: var(--violet-fonce); }
-  .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
-    border-radius: var(--rayon); background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
+  .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 24px; }
+  .bulle p { margin: 0; padding: 12px 16px; border-left: 3px solid var(--lumiere); background: var(--panneau-2);
+    font-size: 16px; line-height: 1.5; color: var(--ivoire); }
+  .bulle :global(strong) { color: var(--lumiere); }
+  .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
+    border-radius: var(--rayon); background: var(--panneau-2); border: 1px solid var(--filet); }
   /* L'arrivée de la carte suivante (A1). */
   .carte-question:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
   @media (prefers-reduced-motion: reduce) { .carte-question:global(.arrive) { animation: fondu var(--dur-xs) linear both; } }
-  .puces { display: flex; flex-wrap: wrap; gap: 8px; }
-  .puce-theme, .puce-date { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
-    border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px; }
-  .puce-theme { letter-spacing: 0.06em; text-transform: uppercase; }
-  .puce-theme::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-  .puce-date { background: var(--texte); color: #FFFFFF; }
-  .question h1 { margin: 16px 0 14px; font-size: clamp(34px, 3.3vw, 48px); font-weight: 600; line-height: 1.08;
-    letter-spacing: -0.015em; outline: none; }
-  .question h1:global(.longue) { font-size: clamp(28px, 2.6vw, 38px); line-height: 1.12; }
-  .concretement { margin: 0 0 30px; font-size: 18px; line-height: 1.5; color: var(--gris); }
-  .concretement strong { color: var(--texte); }
-  .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .choix button, .b-passer {
-    min-height: 76px; border: 0; border-radius: var(--rayon); font-family: var(--police-titre); font-weight: 600;
-    font-size: 24px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; cursor: pointer;
-    transition: transform .08s ease, box-shadow .08s ease, opacity .2s;
+  .puces { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  /* Le thème : une étiquette de régie, la même pour tous les thèmes (la couleur de la puce,
+     posée par lib/seance.ts, cède la place au rouge de régie). */
+  .puce-theme { display: inline-flex; align-items: center; padding: 6px 8px;
+    background: var(--direct) !important; color: var(--sur-direct) !important;
+    font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
+  .puce-date { display: inline-flex; align-items: center; gap: 6px; color: var(--ivoire-2);
+    font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
+  .question h1 { margin: 18px 0 18px; font: 500 var(--taille-question)/1.24 var(--police-question);
+    letter-spacing: 0; text-wrap: balance; outline: none; }
+  .question h1:global(.longue) { font-size: 28px; line-height: 1.28; }
+  @media (max-width: 640px) {
+    .question h1 { font-size: 27px; }
+    .question h1:global(.longue) { font-size: 23px; }
   }
-  /* Contre : #E5552A plutôt que le #FF6A3D de la maquette, pour un texte blanc lisible (contraste AA). */
-  .b-pour { background: var(--pour); box-shadow: 0 6px 0 #1C5AD0; }
-  .b-contre { background: #E5552A; box-shadow: 0 6px 0 #B83C0A; }
-  .choix button:active, .b-passer:active { transform: translateY(5px); box-shadow: none; }
-  .b-passer { width: 100%; min-height: 54px; margin-top: 14px; border: 2px solid var(--bord); background: var(--fond);
-    box-shadow: 0 4px 0 var(--bord); color: var(--gris); font-size: 17px; }
+  .concretement { margin: 0 0 24px; font-size: 17px; line-height: 27px; color: var(--ivoire); }
+  .concretement-titre { display: block; margin-bottom: 6px; font: 600 var(--taille-puce)/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+
+  /* Les boutons de vote : strictement identiques, seule la pastille porte la couleur du vote. */
+  .choix { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--filet); }
+  .choix button, .b-passer {
+    position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 58px;
+    padding: 0 18px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau-2);
+    color: var(--ivoire); font: 600 21px/1 var(--police-titre); letter-spacing: 0.03em; text-transform: uppercase;
+    text-align: left; cursor: pointer; transition: transform .08s ease, opacity .2s;
+  }
+  .b-passer { margin-top: 12px; }
+  .choix button::before, .b-passer::before { content: ''; flex: none; width: 14px; height: 14px; border-radius: 50%; }
+  .b-pour::before { background: var(--pour); }
+  .b-contre::before { background: var(--contre); }
+  .b-passer::before { background: var(--voyant-eteint); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
+  .choix button:hover:not(:disabled), .b-passer:hover:not(:disabled) { border-color: var(--ivoire-2); }
+  .choix button:active, .b-passer:active { transform: translateY(5px); }
   .choix button:disabled, .b-passer:disabled { cursor: default; }
-  .choix button:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
-  .b-passer:global(.estompe) { opacity: .35; box-shadow: none; transform: translateY(5px); }
+  /* Choisi : un cadre ivoire de 2 px et « Ton vote », pour chaque choix. */
+  .choix button:global(.choisi), .b-passer:global(.choisi) { border: 2px solid var(--ivoire); padding: 0 17px; }
+  .choix button:global(.choisi)::after, .b-passer:global(.choisi)::after { content: 'Ton vote'; margin-left: auto;
+    margin-right: 30px; font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; color: var(--ivoire-2); }
+  .choix button:global(.estompe), .b-passer:global(.estompe) { opacity: .35; transform: translateY(5px); }
   /* Le geste de vote (A2 + A3, docs/animations-lot-1.md § 1) : la même animation pour chaque
      choix. Le bouton choisi rebondit et une coche se trace ; les autres s'éteignent. */
-  .choix button, .b-passer { position: relative; }
   .choix button:global(.choisi), .b-passer:global(.choisi) { animation: ressort var(--dur-s) var(--ease-ressort) both; }
-  .choix button:global(.estompe), .b-passer:global(.estompe) { transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
-  .coche { position: absolute; left: 7px; top: calc(50% - 9px); width: 18px; height: 18px; opacity: 0; pointer-events: none; }
+  .choix button:global(.estompe), .b-passer:global(.estompe) { transition: transform .2s ease, opacity .2s ease; }
+  .coche { position: absolute; right: 14px; top: calc(50% - 9px); width: 18px; height: 18px; opacity: 0; pointer-events: none; }
   .coche path { fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round;
     stroke-dasharray: 1; stroke-dashoffset: 1; }
   :global(.choisi) > .coche { opacity: 1; }
@@ -251,31 +265,33 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     .choix button:global(.estompe), .b-passer:global(.estompe) { transition: none; }
   }
 
-  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
-    border-top: 2px solid var(--filet); background: var(--panneau-2); animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
+  /* La révélation : un bandeau de régie posé en bas de l'écran. */
+  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * var(--gouttiere)) -32px;
+    border-top: 1px solid var(--filet); background: var(--voile); backdrop-filter: blur(6px);
+    animation: bandeau var(--dur-bandeau) var(--ease-bandeau) both; }
   @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
   @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
   .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
-    margin: 0 auto; padding: 22px clamp(16px, 3.4vw, 48px); }
-  .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px;
-    border-radius: 50%; background: var(--fond); box-shadow: 0 4px 0 var(--filet); }
+    margin: 0 auto; padding: 20px var(--gouttiere); }
+  .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px;
+    border-radius: 50%; background: var(--panneau-2); color: var(--lumiere); border: 1px solid var(--filet); }
   .revelation-texte { flex: 1 1 380px; }
   .revelation p { margin: 0; }
-  .revelation-titre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(22px, 2.2vw, 28px);
-    line-height: 1.1; color: var(--lumiere); }
-  .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: #4A4F63; }
-  .revelation-texte a { white-space: nowrap; }
+  .revelation-titre { font: 600 clamp(22px, 2.2vw, 28px)/1.1 var(--police-titre); text-transform: uppercase;
+    letter-spacing: 0.01em; color: var(--lumiere); }
+  .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: var(--ivoire-2); }
+  .revelation-texte a { white-space: nowrap; color: var(--ivoire); }
   .rv-precision { display: flex; align-items: center; gap: 12px; max-width: 360px; margin-top: 10px; }
-  .rv-precision-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--violet); }
+  .rv-precision-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
   .rv-precision > :global(.jauge-precision) { flex: 1; }
-  .ta-voix { flex: 0 1 330px; padding: 12px 16px; border-radius: var(--rayon); background: var(--fond); border: 2px solid var(--filet);
-    font-size: 15px; line-height: 1.4; color: var(--texte-doux); }
-  .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; }
+  .ta-voix { flex: 0 1 330px; padding: 14px 16px; border-radius: var(--rayon); background: var(--panneau);
+    border: 1px solid var(--filet); font-size: 15px; line-height: 1.45; color: var(--ivoire); }
+  .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; color: var(--lumiere); }
   /* Ta voix en plus (R3) : la carte monte, le rond se pose, ton chiffre prend +1. */
   .ta-voix :global(.rond-voix) { display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -2px;
-    border-radius: 50%; background: var(--lumiere); box-shadow: 0 0 0 3px var(--filet); }
-  .ta-voix :global(.voix-plus) { display: inline-block; color: var(--lumiere); font-weight: 800; }
+    border-radius: 50%; background: var(--lumiere); box-shadow: 0 0 0 3px var(--panneau-2); }
+  .ta-voix :global(.voix-plus) { display: inline-block; color: var(--lumiere); font-weight: 600; }
   .ta-voix:global(.attend) { opacity: 0; }
   .ta-voix:global(.joue) { animation: monte var(--dur-m) var(--ease-monte) var(--r3, 900ms) both; }
   .ta-voix:global(.joue) :global(.rond-voix) { animation: vole 450ms cubic-bezier(.2,.8,.2,1.1) calc(var(--r3, 900ms) + 150ms) both; }
@@ -288,31 +304,29 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     .ta-voix:global(.joue) :global(.rond-voix), .ta-voix:global(.joue) :global(.voix-plus) { animation: none; }
   }
   .ta-voix p + p { margin-top: 5px; }
-  .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--violet); }
+  .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
   .sur-titre sup { text-transform: none; }
-  .b-continuer { min-width: 220px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: var(--rayon); background: var(--violet);
-    color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600;
-    font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+  /* L'action principale : le rouge de régie. */
+  .b-continuer, .b-suivant { min-height: 56px; border: 0; border-radius: var(--rayon); background: var(--direct);
+    color: var(--sur-direct); font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  .b-continuer:hover, .b-suivant:hover { background: #9A0F27; }
+  .b-continuer { min-width: 220px; flex: 0 0 auto; padding: 0 26px; }
   @media (max-width: 640px) { .b-continuer { width: 100%; } }
 
-  /* Le pronostic (frame ⑥). */
-  .pronostic { margin-top: 18px; padding: 18px 20px; border-radius: var(--rayon); background: #FFF8E1; border: 2px solid #FFE08A;
+  /* Le pronostic : facultatif, deux boutons identiques pour Adopté et Rejeté. */
+  .pronostic { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--filet);
     animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
   .pronostic[hidden] { display: none; }
   @media (prefers-reduced-motion: reduce) { .pronostic { animation: none; } }
   .prono-tete { display: flex; align-items: center; gap: 10px; }
-  .prono-icone { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--rayon);
-    background: var(--abstention); }
-  .prono-titre { font-family: var(--police-titre); font-weight: 700; font-size: 19px; }
-  .facultatif { margin-left: auto; font-size: 13px; font-weight: 700; color: #9A5B00; }
-  .prono-question { margin: 8px 0 0; font-size: 15px; color: #5A4A1A; }
-  .prono-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .prono-choix button { min-height: 48px; border-radius: var(--rayon); border: 2px solid #FFE08A; background: #FFFFFF; color: #7A4A00;
-    font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
-    cursor: pointer; }
-  .prono-choix button:global(.choisi) { background: #FFC531; border-color: #FFC531; color: #1F2433; }
-  .b-suivant { width: 100%; min-height: 56px; margin-top: 16px; border: 0; border-radius: var(--rayon); background: var(--violet);
-    color: #fff; box-shadow: 0 5px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 17px;
-    letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+  .prono-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ivoire-2); }
+  .facultatif { margin-left: auto; font-size: 13px; color: var(--ivoire-2); }
+  .prono-question { margin: 8px 0 0; font-size: 15px; color: var(--ivoire); }
+  .prono-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .prono-choix button { min-height: 48px; border-radius: var(--rayon); border: 1px solid var(--filet); background: var(--panneau-2);
+    color: var(--ivoire); font: 700 19px/1 var(--police-titre); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
+  .prono-choix button:global(.choisi) { border: 2px solid var(--ivoire); }
+  .b-suivant { width: 100%; margin-top: 16px; }
 </style>

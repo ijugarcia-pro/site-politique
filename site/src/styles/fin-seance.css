@@ -1,0 +1,70 @@
+/* La fin d'un lot ou de la séance, en régie (docs/refonte-la-seance.md, § 5) : le tampon « A voté »
+   devient un bandeau qui entre depuis le bas, le titre passe en capitales condensées, le bilan en
+   panneaux, le carnet en cases. Importée par pages/lots.astro et pages/seance.astro. */
+
+.fin { position: relative; display: flex; flex-direction: column; align-items: flex-start; }
+
+/* Le bandeau de fin (l'ancien tampon) : une étiquette rouge « A voté », le lot ou la séance en
+   titre, une légende. La classe « anime », posée par la page, le fait entrer depuis le bas. */
+.fin .tampon { align-self: stretch; }
+.fin .tampon .bandeau-ligne { flex-wrap: nowrap; }
+/* Dans le panneau, le bandeau se détache par un fond plus clair que celui du panneau. */
+.fin .tampon .bandeau-titre { flex: 0 1 auto; min-width: 0; background: var(--panneau-2); font-size: 34px; line-height: 1.05; }
+.fin .tampon .bandeau-legende { background: var(--filet); color: var(--ivoire); }
+@media (max-width: 640px) { .fin .tampon .bandeau-titre { font-size: 24px; line-height: 1.1; } }
+.fin .tampon:is(.anime) { animation: bandeau var(--dur-bandeau) var(--ease-bandeau) both; }
+@media (prefers-reduced-motion: reduce) { .fin .tampon:is(.anime) { animation: none; } }
+
+.fin h1 { margin: 28px 0 0; font: 700 clamp(44px, 5vw, 72px)/0.92 var(--police-titre); text-transform: uppercase;
+  letter-spacing: -0.005em; outline: none; }
+.fin-texte { margin: 14px 0 0; font-size: 17px; line-height: 27px; color: var(--ivoire-2); }
+
+/* Les panneaux du bilan. */
+.fin .cartes { align-self: stretch; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2px;
+  margin-top: 24px; }
+.fin .cartes > .carte, .fin .carte-precision { display: flex; flex-direction: column; padding: 18px 20px; border: 0;
+  border-radius: 0; box-shadow: none; background: var(--panneau-2); color: var(--ivoire); }
+.fin .carte-precision { align-self: stretch; margin-top: 24px; }
+.fin .cartes > .carte[hidden] { display: none; }
+.fin .carte .grand { display: flex; align-items: center; gap: 8px; font: 600 56px/0.95 var(--police-titre);
+  font-variant-numeric: tabular-nums; }
+.fin .carte .libelle, .fin .carte-precision .libelle { margin-top: 8px; font: 600 var(--taille-puce)/16px var(--police-titre);
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+.fin .carte .petit, .fin .carte-precision .petit { margin-top: 2px; font-size: 13px; color: var(--ivoire-2); }
+
+/* Le carnet : une case par lot ou par séance. */
+.fin .carnet { align-self: stretch; margin-top: 24px; padding: 18px 20px; background: var(--panneau-2); }
+.fin .carnet-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.fin .carnet-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
+.fin .carnet-compte { font-size: 14px; color: var(--ivoire-2); font-variant-numeric: tabular-nums; }
+.fin .carnet-suite { margin: 16px 0 0; font: 600 12px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ivoire-2); }
+.fin .carnet-suite + .tampons { margin-top: 8px; }
+.fin .tampons { display: flex; gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
+.fin .tampons li { flex: 1; max-width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  aspect-ratio: 1 / 1; border-radius: var(--rayon); font: 600 18px/1.05 var(--police-titre); text-align: center;
+  font-variant-numeric: tabular-nums; border: 1px dashed var(--filet); color: var(--ivoire-2); }
+.fin .tampons .mini { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; opacity: .85; }
+.fin .tampons li.fait { border: 1px solid var(--ivoire-2); color: var(--ivoire); background: var(--panneau); }
+.fin .tampons li.vient { border: 1px solid var(--direct); color: var(--sur-direct); background: var(--direct); }
+.fin .tampons li.prochain { border: 1px dashed var(--ivoire-2); color: var(--ivoire); }
+.fin .tampons li.vacances { border: 1px dashed var(--filet); color: var(--ivoire-2); background: var(--panneau); }
+
+/* Les actions : le rouge de régie pour l'action principale. */
+.fin .actions, .vacances .actions { align-self: stretch; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.b-principal { flex: 1 1 260px; min-height: 56px; display: flex; align-items: center; justify-content: center; padding: 0 24px;
+  border: 0; border-radius: var(--rayon); background: var(--direct); color: var(--sur-direct);
+  font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
+  text-align: center; cursor: pointer; }
+.b-principal:hover { color: var(--sur-direct); background: #9A0F27; }
+.b-principal[hidden] { display: none; }
+.b-second { flex: 0 1 220px; min-height: 56px; display: flex; align-items: center; justify-content: center; padding: 0 18px;
+  border: 1px solid var(--ivoire-2); border-radius: var(--rayon); background: transparent; color: var(--ivoire);
+  font: 600 16px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.b-second:hover { color: var(--ivoire); background: var(--panneau-2); }
+@media (max-width: 640px) { .b-second { flex: 1 1 100%; } }
+
+/* « Passer », pendant la cascade de la fin de séance. */
+.b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: var(--rayon);
+  border: 1px solid var(--ivoire-2); background: var(--panneau); color: var(--ivoire);
+  font: 600 14px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }

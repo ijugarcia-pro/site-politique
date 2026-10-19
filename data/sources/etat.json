@@ -3,7 +3,7 @@
   "derniere_modification": "Mon, 19 Oct 2026 16:40:45 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Agenda.json.zip",
-  "recupere_le": "2026-10-19T17:13:38+00:00",
+  "recupere_le": "2026-10-19T17:21:57+00:00",
   "sha256": "ea542fef34e1fb7de68d27cfc0b6da1ed09e73d8ad29ec14067ae90706e5fde8",
   "taille": 8455859,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
@@ -12,7 +12,7 @@
   "derniere_modification": "Mon, 19 Oct 2026 16:22:47 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Amendements.json.zip",
-  "recupere_le": "2026-10-19T17:18:21+00:00",
+  "recupere_le": "2026-10-19T17:23:43+00:00",
   "sha256": "7fe1bd3d9a10ab73068eed23bfc6161e734c106399707f2031ec1385941022a9",
   "taille": 344139537,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip"
@@ -57,7 +57,7 @@
   "derniere_modification": "Mon, 19 Oct 2026 16:16:35 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-10-19T17:15:24+00:00",
+  "recupere_le": "2026-10-19T17:22:03+00:00",
   "sha256": "d9db8366e5187bb1dab5cf5545ad9406bc72b19033b6af155ab3df46c76e5fee",
   "taille": 10906173,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
@@ -72,7 +72,7 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "dernier_echec": "2026-10-19T17:13:24+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 19378929)",
+  "dernier_echec": "2026-10-19T17:21:52+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 23612704)",
   "derniere_modification": "Mon, 19 Oct 2026 10:25:07 GMT",
   "echecs_consecutifs": 1,
   "fichier": "Scrutins.json.zip",

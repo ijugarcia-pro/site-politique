@@ -179,18 +179,18 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
 
   .quiz { display: flex; flex-wrap: wrap; gap: 32px 56px; align-items: center; }
   .gauche { flex: 1 1 440px; min-width: 0; max-width: 560px; }
-  .panneau { flex: 1.25 1 560px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: 32px;
+  .panneau { flex: 1.25 1 560px; min-width: 0; padding: clamp(18px, 2.2vw, 30px); border-radius: var(--rayon);
     background: var(--fond-doux); scroll-margin-top: 16px; }
   .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
   .panneau h2 { font-size: 24px; font-weight: 600; }
   .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--gris); }
-  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px;
+  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--rayon);
     background: var(--fond); border: 2px solid var(--bord); }
   .precision-tete-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px;
     letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); }
   .precision-tete-segments { display: flex; gap: 3px; }
   .precision-tete-segments span { width: 9px; height: 14px; border-radius: 3px; background: var(--bord); }
-  .precision-tete-segments :global(span.plein) { background: var(--violet); }
+  .precision-tete-segments :global(span.plein) { background: var(--lumiere); }
   .precision-tete-pct { min-width: 36px; font-family: var(--police-titre); font-weight: 700; font-size: 14px; }
   .cadre-salle { margin-top: 20px; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
@@ -201,11 +201,11 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .legende .sans { background: #FFFFFF; border: 2px solid; }
 
   .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 28px; }
-  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: 18px;
+  .bulle p { margin: 0; padding: 14px 18px; border: 2px solid var(--bord-leger); border-radius: var(--rayon);
     font-size: 17px; line-height: 1.45; color: var(--texte-doux); }
   .bulle :global(strong) { color: var(--violet-fonce); }
   .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
-    border-radius: 16px; background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
+    border-radius: var(--rayon); background: var(--violet); box-shadow: 0 5px 0 var(--violet-fonce); }
   /* L'arrivée de la carte suivante (A1). */
   .carte-question:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
   @media (prefers-reduced-motion: reduce) { .carte-question:global(.arrive) { animation: fondu var(--dur-xs) linear both; } }
@@ -222,7 +222,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .concretement strong { color: var(--texte); }
   .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .choix button, .b-passer {
-    min-height: 76px; border: 0; border-radius: 18px; font-family: var(--police-titre); font-weight: 600;
+    min-height: 76px; border: 0; border-radius: var(--rayon); font-family: var(--police-titre); font-weight: 600;
     font-size: 24px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; cursor: pointer;
     transition: transform .08s ease, box-shadow .08s ease, opacity .2s;
   }
@@ -252,30 +252,30 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   }
 
   .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * clamp(16px, 3.4vw, 48px)) -32px;
-    border-top: 2px solid #E3DAFF; background: #F3EEFF; animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
+    border-top: 2px solid var(--filet); background: var(--panneau-2); animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
   @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
   @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
   .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
     margin: 0 auto; padding: 22px clamp(16px, 3.4vw, 48px); }
   .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px;
-    border-radius: 50%; background: var(--fond); box-shadow: 0 4px 0 #E3DAFF; }
+    border-radius: 50%; background: var(--fond); box-shadow: 0 4px 0 var(--filet); }
   .revelation-texte { flex: 1 1 380px; }
   .revelation p { margin: 0; }
   .revelation-titre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(22px, 2.2vw, 28px);
-    line-height: 1.1; color: #4B2BC2; }
+    line-height: 1.1; color: var(--lumiere); }
   .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: #4A4F63; }
   .revelation-texte a { white-space: nowrap; }
   .rv-precision { display: flex; align-items: center; gap: 12px; max-width: 360px; margin-top: 10px; }
   .rv-precision-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.06em;
     text-transform: uppercase; color: var(--violet); }
   .rv-precision > :global(.jauge-precision) { flex: 1; }
-  .ta-voix { flex: 0 1 330px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF;
+  .ta-voix { flex: 0 1 330px; padding: 12px 16px; border-radius: var(--rayon); background: var(--fond); border: 2px solid var(--filet);
     font-size: 15px; line-height: 1.4; color: var(--texte-doux); }
   .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; }
   /* Ta voix en plus (R3) : la carte monte, le rond se pose, ton chiffre prend +1. */
   .ta-voix :global(.rond-voix) { display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -2px;
-    border-radius: 50%; background: #7C4DFF; box-shadow: 0 0 0 3px #D9CCFF; }
-  .ta-voix :global(.voix-plus) { display: inline-block; color: #5B33D6; font-weight: 800; }
+    border-radius: 50%; background: var(--lumiere); box-shadow: 0 0 0 3px var(--filet); }
+  .ta-voix :global(.voix-plus) { display: inline-block; color: var(--lumiere); font-weight: 800; }
   .ta-voix:global(.attend) { opacity: 0; }
   .ta-voix:global(.joue) { animation: monte var(--dur-m) var(--ease-monte) var(--r3, 900ms) both; }
   .ta-voix:global(.joue) :global(.rond-voix) { animation: vole 450ms cubic-bezier(.2,.8,.2,1.1) calc(var(--r3, 900ms) + 150ms) both; }
@@ -291,28 +291,28 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .sur-titre { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em;
     text-transform: uppercase; color: var(--violet); }
   .sur-titre sup { text-transform: none; }
-  .b-continuer { min-width: 220px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: 18px; background: var(--violet);
+  .b-continuer { min-width: 220px; min-height: 64px; flex: 0 0 auto; border: 0; border-radius: var(--rayon); background: var(--violet);
     color: #fff; box-shadow: 0 6px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600;
     font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   @media (max-width: 640px) { .b-continuer { width: 100%; } }
 
   /* Le pronostic (frame ⑥). */
-  .pronostic { margin-top: 18px; padding: 18px 20px; border-radius: 22px; background: #FFF8E1; border: 2px solid #FFE08A;
+  .pronostic { margin-top: 18px; padding: 18px 20px; border-radius: var(--rayon); background: #FFF8E1; border: 2px solid #FFE08A;
     animation: monte .35s cubic-bezier(.2,.8,.2,1.2) both; }
   .pronostic[hidden] { display: none; }
   @media (prefers-reduced-motion: reduce) { .pronostic { animation: none; } }
   .prono-tete { display: flex; align-items: center; gap: 10px; }
-  .prono-icone { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px;
+  .prono-icone { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--rayon);
     background: var(--abstention); }
   .prono-titre { font-family: var(--police-titre); font-weight: 700; font-size: 19px; }
   .facultatif { margin-left: auto; font-size: 13px; font-weight: 700; color: #9A5B00; }
   .prono-question { margin: 8px 0 0; font-size: 15px; color: #5A4A1A; }
   .prono-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .prono-choix button { min-height: 48px; border-radius: 14px; border: 2px solid #FFE08A; background: #FFFFFF; color: #7A4A00;
+  .prono-choix button { min-height: 48px; border-radius: var(--rayon); border: 2px solid #FFE08A; background: #FFFFFF; color: #7A4A00;
     font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
     cursor: pointer; }
   .prono-choix button:global(.choisi) { background: #FFC531; border-color: #FFC531; color: #1F2433; }
-  .b-suivant { width: 100%; min-height: 56px; margin-top: 16px; border: 0; border-radius: 16px; background: var(--violet);
+  .b-suivant { width: 100%; min-height: 56px; margin-top: 16px; border: 0; border-radius: var(--rayon); background: var(--violet);
     color: #fff; box-shadow: 0 5px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 17px;
     letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
 </style>

@@ -369,7 +369,7 @@ const exprimes = d.pour + d.contre;
     align-items: center;
     min-height: 38px;
     padding: 6px 14px;
-    border-radius: 12px;
+    border-radius: var(--rayon);
     background: var(--fond-doux);
     font-family: var(--police-titre);
     font-weight: 600;
@@ -387,7 +387,7 @@ const exprimes = d.pour + d.contre;
     align-items: center;
     gap: 16px 22px;
     padding: 20px 24px;
-    border-radius: 24px;
+    border-radius: var(--rayon);
     background: var(--texte);
     color: #fff;
     box-shadow: 0 6px 0 #0B0E17;
@@ -396,7 +396,7 @@ const exprimes = d.pour + d.contre;
     flex: none;
     padding: 8px 16px;
     border: 3px solid #fff;
-    border-radius: 12px;
+    border-radius: var(--rayon);
     font-family: var(--police-titre);
     font-weight: 700;
     font-size: clamp(22px, 2.6vw, 28px);
@@ -419,7 +419,7 @@ const exprimes = d.pour + d.contre;
     flex-wrap: wrap;
     gap: 28px;
     padding: clamp(16px, 2.4vw, 26px);
-    border-radius: 30px;
+    border-radius: var(--rayon);
     background: var(--fond-doux);
     scroll-margin-top: 90px;
   }
@@ -430,7 +430,7 @@ const exprimes = d.pour + d.contre;
   .choix button {
     min-height: 54px;
     border: 2px solid var(--bord);
-    border-radius: 14px;
+    border-radius: var(--rayon);
     background: var(--fond);
     box-shadow: 0 4px 0 var(--bord);
     font-family: var(--police-titre);
@@ -462,9 +462,9 @@ const exprimes = d.pour + d.contre;
   }
   .ta-voix {
     padding: 14px 16px;
-    border-radius: 18px;
+    border-radius: var(--rayon);
     background: var(--fond);
-    border: 2px solid #E3DAFF;
+    border: 2px solid var(--filet);
   }
   .ta-voix p { margin: 0; font-size: 15px; color: var(--texte-doux); }
   .ta-voix .sur-titre {
@@ -523,7 +523,7 @@ const exprimes = d.pour + d.contre;
   .plus h2 { margin-bottom: 4px; }
   .plus details {
     border: 2px solid var(--bord);
-    border-radius: 22px;
+    border-radius: var(--rayon);
     padding: 0 20px;
   }
   .plus summary {
@@ -552,7 +552,7 @@ const exprimes = d.pour + d.contre;
   .plus details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
   .plus details > :not(summary) { margin: 0 0 16px; font-size: 16px; color: var(--texte-doux); }
   .chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-  .chiffres div { padding: 12px 14px; border-radius: 14px; background: var(--fond-doux); }
+  .chiffres div { padding: 12px 14px; border-radius: var(--rayon); background: var(--fond-doux); }
   .chiffres dt { font-size: 14px; color: var(--gris); }
   .chiffres dd { margin: 2px 0 0; font-family: var(--police-titre); font-weight: 700; font-size: 24px; color: var(--texte); }
   .lecture, .mises, .sources { padding-left: 20px; }
@@ -562,9 +562,9 @@ const exprimes = d.pour + d.contre;
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .encadre { padding: 20px; border: 2px solid var(--bord); border-radius: 24px; }
+  .encadre { padding: 20px; border: 2px solid var(--bord); border-radius: var(--rayon); }
   .encadre h2 { font-size: 19px; }
-  .ton-depute { border-color: #C9B8FF; background: #FBF9FF; }
+  .ton-depute { border-color: var(--filet); background: var(--panneau-2); }
   .ton-depute p { margin: 8px 0 14px; font-size: 16px; color: var(--texte-doux); }
   .ton-depute .bouton { width: 100%; }
   .ton-depute :global(.vote-pastille) {
@@ -627,7 +627,7 @@ const exprimes = d.pour + d.contre;
     flex-direction: column;
     gap: 2px;
     padding: 10px 12px;
-    border-radius: 14px;
+    border-radius: var(--rayon);
     text-decoration: none;
     color: var(--texte);
   }

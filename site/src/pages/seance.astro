@@ -312,24 +312,24 @@ const tuile = premier ? {
   .fin:global(.en-cascade) .rendez-vous:not(:global(.apparait)) { opacity: 0; }
   .fin :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) var(--delai-c, 0ms) both; }
   @media (prefers-reduced-motion: reduce) { .fin :global(.apparait) { animation: none; } }
-  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: 12px;
+  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: var(--rayon);
     border: 2px solid var(--bord); background: var(--fond); box-shadow: 0 3px 0 var(--bord); color: var(--gris);
     font-family: var(--police-titre); font-weight: 600; font-size: 15px; cursor: pointer; }
   .tampon { align-self: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--violet); color: var(--violet-fonce);
-    background: #FFFFFF; box-shadow: inset 0 0 0 7px #FFFFFF, inset 0 0 0 10px #D9CCFF, 0 10px 0 #EFE9FF;
+    background: #FFFFFF; box-shadow: inset 0 0 0 7px #FFFFFF, inset 0 0 0 10px var(--filet), 0 10px 0 var(--panneau-2);
     transform: rotate(-8deg); }
   .tampon:global(.anime) { animation: tampon .6s cubic-bezier(.2,.8,.2,1) both; }
   @media (prefers-reduced-motion: reduce) { .tampon:global(.anime) { animation: none; } }
   .tampon-haut { font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; }
   .tampon-grand { font-family: var(--police-titre); font-weight: 700; font-size: 44px; line-height: 1.05; }
-  .tampon-a-vote { margin-top: 8px; padding: 4px 16px; border: 3px solid var(--violet); border-radius: 10px;
+  .tampon-a-vote { margin-top: 8px; padding: 4px 16px; border: 3px solid var(--violet); border-radius: var(--rayon);
     font-family: var(--police-titre); font-weight: 700; font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; }
   .tampon-bas { margin-top: 10px; font-size: 13px; font-weight: 700; }
   .fin h1 { margin: 28px 0 0; font-weight: 700; font-size: clamp(36px, 3.4vw, 46px); line-height: 1; outline: none; }
   .fin-texte { margin: 12px 0 0; font-size: 18px; line-height: 1.5; color: var(--gris); }
   .cartes { align-self: stretch; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-top: 20px; }
-  .carte { display: flex; flex-direction: column; padding: 18px; border-radius: 22px; }
+  .carte { display: flex; flex-direction: column; padding: 18px; border-radius: var(--rayon); }
   .carte[hidden] { display: none; }
   .carte .grand { display: flex; align-items: center; gap: 6px; font-family: var(--police-titre); font-weight: 700; font-size: 40px; line-height: 1; }
   .carte .libelle { margin-top: 6px; font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
@@ -348,13 +348,13 @@ const tuile = premier ? {
   @media (prefers-reduced-motion: reduce) {
     .carte:global(.apparait) .odo-colonne, .carte:global(.apparait) .flamme { animation: none; }
   }
-  .violette { background: #EFE9FF; box-shadow: 0 5px 0 #D9CCFF; color: #3D1FA8; }
+  .violette { background: var(--panneau-2); box-shadow: 0 5px 0 var(--filet); color: var(--ivoire); }
   .violette .grand, .violette .petit { color: var(--violet-fonce); }
   .jaune { background: #FFF8E1; box-shadow: 0 5px 0 #FFE08A; color: #7A4A00; }
   .jaune .grand, .jaune .petit { color: #9A5B00; }
   .rendez-vous { align-self: stretch; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin-top: 18px;
-    padding: 18px 20px; border-radius: 24px; border: 2px solid #C9B8FF; background: #FBF9FF; }
-  .tuile { flex: none; display: flex; flex-direction: column; align-items: center; width: 76px; height: 80px; border-radius: 16px;
+    padding: 18px 20px; border-radius: var(--rayon); border: 2px solid var(--filet); background: var(--panneau-2); }
+  .tuile { flex: none; display: flex; flex-direction: column; align-items: center; width: 76px; height: 80px; border-radius: var(--rayon);
     background: #FFFFFF; border: 2px solid var(--bord); overflow: hidden; }
   .tuile-jour { align-self: stretch; padding: 3px 0; background: var(--contre); color: #FFFFFF; text-align: center;
     font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -362,7 +362,7 @@ const tuile = premier ? {
   .tuile-heure { font-size: 12px; font-weight: 700; color: var(--gris-legende); }
   .rdv-texte { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.4; color: var(--gris); }
   .rdv-titre { font-family: var(--police-titre); font-weight: 700; font-size: 20px; color: var(--texte); }
-  .carnet { align-self: stretch; margin-top: 18px; padding: 18px 20px; border-radius: 24px; border: 2px solid var(--bord); }
+  .carnet { align-self: stretch; margin-top: 18px; padding: 18px 20px; border-radius: var(--rayon); border: 2px solid var(--bord); }
   .carnet-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .carnet-titre { font-family: var(--police-titre); font-weight: 700; font-size: 19px; }
   .carnet-compte { font-size: 14px; color: var(--gris-legende); }
@@ -373,16 +373,16 @@ const tuile = premier ? {
   .tampons :global(.mini) { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; opacity: .8; }
   .tampons :global(li.fait) { border: 3px solid var(--violet); color: var(--violet-fonce); background: #FFFFFF; transform: rotate(-8deg); }
   .tampons :global(li.vient) { border: 3px solid var(--violet); color: #FFFFFF; background: var(--violet);
-    transform: rotate(-8deg); box-shadow: 0 0 0 4px #D9CCFF; }
+    transform: rotate(-8deg); box-shadow: 0 0 0 4px var(--filet); }
   .tampons :global(li.vacances) { border: 2px dashed #B4BAC8; color: var(--gris); background: var(--fond-doux); }
   .actions { align-self: stretch; display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
   .b-principal { flex: 1 1 260px; min-height: 62px; display: flex; align-items: center; justify-content: center; padding: 0 22px;
-    border-radius: 18px; background: var(--violet); color: #fff; box-shadow: 0 6px 0 var(--violet-fonce);
+    border-radius: var(--rayon); background: var(--violet); color: #fff; box-shadow: 0 6px 0 var(--violet-fonce);
     font-family: var(--police-titre); font-weight: 600; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase;
     text-decoration: none; text-align: center; }
   .b-principal:hover { color: #fff; background: var(--violet-fonce); }
   .b-second { flex: 0 1 220px; min-height: 62px; display: flex; align-items: center; justify-content: center; padding: 0 18px;
-    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond); box-shadow: 0 4px 0 var(--bord);
+    border: 2px solid var(--bord); border-radius: var(--rayon); background: var(--fond); box-shadow: 0 4px 0 var(--bord);
     font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--violet-fonce); text-decoration: none; }
   @media (max-width: 640px) { .b-second { flex: 1 1 100%; } }

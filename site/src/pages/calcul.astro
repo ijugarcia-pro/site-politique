@@ -101,10 +101,10 @@ const niveaux = NIVEAUX.map((t, k) => ({
   .chapo { font-size: 19px; color: var(--texte-doux); }
   .texte h2 { margin-top: 34px; font-size: 24px; }
   .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--texte-doux); }
-  .effacer { min-height: 48px; padding: 0 18px; border: 2px solid var(--bord); border-radius: 14px; background: var(--fond);
+  .effacer { min-height: 48px; padding: 0 18px; border: 2px solid var(--bord); border-radius: var(--rayon); background: var(--fond);
     font-family: var(--police-titre); font-weight: 600; font-size: 15px; color: #B83C0A; cursor: pointer; }
   .efface { margin-left: 10px; font-size: 15px; color: #0C7F57; }
-  .exemple { padding: 14px 18px; border-radius: 16px; background: var(--fond-doux); }
+  .exemple { padding: 14px 18px; border-radius: var(--rayon); background: var(--fond-doux); }
   .niveaux { list-style: none; padding: 0; }
   .niveaux li { display: flex; align-items: center; gap: 10px; }
   .niveaux span { width: 14px; height: 14px; border-radius: 50%; flex: none; }

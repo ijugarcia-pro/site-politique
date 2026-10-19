@@ -322,9 +322,9 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     align-items: center;
     gap: 10px 14px;
     padding: 14px 18px;
-    border-radius: 20px;
-    background: #F3EEFF;
-    border: 2px solid #E3DAFF;
+    border-radius: var(--rayon);
+    background: var(--panneau-2);
+    border: 2px solid var(--filet);
     font-size: 16px;
   }
   .bandeau-mien a { margin-left: auto; font-family: var(--police-titre); font-weight: 600; }
@@ -340,7 +340,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     gap: 22px 32px;
     padding: clamp(20px, 2.6vw, 28px);
     border: 2px solid var(--bord);
-    border-radius: 28px;
+    border-radius: var(--rayon);
     box-shadow: 0 6px 0 var(--bord);
   }
   .avatar {
@@ -350,7 +350,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     justify-content: center;
     width: clamp(80px, 9vw, 108px);
     height: clamp(80px, 9vw, 108px);
-    border-radius: 30px;
+    border-radius: var(--rayon);
     background: var(--violet-voile);
     color: var(--violet-fonce);
     box-shadow: 0 6px 0 var(--violet-pale);
@@ -383,7 +383,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     width: 116px;
     height: 116px;
     border-radius: 50%;
-    background: conic-gradient(var(--violet) 0 var(--pct), var(--bord-leger) var(--pct) 100%);
+    background: conic-gradient(var(--lumiere) 0 var(--pct), var(--bord-leger) var(--pct) 100%);
   }
   .anneau-interieur {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -395,10 +395,10 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
   .mon-depute {
     min-height: 50px;
     padding: 0 20px;
-    border: 2px solid #C9B8FF;
-    border-radius: 16px;
+    border: 2px solid var(--filet);
+    border-radius: var(--rayon);
     background: var(--fond);
-    box-shadow: 0 4px 0 #E3DAFF;
+    box-shadow: 0 4px 0 var(--filet);
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 15px;
@@ -412,18 +412,18 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
   @media (max-width: 560px) { .stats { grid-template-columns: minmax(0, 1fr); } }
   .stat-sombre {
     display: flex; flex-direction: column; gap: 6px; margin: 0;
-    padding: 18px 22px; border-radius: 22px; background: var(--texte); color: #fff; font-size: 16px;
+    padding: 18px 22px; border-radius: var(--rayon); background: var(--texte); color: #fff; font-size: 16px;
   }
   .stat-sombre .sur-titre {
     font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.08em;
     text-transform: uppercase; color: var(--abstention);
   }
-  .stat { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: 22px; }
+  .stat { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: var(--rayon); }
   .stat-chiffre { font-family: var(--police-titre); font-weight: 700; font-size: 34px; line-height: 1; }
   .stat-chiffre .sur { font-size: 18px; opacity: 0.6; }
   .stat-legende { font-size: 14px; font-weight: 700; }
   .stat-repere { margin-top: auto; font-size: 13px; opacity: 0.8; }
-  .violet { background: #EFE9FF; color: var(--violet-encre); }
+  .violet { background: var(--panneau-2); color: var(--violet-encre); }
   .jaune { background: #FFF8E1; color: #7A4A00; }
   .orange { background: #FFF1E0; color: #7A3F00; }
 
@@ -477,7 +477,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
   .etiquette.censure { background: #FFE6DA; color: #9C3207; }
   .cellule { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
   .pastille {
-    padding: 4px 10px; border-radius: 10px; font-family: var(--police-titre); font-weight: 600;
+    padding: 4px 10px; border-radius: var(--rayon); font-family: var(--police-titre); font-weight: 600;
     font-size: 13px; background: var(--absent); color: var(--texte-doux); white-space: nowrap;
   }
   .p-pour { background: var(--pour); color: #fff; }
@@ -495,7 +495,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
   .toi :global(.oui) { background: #1CB37A; }
   .toi :global(.non) { background: #9AA1B2; }
   .toi :global(.pastille) {
-    padding: 4px 10px; border-radius: 10px; font-family: var(--police-titre); font-weight: 600; font-size: 13px;
+    padding: 4px 10px; border-radius: var(--rayon); font-family: var(--police-titre); font-weight: 600; font-size: 13px;
   }
   .toi :global(.p-pour) { background: var(--pour); color: #fff; }
   .toi :global(.p-contre) { background: #E5552A; color: #fff; }
@@ -509,14 +509,14 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
       font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #8A91A3;
     }
   }
-  .vide { padding: 16px; border-radius: 16px; background: var(--fond-doux); color: var(--texte-doux); }
+  .vide { padding: 16px; border-radius: var(--rayon); background: var(--fond-doux); color: var(--texte-doux); }
   [data-plus] { margin-top: 14px; }
 
   .cote { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .encadre { padding: 20px 22px; border: 2px solid var(--bord); border-radius: 24px; }
+  .encadre { padding: 20px 22px; border: 2px solid var(--bord); border-radius: var(--rayon); }
   .encadre.gris { border: 0; background: var(--fond-doux); }
   .encadre h2 { font-size: 19px; margin-bottom: 12px; }
   .encadre p { margin: 10px 0 0; font-size: 15px; color: var(--texte-doux); }

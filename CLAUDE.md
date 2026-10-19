@@ -4,6 +4,7 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 
 ## Décisions fixées
 - Direction visuelle : maquette V5 « Le 578e siège » (Fredoka + Nunito, violet #7C4DFF ; pour #2F7BFF, contre #FF6A3D, abstention #FFC531, absent #DFE3EB). Navigation : Cette semaine · Mon hémicycle · Explorer.
+  **En cours de remplacement** par la direction « La Séance » (décision du 20 oct. 2026, lots t56 à t62) : consignes dans docs/refonte-la-seance.md, qui priment sur la ligne ci-dessus pour tout écran déjà migré.
 - Mode de vote hybride : « Vote avant eux » pour les scrutins solennels (connus à l'avance par l'agenda) ; « Et toi, qu'aurais-tu voté ? » pour tous les autres votes.
 - Données publiques : pipeline de nuit (GitHub Actions) → Python + DuckDB → JSON statiques → Cloudflare Pages. Pas de base de données dans ce chemin. Un build en échec ne publie rien.
 - Calculs personnels dans le navigateur ; réponses en localStorage par défaut (les opinions politiques sont des données sensibles au sens du RGPD).

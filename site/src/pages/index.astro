@@ -7,6 +7,7 @@
 // dépend du visiteur est calculé dans son navigateur.
 import Base from '../layouts/Base.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
+import Salle3D from '../components/Salle3D.astro';
 import SerieGelee from '../components/SerieGelee.astro';
 import { avancementSeance, composition, dateLisible, etat, lienVote, lotsDeVotes, lotsDuParcours, majuscule,
   questionSeance, quandVote, scrutins, semaine } from '../lib/donnees.ts';
@@ -61,12 +62,18 @@ const donnees = JSON.stringify({
   sieges: compo.sieges.map((s) => [s.depute ?? null, s.groupe ?? null]),
 }).replace(/</g, '\\u003c');
 ---
-<Base titre="Le 578e siège" onglet="semaine"
+<Base titre="Le 578e siège" onglet="semaine" theme="seance"
   description="Les votes de l'Assemblée nationale rendus accessibles : tranche de vrais votes, compare-toi aux 577 députés, retrouve ce qu'a voté le tien.">
-  <div class="titre-page">
-    <h1>Cette semaine à l'Assemblée</h1>
-    <span>Données mises à jour le {dateLisible(maj.genere_le)}</span>
-  </div>
+  <Salle3D titre="La salle de l'Assemblée nationale, vue depuis le perchoir : 577 sièges sur 13 rangs, en 6 blocs séparés par 5 allées."
+    cameras={['salle', 'tribune', 'plan']}>
+    <div class="bandeau titre-page">
+      <div class="bandeau-ligne">
+        <span class="bandeau-etiquette">Cette semaine</span>
+        <h1 class="bandeau-titre">Cette semaine à l'Assemblée</h1>
+      </div>
+      <span class="bandeau-legende">Données mises à jour le {dateLisible(maj.genere_le)}</span>
+    </div>
+  </Salle3D>
 
   <div class="mise-en-page">
     <div class="principal">
@@ -83,7 +90,7 @@ const donnees = JSON.stringify({
           <div class="ticket-bas">
             <a class="ticket-bouton" href="/quiz/" data-ticket-bouton>Prendre ma place · 2 min</a>
             <span class="ticket-serie" data-ticket-serie hidden>
-              <svg width="18" height="20" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#FFC531"></path></svg>
+              <svg width="18" height="20" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#F2C98A"></path></svg>
               <span data-ticket-serie-texte></span>
             </span>
           </div>
@@ -146,10 +153,10 @@ const donnees = JSON.stringify({
         <span class="mini">
           <MiniHemicycle couleurs={couleurs} titre={`L'Assemblée aujourd'hui : ${occupes} députés en exercice`} />
           <svg class="etoile-toi" data-etoile viewBox="0 0 34 34" aria-hidden="true" hidden>
-            <path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z" fill="#FFC531" stroke="#1F2433" stroke-width="2.4" stroke-linejoin="round"></path>
+            <circle cx="17" cy="17" r="11" fill="none" stroke="#F2C98A" stroke-width="4"></circle>
           </svg>
         </span>
-        <span class="carte-texte" data-texte-hemicycle>L'Assemblée du jour : {occupes} députés, {compo.groupes.length}
+        <span class="carte-texte" data-texte-hemicycle>L'Assemblée du jour : {occupes} députés, {compo.groupes.length}{' '}
           groupes. Fais le quiz : tes réponses y dessineront ta place.</span>
         <span class="precision" data-precision hidden>
           <span class="precision-titre">Précision</span>
@@ -310,7 +317,8 @@ const donnees = JSON.stringify({
     if (!a) continue;
     const ligne = document.querySelector<HTMLElement>(`[data-verdict="${v.uid}"]`)!;
     const avec = a === v.gagnant;
-    ligne.querySelector<HTMLElement>('[data-marque]')!.style.background = avec ? '#1CB37A' : '#FF6A3D';
+    // Majorité ou minorité : la même pastille, seul le pictogramme change (neutralité).
+    ligne.querySelector<HTMLElement>('[data-marque]')!.style.background = '#3A3D45';
     ligne.querySelector('[data-marque-trait]')!.setAttribute('d', avec ? VU : CROIX);
     ligne.querySelector('[data-ligne]')!.textContent = `Tu avais voté ${a} · `
       + `${avec ? 'du côté de la majorité' : 'dans la minorité'}, avec ${a === 'pour' ? v.pour : v.contre} députés`;
@@ -403,22 +411,24 @@ const donnees = JSON.stringify({
 
 <style>
   /* Cotes reprises de la frame V5 « ⑤ Accueil ». */
-  .titre-page { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
-  .titre-page span { font-size: 15px; color: var(--gris); }
+  /* Le bandeau de la salle (maquette V6C-01). */
+  .titre-page .bandeau-titre { margin: 0; font: 600 clamp(26px, 3vw, 34px)/1.05 var(--police-titre); text-transform: uppercase; }
+  .titre-page .bandeau-etiquette { min-height: 54px; }
   .mise-en-page { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
   @media (max-width: 1080px) { .mise-en-page { grid-template-columns: minmax(0, 1fr); } }
   .principal { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 
-  .ticket { display: flex; flex-wrap: wrap; border-radius: var(--rayon); background: var(--violet); color: #fff;
-    box-shadow: 0 6px 0 var(--violet-fonce); overflow: hidden; }
+  /* Le ticket de la séance : un panneau de régie, l'action principale en rouge. */
+  .ticket { display: flex; flex-wrap: wrap; border-radius: var(--rayon); background: var(--panneau); color: var(--ivoire);
+    border-top: 3px solid var(--direct); box-shadow: var(--ombre-panneau); overflow: hidden; }
   .ticket-gauche { flex: 1 1 440px; min-width: 0; padding: 26px 28px; }
-  .sur-titre { margin: 0; font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
-    text-transform: uppercase; }
-  .ticket h2 { margin-top: 6px; font-size: clamp(24px, 2.6vw, 30px); font-weight: 700; line-height: 1.1; }
-  .ticket-texte { margin: 12px 0 0; font-size: 16px; opacity: 0.92; max-width: 540px; }
+  .sur-titre { margin: 0; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
+  .ticket h2 { margin-top: 8px; font-size: clamp(28px, 3vw, 36px); font-weight: 600; line-height: 1.05; }
+  .ticket-texte { margin: 12px 0 0; font-size: 17px; line-height: 27px; color: var(--ivoire-2); max-width: 560px; }
   .items { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
   .items :global(li) { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--rayon);
-    background: rgba(255, 255, 255, 0.12); }
+    background: var(--panneau-2); }
   .items :global(.item-theme) { flex: none; min-width: 86px; padding: 4px 10px; border-radius: 999px; text-align: center;
     font-family: var(--police-titre); font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
   .items :global(.item-titre) { flex: 1; min-width: 0; font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
@@ -427,51 +437,43 @@ const donnees = JSON.stringify({
   .ticket-bas { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 20px; }
   .ticket-serie { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
   .ticket-serie[hidden] { display: none; }
-  .heure { font-family: var(--police-titre); font-weight: 700; font-size: 66px; line-height: 1; }
-  .note-ticket { margin-top: 10px; font-size: 13px; line-height: 1.35; }
-  .deja-juge { margin-top: 10px; padding: 8px 14px; border-radius: var(--rayon); background: #fff; color: var(--violet-fonce);
+  .heure { font-family: var(--police-titre); font-weight: 600; font-size: 72px; line-height: 0.95; font-variant-numeric: tabular-nums; }
+  .note-ticket { margin-top: 10px; font-size: 13px; line-height: 1.35; color: var(--ivoire-2); }
+  .deja-juge { margin-top: 10px; padding: 8px 14px; border-radius: var(--rayon); border: 1px solid var(--ivoire-2); color: var(--ivoire);
     font-family: var(--police-titre); font-weight: 600; font-size: 14px; text-decoration: none; }
   .deja-juge:hover { color: var(--violet-encre); }
-  .deja-juge:focus-visible { outline-color: #fff; }
-  .ticket-bouton { display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px;
-    border-radius: var(--rayon); background: #fff; color: var(--violet-fonce); box-shadow: 0 5px 0 var(--filet);
-    font-family: var(--police-titre); font-weight: 600; font-size: 17px; letter-spacing: 0.04em;
+  .ticket-bouton { display: inline-flex; align-items: center; min-height: 56px; padding: 0 26px;
+    border-radius: var(--rayon); background: var(--direct); color: var(--sur-direct);
+    font-family: var(--police-titre); font-weight: 600; font-size: 18px; letter-spacing: 0.08em;
     text-transform: uppercase; text-decoration: none; }
-  .ticket-bouton:hover { color: var(--violet-encre); }
-  .ticket-bouton:focus-visible, .ticket-droite:focus-visible { outline-color: #fff; }
+  .ticket-bouton:hover { color: var(--sur-direct); background: #9A0F27; }
   .ticket-droite { flex: 0 0 240px; position: relative; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 4px; padding: 26px 20px; background: var(--direct);
-    border-left: 3px dashed rgba(255, 255, 255, 0.35); color: #fff; text-align: center; text-decoration: none; }
-  .ticket-droite:hover { background: #9A0F27; color: #fff; }
-  .ticket-droite::before, .ticket-droite::after { content: ''; position: absolute; left: -16px; width: 30px; height: 30px;
-    border-radius: 50%; background: var(--fond); }
-  .ticket-droite::before { top: -16px; }
-  .ticket-droite::after { bottom: -16px; }
+    justify-content: center; gap: 4px; padding: 26px 20px; background: var(--panneau-2);
+    border-left: 1px solid var(--filet); color: var(--ivoire); text-align: center; text-decoration: none; }
+  a.ticket-droite:hover { background: var(--filet); color: var(--ivoire); }
   @media (max-width: 700px) {
-    .ticket-droite { flex-basis: 100%; border-left: 0; border-top: 3px dashed rgba(255, 255, 255, 0.35); }
-    .ticket-droite::before, .ticket-droite::after { display: none; }
+    .ticket-droite { flex-basis: 100%; border-left: 0; border-top: 1px solid var(--filet); }
   }
   .petit { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
-  .jour { font-family: var(--police-titre); font-weight: 700; font-size: 21px; }
-  .tampon { margin: 6px 0; padding: 4px 14px; border: 3px solid #fff; border-radius: var(--rayon); font-family: var(--police-titre);
-    font-weight: 700; font-size: 24px; letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-4deg); }
-  .score { font-family: var(--police-titre); font-weight: 700; font-size: 40px; line-height: 1; }
-  .pastille-ticket { margin-top: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.18);
+  .jour { font-family: var(--police-titre); font-weight: 600; font-size: 21px; text-transform: uppercase; }
+  .tampon { margin: 6px 0; font-family: var(--police-titre); font-weight: 700; font-size: 38px; line-height: 1; text-transform: uppercase; }
+  .score { font-family: var(--police-titre); font-weight: 600; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .pastille-ticket { margin-top: 8px; padding: 6px 14px; border-radius: 999px; background: var(--panneau);
     font-family: var(--police-titre); font-weight: 600; font-size: 14px; }
 
-  .encadre { padding: 18px 20px; border: 2px solid var(--bord); border-radius: var(--rayon); }
+  .encadre { padding: 18px 20px; border: 1px solid var(--filet); border-radius: var(--rayon); }
   .encadre h2 { font-size: 20px; font-weight: 700; }
   .titre-section { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .titre-section a { flex: none; font-family: var(--police-titre); font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; }
   .verdicts { margin: 8px 0 0; padding: 0; list-style: none; }
   .verdicts a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 8px;
     border-top: 2px solid #F0F2F6; color: inherit; text-decoration: none; }
-  .verdicts a:hover { background: #F8F9FC; }
+  .verdicts a:hover { background: var(--panneau-2); }
   .v-titre { font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
   .v-theme { display: inline-block; margin-right: 8px; padding: 2px 9px; border-radius: 999px; font-size: 11px;
     letter-spacing: 0.06em; text-transform: uppercase; vertical-align: 2px; }
-  .v-pastille { justify-self: end; align-self: center; padding: 4px 10px; border-radius: 999px; background: var(--texte);
-    color: #fff; font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.04em;
+  .v-pastille { justify-self: end; align-self: center; padding: 4px 10px; border-radius: 999px; background: var(--ivoire);
+    color: var(--nuit); font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.04em;
     text-transform: uppercase; white-space: nowrap; }
   @media (max-width: 520px) {
     .verdicts a { grid-template-columns: minmax(0, 1fr); }
@@ -479,20 +481,20 @@ const donnees = JSON.stringify({
   }
   .v-ligne { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--gris); }
   .v-marque { flex: none; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px;
-    border-radius: 50%; background: #C9CFDA; }
+    border-radius: 50%; background: #3A3D45; }
 
   .cote { display: flex; flex-direction: column; gap: 16px; }
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .carte-lien, .carte { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 2px solid var(--bord);
-    border-radius: var(--rayon); background: var(--fond); box-shadow: 0 5px 0 var(--bord); color: inherit; text-decoration: none; }
-  .carte-lien:hover { border-color: var(--violet-pale); }
+  .carte-lien, .carte { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 1px solid var(--filet);
+    border-radius: var(--rayon); background: var(--fond); color: inherit; text-decoration: none; }
+  .carte-lien:hover { border-color: var(--ivoire-2); }
   .carte-lien[hidden], .carte[hidden] { display: none; }
   .carte-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
   .carte-titre { font-family: var(--police-titre); font-weight: 700; font-size: 20px; }
   .discret { font-size: 13px; color: var(--gris); }
-  .carte-texte { margin: 0; font-size: 15px; color: #3A4152; }
+  .carte-texte { margin: 0; font-size: 15px; color: var(--ivoire-2); }
   .mini { position: relative; display: block; margin-top: 12px; }
   .etoile-toi { position: absolute; width: 24px; height: 24px; transform: translate(-50%, -50%); }
   .etoile-toi[hidden] { display: none; }
@@ -506,26 +508,26 @@ const donnees = JSON.stringify({
   .jumeau { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 2px dashed var(--bord-leger); }
   .jumeau[hidden] { display: none; }
   .jumeau-ini { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
-    border-radius: var(--rayon); background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 15px; }
+    border-radius: 50%; border: 2px solid var(--ivoire); color: var(--ivoire); font-family: var(--police-titre); font-weight: 600; font-size: 15px; }
   .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .jumeau-sur { font-size: 12px; font-weight: 700; color: var(--violet); text-transform: uppercase; letter-spacing: 0.06em; }
+  .jumeau-sur { font: 600 12px/16px var(--police-titre); color: var(--ivoire-2); text-transform: uppercase; letter-spacing: 0.12em; }
   .jumeau-nom { font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
   .jumeau-pct { font-family: var(--police-titre); font-weight: 700; font-size: 16px; color: var(--violet-fonce); }
   .depute-choisi { display: flex; align-items: center; gap: 12px; }
   .depute-choisi > span:last-child { display: flex; flex-direction: column; }
   .avatar-depute { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;
-    border-radius: 50%; background: #FFE6DA; color: #B83C0A; font-family: var(--police-titre); font-weight: 700; font-size: 17px; }
+    border-radius: 50%; border: 2px solid var(--ivoire-2); color: var(--ivoire); font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
   .nom-depute { font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
   .semaine { display: flex; gap: 6px; }
   .semaine:empty { display: none; }
   .semaine :global(span) { flex: 1; padding: 8px 6px; border-radius: var(--rayon); text-align: center; font-size: 12px;
     font-weight: 700; background: var(--fond-doux); color: var(--gris); }
-  .semaine :global(span.pareil) { background: #DFF7EC; color: #0C7F57; }
-  .semaine :global(span.oppose) { background: #FFE6DA; color: #B83C0A; }
+  /* Même vote que toi : en lumière ; vote différent : sans couleur de vote. */
+  .semaine :global(span.pareil) { background: var(--panneau-2); color: var(--lumiere); }
+  .semaine :global(span.oppose) { background: var(--panneau-2); color: var(--ivoire-2); }
   .cp { display: flex; gap: 8px; }
-  .cp input { flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border-radius: var(--rayon); border: 2px solid var(--bord);
+  .cp input { flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border-radius: var(--rayon); border: 1px solid var(--filet); background: var(--panneau-2); color: var(--ivoire);
     font-family: var(--police-titre); font-weight: 600; font-size: 18px; letter-spacing: 0.08em; }
-  .cp input:focus { border-color: var(--violet); outline: none; }
-  .cp button { min-height: 50px; padding: 0 16px; border: 0; border-radius: var(--rayon); background: var(--violet); color: #fff;
-    box-shadow: 0 4px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 16px; cursor: pointer; }
+  .cp input:focus { border-color: var(--ivoire); outline: none; }
+  .cp button { min-height: 50px; padding: 0 16px; border: 0; border-radius: var(--rayon); background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 600; font-size: 16px; cursor: pointer; }
 </style>

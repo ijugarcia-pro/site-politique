@@ -1,0 +1,81 @@
+---
+// La salle en 3D (docs/refonte-la-seance.md, § 4) : une scène posée en tête de page (accueil,
+// verdict, Mon hémicycle). Le canevas est décoratif (aria-hidden) ; l'alternative textuelle est la
+// légende. Tant que la 3D n'est pas prête, ou si elle ne doit pas s'ouvrir (pas de WebGL,
+// économie de données, appareil faible), un hémicycle SVG statique la remplace : c'est le repli.
+// La salle interactive et accessible de la page (Salle.astro, Hemicycle.astro) reste à sa place.
+// Le script de la page la pilote avec salle3d/pilote.ts (voyants, caméra, ambiance).
+import MiniHemicycle from './MiniHemicycle.astro';
+import { SIEGES } from '../lib/hemicycle.ts';
+
+interface Props {
+  /** Ce que montre la salle, en une phrase (légende pour les lecteurs d'écran). */
+  titre: string;
+  /** La couleur du voyant de chaque siège au départ (repli compris) ; vide : tous éteints. */
+  couleurs?: (string | null)[];
+  /** Les puces de caméra proposées, la première est en cours. */
+  cameras?: ('salle' | 'tribune' | 'plan')[];
+  /** Hauteur de la scène sur ordinateur (la largeur est celle de la page). */
+  hauteur?: string;
+}
+
+const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], plan: ['Cam 4', 'Plan'] };
+const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)' } = Astro.props;
+const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33');
+---
+<figure class="scene theme-seance" data-salle3d style={`--hauteur-scene: ${hauteur}`}>
+  <div class="ecran">
+    <div class="repli" aria-hidden="false">
+      <MiniHemicycle couleurs={repli} titre={titre} />
+    </div>
+    <canvas aria-hidden="true"></canvas>
+    <div class="dessus"><slot /></div>
+    {cameras.length > 1 && (
+      <div class="cameras" role="group" aria-label="Caméras">
+        {cameras.map((c, k) => (
+          <button type="button" data-camera={c} aria-pressed={k === 0 ? 'true' : 'false'}
+            aria-label={`${NOMS[c][0]} · ${NOMS[c][1]}`}><span>{NOMS[c][0]}</span><span class="cam-nom">&nbsp;· {NOMS[c][1]}</span></button>
+        ))}
+      </div>
+    )}
+  </div>
+  <figcaption class="visuellement-cache">{titre}</figcaption>
+</figure>
+
+<script>
+  import { salle3D } from '../salle3d/pilote.ts';
+  for (const el of document.querySelectorAll<HTMLElement>('[data-salle3d]')) salle3D(el);
+</script>
+
+<style>
+  .scene { position: relative; margin: 0; background: var(--nuit); color: var(--ivoire); }
+  .ecran { position: relative; height: var(--hauteur-scene); min-height: 420px; overflow: hidden; }
+  @media (max-width: 640px) { .ecran { height: 70vh; min-height: 380px; } }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0;
+    transition: opacity 600ms ease; touch-action: pan-y; }
+  /* Le repli : un hémicycle aux voyants, centré sur fond de nuit. */
+  .repli { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 64px 32px 140px; }
+  .repli :global(.mini-hemicycle) { width: min(100%, 860px); }
+  .scene[data-salle3d-etat='prete'] canvas { opacity: 1; }
+  .scene[data-salle3d-etat='prete'] .repli { visibility: hidden; }
+  @media (prefers-reduced-motion: reduce) { canvas { transition: none; } }
+  /* Un dégradé vers la nuit, en bas, pour poser les bandeaux sur la salle. */
+  .ecran::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(12, 13, 16, 0) 45%, rgba(12, 13, 16, 0.85) 100%); }
+  .dessus { position: absolute; inset: auto 0 0 0; z-index: 2; padding: 0 var(--gouttiere) 28px; }
+  /* Les caméras n'ont de sens que dans la salle 3D : cachées dans le repli. */
+  .scene:not([data-salle3d-etat='prete']) .cameras { display: none; }
+  .cameras { position: absolute; top: 20px; right: var(--gouttiere); z-index: 3; display: flex; flex-wrap: wrap; gap: 8px; }
+  .cameras button { height: 36px; padding: 0 14px; border-radius: var(--rayon-puce); border: 1px solid rgba(242, 238, 230, 0.28);
+    background: rgba(12, 13, 16, 0.6); color: var(--ivoire); font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; }
+  .cameras button[aria-pressed='true'] { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
+  .cameras button[aria-pressed='true']::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--direct); }
+  /* Sur téléphone, les puces passent en bas, au-dessus de la navigation. */
+  @media (max-width: 640px) {
+    .cameras { top: auto; bottom: 12px; left: 16px; right: 16px; justify-content: center; flex-wrap: nowrap; }
+    /* Comme dans la maquette V6C-05 : seule la caméra en cours garde son nom. */
+    .cameras button:not([aria-pressed='true']) .cam-nom { display: none; }
+    .dessus { padding-bottom: 64px; }
+  }
+</style>

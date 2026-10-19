@@ -9,6 +9,7 @@
 // Julien du 12 octobre 2026) : la page ne laisse pas croire que la séance est finie.
 import Base from '../layouts/Base.astro';
 import Salle from '../components/Salle.astro';
+import Salle3D from '../components/Salle3D.astro';
 import { avancementSeance, composition, dateLisible, lienVote, quandVote, questionSeance,
   scrutinPublie, semaine, voteJuge } from '../lib/donnees.ts';
 import { marge, verdict } from '../lib/votes.ts';
@@ -50,6 +51,10 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
 <Base titre="Le verdict" onglet="semaine" theme="seance"
   description="Le verdict des votes de la semaine à l'Assemblée, face à tes réponses.">
   <p class="fil"><a href="/">Cette semaine</a> › Verdict</p>
+  {verdicts.length > 0 && (
+    <Salle3D titre="La salle de l'Assemblée nationale : chaque voyant de pupitre s'allume à la couleur du vote du député (pour, contre, abstention) ; éteint, il n'a pas pris part au vote."
+      cameras={['salle', 'plan']} hauteur="min(60vh, 560px)" />
+  )}
   {verdicts.length === 0 ? (
     <section class="attente">
       <h1>Pas encore de verdict</h1>
@@ -175,6 +180,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   import { Salle } from '../lib/salle.ts';
   import { etatSeance } from '../lib/seances.ts';
   import { voix578 } from '../lib/votes.ts';
+  import { salle3D } from '../salle3d/pilote.ts';
 
   interface Verdict {
     cle: string; uid: string; titre: string; verdict: string; adopte: boolean;
@@ -186,6 +192,12 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   const racine = document.querySelector<HTMLElement>('[data-salle]');
   if (racine && verdicts.length) {
     const salle = new Salle(racine);
+    // La salle 3D en tête de page : ses voyants prennent la couleur du vote de chaque député,
+    // une fois le verdict découvert (rien avant le toucher).
+    const scene = document.querySelector<HTMLElement>('[data-salle3d]');
+    const s3 = scene ? salle3D(scene) : null;
+    const VOYANTS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531' };
+    const voyantsDe = (v: Verdict) => [...v.sieges].map((l) => VOYANTS[l.toUpperCase()] ?? null);
     // Absent et non-votant : les teintes « éteintes » du thème (styles/global.css).
     const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', N: 'var(--non-votant)', '-': 'var(--absent)' };
     const MOTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention' };
@@ -245,6 +257,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
         salle.centre(`${v.decompte.pour} – ${v.decompte.contre}`, legende);
       }
       salle.libre(false);
+      if (!document.documentElement.classList.contains('verdict-cache')) s3?.voyants(voyantsDe(v));
     };
 
     /** Les lignes de l'onglet k : ta place dans le résultat, ton pronostic, ta voix. */

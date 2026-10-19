@@ -1,0 +1,182 @@
+{
+ "bois": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ },
+ "bois-h": {
+  "l": 1024,
+  "h": 512,
+  "couleur": false
+ },
+ "bois-r": {
+  "l": 1024,
+  "h": 512,
+  "couleur": false
+ },
+ "bois-clair": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ },
+ "panneau": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ },
+ "panneau-h": {
+  "l": 1024,
+  "h": 512,
+  "couleur": false
+ },
+ "velours": {
+  "l": 512,
+  "h": 512,
+  "couleur": true
+ },
+ "velours-h": {
+  "l": 512,
+  "h": 512,
+  "couleur": false
+ },
+ "moquette": {
+  "l": 512,
+  "h": 512,
+  "couleur": true
+ },
+ "moquette-h": {
+  "l": 512,
+  "h": 512,
+  "couleur": false
+ },
+ "marbre": {
+  "l": 1024,
+  "h": 1024,
+  "couleur": true
+ },
+ "statuaire": {
+  "l": 1024,
+  "h": 1024,
+  "couleur": true
+ },
+ "patine": {
+  "l": 256,
+  "h": 256,
+  "couleur": false
+ },
+ "caisson": {
+  "l": 256,
+  "h": 256,
+  "couleur": true
+ },
+ "caisson-h": {
+  "l": 256,
+  "h": 256,
+  "couleur": false
+ },
+ "caisson-m": {
+  "l": 256,
+  "h": 256,
+  "couleur": false
+ },
+ "caisson-r": {
+  "l": 256,
+  "h": 256,
+  "couleur": false
+ },
+ "verriere": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ },
+ "vitrage": {
+  "l": 512,
+  "h": 512,
+  "couleur": true
+ },
+ "mosaique": {
+  "l": 1024,
+  "h": 819,
+  "couleur": true
+ },
+ "mosaique-h": {
+  "l": 512,
+  "h": 410,
+  "couleur": false
+ },
+ "cannelures": {
+  "l": 512,
+  "h": 16,
+  "couleur": false
+ },
+ "balustrade": {
+  "l": 512,
+  "h": 128,
+  "couleur": true
+ },
+ "balustrade-h": {
+  "l": 512,
+  "h": 128,
+  "couleur": false
+ },
+ "entablement": {
+  "l": 1024,
+  "h": 256,
+  "couleur": true
+ },
+ "entablement-h": {
+  "l": 1024,
+  "h": 256,
+  "couleur": false
+ },
+ "entablement-m": {
+  "l": 1024,
+  "h": 256,
+  "couleur": false
+ },
+ "galerie": {
+  "l": 512,
+  "h": 512,
+  "couleur": true
+ },
+ "mur": {
+  "l": 2048,
+  "h": 600,
+  "couleur": true
+ },
+ "mur-h": {
+  "l": 2048,
+  "h": 600,
+  "couleur": false
+ },
+ "tribune": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ },
+ "tribune-h": {
+  "l": 1024,
+  "h": 512,
+  "couleur": false
+ },
+ "perchoir": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ },
+ "perchoir-h": {
+  "l": 1024,
+  "h": 512,
+  "couleur": false
+ },
+ "plaque": {
+  "l": 512,
+  "h": 160,
+  "couleur": true
+ },
+ "environnement": {
+  "l": 1024,
+  "h": 512,
+  "couleur": true
+ }
+}

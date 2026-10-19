@@ -5,7 +5,7 @@
 // t10, en attendant la mesure du délai de publication) — le scrutin est récupéré la nuit, et
 // les soirs de vote solennel à chaque heure (soiree.yml). Pas de comparaison avec les
 // utilisateurs du site : il faudrait des agrégats (reportés). Tant que la séance n'est tranchée
-// qu'en partie, un bandeau le dit et chaque vote à venir garde un onglet grisé (retour de
+// qu'en partie, un bandeau le dit et chaque vote à venir garde une étape en pointillés (retour de
 // Julien du 12 octobre 2026) : la page ne laisse pas croire que la séance est finie.
 import Base from '../layouts/Base.astro';
 import Salle from '../components/Salle.astro';
@@ -41,8 +41,8 @@ const verdicts = seance.flatMap((v) => {
 });
 const attendus = sem.votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
 const etape = avancementSeance(sem);
-// Un onglet par vote de la séance, dans son ordre : le verdict s'il est tombé (`k` : son rang
-// parmi les verdicts), sinon un onglet grisé.
+// Une étape par vote de la séance, dans son ordre : le verdict s'il est tombé (`k` : son rang
+// parmi les verdicts), sinon une étape en pointillés.
 const onglets = seance.map((v) => ({ titre: questionSeance(v).titre,
   k: verdicts.findIndex((x) => x.cle === v.cle) }));
 const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\u003c');
@@ -88,18 +88,19 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
       <section class="gauche">
         <button type="button" class="b-passer-seq" data-passer-seq hidden>Passer</button>
         {onglets.length > 1 && (
-          <div class="onglets" role="tablist" aria-label="Les verdicts de ta séance">
-            {onglets.map((o, n) => (o.k >= 0 ? (
-              <button type="button" role="tab" data-onglet={o.k} aria-selected={o.k === 0 ? 'true' : 'false'}>
-                <span class="onglet-titre">{n + 1}. {o.titre}</span>
-              </button>
-            ) : (
-              <button type="button" role="tab" class="a-venir" aria-selected="false" disabled>
-                <span class="onglet-titre">{n + 1}. {o.titre}</span>
-                <span class="onglet-etat">Verdict après le vote</span>
-              </button>
-            )))}
-          </div>
+          <nav class="etapes" aria-label="Les verdicts de ta séance">
+            <p class="etapes-texte" data-etape-texte>Verdict {onglets.findIndex((o) => o.k === 0) + 1} sur {onglets.length}</p>
+            <div class="segments">
+              {onglets.map((o, n) => (o.k >= 0 ? (
+                <button type="button" class="segment" data-onglet={o.k} data-rang={n + 1}
+                  aria-current={o.k === 0 ? 'step' : undefined} aria-label={`Verdict ${n + 1} : ${o.titre}`}
+                  title={o.titre}><span></span></button>
+              ) : (
+                <span class="segment a-venir" role="img" aria-label={`Vote ${n + 1} : ${o.titre}, verdict après le vote`}
+                  title="Verdict après le vote"><span></span></span>
+              )))}
+            </div>
+          </nav>
         )}
         {verdicts.map((v, k) => (
           <article class="un-verdict" data-verdict={k} hidden={k > 0}>
@@ -120,8 +121,10 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
             </div>
             <ul class="lignes" data-lignes={k}></ul>
             <div class="actions">
-              <a class="b-principal" href={v.lien}>Tout le détail →</a>
-              <a class="b-second" href="/hemicycle/">Mon hémicycle</a>
+              {k < verdicts.length - 1
+                ? <button type="button" class="b-principal" data-suivant={k + 1}>Verdict suivant →</button>
+                : <a class="b-principal" href="/hemicycle/">Mon hémicycle →</a>}
+              <a class="b-second" href={v.lien}>Tout le détail</a>
             </div>
           </article>
         ))}
@@ -205,7 +208,11 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
       const v = verdicts[k];
       for (const a of document.querySelectorAll<HTMLElement>('[data-verdict]')) a.hidden = a.dataset.verdict !== String(k);
       for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
-        o.setAttribute('aria-selected', o.dataset.onglet === String(k) ? 'true' : 'false');
+        if (o.dataset.onglet === String(k)) {
+          o.setAttribute('aria-current', 'step');
+          const texte = document.querySelector('[data-etape-texte]');
+          if (texte) texte.textContent = texte.textContent!.replace(/\d+ sur/, `${o.dataset.rang} sur`);
+        } else o.removeAttribute('aria-current');
       }
       onde?.passer();
       const rendu = (i: number) => {
@@ -268,12 +275,24 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
     };
 
     const html = document.documentElement;
+    /** Passer à un autre verdict : il s'affiche en haut de page, l'étape reste visible. */
+    const aller = (k: number, depuisSuivant: boolean) => {
+      if (html.classList.contains('verdict-cache')) return;
+      peindre(k);
+      remplir(k);
+      if (!depuisSuivant) return;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      const article = document.querySelector<HTMLElement>(`[data-verdict="${k}"]`)!;
+      article.classList.remove('arrive');
+      void article.offsetWidth;
+      article.classList.add('arrive');
+      article.querySelector<HTMLElement>('[data-titre-verdict]')?.focus({ preventScroll: true });
+    };
     for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
-      o.addEventListener('click', () => {
-        if (html.classList.contains('verdict-cache')) return;
-        peindre(Number(o.dataset.onglet));
-        remplir(Number(o.dataset.onglet));
-      });
+      o.addEventListener('click', () => aller(Number(o.dataset.onglet), false));
+    }
+    for (const b of document.querySelectorAll<HTMLElement>('[data-suivant]')) {
+      b.addEventListener('click', () => aller(Number(b.dataset.suivant), true));
     }
 
     // D1 : un verdict pas encore découvert attend le toucher. Avant, l'hémicycle est gris et
@@ -337,7 +356,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
     if (Object.keys(mes).length || monDepute) {
       fetch('/donnees/matrice.json').then((r) => r.json()).then((m: Matrice) => {
         matrice = m;
-        const actif = document.querySelector<HTMLElement>('[data-onglet][aria-selected="true"]');
+        const actif = document.querySelector<HTMLElement>('[data-onglet][aria-current="step"]');
         remplir(Number(actif?.dataset.onglet ?? (k0 < 0 ? 0 : k0)));
       }).catch(() => {});
     }
@@ -356,15 +375,19 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   .bandeau strong { font-family: var(--police-titre); font-weight: 600; font-size: 17px; color: var(--violet-encre); }
   .verdict { display: flex; flex-wrap: wrap; gap: 28px 40px; align-items: flex-start; }
   .gauche { flex: 1 1 480px; min-width: 0; max-width: 600px; }
-  .onglets { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
-  .onglets button { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 8px 14px;
-    border: 2px solid var(--bord); border-radius: 999px; background: var(--fond);
-    font-family: var(--police-titre); font-weight: 600; font-size: 14px; color: var(--gris); cursor: pointer; }
-  .onglet-titre { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .onglets button[aria-selected="true"] { border-color: var(--violet); background: #EFE9FF; color: var(--violet-fonce); }
-  .onglets .a-venir { border-style: dashed; background: var(--fond-doux); color: var(--gris-legende); cursor: default; }
-  .onglet-etat { flex: none; padding: 2px 9px; border-radius: 999px; background: var(--bord); color: var(--gris);
-    font-size: 12px; }
+  /* Où tu en es dans les verdicts de ta séance (retour de Julien du 14 oct.) : un repère
+     d'étapes, comme la progression de la séance, et non une rangée de titres. */
+  .etapes { margin: 14px 0 0; }
+  .etapes-texte { margin: 0 0 6px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--violet-encre); }
+  .segments { display: flex; gap: 6px; }
+  .segment { display: flex; align-items: center; width: 56px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .segment > span { display: block; width: 100%; height: 8px; border-radius: 999px; background: #B9A4FF; }
+  .segment[aria-current="step"] > span { background: var(--violet); }
+  .segment.a-venir { cursor: default; }
+  .segment.a-venir > span { height: 6px; border: 2px dashed var(--bord); background: none; }
+  .segment:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; border-radius: 6px; }
+  .un-verdict:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
   .un-verdict[hidden] { display: none; }
   /* Le verdict au toucher (D1 + D3, docs/animations-lot-1.md § 8). */
   .gauche { position: relative; }
@@ -373,7 +396,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   :global(html.verdict-cache) .decouvrir { display: block; }
   :global(html.verdict-cache) .boite, :global(html.verdict-cache) .lignes,
   :global(html.verdict-cache) .actions { display: none; }
-  :global(html.verdict-cache) .onglets { pointer-events: none; }
+  :global(html.verdict-cache) .etapes { pointer-events: none; }
   .panneau :global(svg.respire) { animation: respire 2.4s ease-in-out infinite alternate paused; }
   .panneau :global(svg.respire.a-l-ecran) { animation-play-state: running; }
   @keyframes respire { from { opacity: .5; } to { opacity: 1; } }
@@ -392,6 +415,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   @media (prefers-reduced-motion: reduce) {
     .panneau :global(svg.respire) { animation: none; opacity: .6; }
     .un-verdict :global(.apparait), .boite:global(.apparait) .tampon, .marge:global(.grossit) { animation: none; }
+    .un-verdict:global(.arrive) { animation: fondu var(--dur-xs) linear both; }
   }
   .puces { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .puce-theme, .puce-date { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px;

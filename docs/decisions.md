@@ -304,3 +304,8 @@
 - Décision (Julien) : la précision reste `1 − e^(−n/20)` (CLAUDE.md) : 71 % à 25 votes (seuil « fiable »), 84 % à 37, sans jamais atteindre 100 %. Une fois la place fiable, les textes de fin (lots, résultat du quiz, Mon hémicycle) disent le chiffre : « Ta place est fiable : 85 % de précision ; chaque vote l'affine encore. »
 - Raison : retour de test : à 38 votes, la jauge à 85 % semblait bloquée. Afficher 100 % après 25 votes promettrait une certitude que 25 votes ne donnent pas.
 - Conséquence : aucun changement de calcul ; seuls ces textes changent.
+
+## 2026-10-14 · Verdict : un repère d'étapes et « Verdict suivant »
+- Décision (Julien, retour de test du verdict du 13 octobre) : en haut de `/verdict/`, la rangée de titres des votes (qui ressemblait à un menu ou à un sommaire) devient un repère d'étapes : « Verdict 1 sur 3 » et un segment par vote de la séance, en violet pour le verdict affiché, en violet clair pour les autres (un appui y mène), en pointillés pour un vote pas encore tenu. En bas, le bouton principal devient « Verdict suivant → » ; au dernier verdict, « Mon hémicycle → ». « Tout le détail » passe en bouton secondaire. « Verdict suivant » ramène en haut de page, d'un coup, et le verdict suivant monte (fondu en mouvement réduit), comme les cartes de la séance (décision du 13 octobre).
+- Raison : sur le premier verdict, on ne comprenait pas qu'il y en avait deux autres ; le bouton « Mon hémicycle » faisait quitter la page au lieu de continuer.
+- Conséquence : l'hémicycle du verdict suivant prend ses couleurs sans onde (l'onde reste réservée à la première découverte de la visite) ; le reste de la page ne change pas.

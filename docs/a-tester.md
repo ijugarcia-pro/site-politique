@@ -35,7 +35,22 @@ Ce que tu dois savoir :
 1. **La réserve est vide** (`data/reserve.json`). Une semaine creuse est complétée par les cartes des lots, du lot 9 au lot 1 (ton choix du 12 octobre). Un visiteur qui a déjà fait le lot 9 retrouve donc ce vote dans la séance.
 2. **Le n° 5106** (Frères musulmans, lot 7) est le vote de l'article unique d'une résolution européenne. Il n'avait pas de page : sa réponse n'aurait pas compté. C'est corrigé ; sa page est étiquetée « Vote sur un article ».
 3. **Thèmes des lots 6 à 9** : Sécurité, Économie et Institutions reviennent 3 fois chacun (le plafond de 2 par thème ne vaut que pour les lots 1 à 5).
-4. **Un défaut qui existait déjà**, hors de cette tâche : sur « Mon hémicycle », le script commun de l'en-tête s'arrête sur une erreur (deux éléments portent le même attribut `data-tranches`). L'anneau de précision de l'en-tête ne s'y affiche pas. Signalé à la session qui travaille sur l'en-tête.
+4. **Un défaut qui existait déjà**, hors de cette tâche : sur « Mon hémicycle », le script commun de l'en-tête s'arrête sur une erreur (deux éléments portent le même attribut `data-tranches`). L'anneau de précision de l'en-tête ne s'y affiche pas. *Corrigé le 13 octobre (voir le § 0 ter).*
+
+## 0 ter. Mise à jour du 13 octobre : les animations du lot 1 (en ligne)
+
+Les 9 animations du lot 1 sont en ligne depuis le 13 octobre à 13 h. Je les ai vérifiées dans un navigateur automatisé, à la taille d'un téléphone, sur des données illustratives : neutralité, mouvement réduit, rien qui s'anime hors de l'écran, séance de 3 votes bien sous les 2 minutes. **Ce que seul un vrai téléphone peut dire**, sur https://le578esiege.pages.dev :
+
+- [ ] **Le geste de vote.** Pour, Contre et Je ne sais pas : le bouton choisi rebondit et une coche se trace ; les autres s'éteignent. La même chose pour les trois.
+- [ ] **La question suivante.** Après « Continuer », la page revient en haut et la carte suivante monte, sans saut ni texte qui se chevauche.
+- [ ] **L'onde de l'hémicycle.** À la révélation, la page descend vers l'hémicycle ; les sièges prennent leur couleur du centre vers l'extérieur, et le compte « pour – contre » défile. **Est-ce fluide, ou est-ce que ça saccade ?** (c'est la mesure que je n'ai pas pu faire : si c'est fluide, on peut essayer de remettre le léger grossissement des sièges).
+- [ ] **Ta voix de 578e et la jauge de précision** apparaissent quand tu fais défiler jusqu'à elles, pas avant.
+- [ ] **Fin de séance** : tampon, puis cartes en cascade, la série qui passe de N à N + 1. « Passer » ou un appui n'importe où donnent tout de suite l'écran final.
+- [ ] **Verdict** (mardi soir ou mercredi matin) : l'hémicycle est gris avec un « ? », et rien du résultat n'est visible avant « Découvrir le verdict ». Après le toucher : le tampon ADOPTÉ ou REJETÉ, puis tes lignes. À la visite suivante, plus d'attente.
+- [ ] **Mouvement réduit.** Sur iPhone : Réglages → Accessibilité → Mouvement → Réduire les animations ; sur Android : Paramètres → Accessibilité → Supprimer les animations. Tout doit s'afficher directement, avec au plus un fondu.
+- [ ] **Mon hémicycle** : l'anneau de précision en haut à droite s'affiche maintenant aussi sur cette page (il manquait, voir le § 0 bis, point 4 : corrigé).
+
+À toi de décider, sans urgence : les dates des vacances parlementaires, pour que la carte « série gelée » dise « elle t'attend pour la reprise, le lundi … ». Tant qu'elles manquent, elle dit seulement « pour la reprise ».
 
 ## 1. Ce qui a été fait
 

@@ -1,0 +1,41 @@
+{
+ "lundi": "2026-10-19",
+ "vacances": false,
+ "votes": [
+  {
+   "cle": "RUANR5L17S2027IDS30952PT53288",
+   "type": "annonce",
+   "date": "2026-10-20",
+   "debut": "2026-10-20 15:00:00+02",
+   "objet": "Vote solennel sur le projet de loi de finances pour 2027 (première partie).",
+   "nature": "partie",
+   "dossier_uid": "DLR5L17N54629",
+   "dossier": "Projet de loi de finances pour 2027",
+   "groupe": null
+  },
+  {
+   "cle": "scrutin:VTANR5L17V4754",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V4754",
+   "numero": 4754,
+   "date": "2025-12-11",
+   "objet": "l'ensemble de la proposition de loi visant à garantir un renouvellement automatique des titres de séjour de longue durée (première lecture).",
+   "dossier_uid": "DLR5L17N52749",
+   "dossier": "Garantir un renouvellement automatique des titres de séjour de longue durée",
+   "reserve": false,
+   "lot": 9
+  },
+  {
+   "cle": "scrutin:VTANR5L17V1306",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V1306",
+   "numero": 1306,
+   "date": "2025-04-07",
+   "objet": "l'ensemble de la proposition de loi visant à convertir des centrales à charbon vers des combustibles moins émetteurs en dioxyde de carbone pour permettre une transition écologique plus juste socialement (première lecture).",
+   "dossier_uid": "DLR5L17N51485",
+   "dossier": "Proposition de loi visant à convertir des centrales à charbon vers des combustibles moins émetteurs en dioxyde de carbone pour permettre une transition écologique plus juste socialement",
+   "reserve": false,
+   "lot": 9
+  }
+ ]
+}

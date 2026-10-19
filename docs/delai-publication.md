@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-10-13T07:50:16+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-10-19T10:57:40+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,20 +12,25 @@ Généré le 2026-10-13T07:50:16+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 19
+- Versions observées après la référence : 41
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 12,0 h
-- Heure (UTC) des versions : 04 h : 6 · 10 h : 3 · 16 h : 5 · 22 h : 5
+- Heure (UTC) des versions : 04 h : 12 · 10 h : 8 · 16 h : 11 · 22 h : 10
 
 ## Délais
 
-**Tous les scrutins** : 136 scrutins
+**Tous les scrutins** : 317 scrutins
 
-- Depuis la fin prévue de la séance (borne basse) : min 0,8 h · médiane 4,9 h · 90 % ≤ 10,0 h · max 10,0 h
+- Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 5,4 h · 90 % ≤ 10,0 h · max 10,4 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,4 h · 90 % ≤ 10,4 h · max 15,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 136 sur 136
-- Répartition depuis la fin prévue : moins de 1 h : 2 · 3 à 6 h : 16 · 6 à 12 h : 12
+- Publiés au plus tard le lendemain du vote à 8 h : 317 sur 317
+- Répartition depuis la fin prévue : moins de 1 h : 19 · 3 à 6 h : 52 · 6 à 12 h : 46
 
-Aucun scrutin solennel mesuré pour l'instant.
+**Scrutins solennels** : 2 scrutins
+
+- Depuis la fin prévue de la séance (borne basse) : min 4,0 h · médiane 4,0 h · 90 % ≤ 4,0 h · max 4,0 h
+- Depuis le début de la séance (borne haute) : min 9,5 h · médiane 9,5 h · 90 % ≤ 9,5 h · max 9,5 h
+- Publiés au plus tard le lendemain du vote à 8 h : 2 sur 2
+- Répartition depuis la fin prévue : 3 à 6 h : 2
 
 ## Versions observées
 
@@ -51,3 +56,25 @@ Aucun scrutin solennel mesuré pour l'instant.
 | 2026-10-12T16:26:46+00:00 | 2026-10-12T18:03:07+00:00 | 8681 | 8681 | 9 |
 | 2026-10-12T22:26:50+00:00 | 2026-10-13T00:51:44+00:00 | 8696 | 8696 | 15 |
 | 2026-10-13T04:26:15+00:00 | 2026-10-13T07:50:15+00:00 | 8696 | 8696 | 0 |
+| 2026-10-13T10:26:34+00:00 | 2026-10-13T16:08:26+00:00 | 8696 | 8696 | 0 |
+| 2026-10-13T16:27:19+00:00 | 2026-10-13T21:21:39+00:00 | 8704 | 8704 | 8 |
+| 2026-10-13T22:27:08+00:00 | 2026-10-14T00:26:15+00:00 | 8707 | 8707 | 3 |
+| 2026-10-14T04:26:21+00:00 | 2026-10-14T06:15:43+00:00 | 8707 | 8707 | 0 |
+| 2026-10-14T10:26:26+00:00 | 2026-10-14T12:08:08+00:00 | 8707 | 8707 | 0 |
+| 2026-10-14T16:26:18+00:00 | 2026-10-14T20:51:12+00:00 | 8708 | 8708 | 1 |
+| 2026-10-14T22:26:19+00:00 | 2026-10-14T23:58:46+00:00 | 8732 | 8732 | 24 |
+| 2026-10-15T04:26:11+00:00 | 2026-10-15T10:06:36+00:00 | 8732 | 8732 | 0 |
+| 2026-10-15T16:25:45+00:00 | 2026-10-15T19:15:37+00:00 | 8772 | 8772 | 40 |
+| 2026-10-16T04:25:14+00:00 | 2026-10-16T07:20:46+00:00 | 8806 | 8806 | 34 |
+| 2026-10-16T10:25:47+00:00 | 2026-10-16T12:35:36+00:00 | 8824 | 8824 | 18 |
+| 2026-10-16T16:25:10+00:00 | 2026-10-16T17:32:23+00:00 | 8853 | 8853 | 29 |
+| 2026-10-16T22:25:08+00:00 | 2026-10-17T00:36:03+00:00 | 8877 | 8877 | 24 |
+| 2026-10-17T04:25:47+00:00 | 2026-10-17T05:43:00+00:00 | 8877 | 8877 | 0 |
+| 2026-10-17T10:25:44+00:00 | 2026-10-17T14:17:18+00:00 | 8877 | 8877 | 0 |
+| 2026-10-17T16:25:34+00:00 | 2026-10-17T17:20:22+00:00 | 8877 | 8877 | 0 |
+| 2026-10-17T22:25:57+00:00 | 2026-10-18T01:13:29+00:00 | 8877 | 8877 | 0 |
+| 2026-10-18T04:25:07+00:00 | 2026-10-18T06:04:48+00:00 | 8877 | 8877 | 0 |
+| 2026-10-18T10:25:46+00:00 | 2026-10-18T11:24:30+00:00 | 8877 | 8877 | 0 |
+| 2026-10-18T16:25:17+00:00 | 2026-10-18T18:43:41+00:00 | 8877 | 8877 | 0 |
+| 2026-10-18T22:25:57+00:00 | 2026-10-19T00:15:55+00:00 | 8877 | 8877 | 0 |
+| 2026-10-19T04:25:16+00:00 | 2026-10-19T10:57:40+00:00 | 8877 | 8877 | 0 |

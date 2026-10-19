@@ -47,6 +47,7 @@ Les 9 animations du lot 1 sont en ligne depuis le 13 octobre à 13 h. Je les ai 
 - [ ] **Ta voix de 578e et la jauge de précision** apparaissent quand tu fais défiler jusqu'à elles, pas avant.
 - [ ] **Fin de séance** : tampon, puis cartes en cascade, la série qui passe de N à N + 1. « Passer » ou un appui n'importe où donnent tout de suite l'écran final.
 - [ ] **Verdict** (mardi soir ou mercredi matin) : l'hémicycle est gris avec un « ? », et rien du résultat n'est visible avant « Découvrir le verdict ». Après le toucher : le tampon ADOPTÉ ou REJETÉ, puis tes lignes. À la visite suivante, plus d'attente.
+- [ ] **Verdict suivant** (ton retour du 14 octobre) : en haut, « Verdict 1 sur 3 » et trois segments ; en bas, « Verdict suivant → » mène au 2e puis au 3e verdict, en haut de page ; au dernier, « Mon hémicycle → ». Un appui sur un segment mène directement à ce verdict.
 - [ ] **Mouvement réduit.** Sur iPhone : Réglages → Accessibilité → Mouvement → Réduire les animations ; sur Android : Paramètres → Accessibilité → Supprimer les animations. Tout doit s'afficher directement, avec au plus un fondu.
 - [ ] **Mon hémicycle** : l'anneau de précision en haut à droite s'affiche maintenant aussi sur cette page (il manquait, voir le § 0 bis, point 4 : corrigé).
 

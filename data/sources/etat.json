@@ -9,8 +9,9 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
+  "dernier_echec": "2026-10-19T16:03:38+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 21812775)",
   "derniere_modification": "Mon, 19 Oct 2026 12:22:41 GMT",
-  "echecs_consecutifs": 0,
+  "echecs_consecutifs": 1,
   "fichier": "Amendements.json.zip",
   "recupere_le": "2026-10-19T13:12:07+00:00",
   "sha256": "0b305a46443dc566c512265f1d6ff24ff752e8a8ea33593094d8f8c4ac6b06bd",
@@ -72,13 +73,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "dernier_echec": "2026-10-19T14:06:31+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 15471333)",
-  "derniere_modification": "Sun, 18 Oct 2026 10:25:46 GMT",
-  "echecs_consecutifs": 2,
+  "derniere_modification": "Mon, 19 Oct 2026 10:25:07 GMT",
+  "echecs_consecutifs": 0,
   "fichier": "Scrutins.json.zip",
-  "recupere_le": "2026-10-18T11:46:34+00:00",
-  "sha256": "7ad54953a01fc5c20c72d2d4907f80bc7c9d07a0d7fc8258e66e8939a33571d7",
-  "taille": 27563304,
+  "recupere_le": "2026-10-19T15:44:58+00:00",
+  "sha256": "57118dbc71e61d210056f81ad2366cb267e1decf37fe9818b816b9a7e069288f",
+  "taille": 27563289,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip"
  }
 }

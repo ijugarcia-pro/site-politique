@@ -114,6 +114,10 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
         </button>
       ))}
     </div>
+    <div class="filtres" role="group" aria-label="Filtrer selon tes réponses" data-filtres-tranche>
+      <button type="button" data-tranche-filtre="a-trancher" aria-pressed="false">À trancher <span class="n" data-n-a-trancher></span></button>
+      <button type="button" data-tranche-filtre="tranches" aria-pressed="false">Tranchés <span class="n" data-n-tranches></span></button>
+    </div>
     <ul class="liste" id="liste">
       {tous.map((v) => <LigneVote vote={v} />)}
     </ul>
@@ -125,7 +129,18 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
 </Base>
 
 <script>
+  import { reponses } from '../lib/navigateur.ts';
   import { normaliser } from '../lib/votes.ts';
+
+  // Tes réponses, lues dans le navigateur : chaque vote déjà tranché le dit.
+  const mes = reponses();
+  for (const l of document.querySelectorAll<HTMLElement>('li[data-uid]')) {
+    const r = mes[l.dataset.uid ?? '']?.v;
+    if (!r) continue;
+    l.dataset.repondu = '1';
+    const t = l.querySelector<HTMLElement>('[data-tranche]');
+    if (t) { t.textContent = `✓ Tranché · ${r}`; t.hidden = false; }
+  }
 
   const PAR_PAGE = 30;
   const champ = document.querySelector<HTMLInputElement>('#recherche')!;
@@ -137,7 +152,26 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
   const vide = document.querySelector<HTMLElement>('[data-vide]')!;
   const plus = document.querySelector<HTMLButtonElement>('[data-plus]')!;
   let filtre = '';
+  let tranche = location.hash === '#a-trancher' ? 'a-trancher' : '';
   let limite = PAR_PAGE;
+  const boutonsTranche = [...document.querySelectorAll<HTMLButtonElement>('[data-tranche-filtre]')];
+  // À trancher : les votes qui comptent dans ton hémicycle (pas les motions de censure).
+  const aTrancher = (l: HTMLElement) => !l.dataset.repondu && l.dataset.famille !== 'censure';
+  document.querySelector('[data-n-tranches]')!.textContent = String(lignes.filter((l) => l.dataset.repondu).length);
+  document.querySelector('[data-n-a-trancher]')!.textContent = String(lignes.filter(aTrancher).length);
+  const marquerTranche = () => {
+    for (const b of boutonsTranche) b.setAttribute('aria-pressed', String((b.dataset.trancheFiltre ?? '') === tranche));
+  };
+  marquerTranche();
+  for (const b of boutonsTranche) {
+    b.addEventListener('click', () => {
+      // Un second appui sur le filtre actif le retire.
+      tranche = tranche === b.dataset.trancheFiltre ? '' : b.dataset.trancheFiltre ?? '';
+      marquerTranche();
+      limite = PAR_PAGE;
+      appliquer();
+    });
+  }
 
   const appliquer = () => {
     const mots = normaliser(champ.value).split(' ').filter(Boolean);
@@ -145,7 +179,8 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
       const bonType = !filtre || (filtre === 'solennel' ? l.dataset.solennel === '1'
         : l.dataset.famille === filtre);
       const texte = l.dataset.recherche ?? '';
-      return bonType && mots.every((m) => texte.includes(m));
+      const bonneReponse = !tranche || (tranche === 'tranches' ? !!l.dataset.repondu : aTrancher(l));
+      return bonType && bonneReponse && mots.every((m) => texte.includes(m));
     });
     for (const l of lignes) l.hidden = true;
     retenues.slice(0, limite).forEach((l) => { l.hidden = false; });
@@ -213,9 +248,13 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
   }
   document.querySelector('[data-tout-voir]')?.addEventListener('click', () => {
     champ.value = '';
+    tranche = '';
+    marquerTranche();
     boutons[0].click();
   });
   appliquer();
+  // Venu de « Trancher d'autres votes » : la liste des votes à trancher, tout de suite.
+  if (tranche) document.querySelector('#tous')?.scrollIntoView({ block: 'start' });
 </script>
 
 <style>

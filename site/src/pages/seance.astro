@@ -222,7 +222,7 @@ const tuile = premier ? {
       const auMoinsUnVerdict = questions.some((q) => !q.attente);
       if (!auMoinsUnVerdict) {
         const lot = prochainLot(etatLots().faits, parcours);
-        principal.href = lot === null ? '/explorer/' : '/lots/';
+        principal.href = lot === null ? '/explorer/#a-trancher' : '/lots/';
         principal.textContent = lot === null ? 'Trancher d\'autres votes' : 'En attendant : 3 votes passés →';
       }
       $('[data-fin-titre]').focus();

@@ -295,6 +295,16 @@
 - Raison : vérification finale du lot (règle 6, « rien hors écran ») jouée dans Chromium à 390 px : au chargement du quiz, des lots, de la séance et du verdict, les 577 sièges passaient à leur couleur pendant 450 ms sous la ligne de flottaison, et l'hémicycle du verdict respirait sans être vu. Le défaut de Mon hémicycle était signalé depuis le 12 octobre (docs/a-tester.md, § 0 bis).
 - Conséquence : sur ordinateur, où la salle est à l'écran au chargement, rien ne change. Sur Mon hémicycle, l'anneau de précision de l'en-tête s'affiche de nouveau, et une réponse donnée avant un vote y est reportée comme sur les autres pages.
 
+## 2026-10-13 · Explorer montre les votes déjà tranchés
+- Décision (Julien, retour de test) : dans Explorer, chaque vote que le visiteur a déjà tranché porte une pastille « ✓ Tranché · pour » (ou « contre »), et un filtre « À trancher / Tranchés » s'ajoute aux filtres par type (un second appui retire le filtre). « À trancher » ne propose pas les motions de censure, qui ne comptent pas dans l'hémicycle. Les boutons « Trancher d'autres votes » (fin des lots, résultat du quiz, fin de séance, accueil) ouvrent `/explorer/#a-trancher`, filtre déjà appliqué.
+- Raison : une fois les lots faits, le visiteur arrivait sur la liste complète des votes sans savoir lesquels il avait déjà tranchés.
+- Conséquence : la pastille et le filtre se calculent dans le navigateur, à partir des réponses gardées sur l'appareil (`578e.reponses.v1`) : rien n'est envoyé. `LigneVote` porte désormais l'identifiant du scrutin (`data-uid`).
+
+## 2026-10-13 · Précision : la formule reste, le texte dit le chiffre
+- Décision (Julien) : la précision reste `1 − e^(−n/20)` (CLAUDE.md) : 71 % à 25 votes (seuil « fiable »), 84 % à 37, sans jamais atteindre 100 %. Une fois la place fiable, les textes de fin (lots, résultat du quiz, Mon hémicycle) disent le chiffre : « Ta place est fiable : 85 % de précision ; chaque vote l'affine encore. »
+- Raison : retour de test : à 38 votes, la jauge à 85 % semblait bloquée. Afficher 100 % après 25 votes promettrait une certitude que 25 votes ne donnent pas.
+- Conséquence : aucun changement de calcul ; seuls ces textes changent.
+
 ## 2026-10-14 · Verdict : un repère d'étapes et « Verdict suivant »
 - Décision (Julien, retour de test du verdict du 13 octobre) : en haut de `/verdict/`, la rangée de titres des votes (qui ressemblait à un menu ou à un sommaire) devient un repère d'étapes : « Verdict 1 sur 3 » et un segment par vote de la séance, en violet pour le verdict affiché, en violet clair pour les autres (un appui y mène), en pointillés pour un vote pas encore tenu. En bas, le bouton principal devient « Verdict suivant → » ; au dernier verdict, « Mon hémicycle → ». « Tout le détail » passe en bouton secondaire. « Verdict suivant » ramène en haut de page, d'un coup, et le verdict suivant monte (fondu en mouvement réduit), comme les cartes de la séance (décision du 13 octobre).
 - Raison : sur le premier verdict, on ne comprenait pas qu'il y en avait deux autres ; le bouton « Mon hémicycle » faisait quitter la page au lieu de continuer.

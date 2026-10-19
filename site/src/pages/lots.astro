@@ -123,10 +123,10 @@ const parcours = lotsDuParcours();
       ? 'Tes réponses comptent dans ton hémicycle. '
       : 'Tu n\'as tranché aucun de ces votes : ton hémicycle ne change pas. ')
       + (suivant === null
-        ? (manque <= 0 ? 'Ta place est fiable : chaque vote l\'affine encore.'
+        ? (manque <= 0 ? `Ta place est fiable : ${Math.round(100 * p.precision)} % de précision ; chaque vote l'affine encore.`
           : `Pour une place fiable, il faut ${VOTES_FIABLES} votes : encore ${manque} à trancher dans Explorer.`)
         : suite.facultatif
-          ? (manque <= 0 ? `Ta place est fiable. Pour l'affiner encore, si tu veux : ${facultatifs}.`
+          ? (manque <= 0 ? `Ta place est fiable : ${Math.round(100 * p.precision)} % de précision. Pour l'affiner encore, si tu veux : ${facultatifs}.`
             : `Pour une place fiable, il faut ${VOTES_FIABLES} votes : encore ${manque} à trancher. Il reste ${facultatifs}.`)
           : `Encore ${pluriel(suite.resteParcours, 'lot')} de ${parLot} votes.`);
     jauge($('.carte-precision [data-jauge]'), n - dansLot, n);
@@ -149,7 +149,7 @@ const parcours = lotsDuParcours();
       : `Lot suivant · ${parLot} votes →`;
     bouton.onclick = () => commencer(suivant!);
     // Tout est fait : après le dernier lot, voir sa place ; en arrivant, trancher d'autres votes.
-    second.href = suivant === null && k === null ? '/explorer/' : '/hemicycle/';
+    second.href = suivant === null && k === null ? '/explorer/#a-trancher' : '/hemicycle/';
     second.textContent = suivant !== null ? 'Mon hémicycle'
       : k === null ? 'Trancher d\'autres votes →' : 'Voir mon hémicycle →';
     second.classList.toggle('b-principal', suivant === null);

@@ -111,6 +111,8 @@ h1, h2, h3 {
 h1 { font-size: clamp(32px, 3.4vw, 44px); font-weight: 700; }
 h2 { font-size: clamp(24px, 2.2vw, 28px); font-weight: 600; }
 h3 { font-size: 20px; font-weight: 600; }
+/* Les titres de section, en capitales de régie. */
+main h2 { text-transform: uppercase; letter-spacing: 0.01em; }
 
 a { color: var(--ivoire); text-underline-offset: 3px; }
 a:hover { color: var(--lumiere); }

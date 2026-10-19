@@ -55,7 +55,9 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
 </li>
 
 <style>
-  .ligne { border-top: 2px solid var(--bord-leger); }
+  /* Un vote dans une liste, en régie : étiquettes en capitales condensées, barre pour / contre
+     aux couleurs des votes, marge en puce. */
+  .ligne { border-top: 1px solid var(--filet); }
   .ligne a {
     display: grid;
     grid-template-columns: 112px minmax(0, 1fr) 132px 168px;
@@ -63,40 +65,34 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
     gap: 6px 16px;
     align-items: center;
     min-height: 64px;
-    padding: 10px 10px;
-    border-radius: var(--rayon);
+    padding: 12px 10px;
     color: inherit;
     text-decoration: none;
   }
-  .ligne a:hover { background: var(--fond-doux); }
-  .ligne a:hover .titre { color: var(--violet-fonce); }
+  .ligne a:hover { background: var(--panneau-2); }
+  .ligne a:hover .titre { text-decoration: underline; text-underline-offset: 3px; }
   .haut { grid-area: haut; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
   .bas { display: contents; }
   .etiquette {
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--fond-doux);
-    color: var(--texte-doux);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.06em;
+    padding: 5px 7px;
+    background: var(--panneau-2);
+    border: 1px solid var(--filet);
+    color: var(--ivoire-2);
+    font: 600 11px/1 var(--police-titre);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  .etiquette.solennel { background: var(--violet-voile); color: var(--violet-fonce); }
-  .e-censure { background: #FFE6DA; color: #9C3207; }
-  .e-budget { background: #FFF1CC; color: var(--jaune-encre); }
-  .date { font-size: 13px; color: var(--gris); }
-  /* Ta réponse, quand tu as déjà tranché ce vote (remplie dans le navigateur, Explorer). */
-  .tranche { padding: 3px 9px; border-radius: 999px; background: #E8F7EF; color: #1F7A45;
-    font-family: var(--police-titre); font-weight: 600; font-size: 12px; white-space: nowrap; }
+  /* Un vote solennel : l'étiquette rouge de régie. */
+  .etiquette.solennel { background: var(--direct); border-color: var(--direct); color: var(--sur-direct); }
+  .date { font-size: 13px; color: var(--ivoire-2); }
+  /* Ta réponse, quand tu as déjà tranché ce vote (remplie dans le navigateur, Explorer) : toi,
+     en lumière. */
+  .tranche { padding: 3px 0 3px 8px; border-left: 2px solid var(--lumiere); color: var(--lumiere);
+    font: 600 12px/1.2 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
   .titre {
     grid-area: titre;
     margin: 0;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 1.3;
+    font: 500 16px/1.35 var(--police-texte);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -105,8 +101,8 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
   .mini {
     grid-area: mini;
     display: flex;
-    height: 12px;
-    border-radius: 999px;
+    gap: 2px;
+    height: 8px;
     overflow: hidden;
     background: var(--contre);
   }
@@ -116,14 +112,15 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
     grid-area: accent;
     justify-self: end;
     padding: 5px 10px;
-    border-radius: 999px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 13px;
+    border-radius: var(--rayon-puce);
+    font: 600 13px/1 var(--police-titre);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
-  .sombre { background: var(--texte); color: #fff; }
-  .violet { background: var(--violet-voile); color: var(--violet-fonce); }
+  .sombre { background: var(--ivoire); color: var(--nuit); }
+  .violet { background: var(--panneau-2); color: var(--ivoire); border: 1px solid var(--filet); }
   @media (max-width: 760px) {
     .ligne a {
       grid-template-columns: minmax(0, 1fr) auto;

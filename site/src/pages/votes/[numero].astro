@@ -377,8 +377,8 @@ const exprimes = d.pour + d.contre;
     color: var(--texte-doux);
     text-decoration: none;
   }
-  .pastille.violette { background: var(--violet-voile); color: var(--violet-fonce); }
-  .pastille.violette:hover { background: var(--violet-pale); }
+  .pastille.violette { background: var(--panneau); color: var(--violet-fonce); }
+  .pastille.violette:hover { background: var(--panneau-2); }
   .contexte { margin: 16px 0 0; max-width: 720px; font-size: 18px; color: var(--texte-doux); }
 
   .verdict {
@@ -388,21 +388,17 @@ const exprimes = d.pour + d.contre;
     gap: 16px 22px;
     padding: 20px 24px;
     border-radius: var(--rayon);
-    background: var(--texte);
-    color: #fff;
-    box-shadow: 0 6px 0 #0B0E17;
+    background: #16181D;
+    color: #F2EEE6;
   }
+  /* L'issue, en titre d'écran sur un panneau de régie : la même pour les deux issues. */
   .tampon {
     flex: none;
-    padding: 8px 16px;
-    border: 3px solid #fff;
-    border-radius: var(--rayon);
     font-family: var(--police-titre);
     font-weight: 700;
-    font-size: clamp(22px, 2.6vw, 28px);
-    letter-spacing: 0.08em;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 0.9;
     text-transform: uppercase;
-    transform: rotate(-3deg);
   }
   .verdict p { margin: 0; }
   .verdict-titre {
@@ -411,7 +407,7 @@ const exprimes = d.pour + d.contre;
     font-size: clamp(26px, 3vw, 36px);
     line-height: 1.05;
   }
-  .verdict-detail { margin-top: 6px !important; font-size: 16px; color: #C9CFDA; }
+  .verdict-detail { margin-top: 6px !important; font-size: 16px; color: #ABA69C; }
   .bascule { margin: -12px 0 0; font-size: 16px; color: var(--texte-doux); }
 
   .salle {
@@ -420,19 +416,25 @@ const exprimes = d.pour + d.contre;
     gap: 28px;
     padding: clamp(16px, 2.4vw, 26px);
     border-radius: var(--rayon);
-    background: var(--fond-doux);
+    background: var(--panneau);
+    border: 1px solid var(--filet);
     scroll-margin-top: 90px;
   }
   .salle h2 { font-size: 22px; }
   .et-toi { flex: 0 1 280px; min-width: 230px; display: flex; flex-direction: column; gap: 14px; }
   .et-toi-texte { margin: 0; font-size: 16px; color: var(--texte-doux); }
   .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* « Et toi ? » : deux boutons identiques, une pastille à la couleur du vote ; le choisi prend
+     un cadre de 2 px, comme dans la séance. */
   .choix button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
     min-height: 54px;
-    border: 2px solid var(--bord);
+    border: 1px solid var(--filet);
     border-radius: var(--rayon);
-    background: var(--fond);
-    box-shadow: 0 4px 0 var(--bord);
+    background: var(--panneau-2);
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 17px;
@@ -441,13 +443,11 @@ const exprimes = d.pour + d.contre;
     color: var(--texte);
     cursor: pointer;
   }
-  .choix button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--bord); }
-  .choix .choix-pour[aria-pressed='true'] {
-    background: var(--pour); border-color: var(--pour); color: #fff; box-shadow: 0 4px 0 #1C5AD0;
-  }
-  .choix .choix-contre[aria-pressed='true'] {
-    background: #E5552A; border-color: #E5552A; color: #fff; box-shadow: 0 4px 0 #B83C0A;
-  }
+  .choix button:active { transform: translateY(3px); }
+  .choix button::before { content: ''; flex: none; width: 14px; height: 14px; border-radius: 50%; }
+  .choix .choix-pour::before { background: var(--pour); }
+  .choix .choix-contre::before { background: var(--contre); }
+  .choix button[aria-pressed='true'] { border: 2px solid var(--ivoire); padding: 0 13px; }
   .effacer {
     align-self: flex-start;
     min-height: 40px;
@@ -464,7 +464,7 @@ const exprimes = d.pour + d.contre;
     padding: 14px 16px;
     border-radius: var(--rayon);
     background: var(--fond);
-    border: 2px solid var(--filet);
+    border: 1px solid var(--filet);
   }
   .ta-voix p { margin: 0; font-size: 15px; color: var(--texte-doux); }
   .ta-voix .sur-titre {
@@ -497,7 +497,7 @@ const exprimes = d.pour + d.contre;
     gap: 2px 12px;
     align-items: center;
     padding: 9px 0;
-    border-top: 2px solid var(--bord-leger);
+    border-top: 1px solid var(--filet);
   }
   .groupes abbr {
     grid-area: sigle;
@@ -522,7 +522,8 @@ const exprimes = d.pour + d.contre;
   .plus { display: flex; flex-direction: column; gap: 12px; }
   .plus h2 { margin-bottom: 4px; }
   .plus details {
-    border: 2px solid var(--bord);
+    background: var(--panneau);
+    border: 1px solid var(--filet);
     border-radius: var(--rayon);
     padding: 0 20px;
   }
@@ -535,6 +536,8 @@ const exprimes = d.pour + d.contre;
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 18px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     cursor: pointer;
     list-style: none;
   }
@@ -562,7 +565,7 @@ const exprimes = d.pour + d.contre;
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .encadre { padding: 20px; border: 2px solid var(--bord); border-radius: var(--rayon); }
+  .encadre { padding: 20px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau); }
   .encadre h2 { font-size: 19px; }
   .ton-depute { border-color: var(--filet); background: var(--panneau-2); }
   .ton-depute p { margin: 8px 0 14px; font-size: 16px; color: var(--texte-doux); }
@@ -592,7 +595,7 @@ const exprimes = d.pour + d.contre;
     background: var(--bord);
   }
   .parcours li:last-child::before { display: none; }
-  .parcours li.fini::before { background: #1CB37A; }
+  .parcours li.fini::before { background: var(--ivoire-2); }
   .point {
     flex: none;
     width: 16px;
@@ -603,8 +606,8 @@ const exprimes = d.pour + d.contre;
     background: var(--fond);
     position: relative;
   }
-  .fini .point { border-color: #1CB37A; background: #1CB37A; }
-  .actuel .point { border-color: var(--violet); background: var(--violet); box-shadow: 0 0 0 4px var(--violet-voile); }
+  .fini .point { border-color: var(--ivoire-2); background: var(--ivoire-2); }
+  .actuel .point { border-color: var(--direct); background: var(--direct); box-shadow: 0 0 0 4px var(--panneau-2); }
   .etape { font-family: var(--police-titre); font-weight: 600; font-size: 16px; line-height: 1.25; }
   .ce-vote {
     display: inline-block;

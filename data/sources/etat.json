@@ -54,12 +54,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
  },
  "dossiers_legislatifs": {
-  "derniere_modification": "Mon, 19 Oct 2026 10:16:30 GMT",
+  "derniere_modification": "Mon, 19 Oct 2026 13:16:27 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-10-19T13:09:35+00:00",
-  "sha256": "5d744cbb6cc1b39cb5c538b0b067488edaf68e3fda02624a307c6eb50047f77b",
-  "taille": 10901063,
+  "recupere_le": "2026-10-19T14:06:44+00:00",
+  "sha256": "cf38938a185dac9d8a7e581017a0b6bc33cbf545ef9ebf45aa76f901904bf507",
+  "taille": 10903402,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
  },
  "historique_mandats": {
@@ -72,9 +72,9 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "dernier_echec": "2026-10-19T13:09:18+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 19477949)",
+  "dernier_echec": "2026-10-19T14:06:31+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 15471333)",
   "derniere_modification": "Sun, 18 Oct 2026 10:25:46 GMT",
-  "echecs_consecutifs": 1,
+  "echecs_consecutifs": 2,
   "fichier": "Scrutins.json.zip",
   "recupere_le": "2026-10-18T11:46:34+00:00",
   "sha256": "7ad54953a01fc5c20c72d2d4907f80bc7c9d07a0d7fc8258e66e8939a33571d7",

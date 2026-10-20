@@ -410,12 +410,12 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   .fil { margin: 0; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--ivoire-2); }
   .fil a { color: var(--ivoire-2); }
-  .attente { max-width: 680px; padding: 28px; border-radius: var(--rayon); background: var(--panneau); box-shadow: var(--ombre-panneau); }
+  .attente { max-width: 680px; padding: 28px; background: var(--panneau); }
   .attente h1 { margin: 0 0 12px; font: 700 clamp(36px, 4vw, 56px)/0.95 var(--police-titre); text-transform: uppercase; }
   .attente p, .attente li { font-size: 17px; color: var(--ivoire-2); }
   .attente .b-principal { margin-top: 8px; }
   .bandeau-etape { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 14px 0 4px; padding: 12px 18px;
-    border-left: 3px solid var(--lumiere); background: var(--panneau-2); font-size: 15px; color: var(--ivoire-2); }
+    background: var(--panneau-2); font-size: 15px; color: var(--ivoire-2); }
   .bandeau-etape strong { font: 600 18px/1.2 var(--police-titre); text-transform: uppercase; letter-spacing: 0.02em; color: var(--ivoire); }
   .verdict { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
   .gauche { flex: 1 1 480px; min-width: 0; max-width: 640px; }
@@ -482,7 +482,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   .c-pour .compteur-mot::before { background: var(--pour); }
   .c-contre .compteur-mot::before { background: var(--contre); }
   .c-abstention .compteur-mot::before { background: var(--abstention); }
-  .c-absent .compteur-mot::before { background: var(--voyant-eteint); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
+  .c-absent .compteur-mot::before { background: var(--absent); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
   .chiffre { font: 600 clamp(48px, 5.4vw, var(--taille-compteur))/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
   .non-votants { margin: -6px 0 0; font-size: 13px; color: var(--ivoire-2); }
   .lignes { display: flex; flex-direction: column; gap: 2px; margin: 18px 0 0; padding: 0; list-style: none; }
@@ -492,19 +492,18 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   .lignes :global(.ligne-titre) { display: block; font: 600 19px/1.15 var(--police-titre); text-transform: uppercase; letter-spacing: 0.01em; }
   .lignes :global(.ligne-detail) { display: block; margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
-  .b-principal { display: inline-flex; align-items: center; min-height: 54px; padding: 0 24px; border: 0; border-radius: var(--rayon);
+  .b-principal { display: inline-flex; align-items: center; min-height: 54px; padding: 0 24px; border: 0;
     background: var(--direct); color: var(--sur-direct); font: 600 17px/1 var(--police-titre); letter-spacing: 0.08em;
     text-transform: uppercase; text-decoration: none; cursor: pointer; }
   .b-principal:hover { color: var(--sur-direct); background: #9A0F27; }
   .b-second { display: inline-flex; align-items: center; min-height: 54px; padding: 0 20px; border: 1px solid var(--ivoire-2);
-    border-radius: var(--rayon); color: var(--ivoire); font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em;
+    color: var(--ivoire); font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em;
     text-transform: uppercase; text-decoration: none; }
   .b-second:hover { color: var(--ivoire); background: var(--panneau-2); }
-  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: var(--rayon);
+  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px;
     border: 1px solid var(--ivoire-2); background: var(--panneau); color: var(--ivoire);
     font: 600 14px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
-  .panneau { flex: 1.2 1 520px; min-width: 0; padding: 22px 24px; border-radius: var(--rayon); background: var(--panneau);
-    border: 1px solid var(--filet); }
+  .panneau { flex: 1.2 1 520px; min-width: 0; padding: 22px 24px; background: var(--panneau); }
   .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
   .panneau h2 { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
   .panneau-tete span { font-size: 14px; color: var(--ivoire-2); }

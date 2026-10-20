@@ -34,7 +34,7 @@ const { total, libelle, titre, sortie, serie = false } = Astro.props;
 
 <style>
   /* La progression du mode focus, en régie : l'étape en étiquette rouge, une barre fine, le
-     compteur en capitales ; la série en lumière. */
+     compteur en capitales ; la série en ivoire, sa flamme en lumière. */
   .progression { display: contents; }
   .titre-seance { flex: none; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px;
     background: var(--direct); color: var(--sur-direct); font: 600 14px/1 var(--police-titre);
@@ -46,7 +46,7 @@ const { total, libelle, titre, sortie, serie = false } = Astro.props;
   .compteur { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--ivoire-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .serie { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 600 16px/1 var(--police-titre);
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--lumiere); }
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ivoire); }
   .serie[hidden] { display: none; }
   .quitter { padding: 12px 4px; font: 600 15px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--ivoire-2); text-decoration: none; }

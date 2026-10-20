@@ -189,13 +189,12 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .gauche { flex: 1 1 440px; min-width: 0; max-width: 600px; padding: 28px; border-radius: var(--rayon);
     background: var(--panneau); box-shadow: var(--ombre-panneau); }
   @media (max-width: 640px) { .gauche { padding: 20px 16px; } }
-  .panneau { flex: 1.25 1 520px; min-width: 0; padding: clamp(18px, 2.2vw, 28px); border-radius: var(--rayon);
-    background: var(--panneau); border: 1px solid var(--filet); scroll-margin-top: 16px; }
+  .panneau { flex: 1.25 1 520px; min-width: 0; padding: clamp(18px, 2.2vw, 28px);
+    background: var(--panneau); scroll-margin-top: 16px; }
   .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
   .panneau h2 { font-size: 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
   .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--ivoire-2); }
-  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--rayon);
-    background: var(--panneau-2); border: 1px solid var(--filet); }
+  .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--panneau-2); }
   .precision-tete-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ivoire-2); }
   .precision-tete-segments { display: flex; gap: 3px; }
@@ -211,11 +210,11 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .legende .sans { background: var(--panneau); border: 2px solid; }
 
   .bulle { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 24px; }
-  .bulle p { margin: 0; padding: 12px 16px; border-left: 3px solid var(--lumiere); background: var(--panneau-2);
+  .bulle p { margin: 0; padding: 12px 16px; background: var(--panneau-2);
     font-size: 16px; line-height: 1.5; color: var(--ivoire); }
-  .bulle :global(strong) { color: var(--lumiere); }
+  .bulle :global(strong) { color: var(--ivoire); }
   .robot { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
-    border-radius: var(--rayon); background: var(--panneau-2); border: 1px solid var(--filet); }
+    background: var(--panneau-2); }
   /* L'arrivée de la carte suivante (A1). */
   .carte-question:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
   @media (prefers-reduced-motion: reduce) { .carte-question:global(.arrive) { animation: fondu var(--dur-xs) linear both; } }
@@ -257,7 +256,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   /* Choisi : un cadre ivoire de 2 px et « Ton vote », pour chaque choix. */
   .choix button:global(.choisi), .b-passer:global(.choisi) { border: 2px solid var(--ivoire); padding: 0 17px; }
   .choix button:global(.choisi)::after, .b-passer:global(.choisi)::after { content: 'Ton vote'; margin-left: auto;
-    margin-right: 30px; font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; color: var(--ivoire-2); }
+    margin-right: 30px; font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   .choix button:global(.estompe), .b-passer:global(.estompe) { opacity: .35; transform: translateY(5px); }
   /* Le geste de vote (A2 + A3, docs/animations-lot-1.md § 1) : la même animation pour chaque
      choix. Le bouton choisi rebondit et une coche se trace ; les autres s'éteignent. */
@@ -283,19 +282,19 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
     margin: 0 auto; padding: 20px var(--gouttiere); }
   .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px;
-    border-radius: 50%; background: var(--panneau-2); color: var(--lumiere); border: 1px solid var(--filet); }
+    border-radius: 50%; background: var(--panneau-2); color: var(--ivoire-2); border: 1px solid var(--filet); }
   .revelation-texte { flex: 1 1 380px; }
   .revelation p { margin: 0; }
   .revelation-titre { font: 600 clamp(22px, 2.2vw, 28px)/1.1 var(--police-titre); text-transform: uppercase;
-    letter-spacing: 0.01em; color: var(--lumiere); }
+    letter-spacing: 0.01em; color: var(--ivoire); }
   .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: var(--ivoire-2); }
   .revelation-texte a { white-space: nowrap; color: var(--ivoire); }
   .rv-precision { display: flex; align-items: center; gap: 12px; max-width: 360px; margin-top: 10px; }
   .rv-precision-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ivoire-2); }
   .rv-precision > :global(.jauge-precision) { flex: 1; }
-  .ta-voix { flex: 0 1 330px; padding: 14px 16px; border-radius: var(--rayon); background: var(--panneau);
-    border: 1px solid var(--filet); font-size: 15px; line-height: 1.45; color: var(--ivoire); }
+  .ta-voix { flex: 0 1 330px; padding: 14px 16px; background: var(--panneau);
+    font-size: 15px; line-height: 1.45; color: var(--ivoire); }
   .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; color: var(--lumiere); }
   /* Ta voix en plus (R3) : la carte monte, le rond se pose, ton chiffre prend +1. */
   .ta-voix :global(.rond-voix) { display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -2px;
@@ -315,9 +314,8 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .ta-voix p + p { margin-top: 5px; }
   .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ivoire-2); }
-  .sur-titre sup { text-transform: none; }
-  /* L'action principale : le rouge de régie. */
-  .b-continuer, .b-suivant { min-height: 56px; border: 0; border-radius: var(--rayon); background: var(--direct);
+  /* L'action principale : le rouge de régie, coins vifs. */
+  .b-continuer, .b-suivant { min-height: 56px; border: 0; background: var(--direct);
     color: var(--sur-direct); font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
   .b-continuer:hover, .b-suivant:hover { background: #9A0F27; }
   .b-continuer { min-width: 220px; flex: 0 0 auto; padding: 0 26px; }

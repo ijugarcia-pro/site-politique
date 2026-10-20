@@ -124,7 +124,7 @@ const resume = mode === 'vote' && censure
           {libelles.map((l) => <path class="arc" d={l.arc} stroke={l.fond}></path>)}
           {libelles.map((l) => (
             <g transform={`translate(${l.x.toFixed(1)} ${l.y.toFixed(1)}) rotate(${l.rotation.toFixed(1)})`}>
-              <rect x={(-l.largeur / 2).toFixed(1)} y="-11" width={l.largeur.toFixed(1)} height="22" rx="11"
+              <rect x={(-l.largeur / 2).toFixed(1)} y="-11" width={l.largeur.toFixed(1)} height="22"
                 fill={l.fond}></rect>
               <text text-anchor="middle" dominant-baseline="central" fill={l.encre}>{l.texte}</text>
             </g>
@@ -428,7 +428,6 @@ const resume = mode === 'vote' && censure
     max-width: 100%;
     margin: 0 0 18px auto;
     padding: 4px;
-    border-radius: var(--rayon-puce);
     background: var(--panneau);
     border: 1px solid var(--filet);
   }
@@ -436,7 +435,6 @@ const resume = mode === 'vote' && censure
     min-height: 36px;
     padding: 0 14px;
     border: 0;
-    border-radius: var(--rayon-puce);
     background: transparent;
     font: 600 13px/1 var(--police-titre);
     letter-spacing: 0.12em;
@@ -445,7 +443,7 @@ const resume = mode === 'vote' && censure
     cursor: pointer;
   }
   .filtres button:hover { color: var(--ivoire); background: var(--panneau-2); }
-  /* La puce choisie : fond ivoire, comme une puce de caméra en cours. */
+  /* Le filtre choisi : fond ivoire, comme une puce de caméra en cours, mais rectangulaire. */
   .filtres button[aria-pressed='true'] { background: var(--ivoire); color: var(--nuit); }
   .cadre[data-filtre='dissidents'] .siege:not(.dissident),
   .cadre[data-filtre='depute'] .siege:not(.choisi),
@@ -477,12 +475,13 @@ const resume = mode === 'vote' && censure
     .filtres button { padding: 4px 6px; font-size: 13px; line-height: 1.1; }
   }
   @media (prefers-reduced-motion: reduce) { .siege { transition: none; } }
-  .zone { border-radius: var(--rayon); touch-action: manipulation; }
+  .zone { touch-action: manipulation; }
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .etiquettes text {
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 15px;
+    text-transform: uppercase;
   }
   .etiquettes .arc { fill: none; stroke-width: 5; stroke-linecap: round; }
   .siege { stroke: var(--panneau); stroke-width: 0.8; cursor: pointer; }
@@ -510,7 +509,7 @@ const resume = mode === 'vote' && censure
   .legende li { display: inline-flex; align-items: center; gap: 6px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
   .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--ivoire); }
-  .groupes { font-family: var(--police-titre); font-weight: 600; }
+  .groupes { font-family: var(--police-titre); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
   .legende .vide { background: var(--panneau); border: 1.5px dashed var(--ivoire-2); }
   .detail { margin-top: 16px; }
   .detail summary {

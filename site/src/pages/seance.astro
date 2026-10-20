@@ -315,8 +315,8 @@ const tuile = premier ? {
   .fin :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) var(--delai-c, 0ms) both; }
   @media (prefers-reduced-motion: reduce) { .fin :global(.apparait) { animation: none; } }
   .tampon-haut { color: var(--ivoire-2); }
-  /* La série (en lumière : elle compte tes semaines, pas tes opinions). */
-  .orange .grand { color: var(--lumiere); }
+  /* La série : en ivoire, comme les autres chiffres (la lumière ne désigne que toi). */
+  .orange .grand { color: var(--ivoire); }
   /* La série qui roule (F3) : le chiffre passe de N à N + 1 comme un compteur kilométrique, la
      flamme s'anime une fois, quand la carte du bilan monte. */
   .odo { display: inline-block; height: 1em; overflow: hidden; }
@@ -332,12 +332,12 @@ const tuile = premier ? {
   /* Le rendez-vous du verdict. */
   .rendez-vous { align-self: stretch; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin-top: 2px;
     padding: 18px 20px; background: var(--panneau-2); }
-  .tuile { flex: none; display: flex; flex-direction: column; align-items: center; width: 76px; height: 82px; border-radius: var(--rayon);
-    background: var(--panneau); border: 1px solid var(--filet); overflow: hidden; }
+  .tuile { flex: none; display: flex; flex-direction: column; align-items: center; width: 76px; height: 82px;
+    background: var(--panneau); overflow: hidden; }
   .tuile-jour { align-self: stretch; padding: 4px 0; background: var(--direct); color: var(--sur-direct); text-align: center;
     font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
   .tuile-date { font: 600 34px/1.15 var(--police-titre); font-variant-numeric: tabular-nums; }
-  .tuile-heure { font: 600 12px/1 var(--police-titre); letter-spacing: 0.08em; color: var(--ivoire-2); }
+  .tuile-heure { font: 600 12px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ivoire-2); }
   .rdv-texte { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.45; color: var(--ivoire-2); }
   .rdv-titre { font: 600 22px/1.1 var(--police-titre); text-transform: uppercase; color: var(--ivoire); }
 </style>

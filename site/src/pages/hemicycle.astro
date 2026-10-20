@@ -287,13 +287,14 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     $('[data-legende]').hidden = false;
     const proches = p.deputes.filter((x) => niveau(x.lisse).haut).length;
     salle.centre(String(proches), `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`);
-    // La salle 3D : le voyant de chaque pupitre prend l'intensité de l'accord (de l'éteint à la
-    // lumière), sans réarranger la salle ni toucher à la couleur des sièges ; ta place est celle
-    // de ton jumeau.
+    // La salle 3D : le voyant de chaque pupitre prend l'intensité de l'accord (de l'éteint au
+    // blanc chaud d'une lampe, la même échelle d'ivoire que l'hémicycle ; la lumière dorée reste à
+    // toi), sans réarranger la salle ni toucher à la couleur des sièges ; ta place est celle de
+    // ton jumeau.
     const scene = document.querySelector<HTMLElement>('[data-salle3d]');
     if (scene) {
       const s3 = salle3D(scene);
-      const INTENSITES = ['#4A3C28', '#6B5536', '#A9844F', '#F2C98A'];
+      const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
       s3.voyants(salle.reglages.sieges.map(([u]) => {
         const x = parDepute.get(u);
         return x ? INTENSITES[NIVEAUX.indexOf(niveau(x.lisse))] : null;
@@ -383,9 +384,10 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 <style>
   /* Cotes reprises de la frame V5 « ⑩ Mon hémicycle ». */
   .rangee { display: flex; flex-wrap: wrap; gap: 22px; align-items: stretch; }
-  .salle { flex: 1.35 1 620px; min-width: 0; padding: 24px; border-radius: var(--rayon); background: var(--panneau); border: 1px solid var(--filet); }
+  .salle { flex: 1.35 1 620px; min-width: 0; padding: 24px; background: var(--panneau); }
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
-  .titre-section h1 { font-size: 32px; text-transform: uppercase; }
+  /* Un titre de section court, en capitales de régie (.t-section). */
+  .titre-section h1 { font: 700 32px/1 var(--police-titre); text-transform: uppercase; }
   .titre-section span { font-size: 14px; color: var(--ivoire-2); }
   .cadre-salle { margin-top: 12px; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 16px 0 0; padding: 0;
@@ -397,13 +399,14 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   @media (hover: none) { .aide-survol { display: none; } }
 
   .cote { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-  .encadre { padding: 22px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau); }
+  .encadre { padding: 20px 22px; background: var(--panneau); }
   .encadre p { margin: 8px 0 0; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
+  /* Les surtitres en ivoire : la lumière ne désigne que toi (ton siège, ta précision). */
   .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--lumiere); }
+    text-transform: uppercase; color: var(--ivoire-2); }
   .place-titre { margin-top: 6px; font-family: var(--police-titre); font-weight: 600; font-size: 34px; line-height: 1.02; text-transform: uppercase; }
   .place-titre sup { font-size: 0.55em; }
-  .precision { padding: 22px; border-radius: var(--rayon); background: var(--panneau-2); }
+  .precision { padding: 20px 22px; background: var(--panneau-2); }
   .precision p { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--ivoire-2); }
   .titre-carte { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .precision-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
@@ -413,14 +416,14 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .segments :global(span.plein) { background: var(--lumiere); }
   .bouton-violet {
     display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin-top: 14px;
-    border-radius: var(--rayon); background: var(--direct); color: var(--sur-direct);
+    background: var(--direct); color: var(--sur-direct);
     font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.08em;
     text-transform: uppercase; text-decoration: none;
   }
   .bouton-violet:hover { color: var(--sur-direct); background: #9A0F27; }
   .tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .tuile { padding: 18px; border-radius: var(--rayon); }
-  .orange, .jaune { background: var(--panneau); border: 1px solid var(--filet); }
+  .tuile { padding: 18px 20px; }
+  .orange, .jaune { background: var(--panneau); }
   .tuile-chiffre { font-family: var(--police-titre); font-weight: 600; font-size: 48px; line-height: 0.95; font-variant-numeric: tabular-nums; }
 
   .tuile-chiffre small { font-size: 18px; opacity: .6; }
@@ -429,47 +432,49 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 
   .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
   @media (max-width: 900px) { .trio { grid-template-columns: minmax(0, 1fr); } }
-  .personne { display: block; padding: 20px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau);
-    color: inherit; text-decoration: none; }
-  .carte-relief:hover { border-color: var(--ivoire-2); color: inherit; }
+  .personne { display: block; padding: 20px 22px; background: var(--panneau); color: inherit; text-decoration: none; }
+  .carte-relief:hover { background: var(--panneau-2); color: inherit; }
   .jumeau { background: var(--panneau-2); }
   .personne .sur-titre { display: block; font-size: 12px; }
   .oppose .sur-titre, .depute .sur-titre { color: var(--ivoire-2); }
   .depute .sur-titre { color: var(--ivoire-2); }
   .personne-ligne { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: var(--rayon);
-    border: 2px solid var(--ivoire); color: var(--ivoire); font-family: var(--police-titre); font-weight: 600; font-size: 18px; }
-  .avatar { border-radius: 50%; }
-  .oppose .avatar, .depute .avatar { border-color: var(--ivoire-2); }
+  /* Pas de cercles à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
+  .avatar { display: none; }
   .personne-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .nom { font-family: var(--police-titre); font-weight: 600; font-size: 21px; line-height: 1.15; text-transform: uppercase; }
+  .nom { font: 600 17px/1.3 var(--police-texte); }
   .detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; font-size: 13px; color: var(--ivoire-2); }
   .score { font-family: var(--police-titre); font-weight: 600; font-size: 28px; color: var(--ivoire); font-variant-numeric: tabular-nums; }
   .depute .score { color: var(--ivoire); }
   .phrase { display: block; margin-top: 12px; font-size: 14px; color: var(--ivoire-2); }
 
   .groupes-bloc { flex: 1.2 1 560px; min-width: 0; padding: 22px 24px; align-self: flex-start; }
-  .groupes-bloc h2 { margin: 0 0 6px; font-size: 22px; }
+  /* Un titre long devient une puce de régie (DESIGN-FINAL.md, § 3). */
+  .groupes-bloc h2 { margin: 0 0 10px; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; color: var(--ivoire-2); }
   .groupes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin: 0; padding: 0; list-style: none; }
   @media (max-width: 640px) { .groupes { grid-template-columns: minmax(0, 1fr); } }
   .groupes :global(li) { display: grid; grid-template-columns: 66px minmax(0, 1fr) 46px; gap: 10px; align-items: center;
     padding: 9px 0; border-top: 1px solid var(--filet); }
-  .groupes :global(.sigle) { display: inline-flex; align-items: center; gap: 6px; font-family: var(--police-titre);
-    font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; }
+  .groupes :global(.sigle) { display: inline-flex; align-items: center; gap: 6px; font: 600 14px/1 var(--police-titre);
+    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }
   .groupes :global(.sigle)::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-  .groupes :global(.jauge) { height: 8px; background: var(--filet); overflow: hidden; }
-  .groupes :global(.jauge span) { display: block; height: 100%; border-radius: 999px; background: var(--ivoire-2); }
+  .groupes :global(.jauge) { height: 6px; background: var(--filet); overflow: hidden; }
+  .groupes :global(.jauge span) { display: block; height: 100%; background: var(--ivoire); }
   .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 600; font-size: 16px; font-variant-numeric: tabular-nums; }
   .reponses { flex: 1 1 400px; min-width: 0; padding: 20px 22px; align-self: flex-start; }
   .reponses h2 { font-size: 20px; }
   .compteur { font-family: var(--police-titre); font-weight: 600; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
   .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .liste-reponses :global(li) { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
-  .liste-reponses :global(a) { color: var(--ivoire); text-decoration: none; line-height: 1.35; }
+  .liste-reponses :global(li) { display: flex; align-items: baseline; gap: 12px; }
+  .liste-reponses :global(a) { color: var(--ivoire); text-decoration: none; font: 500 16px/1.4 var(--police-question); }
   .liste-reponses :global(a:hover) { color: var(--ivoire); text-decoration: underline; }
-  .liste-reponses :global(.pastille) { flex: none; padding: 2px 8px; border-radius: 8px; font-family: var(--police-titre); font-weight: 600; font-size: 12px; color: #fff; }
-  .liste-reponses :global(.p-pour) { background: var(--pour); }
-  .liste-reponses :global(.p-contre) { background: #E5552A; }
+  /* Ta réponse : une pastille de vote de 10 px et le mot en puce, pas de capsule colorée. */
+  .liste-reponses :global(.pastille) { flex: none; display: inline-flex; align-items: center; gap: 7px; min-width: 76px;
+    font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .liste-reponses :global(.pastille)::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--voyant-eteint); }
+  .liste-reponses :global(.p-pour)::before { background: var(--pour); }
+  .liste-reponses :global(.p-contre)::before { background: var(--contre); }
   .discret { font-size: 13px !important; color: var(--ivoire-2) !important; }
 
   @media (max-width: 600px) {
@@ -486,7 +491,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     box-shadow: inset 0 0 0 1px rgba(242, 238, 230, 0.25); cursor: pointer; }
   .pastille-choix input:checked + span { outline: 2px solid var(--ivoire); outline-offset: 3px; }
   .pastille-choix input:focus-visible + span, .mot-choix input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
-  .mot-choix span { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: var(--rayon-puce);
+  .mot-choix span { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px;
     border: 1px solid var(--filet); font: 600 13px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
   .mot-choix input:checked + span { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
 </style>

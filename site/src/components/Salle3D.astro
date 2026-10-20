@@ -1,10 +1,14 @@
 ---
-// La salle en 3D (docs/refonte-la-seance.md, § 4) : une scène posée en tête de page (accueil,
-// verdict, Mon hémicycle). Le canevas est décoratif (aria-hidden) ; l'alternative textuelle est la
-// légende. Tant que la 3D n'est pas prête, ou si elle ne doit pas s'ouvrir (pas de WebGL,
-// économie de données, appareil faible), un hémicycle SVG statique la remplace : c'est le repli.
-// La salle interactive et accessible de la page (Salle.astro, Hemicycle.astro) reste à sa place.
-// Le script de la page la pilote avec salle3d/pilote.ts (voyants, caméra, ambiance).
+// La salle en 3D (docs/refonte-la-seance.md, § 4) : la « scène » (docs/design-final/DESIGN-FINAL.md,
+// § 5.1). En plein cadre (accueil, puis verdict et Mon hémicycle), elle occupe toute la largeur,
+// sous l'en-tête posé dessus ; ce qui est passé dans le slot (bandeau, action, programme,
+// compteurs) se pose en bas de la salle. Le canevas est décoratif (aria-hidden) ; l'alternative
+// textuelle est la légende. Tant que la 3D n'est pas prête, ou si elle ne doit pas s'ouvrir (pas
+// de WebGL, économie de données, appareil faible), le repli occupe le même cadre : l'image fixe de
+// la même caméra (scripts/images-fixes.mjs) quand la page en donne une, l'hémicycle SVG statique
+// sinon (gardé dans le DOM pour les lecteurs d'écran). La salle interactive et accessible de la
+// page (Salle.astro, Hemicycle.astro) reste à sa place. Le script de la page la pilote avec
+// salle3d/pilote.ts (voyants, caméra, ambiance).
 import MiniHemicycle from './MiniHemicycle.astro';
 import { SIEGES } from '../lib/hemicycle.ts';
 
@@ -15,25 +19,39 @@ interface Props {
   couleurs?: (string | null)[];
   /** Les puces de caméra proposées, la première est en cours. */
   cameras?: ('salle' | 'tribune' | 'travee' | 'plan')[];
-  /** Hauteur de la scène sur ordinateur (la largeur est celle de la page). */
+  /** Hauteur minimale de la scène sur ordinateur (la largeur est celle de la page). */
   hauteur?: string;
   /** Sur téléphone, ouvrir la salle vue de dessus (CAM 4 · Plan), comme la maquette V6C-06. */
   planSurTelephone?: boolean;
+  /** Plein cadre : bord à bord, sous l'en-tête (Base.astro, slot « scene »). */
+  pleinCadre?: boolean;
+  /** L'image fixe du repli (public/salle3d/fond-<nom>.webp), de la caméra qui s'ouvre. */
+  fond?: 'salle' | 'verdict' | 'tribune';
+  /** Le dégradé posé sur la salle sous les textes (DESIGN-FINAL.md, § 5.1). */
+  voile?: 'bas' | 'verdict';
+  /** Où se posent les puces de caméra sur ordinateur. */
+  camerasA?: 'droite' | 'gauche';
 }
 
 const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], travee: ['Cam 3', 'Ta travée'], plan: ['Cam 4', 'Plan'] };
-const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)', planSurTelephone = false } = Astro.props;
+const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)', planSurTelephone = false,
+  pleinCadre = false, fond, voile = 'bas', camerasA = 'droite' } = Astro.props;
 const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33');
+const styleFond = fond ? `--fond: url('/salle3d/fond-${fond}.webp'); --fond-telephone: url('/salle3d/fond-${fond}-telephone.webp');` : '';
 ---
-<figure class:list={['scene', 'theme-seance', { 'plan-telephone': planSurTelephone }]} data-salle3d
-  style={`--hauteur-scene: ${hauteur}`}>
+<figure class:list={['scene', 'theme-seance', `voile-${voile}`, `cameras-${camerasA}`,
+  { 'plan-telephone': planSurTelephone, 'plein-cadre': pleinCadre, 'avec-fond': !!fond }]} data-salle3d
+  style={`--hauteur-scene: ${hauteur}; ${styleFond}`}>
   <div class="ecran" tabindex="0" role="group"
     aria-label="Salle en 3D. Flèches : tourner la caméra ; + et − : zoomer ; Échap : revenir.">
-    <div class="repli" aria-hidden="false">
-      <MiniHemicycle couleurs={repli} titre={titre} />
+    <div class="image">
+      <div class="repli" aria-hidden="false">
+        <div class="repli-plan"><MiniHemicycle couleurs={repli} titre={titre} /></div>
+      </div>
+      <canvas aria-hidden="true"></canvas>
+      <div class="scene-voile" aria-hidden="true"></div>
+      <div class="repere" hidden><span></span><i></i></div>
     </div>
-    <canvas aria-hidden="true"></canvas>
-    <div class="repere" hidden><span></span><i></i></div>
     <div class="dessus"><slot /></div>
     {cameras.length > 1 && (
       <div class="cameras" role="group" aria-label="Caméras">
@@ -54,20 +72,28 @@ const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33')
 
 <style>
   .scene { position: relative; margin: 0; background: var(--nuit); color: var(--ivoire); }
-  .ecran { position: relative; height: var(--hauteur-scene); min-height: 420px; overflow: hidden; }
-  @media (max-width: 640px) { .ecran { height: 70vh; min-height: 380px; } }
+  /* La scène : la salle couvre tout le cadre ; ce qui est posé dessus s'aligne en bas. */
+  .ecran { position: relative; display: flex; flex-direction: column; min-height: var(--hauteur-scene); overflow: hidden; }
+  @media (max-width: 640px) { .ecran { min-height: 70vh; } }
+  /* L'image de la salle (canevas, repli, voile, repère) : tout le cadre ; sur téléphone, le haut. */
+  .image { position: absolute; inset: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0;
     transition: opacity 600ms ease; touch-action: pan-y; }
-  /* Le repli : un hémicycle aux voyants, centré sur fond de nuit. */
+  /* Le repli : l'image fixe de la même caméra, ou un hémicycle aux voyants sur fond de nuit. */
   .repli { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 64px 32px 140px; }
   .repli :global(.mini-hemicycle) { width: min(100%, 860px); }
+  .avec-fond .repli { padding: 0; background: var(--nuit) var(--fond) center 40% / cover no-repeat; }
+  /* Avec une image fixe, l'hémicycle du repli reste dans le DOM pour les lecteurs d'écran. */
+  .avec-fond .repli-plan { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .scene[data-salle3d-etat='prete'] canvas { opacity: 1; }
   .scene[data-salle3d-etat='prete'] .repli { visibility: hidden; }
   @media (prefers-reduced-motion: reduce) { canvas { transition: none; } }
-  /* Un dégradé vers la nuit, en bas, pour poser les bandeaux sur la salle. */
-  .ecran::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  /* Les dégradés exacts des maquettes, pour poser les textes sur la salle. */
+  .scene-voile { position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(180deg, rgba(12, 13, 16, 0) 45%, rgba(12, 13, 16, 0.85) 100%); }
-  /* Un repère posé sur la salle (ta place, ton jumeau) : en lumière, au-dessus du siège. */
+  .voile-verdict .scene-voile { background: linear-gradient(180deg, rgba(12, 13, 16, 0.55) 0%, rgba(12, 13, 16, 0) 30%,
+    rgba(12, 13, 16, 0) 55%, rgba(12, 13, 16, 0.9) 100%); }
+  /* Un repère posé sur la salle (ta place) : en lumière, au-dessus du siège. */
   .repere { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 4px)); display: flex; flex-direction: column;
     align-items: center; pointer-events: none; }
   /* Près d'un bord, l'étiquette s'ancre sur le côté pour rester dans le cadre. */
@@ -78,22 +104,32 @@ const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33')
   .repere i { width: 18px; height: 18px; margin-top: 6px; border-radius: 50%; border: 2px solid var(--lumiere);
     box-shadow: 0 0 0 4px rgba(12, 13, 16, 0.45), 0 0 18px var(--lumiere); }
   .ecran:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
-  .dessus { position: absolute; inset: auto 0 0 0; z-index: 2; padding: 0 var(--gouttiere) 28px; }
+  /* Le pied de scène : bandeau, action, programme ou compteurs, posés sur la salle. */
+  .dessus { position: relative; z-index: 2; margin-top: auto; padding: 0 var(--gouttiere) 28px; }
+  .plein-cadre .dessus { padding: 0 32px 28px; }
   /* Les caméras n'ont de sens que dans la salle 3D : cachées dans le repli. */
   .scene:not([data-salle3d-etat='prete']) .cameras { display: none; }
   .cameras { position: absolute; top: 20px; right: var(--gouttiere); z-index: 3; display: flex; flex-wrap: wrap; gap: 8px; }
+  .plein-cadre .cameras { top: 96px; right: 32px; }
+  .plein-cadre.cameras-gauche .cameras { right: auto; left: 32px; }
   .cameras button { height: 36px; padding: 0 14px; border-radius: var(--rayon-puce); border: 1px solid rgba(242, 238, 230, 0.28);
     background: rgba(12, 13, 16, 0.6); color: var(--ivoire); font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; }
   .cameras button[aria-pressed='true'] { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
   .cameras button[aria-pressed='true']::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--direct); }
-  /* Sur téléphone, les puces passent en bas, au-dessus de la navigation. */
+  /* Sur téléphone : la salle en haut, les puces en bas de l'image, le contenu monte en feuille. */
   @media (max-width: 640px) {
+    .avec-fond .repli { background-image: var(--fond-telephone); background-position: center top; }
     .cameras { top: auto; bottom: 12px; left: 16px; right: 16px; justify-content: center; flex-wrap: nowrap; }
     /* Comme dans la maquette V6C-05 : seule la caméra en cours garde son nom. */
     .cameras button:not([aria-pressed='true']) .cam-nom { display: none; }
     .cameras { gap: 6px; }
     .cameras button { padding: 0 9px; gap: 5px; letter-spacing: 0.06em; }
     .dessus { padding-bottom: 64px; }
+    .plein-cadre .ecran { min-height: 0; }
+    .plein-cadre .image { inset: 0 0 auto 0; height: var(--image-telephone, 58vh); }
+    .plein-cadre .scene-voile { background: linear-gradient(180deg, rgba(12, 13, 16, 0) 55%, rgba(12, 13, 16, 0.9) 100%); }
+    .plein-cadre .cameras { top: calc(var(--image-telephone, 58vh) - 48px); bottom: auto; left: 16px; right: 16px; }
+    .plein-cadre .dessus { margin-top: calc(var(--image-telephone, 58vh) + 2px); padding: 0 16px 20px; }
   }
 </style>

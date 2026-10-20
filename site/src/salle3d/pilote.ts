@@ -47,7 +47,7 @@ export interface Pilote {
   vue(nom: NomVue, opt?: { instant?: boolean }): void;
   ambiance(nom: 'jour' | 'verdict'): void;
   jumeau(i: number | null): void;
-  /** Un repère posé sur la salle, au-dessus d'un siège ; null : aucun. */
+  /** Un repère posé sur la salle, au-dessus d'un siège (-1 : le 578e fauteuil) ; null : aucun. */
   repere(i: number | null, texte?: string): void;
   /** Le personnage du visiteur, et sa place (null : au pied de la tribune). */
   personnage(a: Apparence | null): void;

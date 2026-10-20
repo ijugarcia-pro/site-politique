@@ -1,107 +1,107 @@
 {
  "/": {
-  "js": 18564,
-  "js_gzip": 7574,
-  "css": 31593,
-  "css_gzip": 5913,
+  "js": 18972,
+  "js_gzip": 7726,
+  "css": 38373,
+  "css_gzip": 6857,
   "modules": 13
  },
  "/404/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 20579,
-  "css_gzip": 4314,
+  "css": 22875,
+  "css_gzip": 4695,
   "modules": 4
  },
  "/calcul/": {
   "js": 4253,
   "js_gzip": 2028,
-  "css": 20579,
-  "css_gzip": 4314,
+  "css": 22875,
+  "css_gzip": 4695,
   "modules": 4
  },
  "/confidentialite/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 20579,
-  "css_gzip": 4314,
+  "css": 22875,
+  "css_gzip": 4695,
   "modules": 4
  },
  "/deputes/": {
   "js": 10660,
   "js_gzip": 4585,
-  "css": 27238,
-  "css_gzip": 5286,
+  "css": 28807,
+  "css_gzip": 5557,
   "modules": 7
  },
  "/deputes/[uid]/": {
   "js": 6376,
   "js_gzip": 2684,
-  "css": 31835,
-  "css_gzip": 5887,
+  "css": 33689,
+  "css_gzip": 6184,
   "modules": 5
  },
  "/etat/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 20579,
-  "css_gzip": 4314,
+  "css": 22875,
+  "css_gzip": 4695,
   "modules": 4
  },
  "/explorer/": {
   "js": 7378,
   "js_gzip": 3100,
-  "css": 29008,
-  "css_gzip": 5596,
+  "css": 31097,
+  "css_gzip": 5921,
   "modules": 6
  },
  "/hemicycle/": {
   "js": 24184,
-  "js_gzip": 9523,
-  "css": 38400,
-  "css_gzip": 6989,
+  "js_gzip": 9521,
+  "css": 45279,
+  "css_gzip": 8058,
   "modules": 13
  },
  "/lots/": {
   "js": 23623,
   "js_gzip": 8902,
-  "css": 48697,
-  "css_gzip": 8655,
+  "css": 50619,
+  "css_gzip": 9006,
   "modules": 11
  },
  "/mentions-legales/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 20579,
-  "css_gzip": 4314,
+  "css": 22875,
+  "css_gzip": 4695,
   "modules": 4
  },
  "/quiz/": {
   "js": 26579,
   "js_gzip": 10106,
-  "css": 50594,
-  "css_gzip": 8832,
+  "css": 52222,
+  "css_gzip": 9174,
   "modules": 12
  },
  "/seance/": {
   "js": 24540,
   "js_gzip": 9112,
-  "css": 48697,
-  "css_gzip": 8655,
+  "css": 50619,
+  "css_gzip": 9006,
   "modules": 12
  },
  "/verdict/": {
   "js": 23434,
   "js_gzip": 9267,
-  "css": 38310,
-  "css_gzip": 7093,
+  "css": 45378,
+  "css_gzip": 8161,
   "modules": 12
  },
  "/votes/[numero]/": {
   "js": 9206,
   "js_gzip": 3833,
-  "css": 36732,
-  "css_gzip": 6857,
+  "css": 38830,
+  "css_gzip": 7162,
   "modules": 6
  }
 }

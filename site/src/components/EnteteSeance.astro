@@ -18,7 +18,7 @@ const { total, libelle, titre, sortie, serie = false } = Astro.props;
   {titre !== undefined && <span class="titre-seance" data-titre-seance>{titre}</span>}
   <div class="barre-cadre">
     <div class="barre" role="progressbar" aria-label={libelle} aria-valuemin="0"
-      aria-valuemax={total} aria-valuenow="0" data-barre>
+      aria-valuemax={total} aria-valuenow="0" data-barre style={`--n: ${total}`}>
       <span data-barre-pleine></span>
     </div>
     <span class="compteur" data-compteur>Vote 1 sur {total}</span>
@@ -40,15 +40,19 @@ const { total, libelle, titre, sortie, serie = false } = Astro.props;
     background: var(--direct); color: var(--sur-direct); font: 600 14px/1 var(--police-titre);
     letter-spacing: 0.12em; text-transform: uppercase; }
   @media (max-width: 640px) { .titre-seance { display: none; } }
-  .barre-cadre { flex: 1 1 280px; display: flex; align-items: center; gap: 14px; max-width: 640px; margin: 0 auto; }
-  .barre { flex: 1; height: 4px; background: var(--filet); overflow: hidden; }
+  .barre-cadre { flex: 1 1 280px; display: flex; align-items: center; justify-content: center; gap: 14px; max-width: 640px; margin: 0 auto; }
+  /* La progression en segments de 28 × 4 px, un par vote (DESIGN-FINAL.md, § 6) : la barre que remplit
+     lib/ est découpée par un masque, sans toucher au script. */
+  .barre { flex: none; width: min(100%, calc(var(--n, 3) * 32px - 4px)); height: 4px; background: var(--filet); overflow: hidden;
+    -webkit-mask: repeating-linear-gradient(90deg, #000 0 28px, transparent 28px 32px);
+    mask: repeating-linear-gradient(90deg, #000 0 28px, transparent 28px 32px); }
   .barre span { display: block; height: 100%; width: 0; background: var(--ivoire); transition: width .4s ease; }
   .compteur { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--ivoire-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .serie { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 600 16px/1 var(--police-titre);
     letter-spacing: 0.06em; text-transform: uppercase; color: var(--ivoire); }
   .serie[hidden] { display: none; }
-  .quitter { padding: 12px 4px; font: 600 15px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase;
+  .quitter { padding: 14px 4px; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--ivoire-2); text-decoration: none; }
   .quitter:hover { color: var(--ivoire); }
 </style>

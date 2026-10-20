@@ -1,7 +1,7 @@
 {
  "/": {
-  "js": 18127,
-  "js_gzip": 7437,
+  "js": 18500,
+  "js_gzip": 7550,
   "css": 34518,
   "css_gzip": 6259,
   "modules": 12
@@ -14,8 +14,8 @@
   "modules": 4
  },
  "/calcul/": {
-  "js": 4232,
-  "js_gzip": 2018,
+  "js": 4253,
+  "js_gzip": 2028,
   "css": 23500,
   "css_gzip": 4615,
   "modules": 4
@@ -56,11 +56,11 @@
   "modules": 6
  },
  "/hemicycle/": {
-  "js": 21650,
-  "js_gzip": 8583,
-  "css": 39862,
-  "css_gzip": 7136,
-  "modules": 11
+  "js": 24120,
+  "js_gzip": 9509,
+  "css": 41374,
+  "css_gzip": 7324,
+  "modules": 12
  },
  "/lots/": {
   "js": 23623,
@@ -91,8 +91,8 @@
   "modules": 12
  },
  "/verdict/": {
-  "js": 22997,
-  "js_gzip": 9156,
+  "js": 23370,
+  "js_gzip": 9260,
   "css": 41256,
   "css_gzip": 7419,
   "modules": 11

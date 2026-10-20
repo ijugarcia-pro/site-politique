@@ -21,6 +21,7 @@ Tout ce qui suit est enregistré dans ton navigateur uniquement (son « stockage
 | Où tu en es du quiz et des lots de votes | Reprendre là où tu t'étais arrêté | `578e.quiz.v1`, `578e.lots.v1` |
 | Le député que tu as choisi (son identifiant public) | Afficher ton député | `578e.depute.v1` |
 | Les verdicts que tu as déjà découverts (numéros des scrutins) | Ne pas te refaire découvrir un verdict déjà vu | `578e.verdicts-vus.v1` |
+| L'apparence de ton personnage dans la salle (peau, coiffure, tenue) et le siège où il s'est assis | Le dessiner dans la salle 3D | `578e.personnage.v1` |
 
 Ces informations peuvent révéler des **opinions politiques**, qui sont des données sensibles au sens de l'article 9 du RGPD. C'est pourquoi le site est conçu pour ne jamais les transmettre : il n'a aucune base de données qui pourrait les recevoir.
 

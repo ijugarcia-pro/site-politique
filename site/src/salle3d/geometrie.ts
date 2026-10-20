@@ -101,3 +101,46 @@ export const echelleFauteuil = (pas: number) => Math.min(1, (pas - 0.02) / LARGE
 export function position(s: Pick<Siege3D, 'r' | 'th' | 'y'>, dy = 0): [number, number, number] {
   return [s.r * Math.cos(s.th), s.y + dy, s.r * Math.sin(s.th)];
 }
+
+/** Le 578e fauteuil, au pied de la tribune (room.js, `G.c578`) : le personnage y attend. */
+export const FAUTEUIL_578 = { x: 2.15, y: 0, z: 0.9, cap: -0.35 } as const;
+
+/** Le chemin du personnage, du 578e fauteuil au siège de son jumeau, par les allées : au pied de
+ *  l'allée la plus proche du bloc, la montée dans l'allée jusqu'à la rangée, puis le long de la
+ *  rangée (en arc, entre les pupitres et les sièges) jusqu'au siège. Points [x, y, z]. */
+export function chemin(s: Siege3D, pasArc = 0.04): [number, number, number][] {
+  const bornes = [P.TH0, ...P.ALLEES, P.TH1];
+  const allees = [bornes[s.secteur], bornes[s.secteur + 1]].filter((a) => (P.ALLEES as readonly number[]).includes(a));
+  const a = rad(allees.sort((x, y) => Math.abs(rad(x) - s.th) - Math.abs(rad(y) - s.th))[0]);
+  const pt = (r: number, th: number, y: number): [number, number, number] => [r * Math.cos(th), y, r * Math.sin(th)];
+  const allee = s.rd + 0.6;
+  const points: [number, number, number][] = [
+    [FAUTEUIL_578.x, 0, FAUTEUIL_578.z + 0.5],
+    pt(P.R0 - 0.7, a, 0),
+    pt(allee, a, s.y),
+  ];
+  const n = Math.max(1, Math.ceil(Math.abs(s.th - a) / pasArc));
+  for (let q = 1; q <= n; q++) points.push(pt(allee, a + ((s.th - a) * q) / n, s.y));
+  points.push(pt(s.r, s.th, s.y));
+  return points;
+}
+
+/** La position à la distance d le long d'un chemin, et son cap (angle autour de la verticale). */
+export function surChemin(points: [number, number, number][], d: number) {
+  let reste = Math.max(0, d);
+  for (let k = 1; k < points.length; k++) {
+    const [x0, y0, z0] = points[k - 1], [x1, y1, z1] = points[k];
+    const l = Math.hypot(x1 - x0, z1 - z0) || 1e-9;
+    if (reste <= l || k === points.length - 1) {
+      const t = Math.min(1, reste / l);
+      return { p: [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, z0 + (z1 - z0) * t] as [number, number, number],
+        cap: Math.atan2(x1 - x0, z1 - z0) };
+    }
+    reste -= l;
+  }
+  const p = points[points.length - 1];
+  return { p, cap: 0 };
+}
+
+export const longueur = (points: [number, number, number][]) =>
+  points.slice(1).reduce((s, p, k) => s + Math.hypot(p[0] - points[k][0], p[2] - points[k][2]), 0);

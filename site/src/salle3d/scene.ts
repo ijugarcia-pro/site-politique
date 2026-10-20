@@ -11,10 +11,12 @@
 // Chargé à la demande par pilote.ts : jamais dans le JavaScript initial d'une page.
 
 import * as THREE from 'three';
-import { P, echelleFauteuil, position, sieges3D, type Siege3D } from './geometrie.ts';
+import { chemin, echelleFauteuil, FAUTEUIL_578, longueur, P, position, sieges3D, surChemin, type Siege3D } from './geometrie.ts';
+import type { Apparence } from './apparence.ts';
+import { creerPersonnage, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
 
-export type NomVue = 'salle' | 'tribune' | 'plan';
+export type NomVue = 'salle' | 'tribune' | 'travee' | 'plan';
 export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number;
   haut?: [number, number, number] }
 export interface OptionsScene { base?: string; telephone?: boolean; mouvementReduit?: boolean }
@@ -52,6 +54,11 @@ export interface Salle3D {
   projeter(points: [number, number, number][]): { x: number; y: number; devant: boolean }[];
   positionSiege(i: number, dy?: number): [number, number, number];
   readonly vueCourante: NomVue;
+  /** Le personnage du visiteur (null : aucun). */
+  personnage(a: Apparence | null): void;
+  /** Sa place : le siège n° i (celui de son jumeau), ou le 578e fauteuil au pied de la tribune
+   *  (null). `marcher` : il s'y rend par les allées (3,5 s, passable ; coupé en mouvement réduit). */
+  asseoir(i: number | null, opt?: { marcher?: boolean }): Promise<void>;
   /** Appelée après chaque image : la page y repositionne ses repères (projeter). */
   surRendu: (() => void) | null;
   /** Les voyants s'allument en onde, du rang intérieur vers l'extérieur (R1). */
@@ -491,6 +498,25 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const jumLum = new THREE.PointLight(0xffd9a0, 0.9 * PI * 8, 3.4, 2);
   const jum = new THREE.Group(); jum.add(jumPlaque, jumLum); jum.visible = false; scene.add(jum);
 
+  /* Le personnage : sa place (null : le 578e fauteuil), sa marche en cours */
+  let perso: Personnage | null = null;
+  let place: number | null = null;
+  let marche: { finir(): void } | null = null;
+  const fauteuil578 = new THREE.Object3D();
+  fauteuil578.position.set(FAUTEUIL_578.x, FAUTEUIL_578.y, FAUTEUIL_578.z); fauteuil578.rotation.y = FAUTEUIL_578.cap;
+  /** Le personnage assis à sa place. */
+  const poserAssis = () => {
+    if (!perso) return;
+    perso.assis();
+    if (place === null) {
+      perso.groupe.position.copy(fauteuil578.position); perso.groupe.rotation.set(0, fauteuil578.rotation.y, 0);
+    } else {
+      const [x, y, z] = position(sieges[place]);
+      perso.groupe.position.set(x, y, z); perso.groupe.rotation.set(0, Math.atan2(-x, -z), 0);
+    }
+    renderer.shadowMap.needsUpdate = true;
+  };
+
   /* Caméra et rendu à la demande */
   const cam = { pos: [0, 7, -6.4] as number[], cible: [0, 5.5, 11] as number[], fov: 64, haut: [0, 1, 0] as number[] };
   let vueCourante: NomVue = 'salle';
@@ -524,9 +550,31 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     echV = plan ? 9 : 1; poserVoyants(); (M.sol as THREE.MeshPhysicalMaterial).color.setHex(plan ? 0x5e4f44 : 0xb9a596);
     renderer.shadowMap.needsUpdate = true;
   };
+  /** CAM 3 · Ta travée : par-dessus l'épaule du personnage, assis à sa place, face à la tribune.
+   *  Sans place, la salle depuis le perchoir. */
+  const cadrer = (nom: NomVue, aspect: number): Cadrage => {
+    if (nom !== 'travee' || place === null) return cadrage(nom === 'travee' ? 'salle' : nom, aspect);
+    const s = sieges[place];
+    const [x, y, z] = position(s);
+    const l = Math.hypot(x, z);
+    const dx = -x / l, dz = -z / l;
+    return { pos: [x - dx * 0.55, y + 1.75, z - dz * 0.55], cible: [0, 1.6, -1.2], fov: aspect < 0.9 ? 78 : 62 };
+  };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
   const poserLibre = () => {
-    const c = cadrage(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    const c = cadrer(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    if (vueCourante === 'travee' && place !== null) {
+      // Depuis son siège, on tourne la tête : lacet ±70°, tangage ±25°, sans bouger.
+      const v = new THREE.Vector3(c.cible[0] - c.pos[0], c.cible[1] - c.pos[1], c.cible[2] - c.pos[2]);
+      const r = v.length();
+      const theta = Math.atan2(v.x, v.z) + libre.lacet;
+      const phi = Math.asin(v.y / r) + libre.tangage;
+      cam.pos = [...c.pos];
+      cam.cible = [c.pos[0] + r * Math.cos(phi) * Math.sin(theta), c.pos[1] + r * Math.sin(phi), c.pos[2] + r * Math.cos(phi) * Math.cos(theta)];
+      cam.fov = c.fov; cam.haut = [0, 1, 0];
+      appliquerCam(); demander();
+      return;
+    }
     const v = new THREE.Vector3(c.pos[0] - c.cible[0], c.pos[1] - c.cible[1], c.pos[2] - c.cible[2]);
     const r = v.length() * libre.zoom;
     let pos: THREE.Vector3;
@@ -562,7 +610,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     set surRendu(f: (() => void) | null) { surRendu = f; },
     vue(nom, o2 = {}) {
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
-      const c = cadrage(nom, aspect);
+      const c = cadrer(nom, aspect);
       vueCourante = nom;
       libre.lacet = 0; libre.tangage = 0; libre.zoom = 1;
       anim?.finir();
@@ -580,7 +628,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       });
       return anim.fini.then(() => { anim = null; finVue(nom); demander(); });
     },
-    terminer() { anim?.finir(); onde?.finir(); },
+    terminer() { anim?.finir(); onde?.finir(); marche?.finir(); },
     voyants(couleurs) {
       onde?.finir();
       const c = new THREE.Color();
@@ -627,6 +675,45 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       requestAnimationFrame(image);
       return promesse;
     },
+    personnage(a) {
+      if (perso) { scene.remove(perso.groupe); perso = null; }
+      if (a) { perso = creerPersonnage(a); scene.add(perso.groupe); poserAssis(); }
+      renderer.shadowMap.needsUpdate = true; demander();
+    },
+    asseoir(k, o3 = {}) {
+      marche?.finir();
+      const cible = k;
+      if (!perso || cible === null || !o3.marcher || opt.mouvementReduit) {
+        place = cible; poserAssis();
+        if (vueCourante === 'travee') poserLibre(); else demander();
+        return Promise.resolve();
+      }
+      // La marche : du 578e fauteuil au siège, par les allées, en 3,5 s ; un appui la termine.
+      const points = chemin(sieges[cible]);
+      const L = longueur(points);
+      const p0 = perso;
+      p0.debout();
+      let fini = false;
+      let resoudre: () => void = () => {};
+      const promesse = new Promise<void>((r) => { resoudre = r; });
+      const terminer = () => {
+        if (fini) return;
+        fini = true; marche = null; place = cible; poserAssis();
+        if (vueCourante === 'travee') poserLibre(); else demander();
+        resoudre();
+      };
+      const tw = interpoler(3500, (e) => {
+        if (fini) return;
+        const d = L * e;
+        const { p, cap } = surChemin(points, d);
+        p0.marcher((d / 0.32) * Math.PI);
+        p0.groupe.position.set(p[0], p[1], p[2]); p0.groupe.rotation.set(0, cap, 0);
+        rendre();
+        if (e >= 1) terminer();
+      });
+      marche = { finir: () => { tw.arreter(); terminer(); } };
+      return promesse;
+    },
     jumeau(k) {
       jum.visible = k !== null;
       if (k !== null) {
@@ -639,13 +726,14 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     },
     orbiter(dLacet, dTangage) {
       if (anim) return;
-      const amplitude = vueCourante === 'plan' ? 1.0 : 0.6;
+      const travee = vueCourante === 'travee' && place !== null;
+      const amplitude = travee ? rad(70) : vueCourante === 'plan' ? 1.0 : 0.6;
       libre.lacet = borne(libre.lacet + dLacet, amplitude);
-      libre.tangage = vueCourante === 'plan' ? 0 : borne(libre.tangage + dTangage, 0.25);
+      libre.tangage = vueCourante === 'plan' ? 0 : borne(libre.tangage + dTangage, travee ? rad(25) : 0.25);
       poserLibre();
     },
     zoomer(f) {
-      if (anim) return;
+      if (anim || vueCourante === 'travee') return;
       libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));
       poserLibre();
     },
@@ -673,7 +761,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     detruire() { anim?.arreter(); onde?.finir(); renderer.dispose(); pmrem.dispose(); },
   };
 
-  const c0 = cadrage('salle', canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  const c0 = cadrer('salle', canvas.clientWidth / Math.max(1, canvas.clientHeight));
   cam.pos = c0.pos; cam.cible = c0.cible; cam.fov = c0.fov;
   redimensionner(); renderer.shadowMap.needsUpdate = true; rendre();
   return salle;

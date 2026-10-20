@@ -6,6 +6,7 @@
 // pincer (ou Ctrl + molette) pour zoomer, double appui pour revenir ; au clavier, flèches, + et −,
 // Échap.
 
+import type { Apparence } from './apparence.ts';
 import type { NomVue, Salle3D } from './scene.ts';
 
 export type Raison = 'ok' | 'webgl' | 'economie' | 'memoire' | 'erreur';
@@ -48,6 +49,11 @@ export interface Pilote {
   jumeau(i: number | null): void;
   /** Un repère posé sur la salle, au-dessus d'un siège ; null : aucun. */
   repere(i: number | null, texte?: string): void;
+  /** Le personnage du visiteur, et sa place (null : au pied de la tribune). */
+  personnage(a: Apparence | null): void;
+  asseoir(i: number | null, opt?: { marcher?: boolean }): void;
+  /** Montrer ou cacher une puce de caméra (CAM 3 n'existe qu'avec une place). */
+  camera(nom: NomVue, disponible: boolean): void;
   /** Résolue quand la salle est à l'écran ; null si elle ne s'ouvre pas (le repli reste). */
   prete: Promise<Salle3D | null>;
 }
@@ -178,9 +184,18 @@ function creerPilote(racine: HTMLElement): Pilote {
   return {
     voyants: (c) => { peindreRepli(c); faire((s) => s.voyants(c)); },
     onde: (c, duree) => { peindreRepli(c); faire((s) => { void s.voyantsEnOnde(c, duree); }); },
-    vue: (nom, opt) => faire((s) => { void s.vue(nom, opt); }),
+    vue: (nom, opt) => {
+      for (const x of racine.querySelectorAll<HTMLElement>('[data-camera]')) x.setAttribute('aria-pressed', String(x.dataset.camera === nom));
+      faire((s) => { void s.vue(nom, opt); });
+    },
     ambiance: (nom) => faire((s) => s.ambiance(nom)),
     jumeau: (i) => faire((s) => s.jumeau(i)),
+    personnage: (a) => faire((s) => s.personnage(a)),
+    asseoir: (i, opt) => faire((s) => { void s.asseoir(i, opt); }),
+    camera: (nom, disponible) => {
+      const b = racine.querySelector<HTMLElement>(`[data-camera="${nom}"]`);
+      if (b) b.hidden = !disponible;
+    },
     repere: (i, texte = '') => {
       repere = i === null ? null : { i, texte };
       marque.querySelector('span')!.textContent = texte;

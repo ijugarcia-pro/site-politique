@@ -14,14 +14,14 @@ interface Props {
   /** La couleur du voyant de chaque siège au départ (repli compris) ; vide : tous éteints. */
   couleurs?: (string | null)[];
   /** Les puces de caméra proposées, la première est en cours. */
-  cameras?: ('salle' | 'tribune' | 'plan')[];
+  cameras?: ('salle' | 'tribune' | 'travee' | 'plan')[];
   /** Hauteur de la scène sur ordinateur (la largeur est celle de la page). */
   hauteur?: string;
   /** Sur téléphone, ouvrir la salle vue de dessus (CAM 4 · Plan), comme la maquette V6C-06. */
   planSurTelephone?: boolean;
 }
 
-const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], plan: ['Cam 4', 'Plan'] };
+const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], travee: ['Cam 3', 'Ta travée'], plan: ['Cam 4', 'Plan'] };
 const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)', planSurTelephone = false } = Astro.props;
 const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33');
 ---

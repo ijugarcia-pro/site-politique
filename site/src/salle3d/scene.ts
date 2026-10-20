@@ -54,6 +54,7 @@ export interface Salle3D {
   ambiance(nom: 'jour' | 'verdict'): void;
   redimensionner(): void;
   projeter(points: [number, number, number][]): { x: number; y: number; devant: boolean }[];
+  /** La position d'un siège (index de la composition) ; -1 : le 578e fauteuil, au pied de la tribune. */
   positionSiege(i: number, dy?: number): [number, number, number];
   readonly vueCourante: NomVue;
   /** Le personnage du visiteur (null : aucun). */
@@ -761,7 +762,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     projeter(points) {
       return points.map((p) => { const v = new THREE.Vector3(...p).project(camera); return { x: (v.x + 1) / 2, y: (1 - v.y) / 2, devant: v.z < 1 }; });
     },
-    positionSiege: (i, dy = 0) => position(sieges[i], dy),
+    positionSiege: (i, dy = 0) => (i < 0 ? [FAUTEUIL_578.x, FAUTEUIL_578.y + 0.9 + dy, FAUTEUIL_578.z] : position(sieges[i], dy)),
     detruire() { anim?.arreter(); onde?.finir(); renderer.dispose(); pmrem.dispose(); },
   };
 

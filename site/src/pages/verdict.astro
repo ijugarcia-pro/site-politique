@@ -47,7 +47,7 @@ const onglets = seance.map((v) => ({ titre: questionSeance(v).titre,
   k: verdicts.findIndex((x) => x.cle === v.cle) }));
 const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\u003c');
 ---
-<Base titre="Le verdict" onglet="semaine"
+<Base titre="Le verdict" onglet="semaine" theme="seance"
   description="Le verdict des votes de la semaine à l'Assemblée, face à tes réponses.">
   <p class="fil"><a href="/">Cette semaine</a> › Verdict</p>
   {verdicts.length === 0 ? (
@@ -72,7 +72,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   ) : (
     <>
     {etape.bandeau && (
-      <p class="bandeau" role="status">
+      <p class="bandeau-etape" role="status">
         <strong>{etape.bandeau}</strong>
         <span>Leur verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</span>
       </p>
@@ -114,10 +114,24 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
             </div>
             <div class="boite">
               <span class="tampon">{v.verdict}</span>
-              <span>
-                <span class="marge" data-ecart>{v.marge ?? `${v.decompte.pour} – ${v.decompte.contre}`}</span>
-                <span class="decompte">{v.decompte.pour} pour · {v.decompte.contre} contre · {v.decompte.abstention} abstention{v.decompte.abstention > 1 ? 's' : ''}</span>
-              </span>
+              <div class="bandeau">
+                <div class="bandeau-ligne">
+                  <span class="bandeau-etiquette">Verdict</span>
+                  <span class="bandeau-titre">{v.verdict} <span class="marge" data-ecart>{v.marge ?? `${v.decompte.pour} – ${v.decompte.contre}`}</span></span>
+                </div>
+                <span class="bandeau-legende decompte">{v.decompte.pour} pour · {v.decompte.contre} contre · {v.decompte.abstention} abstention{v.decompte.abstention > 1 ? 's' : ''}{v.requis ? ` · majorité requise : ${v.requis}` : ''}</span>
+              </div>
+              <ul class="compteurs" aria-label="Le décompte">
+                {([['pour', 'Pour', v.decompte.pour], ['contre', 'Contre', v.decompte.contre],
+                  ['abstention', v.decompte.abstention > 1 ? 'Abstentions' : 'Abstention', v.decompte.abstention],
+                  ['absent', v.decompte.absent > 1 ? 'Absents' : 'Absent', v.decompte.absent]] as const).map(([cle, mot, n]) => (
+                  <li class={`compteur c-${cle}`}>
+                    <span class="compteur-mot">{mot}</span>
+                    <span class="chiffre" style={`--from:0;--to:${n}`}><span class="chiffre-texte">{n}</span></span>
+                  </li>
+                ))}
+              </ul>
+              {v.decompte.non_votant > 0 && <p class="non-votants">Non-votants : {v.decompte.non_votant} (présents, sans prendre part au vote)</p>}
             </div>
             <ul class="lignes" data-lignes={k}></ul>
             <div class="actions">
@@ -172,7 +186,8 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   const racine = document.querySelector<HTMLElement>('[data-salle]');
   if (racine && verdicts.length) {
     const salle = new Salle(racine);
-    const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', N: '#9AA1B2', '-': '#DFE3EB' };
+    // Absent et non-votant : les teintes « éteintes » du thème (styles/global.css).
+    const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', N: 'var(--non-votant)', '-': 'var(--absent)' };
     const MOTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention' };
     const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
     const seance = etatSeance(lundi);
@@ -180,9 +195,11 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
     const monDepute = deputeChoisi();
     let matrice: Matrice | null = null;
     const ICONES = {
-      ok: ['#1CB37A', 'M5 10.5l3.5 3.5L15 7'], non: ['#FF6A3D', 'M6 6l8 8M14 6l-8 8'],
-      neutre: ['#C9CFDA', 'M5 10h10'], prono: ['#FFC531', 'M10 3l2 4.4 4.8.6-3.5 3.3.9 4.7L10 13.7 5.8 16l.9-4.7L3.2 8l4.8-.6z'],
-      voix: ['#7C4DFF', 'M3 15a7 7 0 0 1 14 0M7 15a3 3 0 0 1 6 0'],
+      // Majorité ou minorité : la même pastille neutre, seul le pictogramme change (neutralité) ;
+      // ta voix, en lumière.
+      ok: ['#3A3D45', 'M5 10.5l3.5 3.5L15 7'], non: ['#3A3D45', 'M6 6l8 8M14 6l-8 8'],
+      neutre: ['#3A3D45', 'M5 10h10'], prono: ['#3A3D45', 'M10 3l2 4.4 4.8.6-3.5 3.3.9 4.7L10 13.7 5.8 16l.9-4.7L3.2 8l4.8-.6z'],
+      voix: ['#8A5A12', 'M3 15a7 7 0 0 1 14 0M7 15a3 3 0 0 1 6 0'],
     } as const;
     const ligne = (icone: keyof typeof ICONES, titre: string, detail: string) => {
       const li = document.createElement('li');
@@ -219,7 +236,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
         const brut = v.sieges[i];
         if (brut === 'x') return { sansCommun: true };
         const l = brut.toUpperCase();
-        return { fond: COULEURS[l] ?? '#DFE3EB', contreGroupe: brut !== l };
+        return { fond: COULEURS[l] ?? 'var(--absent)', contreGroupe: brut !== l };
       };
       const legende = `${v.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`;
       if (anime) onde = salle.reveler(rendu, { pour: v.decompte.pour, contre: v.decompte.contre, legende, duree: 1000 });
@@ -309,7 +326,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
       peindre(k0);
       remplir(k0);
       onde?.passer();
-      salle.colorer(() => ({ fond: '#D6DBE4' }));
+      salle.colorer(() => ({ fond: 'var(--siege-repos)' }));
       salle.centre('?', 'Le verdict est tombé');
       const svg = racine.querySelector('[data-salle-svg]')!;
       // La respiration attend, à l'arrêt, que l'hémicycle soit à l'écran (règle 6).
@@ -364,35 +381,37 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
 </script>
 
 <style>
-  /* Cotes reprises de la frame V5 « ⑧ Verdict » ; sans « Partager ma semaine », « Suivre ce
-     texte » ni comparaison avec les utilisateurs du site (reportés). */
-  .fil { margin: 0; font-size: 14px; color: var(--gris-legende); }
-  .attente { max-width: 680px; }
-  .attente h1 { margin: 14px 0 12px; font-size: clamp(34px, 3.2vw, 46px); }
-  .attente p, .attente li { font-size: 17px; color: var(--gris); }
-  .bandeau { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 14px 0 4px; padding: 12px 18px; border-radius: var(--rayon);
-    border: 2px solid var(--filet); background: var(--panneau-2); font-size: 15px; color: var(--texte-doux); }
-  .bandeau strong { font-family: var(--police-titre); font-weight: 600; font-size: 17px; color: var(--violet-encre); }
-  .verdict { display: flex; flex-wrap: wrap; gap: 28px 40px; align-items: flex-start; }
-  .gauche { flex: 1 1 480px; min-width: 0; max-width: 600px; }
-  /* Où tu en es dans les verdicts de ta séance (retour de Julien du 14 oct.) : un repère
-     d'étapes, comme la progression de la séance, et non une rangée de titres. */
+  /* Le verdict en régie (maquette V6C-03), en 2D en attendant la salle allumée (lot 4) :
+     l'issue en titre d'écran, la même pour les deux issues ; « à N voix près » en bandeau ; les compteurs
+     pour, contre, abstentions, absents, qui montent ensemble. Sans « Suivre ce texte » ni
+     comparaison avec les utilisateurs du site (reportés). */
+  .fil { margin: 0; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ivoire-2); }
+  .fil a { color: var(--ivoire-2); }
+  .attente { max-width: 680px; padding: 28px; border-radius: var(--rayon); background: var(--panneau); box-shadow: var(--ombre-panneau); }
+  .attente h1 { margin: 0 0 12px; font: 700 clamp(36px, 4vw, 56px)/0.95 var(--police-titre); text-transform: uppercase; }
+  .attente p, .attente li { font-size: 17px; color: var(--ivoire-2); }
+  .attente .b-principal { margin-top: 8px; }
+  .bandeau-etape { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 14px 0 4px; padding: 12px 18px;
+    border-left: 3px solid var(--lumiere); background: var(--panneau-2); font-size: 15px; color: var(--ivoire-2); }
+  .bandeau-etape strong { font: 600 18px/1.2 var(--police-titre); text-transform: uppercase; letter-spacing: 0.02em; color: var(--ivoire); }
+  .verdict { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+  .gauche { flex: 1 1 480px; min-width: 0; max-width: 640px; }
+  /* Où tu en es dans les verdicts de ta séance : un repère d'étapes. */
   .etapes { margin: 14px 0 0; }
-  .etapes-texte { margin: 0 0 6px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--violet-encre); }
-  .segments { display: flex; gap: 6px; }
+  .etapes-texte { margin: 0 0 6px; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
+  .segments { display: flex; gap: 4px; }
   .segment { display: flex; align-items: center; width: 56px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
-  .segment > span { display: block; width: 100%; height: 8px; border-radius: 999px; background: var(--filet); }
-  .segment[aria-current="step"] > span { background: var(--violet); }
+  .segment > span { display: block; width: 100%; height: 4px; background: var(--filet); }
+  .segment[aria-current="step"] > span { background: var(--ivoire); }
   .segment.a-venir { cursor: default; }
-  .segment.a-venir > span { height: 6px; border: 2px dashed var(--bord); background: none; }
-  .segment:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; border-radius: 6px; }
+  .segment.a-venir > span { height: 0; border-top: 2px dashed var(--filet); background: none; }
   .un-verdict:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
   .un-verdict[hidden] { display: none; }
   /* Le verdict au toucher (D1 + D3, docs/animations-lot-1.md § 8). */
   .gauche { position: relative; }
-  .decouvrir { display: none; margin-top: 4px; }
-  .decouvrir .b-principal { border: 0; cursor: pointer; }
+  .decouvrir { display: none; margin-top: 8px; }
   :global(html.verdict-cache) .decouvrir { display: block; }
   :global(html.verdict-cache) .boite, :global(html.verdict-cache) .lignes,
   :global(html.verdict-cache) .actions { display: none; }
@@ -403,53 +422,75 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   .en-revelation .boite:not(:global(.apparait)), .en-revelation .lignes:not(:global(.apparait)),
   .en-revelation .actions:not(:global(.apparait)) { opacity: 0; }
   .un-verdict :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) both; }
-  .boite:global(.apparait) .tampon { animation: tampon-verdict 600ms cubic-bezier(.2,.8,.2,1) both; }
-  @keyframes tampon-verdict { 0% { transform: rotate(-4deg) scale(1.6); opacity: 0; }
-    70% { transform: rotate(-4deg) scale(.94); opacity: 1; } 100% { transform: rotate(-4deg) scale(1); } }
-  .marge:global(.grossit) { animation: grossit 400ms ease both; }
+  /* Le titre d'écran entre depuis le bas (600 ms), le même pour les deux issues ; les compteurs
+     montent ensemble de 0 à leur valeur en 1,2 s. */
+  .boite:global(.apparait) .tampon { animation: tampon-verdict 600ms var(--ease-bandeau) both; }
+  @keyframes tampon-verdict { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .boite:global(.apparait) .chiffre { counter-reset: n var(--num);
+    animation: compte var(--dur-compteur) cubic-bezier(.2,.7,.2,1) 200ms both; }
+  .boite:global(.apparait) .chiffre::after { content: counter(n); }
+  .boite:global(.apparait) .chiffre-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .marge:global(.grossit) { display: inline-block; animation: grossit 400ms ease both; }
   @keyframes grossit { 45% { transform: scale(1.18); } }
-  .marge { transform-origin: left center; }
-  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: var(--rayon);
-    border: 2px solid var(--bord); background: var(--fond); box-shadow: 0 3px 0 var(--bord); color: var(--gris);
-    font-family: var(--police-titre); font-weight: 600; font-size: 15px; cursor: pointer; }
+  .marge { display: inline-block; transform-origin: left center; }
   @media (prefers-reduced-motion: reduce) {
     .panneau :global(svg.respire) { animation: none; opacity: .6; }
     .un-verdict :global(.apparait), .boite:global(.apparait) .tampon, .marge:global(.grossit) { animation: none; }
+    .boite:global(.apparait) .chiffre { animation: none; }
+    .boite:global(.apparait) .chiffre::after { content: none; }
+    .boite:global(.apparait) .chiffre-texte { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
     .un-verdict:global(.arrive) { animation: fondu var(--dur-xs) linear both; }
   }
-  .puces { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .puce-theme, .puce-date { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px;
-    font-family: var(--police-titre); font-weight: 600; font-size: 13px; }
-  .puce-theme { letter-spacing: 0.06em; text-transform: uppercase; }
-  .puce-date { background: var(--fond-doux); color: #3A4152; font-size: 14px; }
-  .un-verdict h1 { outline: none; margin: 14px 0 18px; font-weight: 700; font-size: clamp(30px, 3vw, 42px); line-height: 1.05; letter-spacing: -0.015em; }
-  .boite { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; padding: 20px 24px; border-radius: var(--rayon);
-    background: var(--texte); color: #FFFFFF; box-shadow: 0 6px 0 #0B0E17; }
-  .tampon { flex: none; padding: 8px 16px; border: 3px solid #FFFFFF; border-radius: var(--rayon); font-family: var(--police-titre);
-    font-weight: 700; font-size: 28px; letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-4deg); }
-  .marge { display: block; font-family: var(--police-titre); font-weight: 700; font-size: 32px; line-height: 1; }
-  .decompte { display: block; margin-top: 6px; font-size: 15px; color: #C9CFDA; }
-  .lignes { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
-  .lignes :global(li) { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: var(--rayon); border: 2px solid var(--bord); }
-  .lignes :global(.icone) { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: var(--rayon); }
-  .lignes :global(.ligne-titre) { display: block; font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
-  .lignes :global(.ligne-detail) { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--gris); }
+  .puces { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+  .puce-theme { display: inline-flex; align-items: center; padding: 6px 8px; background: var(--direct) !important;
+    color: var(--sur-direct) !important; font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
+  .puce-date { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .un-verdict h1 { outline: none; margin: 14px 0 18px; font: 500 clamp(24px, 2.4vw, 30px)/1.3 var(--police-question); text-wrap: balance; }
+  .boite { display: flex; flex-direction: column; gap: 16px; }
+  .tampon { display: block; margin: 0; font: 700 clamp(72px, 9vw, var(--taille-titre-ecran))/0.88 var(--police-titre); text-transform: uppercase;
+    letter-spacing: -0.005em; }
+  .bandeau-titre { font-size: 26px; }
+  .compteurs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 18px 20px;
+    list-style: none; background: var(--voile); }
+  @media (max-width: 640px) { .compteurs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .compteur { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .compteur-mot { display: flex; align-items: center; gap: 8px; font: 600 var(--taille-puce)/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .compteur-mot::before { content: ''; width: 12px; height: 12px; }
+  .c-pour .compteur-mot::before { background: var(--pour); }
+  .c-contre .compteur-mot::before { background: var(--contre); }
+  .c-abstention .compteur-mot::before { background: var(--abstention); }
+  .c-absent .compteur-mot::before { background: var(--voyant-eteint); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
+  .chiffre { font: 600 clamp(48px, 5.4vw, var(--taille-compteur))/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
+  .non-votants { margin: -6px 0 0; font-size: 13px; color: var(--ivoire-2); }
+  .lignes { display: flex; flex-direction: column; gap: 2px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .lignes :global(li) { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; background: var(--panneau); }
+  .lignes :global(.icone) { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+    border-radius: 50%; }
+  .lignes :global(.ligne-titre) { display: block; font: 600 19px/1.15 var(--police-titre); text-transform: uppercase; letter-spacing: 0.01em; }
+  .lignes :global(.ligne-detail) { display: block; margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
-  .b-principal { display: inline-flex; align-items: center; min-height: 56px; padding: 0 22px; border-radius: var(--rayon); background: var(--violet);
-    color: #fff; box-shadow: 0 5px 0 var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 16px;
-    letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; }
-  .b-principal:hover { color: #fff; background: var(--violet-fonce); }
-  .b-second { display: inline-flex; align-items: center; min-height: 56px; padding: 0 20px; border: 2px solid var(--bord);
-    border-radius: var(--rayon); background: var(--fond); box-shadow: 0 4px 0 var(--bord); font-family: var(--police-titre);
-    font-weight: 600; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--violet-fonce); text-decoration: none; }
-  .panneau { flex: 1.2 1 520px; min-width: 0; padding: 22px 24px; border-radius: var(--rayon); background: var(--fond-doux); }
+  .b-principal { display: inline-flex; align-items: center; min-height: 54px; padding: 0 24px; border: 0; border-radius: var(--rayon);
+    background: var(--direct); color: var(--sur-direct); font: 600 17px/1 var(--police-titre); letter-spacing: 0.08em;
+    text-transform: uppercase; text-decoration: none; cursor: pointer; }
+  .b-principal:hover { color: var(--sur-direct); background: #9A0F27; }
+  .b-second { display: inline-flex; align-items: center; min-height: 54px; padding: 0 20px; border: 1px solid var(--ivoire-2);
+    border-radius: var(--rayon); color: var(--ivoire); font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em;
+    text-transform: uppercase; text-decoration: none; }
+  .b-second:hover { color: var(--ivoire); background: var(--panneau-2); }
+  .b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: var(--rayon);
+    border: 1px solid var(--ivoire-2); background: var(--panneau); color: var(--ivoire);
+    font: 600 14px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+  .panneau { flex: 1.2 1 520px; min-width: 0; padding: 22px 24px; border-radius: var(--rayon); background: var(--panneau);
+    border: 1px solid var(--filet); }
   .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
-  .panneau h2 { font-size: 22px; font-weight: 600; }
-  .panneau-tete span { font-size: 14px; color: var(--gris-legende); }
+  .panneau h2 { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+  .panneau-tete span { font-size: 14px; color: var(--ivoire-2); }
   .cadre-salle { margin-top: 20px; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
-    list-style: none; font-size: 14px; color: var(--texte-doux); }
+    list-style: none; font-size: 14px; color: var(--ivoire-2); }
   .legende li { display: inline-flex; align-items: center; gap: 7px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
+  .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--ivoire); }
 </style>
+

@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "test": "node --test \"src/lib/*.test.ts\" \"src/salle3d/*.test.ts\" tests/stockage.test.mjs",
     "test:inventaire": "node --test tests/inventaire.test.mjs",
+    "test:typo": "node scripts/typo.mjs",
     "inventaire:enregistrer": "node scripts/inventaire.mjs enregistrer"
   },
   "dependencies": {

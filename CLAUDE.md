@@ -33,7 +33,7 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 - data/mesures/ : mesures versionnées (délai de publication…)
 - docs/ : décisions, rapports, inventaires, planning (docs/PLANNING.md)
 - tests/ : tests pytest
-- site/ : le site (Astro) ; site/src/salle3d/ : la salle 3D (three, chargée à la demande) ; site/scripts/ : inventaire, captures, matières et images fixes (Playwright) ; site/public/salle3d/ : matières précalculées
+- site/ : le site (Astro) ; site/src/salle3d/ : la salle 3D (three, chargée à la demande) ; site/scripts/ : inventaire, captures (`frames.mjs`, `--gpu` pour la vraie carte graphique), planches site / maquette, contrôle de la typographie, matières et images fixes (Playwright) ; site/public/salle3d/ : matières précalculées
 
 ## Planning
 docs/PLANNING.md est la source de vérité : il dit quoi faire, dans quel ordre, et quand une tâche est terminée.
@@ -49,7 +49,7 @@ docs/PLANNING.md est la source de vérité : il dit quoi faire, dans quel ordre,
 - Une tâche du planning = une session. Commence par relire ce fichier, docs/decisions.md et docs/PLANNING.md.
 - Tout le pipeline est testé avec pytest ; ne jamais publier des données qui échouent aux contrôles.
 - Commandes : `uv sync` pour installer, `uv run pytest` pour tester, `uv run ruff check .` pour le style, `uv run python -m scripts.<nom>` pour lancer un script.
-- Site : `npm test` (calculs du navigateur, géométrie de la salle, stockage local), `npm run build`, puis `npm run test:inventaire` (chaque attribut `data-*` garde sa place et son type ; le JavaScript initial ne s'alourdit pas). Toute nouvelle clé du stockage local doit être annoncée sur /confidentialite/ et effacée par /calcul/ (test).
+- Site : `npm test` (calculs du navigateur, géométrie de la salle, stockage local), `npm run build`, puis `npm run test:inventaire` (chaque attribut `data-*` garde sa place et son type ; le JavaScript initial ne s'alourdit pas) ; `npm run test:typo` (aucune Barlow Condensed en bas de casse ; rouge jusqu'au lot D5 du design définitif, docs/design-final/PLAN-LOTS.md). Toute nouvelle clé du stockage local doit être annoncée sur /confidentialite/ et effacée par /calcul/ (test).
 - Textes en français, ton neutre et factuel. Toute donnée de maquette doit être marquée comme illustrative.
 - Une décision structurante prise en session = une entrée datée dans docs/decisions.md.
 - Avant d'installer quoi que ce soit hors du projet (outil global, service payant), demande-moi.

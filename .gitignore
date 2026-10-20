@@ -23,3 +23,7 @@ node_modules/
 
 # Fichiers exportés pour le site (régénérés à chaque build)
 export/
+
+# Captures d'écran brutes (scripts/frames.mjs) ; seules les planches de docs/design-final/planches/ sont versionnées
+captures-*/
+captures-*.zip

@@ -45,6 +45,6 @@ test('les lots versionnés : le parcours mène au seuil de fiabilité, les facul
 
 test('chaque thème a sa puce, un thème inconnu prend la violette', () => {
   assert.equal(Object.keys(PUCES_THEMES).length, 12);
-  assert.equal(puceTheme('Logement'), '#FFE4E0:#B3261E');
-  assert.equal(puceTheme('Inconnu'), '#E8E1FF:#5B35E6');
+  assert.equal(puceTheme('Logement'), '#B3132F:#FFFFFF');
+  assert.equal(puceTheme('Inconnu'), '#B3132F:#FFFFFF');
 });

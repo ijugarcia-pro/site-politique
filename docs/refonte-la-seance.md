@@ -78,7 +78,7 @@ Source : `project/tokens.json` du design system ; repli ci-dessous.
 | 4a | t60 | Salle 3D : moteur (portage de three, sièges tirés de `lib/hemicycle.ts`, matières précalculées, CAM 1, CAM 2, CAM 4, voyants sur les vrais votes, repli SVG), `Salle3D.astro` chargé à la demande ; accueil en thème Séance avec la salle en tête ; verdict avec la salle en tête. *(Fait le 20 oct.)* |
 | 4b | t60 | Mon hémicycle en thème Séance avec la salle (4 intensités de voyants), ambiance verdict, onde des voyants, repères « Toi » et « Ton jumeau », caméra libre bornée, images fixes du mode focus. *(Fait le 20 oct.)* |
 | 5 | t61 | Personnage et place : création, pose debout et marche (absentes du prototype), assise sur le siège du jumeau, CAM 3. *(Fait le 20 oct.)* |
-| 6 | t62 | Finitions : `stories.ts` et `themes.ts`, retrait de Fredoka et Nunito, CLAUDE.md et PLANNING.md. |
+| 6 | t62 | Finitions : `stories.ts` et `themes.ts`, retrait de Fredoka et Nunito, CLAUDE.md et PLANNING.md. *(Fait le 20 oct.)* |
 
 ## 7. Vérification à chaque lot
 

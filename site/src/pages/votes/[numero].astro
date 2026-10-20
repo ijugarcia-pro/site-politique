@@ -340,7 +340,7 @@ const exprimes = d.pour + d.contre;
 </script>
 
 <style>
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--gris-legende); }
+  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--ivoire-2); }
   .fil a { text-decoration: none; font-weight: 700; }
   .fil a:hover { text-decoration: underline; }
 
@@ -362,7 +362,7 @@ const exprimes = d.pour + d.contre;
     letter-spacing: -0.015em;
     overflow-wrap: anywhere;
   }
-  .quand { margin: 0; color: var(--gris); font-size: 16px; }
+  .quand { margin: 0; color: var(--ivoire-2); font-size: 16px; }
   .pastilles { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
   .pastille {
     display: inline-flex;
@@ -370,16 +370,16 @@ const exprimes = d.pour + d.contre;
     min-height: 38px;
     padding: 6px 14px;
     border-radius: var(--rayon);
-    background: var(--fond-doux);
+    background: var(--panneau-2);
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 15px;
-    color: var(--texte-doux);
+    color: var(--ivoire);
     text-decoration: none;
   }
-  .pastille.violette { background: var(--panneau); color: var(--violet-fonce); }
+  .pastille.violette { background: var(--panneau); color: var(--ivoire); }
   .pastille.violette:hover { background: var(--panneau-2); }
-  .contexte { margin: 16px 0 0; max-width: 720px; font-size: 18px; color: var(--texte-doux); }
+  .contexte { margin: 16px 0 0; max-width: 720px; font-size: 18px; color: var(--ivoire); }
 
   .verdict {
     display: flex;
@@ -408,7 +408,7 @@ const exprimes = d.pour + d.contre;
     line-height: 1.05;
   }
   .verdict-detail { margin-top: 6px !important; font-size: 16px; color: #ABA69C; }
-  .bascule { margin: -12px 0 0; font-size: 16px; color: var(--texte-doux); }
+  .bascule { margin: -12px 0 0; font-size: 16px; color: var(--ivoire); }
 
   .salle {
     display: flex;
@@ -422,7 +422,7 @@ const exprimes = d.pour + d.contre;
   }
   .salle h2 { font-size: 22px; }
   .et-toi { flex: 0 1 280px; min-width: 230px; display: flex; flex-direction: column; gap: 14px; }
-  .et-toi-texte { margin: 0; font-size: 16px; color: var(--texte-doux); }
+  .et-toi-texte { margin: 0; font-size: 16px; color: var(--ivoire); }
   .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   /* « Et toi ? » : deux boutons identiques, une pastille à la couleur du vote ; le choisi prend
      un cadre de 2 px, comme dans la séance. */
@@ -440,7 +440,7 @@ const exprimes = d.pour + d.contre;
     font-size: 17px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--texte);
+    color: var(--ivoire);
     cursor: pointer;
   }
   .choix button:active { transform: translateY(3px); }
@@ -456,17 +456,17 @@ const exprimes = d.pour + d.contre;
     background: none;
     font: inherit;
     font-size: 15px;
-    color: var(--violet-fonce);
+    color: var(--ivoire);
     text-decoration: underline;
     cursor: pointer;
   }
   .ta-voix {
     padding: 14px 16px;
     border-radius: var(--rayon);
-    background: var(--fond);
+    background: var(--panneau);
     border: 1px solid var(--filet);
   }
-  .ta-voix p { margin: 0; font-size: 15px; color: var(--texte-doux); }
+  .ta-voix p { margin: 0; font-size: 15px; color: var(--ivoire); }
   .ta-voix .sur-titre {
     margin-bottom: 4px;
     font-family: var(--police-titre);
@@ -474,7 +474,7 @@ const exprimes = d.pour + d.contre;
     font-size: 12px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--violet);
+    color: var(--direct);
   }
   .ta-voix sup { text-transform: none; }
   .qui { flex: 1 1 440px; min-width: 0; }
@@ -515,9 +515,9 @@ const exprimes = d.pour + d.contre;
     overflow: hidden;
     background: var(--absent);
   }
-  .ligne { grid-area: ligne; font-size: 14px; color: var(--gris); }
-  .contre-groupe { color: var(--violet-fonce); font-weight: 700; }
-  .note { margin: 10px 0 0; font-size: 14px; color: var(--gris); }
+  .ligne { grid-area: ligne; font-size: 14px; color: var(--ivoire-2); }
+  .contre-groupe { color: var(--ivoire); font-weight: 700; }
+  .note { margin: 10px 0 0; font-size: 14px; color: var(--ivoire-2); }
 
   .plus { display: flex; flex-direction: column; gap: 12px; }
   .plus h2 { margin-bottom: 4px; }
@@ -547,17 +547,17 @@ const exprimes = d.pour + d.contre;
     flex: none;
     width: 10px;
     height: 10px;
-    border-right: 2.5px solid var(--gris);
-    border-bottom: 2.5px solid var(--gris);
+    border-right: 2.5px solid var(--ivoire-2);
+    border-bottom: 2.5px solid var(--ivoire-2);
     transform: rotate(45deg) translateY(-3px);
     transition: transform 0.15s;
   }
   .plus details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
-  .plus details > :not(summary) { margin: 0 0 16px; font-size: 16px; color: var(--texte-doux); }
+  .plus details > :not(summary) { margin: 0 0 16px; font-size: 16px; color: var(--ivoire); }
   .chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-  .chiffres div { padding: 12px 14px; border-radius: var(--rayon); background: var(--fond-doux); }
-  .chiffres dt { font-size: 14px; color: var(--gris); }
-  .chiffres dd { margin: 2px 0 0; font-family: var(--police-titre); font-weight: 700; font-size: 24px; color: var(--texte); }
+  .chiffres div { padding: 12px 14px; border-radius: var(--rayon); background: var(--panneau-2); }
+  .chiffres dt { font-size: 14px; color: var(--ivoire-2); }
+  .chiffres dd { margin: 2px 0 0; font-family: var(--police-titre); font-weight: 700; font-size: 24px; color: var(--ivoire); }
   .lecture, .mises, .sources { padding-left: 20px; }
   .lecture li, .mises li, .sources li { margin-bottom: 8px; }
 
@@ -568,7 +568,7 @@ const exprimes = d.pour + d.contre;
   .encadre { padding: 20px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau); }
   .encadre h2 { font-size: 19px; }
   .ton-depute { border-color: var(--filet); background: var(--panneau-2); }
-  .ton-depute p { margin: 8px 0 14px; font-size: 16px; color: var(--texte-doux); }
+  .ton-depute p { margin: 8px 0 14px; font-size: 16px; color: var(--ivoire); }
   .ton-depute .bouton { width: 100%; }
   .ton-depute :global(.vote-pastille) {
     display: inline-block;
@@ -577,7 +577,7 @@ const exprimes = d.pour + d.contre;
     font-family: var(--police-titre);
     font-weight: 600;
     background: var(--absent);
-    color: var(--texte);
+    color: var(--ivoire);
   }
   .ton-depute :global(.vote-pour) { background: var(--pour); color: #fff; }
   .ton-depute :global(.vote-contre) { background: #E5552A; color: #fff; }
@@ -592,7 +592,7 @@ const exprimes = d.pour + d.contre;
     top: 18px;
     bottom: 0;
     width: 2px;
-    background: var(--bord);
+    background: var(--filet);
   }
   .parcours li:last-child::before { display: none; }
   .parcours li.fini::before { background: var(--ivoire-2); }
@@ -602,8 +602,8 @@ const exprimes = d.pour + d.contre;
     height: 16px;
     margin-top: 3px;
     border-radius: 50%;
-    border: 2.5px solid var(--bord);
-    background: var(--fond);
+    border: 2.5px solid var(--filet);
+    background: var(--panneau);
     position: relative;
   }
   .fini .point { border-color: var(--ivoire-2); background: var(--ivoire-2); }
@@ -614,14 +614,14 @@ const exprimes = d.pour + d.contre;
     margin-left: 6px;
     padding: 1px 8px;
     border-radius: 999px;
-    background: var(--violet);
+    background: var(--direct);
     color: #fff;
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 12px;
     vertical-align: 2px;
   }
-  .dates { display: block; font-size: 13px; color: var(--gris); }
+  .dates { display: block; font-size: 13px; color: var(--ivoire-2); }
   .parcours > a { font-size: 15px; font-weight: 700; }
 
   .voisins { display: flex; flex-direction: column; gap: 4px; padding: 10px; }
@@ -632,10 +632,10 @@ const exprimes = d.pour + d.contre;
     padding: 10px 12px;
     border-radius: var(--rayon);
     text-decoration: none;
-    color: var(--texte);
+    color: var(--ivoire);
   }
-  .voisins a:hover { background: var(--fond-doux); }
-  .sens { font-family: var(--police-titre); font-weight: 600; font-size: 13px; color: var(--violet-fonce); }
+  .voisins a:hover { background: var(--panneau-2); }
+  .sens { font-family: var(--police-titre); font-weight: 600; font-size: 13px; color: var(--ivoire); }
   .voisin-titre {
     font-size: 15px;
     line-height: 1.35;
@@ -644,5 +644,5 @@ const exprimes = d.pour + d.contre;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .voisins .tous { font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); }
+  .voisins .tous { font-family: var(--police-titre); font-weight: 600; color: var(--ivoire); }
 </style>

@@ -27,7 +27,7 @@ const verdicts = seance.flatMap((v) => {
   return [{
     cle: v.cle, uid: s.uid, numero: s.numero, titre: questionSeance(v).titre,
     theme: v.carte?.theme ?? 'Vote solennel',
-    puce: v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6',
+    puce: v.carte ? puceTheme(v.carte.theme) : '#B3132F:#FFFFFF',
     quand: `${s.solennel ? 'Scrutin solennel' : 'Vote'} du ${dateLisible(s.date)}`,
     verdict: verdict(s), adopte: s.sort === 'adopté', marge: marge(s), decompte: s.decompte,
     requis: s.requis, lien: lienVote(s),

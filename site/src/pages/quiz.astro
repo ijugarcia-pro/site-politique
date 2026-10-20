@@ -10,11 +10,10 @@ import EnteteSeance from '../components/EnteteSeance.astro';
 import JaugePrecision from '../components/JaugePrecision.astro';
 import Seance from '../components/Seance.astro';
 import { lotsDuParcours, questionsQuiz } from '../lib/donnees.ts';
+import { puceTheme } from '../lib/themes.ts';
 
-// Les puces de thème de la maquette, dans l'ordre des questions.
-const PUCES = ['#E8E1FF:#5B35E6', '#FFE1EF:#B5175A', '#E3F6D5:#3B7F12', '#FFF1CC:#9A5B00',
-  '#DDF1FF:#0B6AAE', '#D9F7EA:#0C7F57', '#FFE6DA:#B83C0A', '#E6E9F0:#3A4256',
-  '#FFF6C2:#7A6000', '#E2E5FF:#3443B0'];
+// La puce de thème : l'étiquette de régie, la même pour chaque question (lib/themes.ts).
+const PUCES = [puceTheme('')];
 const cartes = questionsQuiz();
 // La suite du quiz : les lots du parcours ; les lots facultatifs ne se proposent qu'après eux.
 const nLots = lotsDuParcours();
@@ -92,7 +91,8 @@ const nLots = lotsDuParcours();
   import { colonnes, initiales, niveau, partCommeToi, teinte, VOTES_FIABLES, type Reponse } from '../lib/profil.ts';
   import { jauge } from '../lib/jauge.ts';
   import { $, mesReps, pluriel, seance } from '../lib/seance.ts';
-  import { dessiner, enImage, type DonneesStories, type TypeStory } from '../lib/stories.ts';
+  // Les stories ne se chargent qu'au clic sur « Partager » : le quiz reste léger.
+  import type { DonneesStories, TypeStory } from '../lib/stories.ts';
   import { pastille } from '../lib/salle.ts';
 
   const CLE = '578e.quiz.v1';
@@ -208,6 +208,7 @@ const nLots = lotsDuParcours();
   $('[data-ouvrir-partage]').addEventListener('click', async () => {
     if (!stories) return;
     dialogue.showModal();
+    const { dessiner, enImage } = await import('../lib/stories.ts');
     for (const type of ['place', 'jumeau', 'contre'] as TypeStory[]) {
       const blob = await enImage(await dessiner(type, stories));
       images.set(type, blob);

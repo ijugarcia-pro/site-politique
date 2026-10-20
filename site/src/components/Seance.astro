@@ -175,6 +175,15 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
      vote, « Ton vote » sur le choisi), le pronostic facultatif ; à droite, ton hémicycle. */
   :global(main.page.focus) { flex: 1; justify-content: center; max-width: 1320px;
     padding: 16px var(--gouttiere) 32px; }
+  /* Le fond du mode focus : une image fixe de la salle (CAM 2 · Tribune, scripts/images-fixes.mjs),
+     sous un voile ; la 3D ne s'ouvre pas en direct dans le quiz, les lots et la séance. */
+  :global(body.focus)::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(180deg, rgba(12, 13, 16, 0.8) 0%, rgba(12, 13, 16, 0.93) 60%),
+      url('/salle3d/fond-tribune.webp') center 40% / cover no-repeat; }
+  @media (max-width: 640px) {
+    :global(body.focus)::before { background: linear-gradient(180deg, rgba(12, 13, 16, 0.8) 0%, rgba(12, 13, 16, 0.94) 55%),
+      url('/salle3d/fond-tribune-telephone.webp') center top / cover no-repeat; }
+  }
 
   .quiz { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
   .gauche { flex: 1 1 440px; min-width: 0; max-width: 600px; padding: 28px; border-radius: var(--rayon);

@@ -257,7 +257,11 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
         salle.centre(`${v.decompte.pour} – ${v.decompte.contre}`, legende);
       }
       salle.libre(false);
-      if (!document.documentElement.classList.contains('verdict-cache')) s3?.voyants(voyantsDe(v));
+      // La salle allumée (ambiance « verdict ») ; au toucher, les voyants s'allument en onde.
+      if (!document.documentElement.classList.contains('verdict-cache')) {
+        s3?.ambiance('verdict');
+        if (anime) s3?.onde(voyantsDe(v), 1000); else s3?.voyants(voyantsDe(v));
+      }
     };
 
     /** Les lignes de l'onglet k : ta place dans le résultat, ton pronostic, ta voix. */
@@ -272,6 +276,11 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
       const lettre = (s: string | undefined) => (k2 >= 0 && s ? s[k2] : '-');
       const depute = monDepute && matrice ? matrice.deputes.find((d) => d.u === monDepute) : null;
       salle.jumeau(jumeau?.ligne.u ?? null);
+      // Dans la salle 3D : ta place est le siège de ton jumeau ; un repère dit vos deux votes.
+      const kJumeau = jumeau ? salle.reglages.sieges.findIndex(([u]) => u === jumeau.ligne.u) : -1;
+      s3?.jumeau(kJumeau >= 0 ? kJumeau : null);
+      s3?.repere(kJumeau >= 0 ? kJumeau : null, kJumeau < 0 ? ''
+        : `${a ? `Toi : ${a} · ` : ''}Ton jumeau : ${MOTS[lettre(jumeau!.ligne.s)] ?? 'absent'}`);
       const lignes = [];
       if (a) {
         const comme = a === 'pour' ? v.decompte.pour : v.decompte.contre;

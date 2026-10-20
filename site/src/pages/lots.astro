@@ -104,7 +104,7 @@ const parcours = lotsDuParcours();
     const m = s.matrice() ?? await s.chargement;
     const reps = mesReps();
     const p = s.tonHemicycle(m)!;
-    s.panneauHemicycle('Plus un siège est foncé, plus ce député a voté comme toi');
+    s.panneauHemicycle('Plus un siège est lumineux, plus ce député a voté comme toi');
     const n = p.reponses;
     const dansLot = k === null ? 0
       : s.questions.slice(k * parLot, (k + 1) * parLot).filter((q) => reps[q.uid]).length;

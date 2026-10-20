@@ -52,6 +52,16 @@ export interface Salle3D {
   projeter(points: [number, number, number][]): { x: number; y: number; devant: boolean }[];
   positionSiege(i: number, dy?: number): [number, number, number];
   readonly vueCourante: NomVue;
+  /** Appelée après chaque image : la page y repositionne ses repères (projeter). */
+  surRendu: (() => void) | null;
+  /** Les voyants s'allument en onde, du rang intérieur vers l'extérieur (R1). */
+  voyantsEnOnde(couleurs: (string | null)[], duree?: number): Promise<void>;
+  /** Le siège du jumeau : sa plaquette s'éclaire ; null : aucun. */
+  jumeau(i: number | null): void;
+  /** La caméra libre, bornée (radians, facteur de recul) ; recentrer revient à la vue en cours. */
+  orbiter(dLacet: number, dTangage: number): void;
+  zoomer(f: number): void;
+  recentrer(): void;
   detruire(): void;
 }
 
@@ -470,24 +480,34 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     const b = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 12, 8), new THREE.MeshBasicMaterial({ color: 0xFFE6B8, toneMapped: false }), nb);
     for (let i = 0; i < nb; i++) { const a = rad(-14 + i * (208 / (nb - 1))); o.position.set(20.22 * Math.cos(a), 12.5, 20.22 * Math.sin(a)); o.rotation.set(0, 0, 0); o.scale.setScalar(1); o.updateMatrix(); b.setMatrixAt(i, o.matrix); }
     g.add(b);
-    for (const a of [-10, 15, 40, 65, 90, 115, 140, 165, 190]) { const l = new THREE.PointLight(0xffc98a, 1.25 * PI * 40, 30, 2), ar = rad(a); l.position.set(17.5 * Math.cos(ar), 11.6, 17.5 * Math.sin(ar)); g.add(l); }
-    for (const x of [-9, 0, 9]) { const l = new THREE.PointLight(0xffd29a, 0.9 * PI * 25, 16, 2); l.position.set(x, 9, -5.2); g.add(l); }
+    for (const a of [-10, 15, 40, 65, 90, 115, 140, 165, 190]) { const l = new THREE.PointLight(0xffc98a, 1.25 * PI * 12, 30, 2), ar = rad(a); l.position.set(17.5 * Math.cos(ar), 11.6, 17.5 * Math.sin(ar)); g.add(l); }
+    for (const x of [-9, 0, 9]) { const l = new THREE.PointLight(0xffd29a, 0.9 * PI * 8, 16, 2); l.position.set(x, 9, -5.2); g.add(l); }
     scene.add(g); lustres = g; return g;
   };
+
+  /* Le jumeau : sa plaquette s'éclaire, une petite lumière chaude sur son pupitre (room.js). */
+  const jumPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.012, 0.052),
+    new THREE.MeshStandardMaterial({ color: 0xE9CB86, emissive: 0xFFD79A, emissiveIntensity: 0.9, metalness: 0.5, roughness: 0.3 }));
+  const jumLum = new THREE.PointLight(0xffd9a0, 0.9 * PI * 8, 3.4, 2);
+  const jum = new THREE.Group(); jum.add(jumPlaque, jumLum); jum.visible = false; scene.add(jum);
 
   /* Caméra et rendu à la demande */
   const cam = { pos: [0, 7, -6.4] as number[], cible: [0, 5.5, 11] as number[], fov: 64, haut: [0, 1, 0] as number[] };
   let vueCourante: NomVue = 'salle';
   let anim: Tween | null = null;
+  let onde: { finir(): void } | null = null;
   let demande = false;
   let echV = 1;
+  let surRendu: (() => void) | null = null;
+  // La caméra libre : un écart borné à la vue en cours (lacet, tangage, recul).
+  const libre = { lacet: 0, tangage: 0, zoom: 1 };
   const allumes: boolean[] = new Array(n).fill(false);
   const appliquerCam = () => {
     camera.fov = cam.fov; camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
     camera.up.set(cam.haut[0], cam.haut[1], cam.haut[2]).normalize();
     camera.lookAt(cam.cible[0], cam.cible[1], cam.cible[2]); camera.updateProjectionMatrix();
   };
-  const rendre = () => renderer.render(scene, camera);
+  const rendre = () => { renderer.render(scene, camera); surRendu?.(); };
   const demander = () => { if (demande) return; demande = true; requestAnimationFrame(() => { demande = false; rendre(); }); };
   const poserVoyants = () => {
     const m = new THREE.Matrix4(), s = new THREE.Vector3();
@@ -500,24 +520,51 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const finVue = (nom: NomVue) => {
     const plan = nom === 'plan';
     G.plafond.visible = !plan; G.faisceaux.visible = !plan && !lustres?.visible; brouillard.density = plan ? 0.0004 : base0.fog[1];
-    renderer.toneMappingExposure = plan ? 0.78 : (lustres?.visible ? 1.15 : base0.expo);
+    renderer.toneMappingExposure = plan ? 0.78 : (lustres?.visible ? 0.95 : base0.expo);
     echV = plan ? 9 : 1; poserVoyants(); (M.sol as THREE.MeshPhysicalMaterial).color.setHex(plan ? 0x5e4f44 : 0xb9a596);
     renderer.shadowMap.needsUpdate = true;
+  };
+  /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
+  const poserLibre = () => {
+    const c = cadrage(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    const v = new THREE.Vector3(c.pos[0] - c.cible[0], c.pos[1] - c.cible[1], c.pos[2] - c.cible[2]);
+    const r = v.length() * libre.zoom;
+    let pos: THREE.Vector3;
+    if (vueCourante === 'plan') {
+      v.applyAxisAngle(new THREE.Vector3(0, 1, 0), libre.lacet).setLength(r);
+      pos = v.add(new THREE.Vector3(...c.cible));
+      const h = new THREE.Vector3(...(c.haut ?? [0, 1, 0])).applyAxisAngle(new THREE.Vector3(0, 1, 0), libre.lacet);
+      cam.haut = [h.x, h.y, h.z];
+    } else {
+      const theta = Math.atan2(v.x, v.z) + libre.lacet;
+      const phi = Math.min(1.1, Math.max(-0.05, Math.asin(v.y / v.length()) + libre.tangage));
+      pos = new THREE.Vector3(r * Math.cos(phi) * Math.sin(theta), r * Math.sin(phi), r * Math.cos(phi) * Math.cos(theta))
+        .add(new THREE.Vector3(...c.cible));
+      cam.haut = [0, 1, 0];
+    }
+    // Jamais à travers les murs : en deçà de la colonnade (21 m), au-dessus du sol, sous la coupole.
+    const rxz = Math.hypot(pos.x, pos.z);
+    if (rxz > 18) { pos.x *= 18 / rxz; pos.z *= 18 / rxz; }
+    if (vueCourante !== 'plan') pos.y = Math.min(12, Math.max(0.9, pos.y));
+    cam.pos = [pos.x, pos.y, pos.z]; cam.cible = [...c.cible]; cam.fov = c.fov;
+    appliquerCam(); demander();
   };
   const redimensionner = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75));
     renderer.setSize(w, h, false); camera.aspect = w / h;
-    if (!anim) { const c = cadrage(vueCourante, w / h); cam.pos = c.pos; cam.cible = c.cible; cam.fov = c.fov; cam.haut = c.haut ?? [0, 1, 0]; }
-    appliquerCam(); demander();
+    if (!anim) poserLibre(); else { appliquerCam(); demander(); }
   };
+  const borne = (x: number, a: number) => Math.max(-a, Math.min(a, x));
 
   const salle: Salle3D = {
     get vueCourante() { return vueCourante; },
+    set surRendu(f: (() => void) | null) { surRendu = f; },
     vue(nom, o2 = {}) {
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
       const c = cadrage(nom, aspect);
       vueCourante = nom;
+      libre.lacet = 0; libre.tangage = 0; libre.zoom = 1;
       anim?.finir();
       const haut = c.haut ?? [0, 1, 0];
       if (o2.instant || opt.mouvementReduit) {
@@ -533,8 +580,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       });
       return anim.fini.then(() => { anim = null; finVue(nom); demander(); });
     },
-    terminer() { anim?.finir(); },
+    terminer() { anim?.finir(); onde?.finir(); },
     voyants(couleurs) {
+      onde?.finir();
       const c = new THREE.Color();
       for (let k = 0; k < n; k++) {
         const v = couleurs[k] ?? null;
@@ -543,6 +591,65 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       }
       I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); demander();
     },
+    voyantsEnOnde(couleurs, duree = 1000) {
+      if (opt.mouvementReduit) { salle.voyants(couleurs); return Promise.resolve(); }
+      onde?.finir();
+      salle.voyants([]);
+      // Du rang intérieur vers l'extérieur, avec un aléa tiré du numéro du siège (lib/hemicycle.ts,
+      // delaiOnde) : jamais un balayage de gauche à droite.
+      const delais = sieges.map((s, k) => s.rang * 55 + (((k + 1) * 2654435761) >>> 0) % 71);
+      const max = Math.max(...delais);
+      const echelle = Math.max(1, duree - 200) / max;
+      const allume = new Array(n).fill(false);
+      const c = new THREE.Color();
+      const debut = performance.now();
+      let fini = false;
+      let resoudre: () => void = () => {};
+      const promesse = new Promise<void>((r) => { resoudre = r; });
+      const pas = (t: number) => {
+        let change = false;
+        for (let k = 0; k < n; k++) {
+          if (allume[k] || delais[k] * echelle > t) continue;
+          allume[k] = true; change = true;
+          const v = couleurs[k] ?? null; allumes[k] = !!v;
+          if (v) { c.set(v); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); }
+        }
+        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); rendre(); }
+      };
+      const image = () => {
+        if (fini) return;
+        const t = performance.now() - debut;
+        pas(t);
+        if (t >= duree) { fini = true; onde = null; resoudre(); return; }
+        requestAnimationFrame(image);
+      };
+      onde = { finir: () => { if (fini) return; pas(Infinity); fini = true; onde = null; resoudre(); } };
+      requestAnimationFrame(image);
+      return promesse;
+    },
+    jumeau(k) {
+      jum.visible = k !== null;
+      if (k !== null) {
+        const m = new THREE.Matrix4(), sc = new THREE.Vector3();
+        I.plaque.getMatrixAt(k, m); m.decompose(jumPlaque.position, jumPlaque.quaternion, sc);
+        jumPlaque.position.y += 0.004;
+        jumLum.position.set(...position(sieges[k], 1.7));
+      }
+      renderer.shadowMap.needsUpdate = true; demander();
+    },
+    orbiter(dLacet, dTangage) {
+      if (anim) return;
+      const amplitude = vueCourante === 'plan' ? 1.0 : 0.6;
+      libre.lacet = borne(libre.lacet + dLacet, amplitude);
+      libre.tangage = vueCourante === 'plan' ? 0 : borne(libre.tangage + dTangage, 0.25);
+      poserLibre();
+    },
+    zoomer(f) {
+      if (anim) return;
+      libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));
+      poserLibre();
+    },
+    recentrer() { void salle.vue(vueCourante); },
     ambiance(nom) {
       soleil.intensity = base0.soleil; soleil.color.setHex(base0.soleilC); hemi.intensity = base0.hemi;
       appliques.forEach((l, i) => { l.intensity = base0.app[i]; });
@@ -552,9 +659,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       G.faisceaux.visible = vueCourante !== 'plan';
       renderer.toneMappingExposure = base0.expo;
       if (nom === 'verdict') {
-        soleil.intensity = 0.75 * PI; soleil.color.setHex(0xffcf9a); hemi.intensity = 0.22 * PI; appliques.forEach((l) => { l.intensity *= 2.6; });
+        soleil.intensity = 0.75 * PI; soleil.color.setHex(0xffcf9a); hemi.intensity = 0.22 * PI; appliques.forEach((l) => { l.intensity *= 1.6; });
         faireLustres().visible = true; M.verriere.emissiveIntensity = 0.55; M.vitrage.emissiveIntensity = 0.55; M.or.envMapIntensity = 2.1; M.or.roughness = 0.55; M.caisson.envMapIntensity = 1.7;
-        renderer.toneMappingExposure = 1.15; brouillard.color.setHex(0x3e2618); brouillard.density = 0.007; G.faisceaux.visible = false;
+        renderer.toneMappingExposure = vueCourante === 'plan' ? 0.78 : 0.95; brouillard.color.setHex(0x3e2618); brouillard.density = vueCourante === 'plan' ? 0.0004 : 0.007; G.faisceaux.visible = false;
       }
       renderer.shadowMap.needsUpdate = true; demander();
     },
@@ -563,7 +670,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       return points.map((p) => { const v = new THREE.Vector3(...p).project(camera); return { x: (v.x + 1) / 2, y: (1 - v.y) / 2, devant: v.z < 1 }; });
     },
     positionSiege: (i, dy = 0) => position(sieges[i], dy),
-    detruire() { anim?.arreter(); renderer.dispose(); pmrem.dispose(); },
+    detruire() { anim?.arreter(); onde?.finir(); renderer.dispose(); pmrem.dispose(); },
   };
 
   const c0 = cadrage('salle', canvas.clientWidth / Math.max(1, canvas.clientHeight));

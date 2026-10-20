@@ -27,3 +27,4 @@ export/
 # Captures d'écran brutes (scripts/frames.mjs) ; seules les planches de docs/design-final/planches/ sont versionnées
 captures-*/
 captures-*.zip
+calibrage-*/

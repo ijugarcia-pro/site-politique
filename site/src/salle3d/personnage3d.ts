@@ -5,6 +5,7 @@
 // le personnage regarde vers +z, les pieds à y = 0 debout ; assis, son origine est celle du
 // fauteuil (comme dans room.js).
 
+import { couleurExacte } from './gestion-couleurs.ts';
 import * as THREE from 'three';
 import { couleursDe, type Apparence } from './apparence.ts';
 
@@ -20,7 +21,7 @@ const CUISSE = 0.44, TIBIA = 0.48, BRAS = 0.3, AVANT_BRAS = 0.28;
 
 export function creerPersonnage(a: Apparence): Personnage {
   const c = couleursDe(a);
-  const std = (couleur: string, r: number) => new THREE.MeshStandardMaterial({ color: couleur, roughness: r, envMapIntensity: 0.5 });
+  const std = (couleur: string, r: number) => new THREE.MeshStandardMaterial({ color: couleurExacte(couleur), roughness: r, envMapIntensity: 0.5 });
   const peau = std(c.peau, 0.62), haut = std(c.haut, 0.88), bas = std(c.bas, 0.82), cheveux = std(c.cheveux, 0.72);
   const groupe = new THREE.Group();
   const bassin = new THREE.Group(); groupe.add(bassin);

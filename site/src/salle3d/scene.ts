@@ -1,6 +1,7 @@
 // La salle en 3D (docs/refonte-la-seance.md, § 4), portée du prototype de Julien
 // (docs/salle-3d/room.js, three r128 sans module) vers three 0.186 en module :
-// - couleurs : outputColorSpace et colorSpace au lieu des « encodings » ;
+// - couleurs : outputColorSpace et colorSpace au lieu des « encodings » ; conversion des couleurs
+//   hexadécimales coupée, comme en r128 (gestion-couleurs.ts) ;
 // - lumières physiques : intensités du prototype multipliées par π, puis réglées à l'œil ;
 // - velours : sheen devient un nombre, avec sheenColor ;
 // - matières précalculées (public/salle3d/, scripts/matieres.mjs) au lieu d'être calculées ici ;
@@ -10,6 +11,7 @@
 // les voyants tirés au hasard (les pages donnent les vrais votes).
 // Chargé à la demande par pilote.ts : jamais dans le JavaScript initial d'une page.
 
+import { couleurExacte } from './gestion-couleurs.ts';
 import * as THREE from 'three';
 import { chemin, echelleFauteuil, FAUTEUIL_578, longueur, P, position, sieges3D, surChemin, type Siege3D } from './geometrie.ts';
 import type { Apparence } from './apparence.ts';
@@ -199,7 +201,7 @@ function matieres(T: Textures, telephone: boolean) {
   M.plateau = new THREE.MeshPhysicalMaterial({ map: T.bois, color: 0x9c8474, bumpMap: T['bois-h'], bumpScale: 0.008, roughnessMap: T['bois-r'], roughness: 1, ...cc(0.3, 0.4), envMapIntensity: 0.7 });
   M.panneau = new THREE.MeshPhysicalMaterial({ map: T.panneau, bumpMap: T['panneau-h'], bumpScale: 0.03, roughness: 0.5, ...vernis, envMapIntensity: 0.8 });
   M.velours = new THREE.MeshPhysicalMaterial({ map: T.velours, bumpMap: T['velours-h'], bumpScale: 0.004, roughness: 0.92, metalness: 0,
-    sheen: 1, sheenColor: new THREE.Color(0.42, 0.08, 0.1), sheenRoughness: 0.6, envMapIntensity: 0.3 });
+    sheen: 1, sheenColor: new THREE.Color(0.42, 0.08, 0.1), sheenRoughness: 0.92, specularIntensity: 0, envMapIntensity: 0.3 });
   M.velours.onBeforeCompile = (sh: { fragmentShader: string }) => { // reflet rasant du velours
     sh.fragmentShader = sh.fragmentShader.replace('#include <tonemapping_fragment>',
       'float fr = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 2.2);\n gl_FragColor.rgb += vec3(0.20, 0.035, 0.045) * fr * (0.35 + 0.65 * diffuseColor.r);\n#include <tonemapping_fragment>');
@@ -464,14 +466,14 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const hemi = new THREE.HemisphereLight(0xffe2b8, 0x3a170f, 0.42 * PI); scene.add(hemi);
   const appliques: THREE.PointLight[] = [];
   for (const a of [20, 60, 90, 120, 160]) {
-    const l = new THREE.PointLight(0xffb36b, 0.55 * PI * 40, 18, 2); const ar = rad(a);
+    const l = new THREE.PointLight(0xffb36b, 0.55 * PI * 8, 18, 2); const ar = rad(a);
     l.position.set(19 * Math.cos(ar), 9.5, 19 * Math.sin(ar)); scene.add(l); appliques.push(l);
   }
-  const fond = new THREE.PointLight(0xffc27a, 0.8 * PI * 25, 16, 2); fond.position.set(0, 7, -3); scene.add(fond); appliques.push(fond);
-  const spot = new THREE.SpotLight(0xffe0a8, 1.4 * PI * 40, 14, 0.32, 0.6, 1.5); spot.position.set(2.6, 9, 3.2); spot.target = G.c578; scene.add(spot);
+  const fond = new THREE.PointLight(0xffc27a, 0.8 * PI * 6, 16, 2); fond.position.set(0, 7, -3); scene.add(fond); appliques.push(fond);
+  const spot = new THREE.SpotLight(0xffe0a8, 1.4 * PI * 28, 14, 0.32, 0.6, 1.5); spot.position.set(2.6, 9, 3.2); spot.target = G.c578; scene.add(spot);
   const env = new THREE.TextureLoader();
   const envTex = T.environnement.clone(); envTex.mapping = THREE.EquirectangularReflectionMapping; envTex.colorSpace = THREE.SRGBColorSpace; envTex.needsUpdate = true;
-  const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromEquirectangular(envTex).texture;
+  const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromEquirectangular(envTex).texture; scene.environmentIntensity = 0.5;
   void env;
   scene.background = new THREE.Color(0x1a0f09);
   const brouillard = new THREE.FogExp2(0x6b4a30, 0.0085); scene.fog = brouillard;
@@ -495,7 +497,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   /* Le jumeau : sa plaquette s'éclaire, une petite lumière chaude sur son pupitre (room.js). */
   const jumPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.012, 0.052),
     new THREE.MeshStandardMaterial({ color: 0xE9CB86, emissive: 0xFFD79A, emissiveIntensity: 0.9, metalness: 0.5, roughness: 0.3 }));
-  const jumLum = new THREE.PointLight(0xffd9a0, 0.9 * PI * 8, 3.4, 2);
+  const jumLum = new THREE.PointLight(0xffd9a0, 0.9 * PI * 1.5, 3.4, 2);
   const jum = new THREE.Group(); jum.add(jumPlaque, jumLum); jum.visible = false; scene.add(jum);
 
   /* Le personnage : sa place (null : le 578e fauteuil), sa marche en cours */
@@ -546,7 +548,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const finVue = (nom: NomVue) => {
     const plan = nom === 'plan';
     G.plafond.visible = !plan; G.faisceaux.visible = !plan && !lustres?.visible; brouillard.density = plan ? 0.0004 : base0.fog[1];
-    renderer.toneMappingExposure = plan ? 0.78 : (lustres?.visible ? 0.95 : base0.expo);
+    renderer.toneMappingExposure = plan ? 0.78 : (lustres?.visible ? 1.15 : base0.expo);
     echV = plan ? 9 : 1; poserVoyants(); (M.sol as THREE.MeshPhysicalMaterial).color.setHex(plan ? 0x5e4f44 : 0xb9a596);
     renderer.shadowMap.needsUpdate = true;
   };
@@ -637,7 +639,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       for (let k = 0; k < n; k++) {
         const v = couleurs[k] ?? null;
         allumes[k] = !!v;
-        if (v) { c.set(v); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); }
+        if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); }
       }
       I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); demander();
     },
@@ -662,7 +664,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
           if (allume[k] || delais[k] * echelle > t) continue;
           allume[k] = true; change = true;
           const v = couleurs[k] ?? null; allumes[k] = !!v;
-          if (v) { c.set(v); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); }
+          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); }
         }
         if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); rendre(); }
       };
@@ -749,9 +751,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       G.faisceaux.visible = vueCourante !== 'plan';
       renderer.toneMappingExposure = base0.expo;
       if (nom === 'verdict') {
-        soleil.intensity = 0.75 * PI; soleil.color.setHex(0xffcf9a); hemi.intensity = 0.22 * PI; appliques.forEach((l) => { l.intensity *= 1.6; });
+        soleil.intensity = 0.75 * PI; soleil.color.setHex(0xffcf9a); hemi.intensity = 0.22 * PI; appliques.forEach((l) => { l.intensity *= 2.6; });
         faireLustres().visible = true; M.verriere.emissiveIntensity = 0.55; M.vitrage.emissiveIntensity = 0.55; M.or.envMapIntensity = 2.1; M.or.roughness = 0.55; M.caisson.envMapIntensity = 1.7;
-        renderer.toneMappingExposure = vueCourante === 'plan' ? 0.78 : 0.95; brouillard.color.setHex(0x3e2618); brouillard.density = vueCourante === 'plan' ? 0.0004 : 0.007; G.faisceaux.visible = false;
+        renderer.toneMappingExposure = vueCourante === 'plan' ? 0.78 : 1.15; brouillard.color.setHex(0x3e2618); brouillard.density = vueCourante === 'plan' ? 0.0004 : 0.007; G.faisceaux.visible = false;
       }
       renderer.shadowMap.needsUpdate = true; demander();
     },

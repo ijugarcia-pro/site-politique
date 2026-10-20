@@ -50,6 +50,10 @@
   /* Absent : voyant éteint, assez clair pour se voir sur un panneau ; non-votant : plus clair. */
   --absent: #3A3D45;
   --non-votant: #6E6A63;
+  /* L'accord avec toi, en intensités de lumière (de l'éteint à la lumière). */
+  --accord-1: #6B5536;
+  --accord-2: #A9844F;
+  --accord-3: #F2C98A;
 }
 
 /* Thème « Jour » : les pages de lecture longue. */
@@ -68,6 +72,9 @@
   --ombre-panneau: 0 18px 40px -18px rgba(30, 24, 16, 0.28);
   --absent: #D3D0C8;
   --non-votant: #8C887F;
+  --accord-1: #E2CFAE;
+  --accord-2: #C0965A;
+  --accord-3: #8A5A12;
 }
 
 /* Les noms de la charte V5, gardés le temps de la migration (lots 1 à 6) : chaque page les
@@ -265,6 +272,19 @@ tbody tr:last-child td { border-bottom: 0; }
   border-radius: 50%;
   background: var(--c, #9AA1B2);
 }
+
+/* Les niveaux d'accord de l'hémicycle personnel (lib/profil.ts, NIVEAUX) sont des violets écrits
+   en dur dans lib/ : ils deviennent des intensités de lumière, partout où ils sont posés (légendes
+   en style en ligne, petits hémicycles en attribut fill ; les sièges de Salle.astro ont leur règle).
+   « Rarement comme toi » (#DFE3EB) prend la teinte éteinte, comme l'absence. */
+[style*="background: #DFE3EB"] { background: var(--absent) !important; }
+[style*="background: #D9CCFF"] { background: var(--accord-1) !important; }
+[style*="background: #A98BFF"] { background: var(--accord-2) !important; }
+[style*="background: #6A3DF0"] { background: var(--accord-3) !important; }
+circle[fill="#DFE3EB"] { fill: var(--absent); }
+circle[fill="#D9CCFF"] { fill: var(--accord-1); }
+circle[fill="#A98BFF"] { fill: var(--accord-2); }
+circle[fill="#6A3DF0"] { fill: var(--accord-3); }
 
 /* L'attribut hidden l'emporte toujours, même sur un composant qui fixe son display. */
 [hidden] { display: none !important; }

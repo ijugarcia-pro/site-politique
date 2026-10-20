@@ -1,107 +1,107 @@
 {
  "/": {
-  "js": 16117,
-  "js_gzip": 6658,
-  "css": 33964,
-  "css_gzip": 6105,
+  "js": 18127,
+  "js_gzip": 7437,
+  "css": 34518,
+  "css_gzip": 6259,
   "modules": 12
  },
  "/404/": {
-  "js": 3820,
-  "js_gzip": 1869,
-  "css": 22946,
-  "css_gzip": 4466,
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 23500,
+  "css_gzip": 4615,
   "modules": 4
  },
  "/calcul/": {
-  "js": 4220,
-  "js_gzip": 2009,
-  "css": 22946,
-  "css_gzip": 4466,
+  "js": 4232,
+  "js_gzip": 2018,
+  "css": 23500,
+  "css_gzip": 4615,
   "modules": 4
  },
  "/confidentialite/": {
-  "js": 3820,
-  "js_gzip": 1869,
-  "css": 22946,
-  "css_gzip": 4466,
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 23500,
+  "css_gzip": 4615,
   "modules": 4
  },
  "/deputes/": {
-  "js": 10648,
-  "js_gzip": 4577,
-  "css": 29626,
-  "css_gzip": 5479,
+  "js": 10660,
+  "js_gzip": 4585,
+  "css": 30180,
+  "css_gzip": 5631,
   "modules": 7
  },
  "/deputes/[uid]/": {
-  "js": 6364,
-  "js_gzip": 2675,
-  "css": 34222,
-  "css_gzip": 6088,
+  "js": 6376,
+  "js_gzip": 2684,
+  "css": 34776,
+  "css_gzip": 6237,
   "modules": 5
  },
  "/etat/": {
-  "js": 3820,
-  "js_gzip": 1869,
-  "css": 22946,
-  "css_gzip": 4466,
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 23500,
+  "css_gzip": 4615,
   "modules": 4
  },
  "/explorer/": {
-  "js": 7366,
-  "js_gzip": 3089,
-  "css": 31378,
-  "css_gzip": 5792,
+  "js": 7378,
+  "js_gzip": 3100,
+  "css": 31932,
+  "css_gzip": 5942,
   "modules": 6
  },
  "/hemicycle/": {
-  "js": 15784,
-  "js_gzip": 6291,
-  "css": 39428,
-  "css_gzip": 7076,
-  "modules": 9
+  "js": 21650,
+  "js_gzip": 8583,
+  "css": 39862,
+  "css_gzip": 7136,
+  "modules": 11
  },
  "/lots/": {
-  "js": 23609,
-  "js_gzip": 8888,
-  "css": 50462,
-  "css_gzip": 8700,
+  "js": 23623,
+  "js_gzip": 8902,
+  "css": 51643,
+  "css_gzip": 8992,
   "modules": 11
  },
  "/mentions-legales/": {
-  "js": 3820,
-  "js_gzip": 1869,
-  "css": 22946,
-  "css_gzip": 4466,
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 23500,
+  "css_gzip": 4615,
   "modules": 4
  },
  "/quiz/": {
-  "js": 28689,
-  "js_gzip": 10762,
-  "css": 52359,
-  "css_gzip": 8867,
+  "js": 28703,
+  "js_gzip": 10787,
+  "css": 53540,
+  "css_gzip": 9173,
   "modules": 11
  },
  "/seance/": {
-  "js": 24526,
-  "js_gzip": 9095,
-  "css": 50462,
-  "css_gzip": 8700,
+  "js": 24540,
+  "js_gzip": 9112,
+  "css": 51643,
+  "css_gzip": 8992,
   "modules": 12
  },
  "/verdict/": {
-  "js": 20765,
-  "js_gzip": 8320,
-  "css": 40427,
-  "css_gzip": 7237,
+  "js": 22997,
+  "js_gzip": 9156,
+  "css": 41256,
+  "css_gzip": 7419,
   "modules": 11
  },
  "/votes/[numero]/": {
-  "js": 9194,
-  "js_gzip": 3823,
-  "css": 39125,
-  "css_gzip": 7055,
+  "js": 9206,
+  "js_gzip": 3833,
+  "css": 39679,
+  "css_gzip": 7206,
   "modules": 6
  }
 }

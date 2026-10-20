@@ -180,7 +180,7 @@ const tuile = premier ? {
       const m: Matrice = s.matrice() ?? await s.chargement;
       const reps = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
       const p = s.tonHemicycle(m)!;
-      s.panneauHemicycle('Plus un siège est foncé, plus ce député a voté comme toi');
+      s.panneauHemicycle('Plus un siège est lumineux, plus ce député a voté comme toi');
       const tranches = cles.filter((c) => etat.reponses[c]).length;
       const comptees = questions.filter((q) => !q.attente && reps[q.uid]).length;
       const gain = Math.round(100 * p.precision) - Math.round(100 * precision(p.reponses - comptees));

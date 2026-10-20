@@ -114,7 +114,7 @@ const nLots = lotsDuParcours();
     const m = s.matrice() ?? await s.chargement;
     const reps = mesReps();
     const p = s.tonHemicycle(m)!;
-    s.panneauHemicycle('Plus un siège est foncé, plus ce député a voté comme toi');
+    s.panneauHemicycle('Plus un siège est lumineux, plus ce député a voté comme toi');
     const dansQuiz = questions.filter((q) => reps[q.uid]).length;
     $('[data-sur-titre-resultat]').textContent = `${dansQuiz} vote${dansQuiz > 1 ? 's' : ''} sur `
       + `${questions.length} · ${p.reponses > dansQuiz ? `${p.reponses} en tout` : 'premier quiz'}`;

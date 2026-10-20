@@ -17,18 +17,23 @@ interface Props {
   cameras?: ('salle' | 'tribune' | 'plan')[];
   /** Hauteur de la scène sur ordinateur (la largeur est celle de la page). */
   hauteur?: string;
+  /** Sur téléphone, ouvrir la salle vue de dessus (CAM 4 · Plan), comme la maquette V6C-06. */
+  planSurTelephone?: boolean;
 }
 
 const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], plan: ['Cam 4', 'Plan'] };
-const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)' } = Astro.props;
+const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)', planSurTelephone = false } = Astro.props;
 const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33');
 ---
-<figure class="scene theme-seance" data-salle3d style={`--hauteur-scene: ${hauteur}`}>
-  <div class="ecran">
+<figure class:list={['scene', 'theme-seance', { 'plan-telephone': planSurTelephone }]} data-salle3d
+  style={`--hauteur-scene: ${hauteur}`}>
+  <div class="ecran" tabindex="0" role="group"
+    aria-label="Salle en 3D. Flèches : tourner la caméra ; + et − : zoomer ; Échap : revenir.">
     <div class="repli" aria-hidden="false">
       <MiniHemicycle couleurs={repli} titre={titre} />
     </div>
     <canvas aria-hidden="true"></canvas>
+    <div class="repere" hidden><span></span><i></i></div>
     <div class="dessus"><slot /></div>
     {cameras.length > 1 && (
       <div class="cameras" role="group" aria-label="Caméras">
@@ -62,6 +67,14 @@ const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33')
   /* Un dégradé vers la nuit, en bas, pour poser les bandeaux sur la salle. */
   .ecran::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(180deg, rgba(12, 13, 16, 0) 45%, rgba(12, 13, 16, 0.85) 100%); }
+  /* Un repère posé sur la salle (ta place, ton jumeau) : en lumière, au-dessus du siège. */
+  .repere { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 4px)); display: flex; flex-direction: column;
+    align-items: center; pointer-events: none; }
+  .repere span { padding: 7px 10px; background: var(--voile); border-left: 3px solid var(--lumiere); color: var(--lumiere);
+    font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+  .repere i { width: 18px; height: 18px; margin-top: 6px; border-radius: 50%; border: 2px solid var(--lumiere);
+    box-shadow: 0 0 0 4px rgba(12, 13, 16, 0.45), 0 0 18px var(--lumiere); }
+  .ecran:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
   .dessus { position: absolute; inset: auto 0 0 0; z-index: 2; padding: 0 var(--gouttiere) 28px; }
   /* Les caméras n'ont de sens que dans la salle 3D : cachées dans le repli. */
   .scene:not([data-salle3d-etat='prete']) .cameras { display: none; }

@@ -558,7 +558,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     const [x, y, z] = position(s);
     const l = Math.hypot(x, z);
     const dx = -x / l, dz = -z / l;
-    return { pos: [x - dx * 0.55, y + 1.75, z - dz * 0.55], cible: [0, 1.6, -1.2], fov: aspect < 0.9 ? 78 : 62 };
+    // Un peu en arrière et sur le côté, à hauteur d'épaule : son épaule et sa tête au premier plan.
+    const lx = -dz * 0.5, lz = dx * 0.5;
+    return { pos: [x - dx * 1.5 + lx, y + 1.7, z - dz * 1.5 + lz], cible: [0, 1.4, -1.2], fov: aspect < 0.9 ? 78 : 60 };
   };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
   const poserLibre = () => {

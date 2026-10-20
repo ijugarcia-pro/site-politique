@@ -70,6 +70,9 @@ const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33')
   /* Un repère posé sur la salle (ta place, ton jumeau) : en lumière, au-dessus du siège. */
   .repere { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 4px)); display: flex; flex-direction: column;
     align-items: center; pointer-events: none; }
+  /* Près d'un bord, l'étiquette s'ancre sur le côté pour rester dans le cadre. */
+  .repere.a-gauche { transform: translate(-12%, calc(-100% - 4px)); align-items: flex-start; }
+  .repere.a-droite { transform: translate(-88%, calc(-100% - 4px)); align-items: flex-end; }
   .repere span { padding: 7px 10px; background: var(--voile); border-left: 3px solid var(--lumiere); color: var(--lumiere);
     font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
   .repere i { width: 18px; height: 18px; margin-top: 6px; border-radius: 50%; border: 2px solid var(--lumiere);
@@ -89,6 +92,8 @@ const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33')
     .cameras { top: auto; bottom: 12px; left: 16px; right: 16px; justify-content: center; flex-wrap: nowrap; }
     /* Comme dans la maquette V6C-05 : seule la caméra en cours garde son nom. */
     .cameras button:not([aria-pressed='true']) .cam-nom { display: none; }
+    .cameras { gap: 6px; }
+    .cameras button { padding: 0 9px; gap: 5px; letter-spacing: 0.06em; }
     .dessus { padding-bottom: 64px; }
   }
 </style>

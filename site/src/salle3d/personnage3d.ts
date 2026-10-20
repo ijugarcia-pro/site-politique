@@ -39,7 +39,7 @@ export function creerPersonnage(a: Apparence): Personnage {
   const buste = maillage(new THREE.LatheGeometry(prof, 36), haut); buste.scale.set(1, 1, 0.66); buste.position.set(0, -0.03, -0.04); bassin.add(buste);
   const cou = maillage(new THREE.CylinderGeometry(0.046, 0.046, 0.1, 18), peau); cou.position.set(0, 0.53, -0.05); bassin.add(cou);
   const tete = new THREE.Group(); tete.position.set(0, 0.67, -0.04); bassin.add(tete);
-  tete.add(Object.assign(maillage(new THREE.SphereGeometry(0.1, 36, 26), peau), { scale: new THREE.Vector3(0.9, 1.1, 0.98) }));
+  const visage = maillage(new THREE.SphereGeometry(0.1, 36, 26), peau); visage.scale.set(0.9, 1.1, 0.98); tete.add(visage);
   coiffer(tete, a.coiffure, cheveux, maillage);
 
   // Les jambes : une cuisse qui pivote à la hanche, un tibia qui pivote au genou, un pied.

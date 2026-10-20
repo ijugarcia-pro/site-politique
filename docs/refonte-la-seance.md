@@ -77,7 +77,7 @@ Source : `project/tokens.json` du design system ; repli ci-dessous.
 | 3b | t59 | Thème Jour : « Qui te représente ? », fiche député, calcul, état, pages légales. |
 | 4a | t60 | Salle 3D : moteur (portage de three, sièges tirés de `lib/hemicycle.ts`, matières précalculées, CAM 1, CAM 2, CAM 4, voyants sur les vrais votes, repli SVG), `Salle3D.astro` chargé à la demande ; accueil en thème Séance avec la salle en tête ; verdict avec la salle en tête. *(Fait le 20 oct.)* |
 | 4b | t60 | Mon hémicycle en thème Séance avec la salle (4 intensités de voyants), ambiance verdict, onde des voyants, repères « Toi » et « Ton jumeau », caméra libre bornée, images fixes du mode focus. *(Fait le 20 oct.)* |
-| 5 | t61 | Personnage et place : création, pose debout et marche (absentes du prototype), assise sur le siège du jumeau, CAM 3. |
+| 5 | t61 | Personnage et place : création, pose debout et marche (absentes du prototype), assise sur le siège du jumeau, CAM 3. *(Fait le 20 oct.)* |
 | 6 | t62 | Finitions : `stories.ts` et `themes.ts`, retrait de Fredoka et Nunito, CLAUDE.md et PLANNING.md. |
 
 ## 7. Vérification à chaque lot
@@ -111,5 +111,5 @@ Proposées par Claude le 20 octobre ; Julien les a acceptées sans avoir pu les 
 1. **GSAP non installé** *(confirmé par Julien le 20 oct. ; fait au lot 4a)* (lot 4) : le prototype ne s'en sert que pour un mouvement de caméra et prévoit déjà de s'en passer ; une interpolation maison en `power2.inOut` (une quarantaine de lignes) évite environ 27 Ko.
 2. **Playwright** *(accepté par Julien le 20 oct. ; installé au lot 1)* (dès le lot 1) en dépendance de développement, en version exacte, pour les captures de chaque PR et les images fixes. Il télécharge un navigateur d'environ 150 Mo sur le poste, hors du projet : gratuit, mais à accepter explicitement.
 3. **Matières précalculées** *(confirmé par Julien le 20 oct. ; mesure faite, précalcul retenu au lot 4a)* (lot 4a) : si la mesure confirme la lenteur sur téléphone, un script versionné exécute `textures.js` une fois, en dev, dans le navigateur de Playwright, et écrit des webp dans `public/` (environ 2 à 4 Mo, chargés seulement avec la 3D, mis en cache). Sinon, calcul dans un worker pendant les temps morts.
-4. **Pas de fil de lumière** (lot 5) : assis sur le siège du jumeau, le personnage n'a plus de fil vers lui ; la plaquette du jumeau s'éclaire sous lui, et le 578e fauteuil reste vide au pied de la tribune une fois le personnage installé.
+4. **Pas de fil de lumière** *(confirmé par Julien le 20 oct. ; fait au lot 5)* (lot 5) : assis sur le siège du jumeau, le personnage n'a plus de fil vers lui ; la plaquette du jumeau s'éclaire sous lui, et le 578e fauteuil reste vide au pied de la tribune une fois le personnage installé.
 5. **Prototype versionné** dans `docs/salle-3d/` (fait au lot 0), porté dans `site/src/salle3d/` au lot 4.

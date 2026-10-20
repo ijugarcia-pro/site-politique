@@ -88,6 +88,8 @@ function creerPilote(racine: HTMLElement): Pilote {
     marque.hidden = !dedans;
     marque.style.left = `${(100 * p.x).toFixed(2)}%`;
     marque.style.top = `${(100 * p.y).toFixed(2)}%`;
+    marque.classList.toggle('a-gauche', p.x < 0.3);
+    marque.classList.toggle('a-droite', p.x > 0.7);
   };
 
   const prete = new Promise<Salle3D | null>((resoudre) => {

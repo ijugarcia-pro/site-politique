@@ -10,6 +10,7 @@ import Salle from '../components/Salle.astro';
 import Salle3D from '../components/Salle3D.astro';
 import { composition, lienVote, majuscule, scrutins } from '../lib/donnees.ts';
 import { NIVEAUX, SANS_VOTE_COMMUN } from '../lib/profil.ts';
+import { COIFFURES, PEAUX, TENUES } from '../salle3d/apparence.ts';
 
 const compo = composition();
 const occupes = compo.sieges.filter((s) => !s.vacant).length;
@@ -23,7 +24,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 <Base titre="Mon hémicycle" onglet="hemicycle" theme="seance"
   description="Ton hémicycle : les députés et les groupes qui votent le plus comme toi, calculés dans ton navigateur à partir de vrais votes.">
   <Salle3D titre="La salle de l'Assemblée nationale : le voyant de chaque pupitre brille d'autant plus que ce député vote comme toi ; ta place, le siège de ton jumeau, est signalée."
-    cameras={['salle', 'plan']} planSurTelephone>
+    cameras={['travee', 'salle', 'tribune', 'plan']} planSurTelephone>
     <div class="bandeau">
       <div class="bandeau-ligne">
         <span class="bandeau-etiquette">Mon hémicycle</span>
@@ -83,6 +84,41 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
           <div class="tuile-legende">comme le vote final</div>
         </div>
       </div>
+
+      <form class="encadre personnage" data-personnage>
+        <div class="sur-titre">Ton personnage</div>
+        <p>Il t'attend au pied de la tribune, puis s'assoit à ta place, le siège de ton jumeau. Ses choix restent dans ton navigateur.</p>
+        <fieldset>
+          <legend>Peau</legend>
+          <div class="choix-perso">
+            {PEAUX.map((x) => (
+              <label class="pastille-choix" title={x.nom}>
+                <input type="radio" name="peau" value={x.id} class="visuellement-cache" />
+                <span style={`--teinte: ${x.c}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Coiffure</legend>
+          <div class="choix-perso">
+            {COIFFURES.map((x) => (
+              <label class="mot-choix"><input type="radio" name="coiffure" value={x.id} class="visuellement-cache" /><span>{x.nom}</span></label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Tenue</legend>
+          <div class="choix-perso">
+            {TENUES.map((x) => (
+              <label class="pastille-choix" title={x.nom}>
+                <input type="radio" name="tenue" value={x.id} class="visuellement-cache" />
+                <span style={`--teinte: ${x.haut}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </form>
     </section>
   </div>
 
@@ -145,6 +181,33 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   import { pastille, Salle } from '../lib/salle.ts';
   import { NIVEAUX } from '../lib/profil.ts';
   import { salle3D } from '../salle3d/pilote.ts';
+  import { CLE_PERSONNAGE, lireApparence, VOTES_POUR_SIEGER } from '../salle3d/apparence.ts';
+
+  // Le personnage du visiteur (578e.personnage.v1) : son apparence, et le député dont il a pris
+  // le siège (pour ne marcher qu'une fois jusqu'à une nouvelle place).
+  const lirePerso = () => { try { return JSON.parse(localStorage.getItem(CLE_PERSONNAGE) ?? 'null') ?? {}; } catch { return {}; } };
+  const sauverPerso = (x: object) => { try { localStorage.setItem(CLE_PERSONNAGE, JSON.stringify({ ...lirePerso(), ...x })); } catch { /* */ } };
+  const sceneEl = document.querySelector<HTMLElement>('[data-salle3d]');
+  const s3p = sceneEl ? salle3D(sceneEl) : null;
+  const telephone = innerWidth < 640;
+  let apparence = lireApparence(lirePerso());
+  // Au départ, il attend au pied de la tribune ; CAM 3 n'existe qu'avec une place.
+  s3p?.personnage(apparence);
+  s3p?.asseoir(null);
+  s3p?.camera('travee', false);
+  // Il attend au pied de la tribune : la vue depuis le sol le montre (CAM 2).
+  if (!telephone) s3p?.vue('tribune', { instant: true });
+  const formulaire = document.querySelector<HTMLFormElement>('[data-personnage]')!;
+  for (const [nom, v] of Object.entries(apparence)) {
+    const r = formulaire.querySelector<HTMLInputElement>(`input[name="${nom}"][value="${v}"]`);
+    if (r) r.checked = true;
+  }
+  formulaire.addEventListener('change', () => {
+    const f = new FormData(formulaire);
+    apparence = lireApparence({ peau: f.get('peau'), coiffure: f.get('coiffure'), tenue: f.get('tenue') });
+    sauverPerso(apparence);
+    s3p?.personnage(apparence);
+  });
 
   const $ = <T extends Element = HTMLElement>(s: string, racine: ParentNode = document) =>
     racine.querySelector<T>(s)!;
@@ -237,8 +300,22 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
       }));
       const k = p.jumeau ? salle.reglages.sieges.findIndex(([u]) => u === p.jumeau!.ligne.u) : -1;
       s3.jumeau(k >= 0 ? k : null);
-      s3.repere(k >= 0 ? k : null, 'Ta place · le siège de ton jumeau');
-      if (p.jumeau) $('[data-bandeau-place]').textContent = `Ta place : le siège de ${p.jumeau.ligne.n}`;
+      if (k >= 0 && p.reponses >= VOTES_POUR_SIEGER) {
+        // Assez de votes : il prend sa place, le siège de son jumeau ; il n'y marche que si la
+        // place a changé depuis sa dernière visite.
+        const uidJumeau = p.jumeau!.ligne.u;
+        const marcher = lirePerso().siege !== uidJumeau;
+        sauverPerso({ siege: uidJumeau });
+        s3.asseoir(k, { marcher });
+        s3.camera('travee', true);
+        if (!telephone) s3.vue('travee', { instant: true });
+        s3.repere(k, 'Toi · le siège de ton jumeau');
+        $('[data-bandeau-place]').textContent = `Ta place : le siège de ${p.jumeau!.ligne.n}`;
+      } else {
+        const reste = VOTES_POUR_SIEGER - p.reponses;
+        s3.repere(null);
+        $('[data-bandeau-place]').textContent = `Encore ${reste} vote${reste > 1 ? 's' : ''} avant de prendre ta place`;
+      }
     }
     $('[data-sous-titre]').textContent = 'Plus un siège est lumineux, plus ce député vote comme toi';
     salle.jumeau(p.jumeau?.ligne.u ?? null);
@@ -400,4 +477,16 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     .place-titre { font-size: 28px; }
     .legende { gap: 6px 14px; font-size: 13px; }
   }
+  /* Le choix du personnage : des pastilles de teinte et des mots, le choix en cours cerclé d'ivoire. */
+  .personnage fieldset { margin: 14px 0 0; padding: 0; border: 0; }
+  .personnage legend { margin-bottom: 8px; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
+  .choix-perso { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pastille-choix span[aria-hidden] { display: block; width: 32px; height: 32px; border-radius: 50%; background: var(--teinte);
+    box-shadow: inset 0 0 0 1px rgba(242, 238, 230, 0.25); cursor: pointer; }
+  .pastille-choix input:checked + span { outline: 2px solid var(--ivoire); outline-offset: 3px; }
+  .pastille-choix input:focus-visible + span, .mot-choix input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .mot-choix span { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: var(--rayon-puce);
+    border: 1px solid var(--filet); font: 600 13px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  .mot-choix input:checked + span { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
 </style>

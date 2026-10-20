@@ -355,11 +355,10 @@ const exprimes = d.pour + d.contre;
   }
   .principal { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
 
+  /* L'intitulé du vote, mot pour mot, en Literata (.t-question). */
   .tete h1 {
     margin: 14px 0 8px;
-    font-size: clamp(26px, 3.2vw, 40px);
-    line-height: 1.12;
-    letter-spacing: -0.015em;
+    font-size: clamp(26px, 2.8vw, 34px);
     overflow-wrap: anywhere;
   }
   .quand { margin: 0; color: var(--ivoire-2); font-size: 16px; }
@@ -368,12 +367,11 @@ const exprimes = d.pour + d.contre;
     display: inline-flex;
     align-items: center;
     min-height: 38px;
-    padding: 6px 14px;
-    border-radius: var(--rayon);
+    padding: 6px 12px;
     background: var(--panneau-2);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 15px;
+    font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--ivoire);
     text-decoration: none;
   }
@@ -387,7 +385,6 @@ const exprimes = d.pour + d.contre;
     align-items: center;
     gap: 16px 22px;
     padding: 20px 24px;
-    border-radius: var(--rayon);
     background: #16181D;
     color: #F2EEE6;
   }
@@ -403,9 +400,11 @@ const exprimes = d.pour + d.contre;
   .verdict p { margin: 0; }
   .verdict-titre {
     font-family: var(--police-titre);
-    font-weight: 700;
-    font-size: clamp(26px, 3vw, 36px);
+    font-weight: 600;
+    font-size: clamp(26px, 3vw, 34px);
     line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
   }
   .verdict-detail { margin-top: 6px !important; font-size: 16px; color: #ABA69C; }
   .bascule { margin: -12px 0 0; font-size: 16px; color: var(--ivoire); }
@@ -415,9 +414,7 @@ const exprimes = d.pour + d.contre;
     flex-wrap: wrap;
     gap: 28px;
     padding: clamp(16px, 2.4vw, 26px);
-    border-radius: var(--rayon);
     background: var(--panneau);
-    border: 1px solid var(--filet);
     scroll-margin-top: 90px;
   }
   .salle h2 { font-size: 22px; }
@@ -462,9 +459,7 @@ const exprimes = d.pour + d.contre;
   }
   .ta-voix {
     padding: 14px 16px;
-    border-radius: var(--rayon);
-    background: var(--panneau);
-    border: 1px solid var(--filet);
+    background: var(--panneau-2);
   }
   .ta-voix p { margin: 0; font-size: 15px; color: var(--ivoire); }
   .ta-voix .sur-titre {
@@ -472,11 +467,10 @@ const exprimes = d.pour + d.contre;
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 12px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--direct);
+    color: var(--lumiere);
   }
-  .ta-voix sup { text-transform: none; }
   .qui { flex: 1 1 440px; min-width: 0; }
   .qui:only-child { max-width: 760px; margin: 0 auto; }
   .qui h2 { margin-bottom: 10px; }
@@ -502,16 +496,18 @@ const exprimes = d.pour + d.contre;
   .groupes abbr {
     grid-area: sigle;
     font-family: var(--police-titre);
-    font-weight: 700;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     text-decoration: none;
     overflow-wrap: anywhere;
   }
   .barre {
     grid-area: barre;
     display: flex;
-    height: 12px;
-    border-radius: 999px;
+    gap: 2px;
+    height: 10px;
     overflow: hidden;
     background: var(--absent);
   }
@@ -521,10 +517,9 @@ const exprimes = d.pour + d.contre;
 
   .plus { display: flex; flex-direction: column; gap: 12px; }
   .plus h2 { margin-bottom: 4px; }
+  /* Des accordéons à coins vifs, en aplats. */
   .plus details {
     background: var(--panneau);
-    border: 1px solid var(--filet);
-    border-radius: var(--rayon);
     padding: 0 20px;
   }
   .plus summary {
@@ -535,8 +530,8 @@ const exprimes = d.pour + d.contre;
     min-height: 60px;
     font-family: var(--police-titre);
     font-weight: 600;
-    font-size: 18px;
-    letter-spacing: 0.04em;
+    font-size: 15px;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     cursor: pointer;
     list-style: none;
@@ -555,9 +550,9 @@ const exprimes = d.pour + d.contre;
   .plus details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
   .plus details > :not(summary) { margin: 0 0 16px; font-size: 16px; color: var(--ivoire); }
   .chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-  .chiffres div { padding: 12px 14px; border-radius: var(--rayon); background: var(--panneau-2); }
+  .chiffres div { padding: 12px 14px; background: var(--panneau-2); }
   .chiffres dt { font-size: 14px; color: var(--ivoire-2); }
-  .chiffres dd { margin: 2px 0 0; font-family: var(--police-titre); font-weight: 700; font-size: 24px; color: var(--ivoire); }
+  .chiffres dd { margin: 2px 0 0; font-family: var(--police-titre); font-weight: 700; font-size: 24px; text-transform: uppercase; color: var(--ivoire); }
   .lecture, .mises, .sources { padding-left: 20px; }
   .lecture li, .mises li, .sources li { margin-bottom: 8px; }
 
@@ -565,23 +560,25 @@ const exprimes = d.pour + d.contre;
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .encadre { padding: 20px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau); }
-  .encadre h2 { font-size: 19px; }
-  .ton-depute { border-color: var(--filet); background: var(--panneau-2); }
+  .encadre { padding: 20px 22px; background: var(--panneau); }
+  .encadre h2 { font-size: 22px; }
+  .ton-depute { background: var(--panneau-2); }
   .ton-depute p { margin: 8px 0 14px; font-size: 16px; color: var(--ivoire); }
   .ton-depute .bouton { width: 100%; }
+  /* Son vote : une pastille de vote de 10 px et le mot, pas de capsule colorée. */
   .ton-depute :global(.vote-pastille) {
-    display: inline-block;
-    padding: 1px 9px;
-    border-radius: 8px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    background: var(--absent);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--ivoire);
   }
-  .ton-depute :global(.vote-pour) { background: var(--pour); color: #fff; }
-  .ton-depute :global(.vote-contre) { background: #E5552A; color: #fff; }
-  .ton-depute :global(.vote-abstention) { background: var(--abstention); }
+  .ton-depute :global(.vote-pastille)::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--absent); }
+  .ton-depute :global(.vote-pour)::before { background: var(--pour); }
+  .ton-depute :global(.vote-contre)::before { background: var(--contre); }
+  .ton-depute :global(.vote-abstention)::before { background: var(--abstention); }
 
   .parcours ol { margin: 14px 0 12px; padding: 0; list-style: none; }
   .parcours li { display: flex; gap: 12px; position: relative; padding-bottom: 14px; }
@@ -608,17 +605,16 @@ const exprimes = d.pour + d.contre;
   }
   .fini .point { border-color: var(--ivoire-2); background: var(--ivoire-2); }
   .actuel .point { border-color: var(--direct); background: var(--direct); box-shadow: 0 0 0 4px var(--panneau-2); }
-  .etape { font-family: var(--police-titre); font-weight: 600; font-size: 16px; line-height: 1.25; }
+  .etape { font: 600 15px/1.3 var(--police-texte); }
   .ce-vote {
     display: inline-block;
     margin-left: 6px;
-    padding: 1px 8px;
-    border-radius: 999px;
+    padding: 3px 6px;
     background: var(--direct);
     color: #fff;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 12px;
+    font: 600 11px/1 var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     vertical-align: 2px;
   }
   .dates { display: block; font-size: 13px; color: var(--ivoire-2); }
@@ -630,19 +626,17 @@ const exprimes = d.pour + d.contre;
     flex-direction: column;
     gap: 2px;
     padding: 10px 12px;
-    border-radius: var(--rayon);
     text-decoration: none;
     color: var(--ivoire);
   }
   .voisins a:hover { background: var(--panneau-2); }
-  .sens { font-family: var(--police-titre); font-weight: 600; font-size: 13px; color: var(--ivoire); }
+  .sens { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   .voisin-titre {
-    font-size: 15px;
-    line-height: 1.35;
+    font: 500 16px/1.4 var(--police-question);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .voisins .tous { font-family: var(--police-titre); font-weight: 600; color: var(--ivoire); }
+  .voisins .tous { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); }
 </style>

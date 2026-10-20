@@ -39,7 +39,7 @@ const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33')
       <div class="cameras" role="group" aria-label="Caméras">
         {cameras.map((c, k) => (
           <button type="button" data-camera={c} aria-pressed={k === 0 ? 'true' : 'false'}
-            aria-label={`${NOMS[c][0]} · ${NOMS[c][1]}`}><span>{NOMS[c][0]}</span><span class="cam-nom">&nbsp;· {NOMS[c][1]}</span></button>
+            aria-label={`${NOMS[c][0]} · ${NOMS[c][1]}`}><span>{NOMS[c][0]}<span class="cam-nom"> · {NOMS[c][1]}</span></span></button>
         ))}
       </div>
     )}

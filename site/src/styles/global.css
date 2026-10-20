@@ -50,10 +50,11 @@
   /* Absent : voyant éteint, assez clair pour se voir sur un panneau ; non-votant : plus clair. */
   --absent: #3A3D45;
   --non-votant: #6E6A63;
-  /* L'accord avec toi, en intensités de lumière (de l'éteint à la lumière). */
-  --accord-1: #6B5536;
-  --accord-2: #A9844F;
-  --accord-3: #F2C98A;
+  /* L'accord avec toi, en intensités d'ivoire (design définitif, 20 oct.) : « rarement » prend la
+     teinte de l'absent (#3A3D45), puis parfois, souvent, presque toujours. La lumière reste à toi. */
+  --accord-1: #6E6B66;
+  --accord-2: #A9A49B;
+  --accord-3: #F2EEE6;
 }
 
 /* Thème « Jour » : les pages de lecture longue. */
@@ -72,9 +73,9 @@
   --ombre-panneau: 0 18px 40px -18px rgba(30, 24, 16, 0.28);
   --absent: #D3D0C8;
   --non-votant: #8C887F;
-  --accord-1: #E2CFAE;
-  --accord-2: #C0965A;
-  --accord-3: #8A5A12;
+  --accord-1: #A8A49C;
+  --accord-2: #6E6A63;
+  --accord-3: #121318;
 }
 
 * { box-sizing: border-box; }
@@ -86,22 +87,19 @@ body {
   background: var(--nuit);
   color: var(--ivoire);
   font: 400 17px/27px var(--police-texte);
+  font-variant-numeric: tabular-nums;
 }
 
-h1, h2, h3 {
-  font-family: var(--police-titre);
-  line-height: 1.1;
-  letter-spacing: 0.005em;
-  margin: 0;
-}
-h1 { font-size: clamp(32px, 3.4vw, 44px); font-weight: 700; }
-h2 { font-size: clamp(24px, 2.2vw, 28px); font-weight: 600; }
-h3 { font-size: 20px; font-weight: 600; }
-/* Les titres de section, en capitales de régie. */
-main h2 { text-transform: uppercase; letter-spacing: 0.01em; }
+/* Deux familles de texte (docs/design-final/DESIGN-FINAL.md, § 2) : la régie, en Barlow Condensed
+   toujours en capitales ; la lecture, en Literata 500 (questions, intitulés de loi). Un titre de
+   page est une question ou un intitulé (Literata) ; un titre de section est court, en capitales. */
+h1, h2, h3 { margin: 0; }
+h1 { font: 500 clamp(26px, 2.6vw, 34px)/1.2 var(--police-question); text-wrap: balance; }
+h2 { font: 700 clamp(24px, 2.4vw, 32px)/1 var(--police-titre); text-transform: uppercase; }
+h3 { font: 600 18px/1.3 var(--police-texte); }
 
 a { color: var(--ivoire); text-underline-offset: 3px; }
-a:hover { color: var(--lumiere); }
+a:hover { color: var(--ivoire); text-decoration-thickness: 2px; }
 
 :focus-visible {
   outline: 2px solid var(--focus);
@@ -129,22 +127,61 @@ a:hover { color: var(--lumiere); }
 
 .sous-titre { margin: 6px 0 0; color: var(--ivoire-2); font-size: 16px; }
 
-/* Un panneau de régie. */
+/* Un aplat de régie (§ 5.3) : sans bordure, sans ombre, coins vifs. L'ombre et le rayon de 6 px
+   sont réservés au panneau posé sur la salle (.panneau-salle). */
 .carte {
-  border: 1px solid var(--filet);
+  padding: 20px 22px;
+  background: var(--panneau);
+}
+.panneau-salle {
+  padding: 28px;
+  background: var(--panneau);
   border-radius: var(--rayon);
   box-shadow: var(--ombre-panneau);
-  padding: clamp(18px, 2.4vw, 24px);
+}
+
+/* Les ensembles de blocs : des aplats juxtaposés, séparés de 2 px. */
+.aplats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: 2px;
+}
+.aplats > * {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px;
   background: var(--panneau);
 }
 
-/* Puce de régie : capitales condensées, espacées. */
+/* La typographie de la charte (DESIGN-FINAL.md, § 3), relevée dans les maquettes V6C. */
+.t-ecran { font: 700 clamp(88px, 12vw, 176px)/0.82 var(--police-titre); letter-spacing: -0.005em; text-transform: uppercase; }
+.t-mot { font: 700 38px/1 var(--police-titre); text-transform: uppercase; }
+.t-section { font: 700 32px/1 var(--police-titre); text-transform: uppercase; }
+.t-bandeau { font: 600 34px/1.05 var(--police-titre); letter-spacing: 0.01em; text-transform: uppercase; }
+.t-compteur { font: 600 84px/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
+.t-numero { font: 600 44px/0.9 var(--police-titre); color: var(--ivoire-2); font-variant-numeric: tabular-nums; }
+.t-puce { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+.t-bouton { font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; }
+.t-vote { font: 600 21px/1 var(--police-titre); letter-spacing: 0.03em; text-transform: uppercase; }
+.t-question { font: 500 34px/1.2 var(--police-question); text-wrap: balance; }
+.t-loi { font: 500 18px/1.35 var(--police-question); }
+.t-corps { font: 400 17px/1.55 var(--police-texte); }
+.t-legende { font: 500 14px/20px var(--police-texte); color: var(--ivoire-2); }
+@media (max-width: 640px) {
+  .t-bandeau { font-size: 22px; line-height: 26px; }
+  .t-compteur { font-size: 56px; }
+  .t-question { font-size: 26px; line-height: 1.25; }
+  .t-mot { font-size: 30px; }
+}
+
+/* Étiquette de régie : capitales condensées, espacées, coins vifs (999 px : puces caméra seulement). */
 .puce {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  border-radius: var(--rayon-puce);
+  border-radius: 0;
   font: 600 var(--taille-puce)/16px var(--police-titre);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -185,25 +222,23 @@ a:hover { color: var(--lumiere); }
   gap: 14px;
   align-items: flex-start;
   padding: 16px 18px;
-  border-radius: var(--rayon);
   background: var(--panneau-2);
-  border-left: 3px solid var(--lumiere);
   color: var(--ivoire);
   font-size: 16px;
 }
 .encart strong { color: var(--ivoire); }
 
-/* Bouton secondaire de régie ; l'action principale prend .bouton-direct. */
+/* Bouton secondaire de régie, coins vifs ; l'action principale (une par écran) prend .bouton-direct. */
 .bouton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 48px;
   padding: 0 20px;
-  border-radius: var(--rayon);
+  border-radius: 0;
   background: transparent;
   border: 1px solid var(--ivoire-2);
-  font: 600 16px/1 var(--police-titre);
+  font: 600 15px/1 var(--police-titre);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ivoire);
@@ -211,10 +246,10 @@ a:hover { color: var(--lumiere); }
   cursor: pointer;
 }
 .bouton:hover { background: var(--panneau-2); color: var(--ivoire); }
-.bouton-direct { background: var(--direct); border-color: var(--direct); color: var(--sur-direct); }
+.bouton-direct { min-height: 56px; padding: 0 26px; font-size: 18px; background: var(--direct); border-color: var(--direct); color: var(--sur-direct); }
 .bouton-direct:hover { background: #9A0F27; color: var(--sur-direct); }
 
-.tableau { overflow-x: auto; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau); }
+.tableau { overflow-x: auto; background: var(--panneau); }
 table { width: 100%; border-collapse: collapse; font-size: 15px; }
 th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--filet); }
 th {
@@ -238,9 +273,10 @@ tbody tr:last-child td { border-bottom: 0; }
   align-items: center;
   gap: 5px;
   font-family: var(--police-titre);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--ivoire);
   white-space: nowrap;
 }
@@ -253,7 +289,7 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 
 /* Les niveaux d'accord de l'hémicycle personnel (lib/profil.ts, NIVEAUX) sont des violets écrits
-   en dur dans lib/ : ils deviennent des intensités de lumière, partout où ils sont posés (légendes
+   en dur dans lib/ : ils deviennent des intensités d'ivoire, partout où ils sont posés (légendes
    en style en ligne, petits hémicycles en attribut fill ; les sièges de Salle.astro ont leur règle).
    « Rarement comme toi » (#DFE3EB) prend la teinte éteinte, comme l'absence. */
 [style*="background: #DFE3EB"] { background: var(--absent) !important; }

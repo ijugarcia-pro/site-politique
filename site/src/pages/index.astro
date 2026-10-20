@@ -133,7 +133,7 @@ const donnees = JSON.stringify({
                   {v.theme && <span class="v-theme" style={`background: ${puceTheme(v.theme).split(':')[0]}; color: ${puceTheme(v.theme).split(':')[1]}`}>{v.theme}</span>}
                   {v.titre}
                 </span>
-                <span class="v-pastille">{v.verdict} · {v.pour}–{v.contre}</span>
+                <span class="v-pastille"><span class="v-mot">{v.verdict}</span> <span class="v-score">{v.pour}–{v.contre}</span></span>
                 <span class="v-ligne">
                   <span class="v-marque" data-marque aria-hidden="true">
                     <svg width="11" height="11" viewBox="0 0 14 14"><path data-marque-trait d="M3.5 7h7" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -419,31 +419,32 @@ const donnees = JSON.stringify({
   .principal { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 
   /* Le ticket de la séance : un panneau de régie, l'action principale en rouge. */
-  .ticket { display: flex; flex-wrap: wrap; border-radius: var(--rayon); background: var(--panneau); color: var(--ivoire);
-    border-top: 3px solid var(--direct); box-shadow: var(--ombre-panneau); overflow: hidden; }
+  .ticket { display: flex; flex-wrap: wrap; background: var(--panneau); color: var(--ivoire);
+    border-top: 3px solid var(--direct); overflow: hidden; }
   .ticket-gauche { flex: 1 1 440px; min-width: 0; padding: 26px 28px; }
   .sur-titre { margin: 0; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ivoire-2); }
   .ticket h2 { margin-top: 8px; font-size: clamp(28px, 3vw, 36px); font-weight: 600; line-height: 1.05; }
   .ticket-texte { margin: 12px 0 0; font-size: 17px; line-height: 27px; color: var(--ivoire-2); max-width: 560px; }
   .items { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
-  .items :global(li) { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--rayon);
-    background: var(--panneau-2); }
-  .items :global(.item-theme) { flex: none; min-width: 86px; padding: 4px 10px; border-radius: 999px; text-align: center;
-    font-family: var(--police-titre); font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .items :global(.item-titre) { flex: 1; min-width: 0; font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
-  .items :global(.item-meta) { flex: none; font-size: 13px; font-weight: 700; }
+  .items :global(li) { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--panneau-2); }
+  .items :global(.item-theme) { flex: none; min-width: 86px; padding: 5px 8px; text-align: center;
+    font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
+  .items :global(.item-titre) { flex: 1; min-width: 0; font: 500 17px/1.35 var(--police-question); }
+  .items :global(.item-meta) { flex: none; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
   @media (max-width: 520px) { .items :global(li) { flex-wrap: wrap; } .items :global(.item-titre) { flex-basis: 100%; order: 3; } }
   .ticket-bas { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 20px; }
   .ticket-serie { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
   .ticket-serie[hidden] { display: none; }
-  .heure { font-family: var(--police-titre); font-weight: 600; font-size: 72px; line-height: 0.95; font-variant-numeric: tabular-nums; }
+  .heure { font-family: var(--police-titre); font-weight: 600; font-size: 72px; line-height: 0.95; text-transform: uppercase;
+    font-variant-numeric: tabular-nums; }
   .note-ticket { margin-top: 10px; font-size: 13px; line-height: 1.35; color: var(--ivoire-2); }
-  .deja-juge { margin-top: 10px; padding: 8px 14px; border-radius: var(--rayon); border: 1px solid var(--ivoire-2); color: var(--ivoire);
-    font-family: var(--police-titre); font-weight: 600; font-size: 14px; text-decoration: none; }
-  .deja-juge:hover { color: var(--lumiere); }
+  .deja-juge { margin-top: 10px; padding: 10px 14px; border: 1px solid var(--ivoire-2); color: var(--ivoire);
+    font: 600 14px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+  .deja-juge:hover { background: var(--filet); color: var(--ivoire); }
   .ticket-bouton { display: inline-flex; align-items: center; min-height: 56px; padding: 0 26px;
-    border-radius: var(--rayon); background: var(--direct); color: var(--sur-direct);
+    background: var(--direct); color: var(--sur-direct);
     font-family: var(--police-titre); font-weight: 600; font-size: 18px; letter-spacing: 0.08em;
     text-transform: uppercase; text-decoration: none; }
   .ticket-bouton:hover { color: var(--sur-direct); background: #9A0F27; }
@@ -458,23 +459,25 @@ const donnees = JSON.stringify({
   .jour { font-family: var(--police-titre); font-weight: 600; font-size: 21px; text-transform: uppercase; }
   .tampon { margin: 6px 0; font-family: var(--police-titre); font-weight: 700; font-size: 38px; line-height: 1; text-transform: uppercase; }
   .score { font-family: var(--police-titre); font-weight: 600; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
-  .pastille-ticket { margin-top: 8px; padding: 6px 14px; border-radius: 999px; background: var(--panneau);
-    font-family: var(--police-titre); font-weight: 600; font-size: 14px; }
+  .pastille-ticket { margin-top: 8px; padding: 6px 12px; background: var(--panneau);
+    font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
 
-  .encadre { padding: 18px 20px; border: 1px solid var(--filet); border-radius: var(--rayon); }
-  .encadre h2 { font-size: 20px; font-weight: 700; }
+  .encadre { padding: 20px 22px; background: var(--panneau); }
+  .encadre h2 { font-size: 24px; }
   .titre-section { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .titre-section a { flex: none; font-family: var(--police-titre); font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; }
+  .titre-section a { flex: none; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
+    text-decoration: none; white-space: nowrap; }
   .verdicts { margin: 8px 0 0; padding: 0; list-style: none; }
-  .verdicts a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 8px;
-    border-top: 2px solid #F0F2F6; color: inherit; text-decoration: none; }
+  .verdicts a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; padding: 12px 8px;
+    border-top: 1px solid var(--filet); color: inherit; text-decoration: none; }
   .verdicts a:hover { background: var(--panneau-2); }
-  .v-titre { font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
-  .v-theme { display: inline-block; margin-right: 8px; padding: 2px 9px; border-radius: 999px; font-size: 11px;
-    letter-spacing: 0.06em; text-transform: uppercase; vertical-align: 2px; }
-  .v-pastille { justify-self: end; align-self: center; padding: 4px 10px; border-radius: 999px; background: var(--ivoire);
-    color: var(--nuit); font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.04em;
-    text-transform: uppercase; white-space: nowrap; }
+  .v-titre { font: 500 16px/1.4 var(--police-question); }
+  .v-theme { display: inline-block; margin-right: 8px; padding: 4px 7px; font: 600 11px/1 var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; vertical-align: 2px; }
+  /* Le verdict, le même pour les deux issues : le mot en capitales, le score en puce. */
+  .v-pastille { justify-self: end; align-self: center; display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .v-mot { font: 700 17px/1 var(--police-titre); text-transform: uppercase; color: var(--ivoire); }
+  .v-score { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; color: var(--ivoire-2); }
   @media (max-width: 520px) {
     .verdicts a { grid-template-columns: minmax(0, 1fr); }
     .v-pastille { justify-self: start; }
@@ -487,12 +490,12 @@ const donnees = JSON.stringify({
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .carte-lien, .carte { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 1px solid var(--filet);
-    border-radius: var(--rayon); background: var(--panneau); color: inherit; text-decoration: none; }
-  .carte-lien:hover { border-color: var(--ivoire-2); }
+  .carte-lien, .carte { display: flex; flex-direction: column; gap: 12px; padding: 20px 22px;
+    background: var(--panneau); color: inherit; text-decoration: none; }
+  .carte-lien:hover { background: var(--panneau-2); color: inherit; }
   .carte-lien[hidden], .carte[hidden] { display: none; }
   .carte-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .carte-titre { font-family: var(--police-titre); font-weight: 700; font-size: 20px; }
+  .carte-titre { font: 700 22px/1 var(--police-titre); text-transform: uppercase; }
   .discret { font-size: 13px; color: var(--ivoire-2); }
   .carte-texte { margin: 0; font-size: 15px; color: var(--ivoire-2); }
   .mini { position: relative; display: block; margin-top: 12px; }
@@ -500,34 +503,33 @@ const donnees = JSON.stringify({
   .etoile-toi[hidden] { display: none; }
   .precision { display: flex; align-items: center; gap: 10px; }
   .precision[hidden] { display: none; }
-  .precision-titre { font-size: 13px; font-weight: 700; color: var(--ivoire-2); }
+  .precision-titre { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   .segments { flex: 1; display: flex; gap: 3px; }
-  .segments span { flex: 1; height: 10px; border-radius: 3px; background: var(--filet); }
+  .segments span { flex: 1; height: 8px; background: var(--filet); }
   .segments :global(span.plein) { background: var(--lumiere); }
   .precision-pct { font-family: var(--police-titre); font-weight: 700; font-size: 14px; }
   .jumeau { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 2px dashed var(--filet); }
   .jumeau[hidden] { display: none; }
-  .jumeau-ini { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
-    border-radius: 50%; border: 2px solid var(--ivoire); color: var(--ivoire); font-family: var(--police-titre); font-weight: 600; font-size: 15px; }
+  /* Pas de cercles à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
+  .jumeau-ini, .avatar-depute { display: none; }
   .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .jumeau-sur { font: 600 12px/16px var(--police-titre); color: var(--ivoire-2); text-transform: uppercase; letter-spacing: 0.12em; }
-  .jumeau-nom { font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
+  .jumeau-nom { font: 600 17px/1.3 var(--police-texte); }
   .jumeau-pct { font-family: var(--police-titre); font-weight: 700; font-size: 16px; color: var(--ivoire); }
   .depute-choisi { display: flex; align-items: center; gap: 12px; }
   .depute-choisi > span:last-child { display: flex; flex-direction: column; }
-  .avatar-depute { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;
-    border-radius: 50%; border: 2px solid var(--ivoire-2); color: var(--ivoire); font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
-  .nom-depute { font-family: var(--police-titre); font-weight: 600; font-size: 17px; }
+  .nom-depute { font: 600 17px/1.3 var(--police-texte); }
   .semaine { display: flex; gap: 6px; }
   .semaine:empty { display: none; }
-  .semaine :global(span) { flex: 1; padding: 8px 6px; border-radius: var(--rayon); text-align: center; font-size: 12px;
-    font-weight: 700; background: var(--panneau-2); color: var(--ivoire-2); }
-  /* Même vote que toi : en lumière ; vote différent : sans couleur de vote. */
-  .semaine :global(span.pareil) { background: var(--panneau-2); color: var(--lumiere); }
+  .semaine :global(span) { flex: 1; padding: 8px 6px; text-align: center; font: 600 12px/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; background: var(--panneau-2); color: var(--ivoire-2); }
+  /* Même vote que toi : en ivoire ; vote différent : éteint ; jamais de couleur de vote. */
+  .semaine :global(span.pareil) { background: var(--panneau-2); color: var(--ivoire); }
   .semaine :global(span.oppose) { background: var(--panneau-2); color: var(--ivoire-2); }
   .cp { display: flex; gap: 8px; }
-  .cp input { flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border-radius: var(--rayon); border: 1px solid var(--filet); background: var(--panneau-2); color: var(--ivoire);
-    font-family: var(--police-titre); font-weight: 600; font-size: 18px; letter-spacing: 0.08em; }
+  .cp input { flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border: 1px solid var(--filet); background: var(--panneau-2);
+    color: var(--ivoire); font: 500 17px/1 var(--police-texte); }
   .cp input:focus { border-color: var(--ivoire); outline: none; }
-  .cp button { min-height: 50px; padding: 0 16px; border: 0; border-radius: var(--rayon); background: var(--direct); color: #fff; font-family: var(--police-titre); font-weight: 600; font-size: 16px; cursor: pointer; }
+  .cp button { min-height: 50px; padding: 0 18px; border: 0; background: var(--direct); color: #fff;
+    font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
 </style>

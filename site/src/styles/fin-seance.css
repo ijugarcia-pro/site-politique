@@ -42,7 +42,7 @@
 .fin .carnet-suite + .tampons { margin-top: 8px; }
 .fin .tampons { display: flex; gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
 .fin .tampons li { flex: 1; max-width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  aspect-ratio: 1 / 1; border-radius: var(--rayon); font: 600 18px/1.05 var(--police-titre); text-align: center;
+  aspect-ratio: 1 / 1; font: 600 18px/1.05 var(--police-titre); text-align: center;
   font-variant-numeric: tabular-nums; border: 1px dashed var(--filet); color: var(--ivoire-2); }
 .fin .tampons .mini { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; opacity: .85; }
 .fin .tampons li.fait { border: 1px solid var(--ivoire-2); color: var(--ivoire); background: var(--panneau); }
@@ -53,18 +53,18 @@
 /* Les actions : le rouge de régie pour l'action principale. */
 .fin .actions, .vacances .actions { align-self: stretch; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .b-principal { flex: 1 1 260px; min-height: 56px; display: flex; align-items: center; justify-content: center; padding: 0 24px;
-  border: 0; border-radius: var(--rayon); background: var(--direct); color: var(--sur-direct);
+  border: 0; background: var(--direct); color: var(--sur-direct);
   font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
   text-align: center; cursor: pointer; }
 .b-principal:hover { color: var(--sur-direct); background: #9A0F27; }
 .b-principal[hidden] { display: none; }
 .b-second { flex: 0 1 220px; min-height: 56px; display: flex; align-items: center; justify-content: center; padding: 0 18px;
-  border: 1px solid var(--ivoire-2); border-radius: var(--rayon); background: transparent; color: var(--ivoire);
+  border: 1px solid var(--ivoire-2); background: transparent; color: var(--ivoire);
   font: 600 16px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
 .b-second:hover { color: var(--ivoire); background: var(--panneau-2); }
 @media (max-width: 640px) { .b-second { flex: 1 1 100%; } }
 
 /* « Passer », pendant la cascade de la fin de séance. */
-.b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px; border-radius: var(--rayon);
+.b-passer-seq { position: absolute; top: 0; right: 0; z-index: 2; min-height: 40px; padding: 0 16px;
   border: 1px solid var(--ivoire-2); background: var(--panneau); color: var(--ivoire);
   font: 600 14px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }

@@ -103,7 +103,7 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .siege:global(.sans-commun) { fill: #FFFFFF; stroke: #DFE3EB; stroke-width: 2; }
   .siege:global(.contre-groupe) { stroke: var(--texte); stroke-width: 2.4; r: 6.6px; }
   .siege:global(.estompe) { opacity: .38; }
-  .siege:global(.siege-jumeau) { r: 11.4px; fill: #6A3DF0 !important; stroke: #7C4DFF; stroke-width: 3; opacity: 1; }
+  .siege:global(.siege-jumeau) { r: 11.4px; fill: var(--lumiere) !important; stroke: var(--lumiere); stroke-width: 3; opacity: 1; }
   .siege:hover { stroke: var(--texte); stroke-width: 2.4; }
   /* L'onde de la révélation (R1) : chaque siège prend sa couleur à son tour, du centre vers
      l'extérieur. Repli mesuré (docs/decisions.md, 13 oct.) : la couleur seule, sans le
@@ -124,20 +124,20 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .groupes-salle { display: none; }
   .libre { position: absolute; z-index: 3; transform: translate(-50%, -50%); display: flex;
     flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
-  .libre span { padding: 5px 12px; border-radius: 12px; background: #FFFFFF; border: 2px dashed #B9A4FF;
+  .libre span { padding: 5px 12px; border-radius: var(--rayon); background: #FFFFFF; border: 2px dashed var(--filet);
     color: var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 14px; white-space: nowrap; }
-  .libre i { width: 26px; height: 26px; border-radius: 50%; border: 2.5px dashed #B9A4FF; }
+  .libre i { width: 26px; height: 26px; border-radius: 50%; border: 2.5px dashed var(--filet); }
   .toi { position: absolute; z-index: 4; transform: translate(-50%, -100%); text-align: center; pointer-events: none; }
-  .toi .bulle { padding: 6px 12px; border-radius: 12px; background: var(--texte); color: #fff;
+  .toi .bulle { padding: 6px 12px; border-radius: var(--rayon); background: var(--texte); color: #fff;
     font-family: var(--police-titre); font-weight: 600; font-size: 14px; white-space: nowrap; }
   .toi sup, .libre sup { font-size: 0.65em; }
   .toi svg { display: block; margin: 4px auto 0; }
   .marque-jumeau { position: absolute; z-index: 4; transform: translate(-50%, -100%); display: flex;
     flex-direction: column; align-items: center; pointer-events: none; }
   .marque-jumeau:global(.dessous) { transform: translate(-50%, 0); flex-direction: column-reverse; }
-  .marque-jumeau span { padding: 4px 10px; border-radius: 10px; background: var(--violet); color: #fff;
+  .marque-jumeau span { padding: 4px 10px; border-radius: var(--rayon); background: var(--ivoire); color: var(--nuit);
     font-family: var(--police-titre); font-weight: 600; font-size: 12px; white-space: nowrap; box-shadow: 0 3px 0 var(--violet-fonce); }
-  .marque-jumeau i { width: 2px; height: 10px; background: var(--violet); }
+  .marque-jumeau i { width: 2px; height: 10px; background: var(--ivoire); }
   .marque-jumeau:global(.vers-droite) { transform: translate(0, -50%); flex-direction: row-reverse; }
   .marque-jumeau:global(.vers-gauche) { transform: translate(-100%, -50%); flex-direction: row; }
   .marque-jumeau:global(.vers-droite) i, .marque-jumeau:global(.vers-gauche) i { width: 10px; height: 2px; }
@@ -148,13 +148,13 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .carte-siege {
     position: absolute; z-index: 6; transform: translate(-50%, -100%); display: flex; gap: 10px;
     align-items: center; width: max-content; max-width: 320px; padding: 10px 14px 10px 10px;
-    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond);
+    border: 2px solid var(--bord); border-radius: var(--rayon); background: var(--fond);
     box-shadow: 0 5px 0 var(--bord); pointer-events: none;
   }
   .carte-siege:global(.a-gauche) { transform: translate(-12%, -100%); }
   .carte-siege:global(.a-droite) { transform: translate(-88%, -100%); }
   .carte-avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
-    border-radius: 13px; background: var(--violet-voile); color: var(--violet-fonce);
+    border-radius: var(--rayon); background: var(--violet-voile); color: var(--violet-fonce);
     font-family: var(--police-titre); font-weight: 700; font-size: 15px; }
   .carte-texte { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .carte-nom { font-family: var(--police-titre); font-weight: 700; font-size: 16px; line-height: 1.2; }
@@ -166,7 +166,7 @@ const occupes = sieges.filter((s) => !s.vacant).length;
       padding: 0; list-style: none; }
     .groupes-salle span { display: block; padding: 1px 8px; border-radius: 999px; font-family: var(--police-titre);
       font-weight: 600; font-size: 12px; line-height: 1.5; }
-    .toi .bulle, .libre span { padding: 3px 7px; font-size: 11px; border-radius: 9px; }
+    .toi .bulle, .libre span { padding: 3px 7px; font-size: 11px; border-radius: var(--rayon); }
     .toi svg { width: 22px; height: 22px; }
     .libre i { width: 18px; height: 18px; }
     .marque-jumeau span { padding: 2px 6px; font-size: 10px; }

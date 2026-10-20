@@ -267,7 +267,7 @@ const nLots = lotsDuParcours();
     text-transform: uppercase; color: var(--violet); }
   .puce-resultat { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
     border-radius: 999px; font-family: var(--police-titre); font-weight: 600; font-size: 14px;
-    letter-spacing: 0.06em; text-transform: uppercase; background: #EFE9FF; color: var(--violet-fonce); }
+    letter-spacing: 0.06em; text-transform: uppercase; background: var(--panneau-2); color: var(--violet-fonce); }
   .resultat { position: relative; }
   .confetti { position: absolute; }
   .c1 { left: -26px; top: -18px; width: 14px; height: 14px; border-radius: 4px; background: var(--abstention); transform: rotate(18deg); }
@@ -278,10 +278,10 @@ const nLots = lotsDuParcours();
     letter-spacing: -0.02em; outline: none; }
   .phrase { margin: 0 0 18px; font-size: 18px; line-height: 1.5; color: var(--gris); }
   .phrase b { color: var(--texte); }
-  .jumeau { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 22px; border: 2px solid #C9B8FF;
-    background: #FBF9FF; box-shadow: 0 5px 0 #E3DAFF; color: inherit; text-decoration: none; }
+  .jumeau { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: var(--rayon); border: 2px solid var(--filet);
+    background: var(--panneau-2); box-shadow: 0 5px 0 var(--filet); color: inherit; text-decoration: none; }
   .jumeau:hover { border-color: var(--violet); color: inherit; }
-  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: 18px;
+  .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; border-radius: var(--rayon);
     background: var(--violet); color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 21px;
     box-shadow: 0 4px 0 var(--violet-fonce); }
   .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -295,29 +295,29 @@ const nLots = lotsDuParcours();
   .groupes :global(li) { display: grid; grid-template-columns: 70px minmax(0, 1fr) 52px; gap: 12px; align-items: center; }
   .groupes :global(.sigle) { font-size: 16px; text-decoration: none; }
   .groupes :global(.jauge) { height: 12px; border-radius: 999px; background: var(--bord-leger); overflow: hidden; }
-  .groupes :global(.jauge span) { display: block; height: 100%; border-radius: 999px; background: #A98BFF; }
+  .groupes :global(.jauge span) { display: block; height: 100%; border-radius: 999px; background: var(--ivoire-2); }
   .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 700; font-size: 16px; color: var(--violet-fonce); }
-  .precision { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 16px; border-radius: 16px; background: var(--fond-doux); }
+  .precision { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 16px; border-radius: var(--rayon); background: var(--fond-doux); }
   .precision-titre { font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); }
   .precision > :global(.jauge-precision) { flex: 1; }
   .note { margin: 6px 0 0; font-size: 14px; color: var(--gris-legende); }
   .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
   .b-principal { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
-    gap: 2px; min-height: 74px; padding: 0 24px; border-radius: 18px; background: var(--violet); color: #fff;
+    gap: 2px; min-height: 74px; padding: 0 24px; border-radius: var(--rayon); background: var(--violet); color: #fff;
     box-shadow: 0 6px 0 var(--violet-fonce); text-decoration: none; font-family: var(--police-titre); font-weight: 600;
     font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; }
   .b-principal:hover { color: #fff; background: var(--violet-fonce); }
   .b-principal .petit { color: #fff; opacity: .85; font-family: var(--police-texte); font-weight: 700; text-transform: none;
     letter-spacing: 0; font-size: 14px; }
   .b-partager { flex: 0 0 170px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 74px;
-    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond); box-shadow: 0 4px 0 var(--bord);
+    border: 2px solid var(--bord); border-radius: var(--rayon); background: var(--fond); box-shadow: 0 4px 0 var(--bord);
     font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--violet-fonce); cursor: pointer; }
   @media (max-width: 640px) { .b-partager { flex: 1 1 100%; } }
   .recommencer { margin: 16px 0 0; font-size: 15px; color: var(--gris); }
   .recommencer button { border: 0; background: none; padding: 0; font: inherit; color: var(--violet-fonce); text-decoration: underline; cursor: pointer; }
 
-  .partage { width: min(1000px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; border-radius: 32px;
+  .partage { width: min(1000px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; border-radius: var(--rayon);
     padding: 28px clamp(18px, 3vw, 36px); box-shadow: 0 8px 0 #C9CFDA; }
   .partage::backdrop { background: rgba(31, 36, 51, 0.55); }
   .partage-tete { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
@@ -327,7 +327,7 @@ const nLots = lotsDuParcours();
     border: 2px solid var(--bord); background: var(--fond); color: var(--gris); cursor: pointer; }
   .stories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
   .stories figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
-  .stories img { width: 100%; aspect-ratio: 9 / 16; border-radius: 18px; background: var(--fond-doux); object-fit: cover; }
-  .stories button { width: 100%; min-height: 46px; border: 2px solid #C9B8FF; border-radius: 14px; background: var(--fond);
+  .stories img { width: 100%; aspect-ratio: 9 / 16; border-radius: var(--rayon); background: var(--fond-doux); object-fit: cover; }
+  .stories button { width: 100%; min-height: 46px; border: 2px solid var(--filet); border-radius: var(--rayon); background: var(--fond);
     font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); cursor: pointer; }
 </style>

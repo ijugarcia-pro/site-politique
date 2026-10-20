@@ -109,7 +109,7 @@ Source : `project/tokens.json` du design system ; repli ci-dessous.
 Proposées par Claude le 20 octobre ; Julien les a acceptées sans avoir pu les lire (elles ne s'étaient pas affichées). **À reconfirmer** avant le lot qui en dépend.
 
 1. **GSAP non installé** (lot 4) : le prototype ne s'en sert que pour un mouvement de caméra et prévoit déjà de s'en passer ; une interpolation maison en `power2.inOut` (une quarantaine de lignes) évite environ 27 Ko.
-2. **Playwright** (dès le lot 1) en dépendance de développement, en version exacte, pour les captures de chaque PR et les images fixes. Il télécharge un navigateur d'environ 150 Mo sur le poste, hors du projet : gratuit, mais à accepter explicitement.
+2. **Playwright** *(accepté par Julien le 20 oct. ; installé au lot 1)* (dès le lot 1) en dépendance de développement, en version exacte, pour les captures de chaque PR et les images fixes. Il télécharge un navigateur d'environ 150 Mo sur le poste, hors du projet : gratuit, mais à accepter explicitement.
 3. **Matières précalculées** (lot 4a) : si la mesure confirme la lenteur sur téléphone, un script versionné exécute `textures.js` une fois, en dev, dans le navigateur de Playwright, et écrit des webp dans `public/` (environ 2 à 4 Mo, chargés seulement avec la 3D, mis en cache). Sinon, calcul dans un worker pendant les temps morts.
 4. **Pas de fil de lumière** (lot 5) : assis sur le siège du jumeau, le personnage n'a plus de fil vers lui ; la plaquette du jumeau s'éclaire sous lui, et le 578e fauteuil reste vide au pied de la tribune une fois le personnage installé.
 5. **Prototype versionné** dans `docs/salle-3d/` (fait au lot 0), porté dans `site/src/salle3d/` au lot 4.

@@ -27,10 +27,10 @@ const { grand = false } = Astro.props;
   .grand .jp-pct { order: 0; flex-basis: 100%; font-size: 40px; line-height: 1; color: var(--violet-fonce); }
   .jp-piste { order: 1; position: relative; flex: 1; min-width: 80px; height: 14px; border-radius: 999px;
     background: #ECEEF3; overflow: hidden; }
-  .jp-plein { position: absolute; inset: 0; background: var(--violet); box-shadow: inset 0 4px 0 rgba(255,255,255,.28);
+  .jp-plein { position: absolute; inset: 0; background: var(--lumiere); box-shadow: inset 0 4px 0 rgba(255,255,255,.28);
     transform-origin: left; transform: scaleX(0); }
   .jp-encoche { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #FFFFFF; }
-  .jp-fiable { order: 3; padding: 3px 10px; border-radius: 999px; background: #1F2433; color: #FFFFFF;
+  .jp-fiable { order: 3; padding: 3px 10px; border-radius: 999px; background: var(--ivoire); color: var(--nuit);
     font-family: var(--police-titre); font-weight: 600; font-size: 13px; }
   .jp-fiable:global(.apparait) { animation: fiable 450ms var(--ease-doux) 500ms both; }
   @keyframes fiable { 0% { transform: scale(.3) rotate(-8deg); opacity: 0; }

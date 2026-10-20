@@ -428,7 +428,7 @@ const resume = mode === 'vote' && censure
     max-width: 100%;
     margin: 0 0 18px auto;
     padding: 4px;
-    border-radius: 14px;
+    border-radius: var(--rayon);
     background: var(--fond);
     border: 2px solid var(--bord);
   }
@@ -436,7 +436,7 @@ const resume = mode === 'vote' && censure
     min-height: 40px;
     padding: 0 12px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--rayon);
     background: transparent;
     font-family: var(--police-titre);
     font-weight: 600;
@@ -464,7 +464,7 @@ const resume = mode === 'vote' && censure
   .repere-texte {
     display: block;
     padding: 4px 10px;
-    border-radius: 10px;
+    border-radius: var(--rayon);
     background: var(--texte);
     color: #fff;
     font-family: var(--police-titre);
@@ -477,7 +477,7 @@ const resume = mode === 'vote' && censure
     .filtres button { padding: 4px 6px; font-size: 13px; line-height: 1.1; }
   }
   @media (prefers-reduced-motion: reduce) { .siege { transition: none; } }
-  .zone { border-radius: 16px; touch-action: manipulation; }
+  .zone { border-radius: var(--rayon); touch-action: manipulation; }
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .etiquettes text {
     font-family: var(--police-titre);

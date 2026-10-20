@@ -1,107 +1,107 @@
 {
  "/": {
-  "js": 18500,
-  "js_gzip": 7550,
-  "css": 34518,
-  "css_gzip": 6259,
-  "modules": 12
+  "js": 18564,
+  "js_gzip": 7574,
+  "css": 31593,
+  "css_gzip": 5913,
+  "modules": 13
  },
  "/404/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 23500,
-  "css_gzip": 4615,
+  "css": 20579,
+  "css_gzip": 4314,
   "modules": 4
  },
  "/calcul/": {
   "js": 4253,
   "js_gzip": 2028,
-  "css": 23500,
-  "css_gzip": 4615,
+  "css": 20579,
+  "css_gzip": 4314,
   "modules": 4
  },
  "/confidentialite/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 23500,
-  "css_gzip": 4615,
+  "css": 20579,
+  "css_gzip": 4314,
   "modules": 4
  },
  "/deputes/": {
   "js": 10660,
   "js_gzip": 4585,
-  "css": 30180,
-  "css_gzip": 5631,
+  "css": 27238,
+  "css_gzip": 5286,
   "modules": 7
  },
  "/deputes/[uid]/": {
   "js": 6376,
   "js_gzip": 2684,
-  "css": 34776,
-  "css_gzip": 6237,
+  "css": 31835,
+  "css_gzip": 5887,
   "modules": 5
  },
  "/etat/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 23500,
-  "css_gzip": 4615,
+  "css": 20579,
+  "css_gzip": 4314,
   "modules": 4
  },
  "/explorer/": {
   "js": 7378,
   "js_gzip": 3100,
-  "css": 31932,
-  "css_gzip": 5942,
+  "css": 29008,
+  "css_gzip": 5596,
   "modules": 6
  },
  "/hemicycle/": {
-  "js": 24120,
-  "js_gzip": 9509,
-  "css": 41374,
-  "css_gzip": 7324,
-  "modules": 12
+  "js": 24184,
+  "js_gzip": 9523,
+  "css": 38400,
+  "css_gzip": 6989,
+  "modules": 13
  },
  "/lots/": {
   "js": 23623,
   "js_gzip": 8902,
-  "css": 51643,
-  "css_gzip": 8992,
+  "css": 48697,
+  "css_gzip": 8655,
   "modules": 11
  },
  "/mentions-legales/": {
   "js": 3832,
   "js_gzip": 1877,
-  "css": 23500,
-  "css_gzip": 4615,
+  "css": 20579,
+  "css_gzip": 4314,
   "modules": 4
  },
  "/quiz/": {
-  "js": 28703,
-  "js_gzip": 10787,
-  "css": 53540,
-  "css_gzip": 9173,
-  "modules": 11
+  "js": 26579,
+  "js_gzip": 10106,
+  "css": 50594,
+  "css_gzip": 8832,
+  "modules": 12
  },
  "/seance/": {
   "js": 24540,
   "js_gzip": 9112,
-  "css": 51643,
-  "css_gzip": 8992,
+  "css": 48697,
+  "css_gzip": 8655,
   "modules": 12
  },
  "/verdict/": {
-  "js": 23370,
-  "js_gzip": 9260,
-  "css": 41256,
-  "css_gzip": 7419,
-  "modules": 11
+  "js": 23434,
+  "js_gzip": 9267,
+  "css": 38310,
+  "css_gzip": 7093,
+  "modules": 12
  },
  "/votes/[numero]/": {
   "js": 9206,
   "js_gzip": 3833,
-  "css": 39679,
-  "css_gzip": 7206,
+  "css": 36732,
+  "css_gzip": 6857,
   "modules": 6
  }
 }

@@ -25,7 +25,7 @@ const cartes = votes.map((v) => {
     theme: v.carte?.theme ?? 'Vote solennel', question: q.question, concretement: q.concretement,
     quand: quandVote(v) };
 });
-const puces = votes.map((v) => (v.carte ? puceTheme(v.carte.theme) : '#EFE9FF:#5B33D6'));
+const puces = votes.map((v) => (v.carte ? puceTheme(v.carte.theme) : '#B3132F:#FFFFFF'));
 const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
   'oct.', 'nov.', 'déc.'];
 const tampon = `${Number(sem.lundi.slice(8, 10))} ${MOIS_COURTS[Number(sem.lundi.slice(5, 7)) - 1]}`;

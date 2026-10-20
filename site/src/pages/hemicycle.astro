@@ -386,19 +386,19 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .salle { flex: 1.35 1 620px; min-width: 0; padding: 24px; border-radius: var(--rayon); background: var(--panneau); border: 1px solid var(--filet); }
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
   .titre-section h1 { font-size: 32px; text-transform: uppercase; }
-  .titre-section span { font-size: 14px; color: var(--gris-legende); }
+  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
   .cadre-salle { margin-top: 12px; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 16px 0 0; padding: 0;
-    list-style: none; font-size: 14px; color: var(--texte-doux); }
+    list-style: none; font-size: 14px; color: var(--ivoire); }
   .legende li { display: inline-flex; align-items: center; gap: 7px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
   .legende .sans { background: var(--panneau); border: 2px solid; }
-  .aide-survol { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--gris-legende); }
+  .aide-survol { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--ivoire-2); }
   @media (hover: none) { .aide-survol { display: none; } }
 
   .cote { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
   .encadre { padding: 22px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau); }
-  .encadre p { margin: 8px 0 0; font-size: 15px; line-height: 1.5; color: var(--gris); }
+  .encadre p { margin: 8px 0 0; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
   .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--lumiere); }
   .place-titre { margin-top: 6px; font-family: var(--police-titre); font-weight: 600; font-size: 34px; line-height: 1.02; text-transform: uppercase; }
@@ -435,7 +435,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .jumeau { background: var(--panneau-2); }
   .personne .sur-titre { display: block; font-size: 12px; }
   .oppose .sur-titre, .depute .sur-titre { color: var(--ivoire-2); }
-  .depute .sur-titre { color: var(--gris-legende); }
+  .depute .sur-titre { color: var(--ivoire-2); }
   .personne-ligne { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
   .avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: var(--rayon);
     border: 2px solid var(--ivoire); color: var(--ivoire); font-family: var(--police-titre); font-weight: 600; font-size: 18px; }
@@ -443,10 +443,10 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .oppose .avatar, .depute .avatar { border-color: var(--ivoire-2); }
   .personne-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .nom { font-family: var(--police-titre); font-weight: 600; font-size: 21px; line-height: 1.15; text-transform: uppercase; }
-  .detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; font-size: 13px; color: var(--gris-legende); }
+  .detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; font-size: 13px; color: var(--ivoire-2); }
   .score { font-family: var(--police-titre); font-weight: 600; font-size: 28px; color: var(--ivoire); font-variant-numeric: tabular-nums; }
-  .depute .score { color: var(--texte); }
-  .phrase { display: block; margin-top: 12px; font-size: 14px; color: var(--gris); }
+  .depute .score { color: var(--ivoire); }
+  .phrase { display: block; margin-top: 12px; font-size: 14px; color: var(--ivoire-2); }
 
   .groupes-bloc { flex: 1.2 1 560px; min-width: 0; padding: 22px 24px; align-self: flex-start; }
   .groupes-bloc h2 { margin: 0 0 6px; font-size: 22px; }
@@ -465,12 +465,12 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .compteur { font-family: var(--police-titre); font-weight: 600; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
   .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
   .liste-reponses :global(li) { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
-  .liste-reponses :global(a) { color: var(--texte); text-decoration: none; line-height: 1.35; }
+  .liste-reponses :global(a) { color: var(--ivoire); text-decoration: none; line-height: 1.35; }
   .liste-reponses :global(a:hover) { color: var(--ivoire); text-decoration: underline; }
   .liste-reponses :global(.pastille) { flex: none; padding: 2px 8px; border-radius: 8px; font-family: var(--police-titre); font-weight: 600; font-size: 12px; color: #fff; }
   .liste-reponses :global(.p-pour) { background: var(--pour); }
   .liste-reponses :global(.p-contre) { background: #E5552A; }
-  .discret { font-size: 13px !important; color: var(--gris) !important; }
+  .discret { font-size: 13px !important; color: var(--ivoire-2) !important; }
 
   @media (max-width: 600px) {
     .salle { padding: 18px 12px; }

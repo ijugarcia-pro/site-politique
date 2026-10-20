@@ -77,27 +77,6 @@
   --accord-3: #8A5A12;
 }
 
-/* Les noms de la charte V5, gardés le temps de la migration (lots 1 à 6) : chaque page les
-   utilise encore dans ses styles. Ils pointent vers les jetons de « La Séance » et seront
-   retirés au lot 6, quand plus aucune page ne s'en sert. */
-:root.theme-seance, .theme-seance, :root.theme-jour, .theme-jour {
-  --violet: var(--direct);
-  --violet-fonce: var(--ivoire);
-  --violet-encre: var(--lumiere);
-  --violet-pale: var(--filet);
-  --violet-voile: var(--panneau-2);
-  --texte: var(--ivoire);
-  --texte-doux: var(--ivoire);
-  --gris: var(--ivoire-2);
-  --gris-legende: var(--ivoire-2);
-  --bord: var(--filet);
-  --bord-leger: var(--filet);
-  --fond: var(--panneau);
-  --fond-doux: var(--panneau-2);
-  --jaune-pale: var(--panneau-2);
-  --jaune-encre: var(--ivoire);
-}
-
 * { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }

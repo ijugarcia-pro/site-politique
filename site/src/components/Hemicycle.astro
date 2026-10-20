@@ -453,7 +453,7 @@ const resume = mode === 'vote' && censure
   .cadre[data-filtre='jumeau'] .siege:not(.choisi),
   .cadre[data-filtre='jumeau'] .cercle-dissident { opacity: 0.16; }
   .siege { transition: opacity 0.15s; }
-  .siege.choisi { stroke: var(--texte); stroke-width: 2.5; }
+  .siege.choisi { stroke: var(--ivoire); stroke-width: 2.5; }
   .repere {
     position: absolute;
     z-index: 2;
@@ -487,15 +487,15 @@ const resume = mode === 'vote' && censure
   .etiquettes .arc { fill: none; stroke-width: 5; stroke-linecap: round; }
   .siege { stroke: var(--panneau); stroke-width: 0.8; cursor: pointer; }
   .siege.vacant { stroke: var(--ivoire-2); stroke-width: 1.4; stroke-dasharray: 2.5 2; }
-  .cercle-dissident { fill: none; stroke: var(--texte); stroke-width: 1.9; }
+  .cercle-dissident { fill: none; stroke: var(--ivoire); stroke-width: 1.9; }
   .curseur { fill: none; stroke: var(--ivoire); stroke-width: 3; pointer-events: none;
     visibility: hidden; }
   .curseur.visible { visibility: visible; }
   .centre-chiffres { font-family: var(--police-titre); font-weight: 600; font-size: 48px; font-variant-numeric: tabular-nums;
-    fill: var(--texte); }
-  .centre-legende { font-size: 19px; fill: var(--gris-legende); }
+    fill: var(--ivoire); }
+  .centre-legende { font-size: 19px; fill: var(--ivoire-2); }
   .info { min-height: 1.6em; margin: 10px 0 0; text-align: center; font-size: 15px;
-    color: var(--texte-doux); }
+    color: var(--ivoire); }
   .legende {
     display: flex;
     flex-wrap: wrap;
@@ -505,11 +505,11 @@ const resume = mode === 'vote' && censure
     padding: 0;
     list-style: none;
     font-size: 14px;
-    color: var(--texte-doux);
+    color: var(--ivoire);
   }
   .legende li { display: inline-flex; align-items: center; gap: 6px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--texte); }
+  .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--ivoire); }
   .groupes { font-family: var(--police-titre); font-weight: 600; }
   .legende .vide { background: var(--panneau); border: 1.5px dashed var(--ivoire-2); }
   .detail { margin-top: 16px; }
@@ -524,7 +524,7 @@ const resume = mode === 'vote' && censure
     align-items: center;
   }
   .detail .tableau { margin-top: 8px; }
-  .note { font-size: 14px; color: var(--gris); margin: 10px 0 0; }
+  .note { font-size: 14px; color: var(--ivoire-2); margin: 10px 0 0; }
   abbr { text-decoration: none; }
   @media (max-width: 600px) {
     .etiquettes { display: none; }

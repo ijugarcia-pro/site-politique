@@ -3,6 +3,8 @@
 Projet : « Le 578e siège » (Astro 7 statique, Cloudflare Pages, zéro euro).
 Demande de Julien du 20 octobre 2026 : appliquer au vrai site la direction artistique « La Séance », **sans toucher à la mécanique** (données, calculs, stockage, pipeline). Décision : docs/decisions.md, 20 oct. Suivi : docs/PLANNING.md, tâches t56 à t62.
 
+> **Suite (design définitif, 20-21 oct. 2026, t63 à t70)** : l'application écran par écran des maquettes V6C suit docs/design-final/DESIGN-FINAL.md (règles, typographie, couleurs par rôle, gabarits) et docs/design-final/PLAN-LOTS.md (lots D0 à D6). Le contrat (§ 2) et les écarts décidés (§ 8) de ce fichier restent valables et priment.
+
 ## Mode d'emploi
 
 - Lis `CLAUDE.md`, `docs/decisions.md`, `docs/PLANNING.md`, puis ce fichier et `docs/base-technique-site.md` (inventaire de la base technique au 20 oct.).

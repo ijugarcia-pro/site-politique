@@ -5,8 +5,8 @@
 // Il signale aussi, sans échouer, deux aides à la liste de contrôle du § 9 : les coins arrondis
 // (rayon ni nul ni en pilule) et les éléments en couleur « lumière » (réservée à toi).
 //
-// Le contrôle échoue (code 1) tant qu'il reste une faute : c'est voulu, il doit être vert à la
-// fin du lot D5 (docs/design-final/PLAN-LOTS.md). Il lit le build (site/dist par défaut).
+// Le contrôle échoue (code 1) s'il reste une faute. Vert depuis le lot D1, il est bloquant depuis
+// le lot D6 : `npm run test:inventaire` le lance après l'inventaire. Il lit le build (site/dist).
 //
 // Usage (depuis site/) :
 //   npm run test:typo

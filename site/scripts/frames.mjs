@@ -5,7 +5,7 @@
 // députés) sont coupées à 4 000 px, les autres à 8 000.
 //
 // Usage (depuis site/) :
-//   node scripts/frames.mjs <sortie> [build] [--gpu] [--ecrans=01,16,19] [--appareils=ordinateur]
+//   node scripts/frames.mjs <sortie> [build] [--gpu | --sans-webgl] [--ecrans=01,16,19] [--appareils=ordinateur]
 //   ex. node scripts/frames.mjs ../captures-d0 --gpu --ecrans=01,02
 
 import { mkdirSync } from 'node:fs';
@@ -19,7 +19,7 @@ const [sortie, dossier] = opts.reste;
 if (!sortie) { console.error('Usage : node scripts/frames.mjs <sortie> [build] [--gpu] [--ecrans=…] [--appareils=…]'); process.exit(1); }
 const serveur = await servir(resolve(dossier ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
-const navigateur = await lancer({ gpu: opts.gpu });
+const navigateur = await lancer({ gpu: opts.gpu, sansWebgl: opts.sansWebgl });
 
 for (const [appareil, largeur, hauteur] of APPAREILS.filter(([a]) => opts.appareils.includes(a))) {
   const dir = join(sortie, appareil);

@@ -29,9 +29,10 @@ const SITE = 'le578esiege.pages.dev';
 // Les jetons du thème « Séance ».
 const NUIT = '#0C0D10', PANNEAU = '#16181D', PANNEAU_2 = '#1F2229', FILET = '#2E313A';
 const IVOIRE = '#F2EEE6', IVOIRE_2 = '#ABA69C', DIRECT = '#B3132F', LUMIERE = '#F2C98A';
-/** Les teintes de l'hémicycle personnel (lib/profil.ts) deviennent des intensités de lumière. */
+/** Les teintes de l'hémicycle personnel (lib/profil.ts) deviennent des intensités d'ivoire, comme
+ *  sur le site (décision du 20 oct. 2026) : la lumière ne désigne que toi (l'anneau de ta place). */
 const TEINTES: Record<string, string> = {
-  '#DFE3EB': '#3A3D45', '#D9CCFF': '#6B5536', '#A98BFF': '#A9844F', '#6A3DF0': LUMIERE, '#FFFFFF': '#2A2D33',
+  '#DFE3EB': '#3A3D45', '#D9CCFF': '#6E6B66', '#A98BFF': '#A9A49B', '#6A3DF0': IVOIRE, '#FFFFFF': '#2A2D33',
 };
 
 function lignes(ctx: CanvasRenderingContext2D, texte: string, largeur: number): string[] {

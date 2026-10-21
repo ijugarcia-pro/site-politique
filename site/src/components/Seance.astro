@@ -198,7 +198,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     grid-template-areas: 'cameras gauche' 'panneau gauche'; gap: 24px 48px; align-items: start; }
   .cameras-deco { grid-area: cameras; display: flex; flex-wrap: wrap; gap: 8px; }
   .cameras-deco > span { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: var(--rayon-puce);
-    border: 1px solid rgba(242, 238, 230, 0.28); background: rgba(12, 13, 16, 0.6); color: var(--ivoire);
+    border: 1px solid rgba(242, 238, 230, 0.28); background: var(--voile); color: var(--ivoire);
     font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
   .cameras-deco .actif { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
   .cameras-deco .actif::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--direct); }
@@ -228,7 +228,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
      panneau de vote monte en feuille. */
   @media (max-width: 640px) {
     :global(body.focus)::before { background: linear-gradient(180deg, rgba(12, 13, 16, 0) 0, rgba(12, 13, 16, 0) 30vh, var(--nuit) 40vh),
-      url('/salle3d/fond-tribune-telephone.webp') center top / 100% auto no-repeat, var(--nuit); }
+      url('/salle3d/fond-tribune-telephone.webp') center -26vh / 100% auto no-repeat, var(--nuit); }
     :global(main.page.focus) { padding: 0 0 16px; }
     .quiz { gap: 0; }
     .cameras-deco { flex-wrap: nowrap; justify-content: center; gap: 6px; padding: calc(40vh - 120px) 16px 12px; }

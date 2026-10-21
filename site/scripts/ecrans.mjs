@@ -26,20 +26,23 @@ export const APPAREILS = [['ordinateur', 1440, 900], ['telephone', 390, 844]];
  * Windows : c'est ce qu'il faut pour juger les couleurs) ou en WebGL logiciel (lent, couleurs
  * approximatives, mais partout disponible).
  */
-export function lancer({ gpu = false } = {}) {
+export function lancer({ gpu = false, sansWebgl = false } = {}) {
+  // Sans WebGL : la salle 3D ne s'ouvre pas, le repli (image fixe ou hémicycle SVG) reste affiché.
+  if (sansWebgl) return chromium.launch({ args: ['--disable-3d-apis'] });
   return chromium.launch({ args: gpu
     ? ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']
     : ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'] });
 }
 
 /**
- * Lit les options communes de la ligne de commande : `--gpu`, `--ecrans=01,16,19` (préfixes des
+ * Lit les options communes de la ligne de commande : `--gpu`, `--sans-webgl`, `--ecrans=01,16,19` (préfixes des
  * noms d'écran) et `--appareils=ordinateur` ; le reste est rendu tel quel, dans l'ordre.
  */
 export function options(argv) {
-  const opts = { gpu: false, ecrans: null, appareils: APPAREILS.map(([a]) => a), reste: [] };
+  const opts = { gpu: false, sansWebgl: false, ecrans: null, appareils: APPAREILS.map(([a]) => a), reste: [] };
   for (const a of argv) {
     if (a === '--gpu') opts.gpu = true;
+    else if (a === '--sans-webgl') opts.sansWebgl = true;
     else if (a.startsWith('--ecrans=')) opts.ecrans = a.slice(9).split(',').filter(Boolean);
     else if (a.startsWith('--appareils=')) opts.appareils = a.slice(12).split(',').filter(Boolean);
     else opts.reste.push(a);

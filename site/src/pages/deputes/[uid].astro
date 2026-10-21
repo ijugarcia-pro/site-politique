@@ -33,10 +33,11 @@ const dissidences = votes.filter((v) => v.dissident).length;
 const reperes = medianes();
 const compo = composition();
 const siege = compo.sieges.findIndex((s) => s.depute === uid);
-const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
-  : s.groupe === d.groupe ? '#A98BFF' : '#DCE0E8');
-const membres = compo.sieges.filter((s) => s.groupe === d.groupe).length;
 const couleur = couleurGroupe(compo.groupes.find((g) => g.uid === d.groupe)?.couleur);
+// Le groupe du député, à la couleur que l'Assemblée lui associe ; les autres sièges éteints.
+const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
+  : s.groupe === d.groupe ? couleur : '#D8D5CD');
+const membres = compo.sieges.filter((s) => s.groupe === d.groupe).length;
 const censures = votes.filter((v) => v.s.motion_censure).map((v) => v.uid);
 const libelleVote = (vote: Position, censure: boolean) => censure
   ? (vote === 'pour' ? 'pour la censure' : vote === 'absent' ? "ne l'a pas votée" : LIBELLES[vote])
@@ -184,9 +185,9 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
         <section class="encadre gris" aria-labelledby="titre-siege">
           <h2 id="titre-siege">Où {elle ? 'elle' : 'il'} siège</h2>
           <MiniHemicycle couleurs={couleurs} marque={siege}
-            titre={`Hémicycle : le siège de ${nom}, entouré, parmi les ${membres} membres de son groupe, en violet`} />
+            titre={`Hémicycle : le siège de ${nom}, entouré, parmi les ${membres} membres de son groupe, à la couleur du groupe`} />
           <p>
-            Entouré{e}, son siège ; en violet, les {membres} membres de son groupe
+            Entouré{e}, son siège ; à la couleur du groupe, les {membres} membres de son groupe
             {d.sigle ? ` (${d.sigle})` : ''}. Sur les votes de cette page, {elle ? 'elle' : 'il'} a voté
             contre la majorité de son groupe <strong>{dissidences} fois</strong>.
           </p>
@@ -312,7 +313,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
 </script>
 
 <style>
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--gris-legende); }
+  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--ivoire-2); }
   .fil a { text-decoration: none; font-weight: 700; }
   .fil a:hover { text-decoration: underline; }
 
@@ -322,15 +323,13 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     align-items: center;
     gap: 10px 14px;
     padding: 14px 18px;
-    border-radius: 20px;
-    background: #F3EEFF;
-    border: 2px solid #E3DAFF;
+    background: var(--panneau-2);
     font-size: 16px;
   }
-  .bandeau-mien a { margin-left: auto; font-family: var(--police-titre); font-weight: 600; }
+  .bandeau-mien a { margin-left: auto; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
   .coche {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%; background: #1CB37A; color: #fff; font-weight: 700;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--ivoire); color: var(--nuit); font-weight: 700;
   }
 
   .identite {
@@ -339,41 +338,26 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     align-items: center;
     gap: 22px 32px;
     padding: clamp(20px, 2.6vw, 28px);
-    border: 2px solid var(--bord);
-    border-radius: 28px;
-    box-shadow: 0 6px 0 var(--bord);
+    background: var(--panneau);
   }
-  .avatar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: clamp(80px, 9vw, 108px);
-    height: clamp(80px, 9vw, 108px);
-    border-radius: 30px;
-    background: var(--violet-voile);
-    color: var(--violet-fonce);
-    box-shadow: 0 6px 0 var(--violet-pale);
-    font-family: var(--police-titre);
-    font-weight: 700;
-    font-size: clamp(30px, 3.4vw, 38px);
-  }
+  /* Pas de cercle à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
+  .avatar { display: none; }
   .identite-texte { flex: 1 1 340px; min-width: 0; }
-  .identite h1 { font-size: clamp(30px, 3.6vw, 42px); overflow-wrap: anywhere; }
+  /* Le nom du député, en Literata (DESIGN-FINAL.md, § 6). */
+  .identite h1 { font-size: clamp(30px, 3vw, 34px); overflow-wrap: anywhere; }
   .puces { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .puces span {
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 14px;
+    padding: 6px 12px;
+    font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-  .puce-groupe { display: inline-flex; align-items: center; gap: 8px; background: var(--fond);
-    border: 2px solid var(--c); color: var(--texte); }
+  .puce-groupe { display: inline-flex; align-items: center; gap: 8px; background: var(--panneau);
+    border: 1px solid var(--c); color: var(--ivoire); }
   .puce-groupe::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-  .puce-gris { background: var(--fond-doux); color: var(--texte-doux); }
-  .puce-fin { background: #FFE6DA; color: #9C3207; }
-  .depuis { margin: 10px 0 0; font-size: 15px; color: var(--gris); }
+  .puce-gris { background: var(--panneau-2); color: var(--ivoire); }
+  .puce-fin { background: var(--panneau-2); color: var(--ivoire); border: 1px dashed var(--ivoire-2); }
+  .depuis { margin: 10px 0 0; font-size: 15px; color: var(--ivoire-2); }
   .identite-cote { flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .anneau {
     --pct: 0%;
@@ -383,63 +367,59 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     width: 116px;
     height: 116px;
     border-radius: 50%;
-    background: conic-gradient(var(--violet) 0 var(--pct), var(--bord-leger) var(--pct) 100%);
+    background: conic-gradient(var(--ivoire) 0 var(--pct), var(--filet) var(--pct) 100%);
   }
   .anneau-interieur {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 88px; height: 88px; border-radius: 50%; background: var(--fond);
+    width: 88px; height: 88px; border-radius: 50%; background: var(--panneau);
   }
   .anneau-pct { font-family: var(--police-titre); font-weight: 700; font-size: 26px; line-height: 1; }
-  .anneau-legende { font-size: 12px; color: var(--gris); }
-  .anneau-note { margin: 0; font-size: 13px; color: var(--gris); }
+  .anneau-legende { font-size: 12px; color: var(--ivoire-2); }
+  .anneau-note { margin: 0; font-size: 13px; color: var(--ivoire-2); }
   .mon-depute {
     min-height: 50px;
     padding: 0 20px;
-    border: 2px solid #C9B8FF;
-    border-radius: 16px;
-    background: var(--fond);
-    box-shadow: 0 4px 0 #E3DAFF;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 15px;
-    color: var(--violet-fonce);
+    border: 1px solid var(--ivoire-2);
+    background: var(--panneau);
+    font: 600 15px/1 var(--police-titre);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ivoire);
     cursor: pointer;
   }
-  .mon-depute[aria-pressed='true'] { background: #DFF7EC; border-color: #9BE3C4; color: #0C7F57; box-shadow: 0 4px 0 #BCEBD6; }
+  .mon-depute[aria-pressed='true'] { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
 
-  .stats { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .stats { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 2px; }
   @media (max-width: 1080px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } .stat-sombre { grid-column: 1 / -1; } }
   @media (max-width: 560px) { .stats { grid-template-columns: minmax(0, 1fr); } }
   .stat-sombre {
     display: flex; flex-direction: column; gap: 6px; margin: 0;
-    padding: 18px 22px; border-radius: 22px; background: var(--texte); color: #fff; font-size: 16px;
+    padding: 18px 22px; background: #16181D; color: #F2EEE6; font-size: 16px;
   }
   .stat-sombre .sur-titre {
-    font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--abstention);
+    font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #ABA69C;
   }
-  .stat { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: 22px; }
-  .stat-chiffre { font-family: var(--police-titre); font-weight: 700; font-size: 34px; line-height: 1; }
+  .stat { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; }
+  .stat-chiffre { font-family: var(--police-titre); font-weight: 600; font-size: 48px; line-height: 0.95; font-variant-numeric: tabular-nums; }
   .stat-chiffre .sur { font-size: 18px; opacity: 0.6; }
-  .stat-legende { font-size: 14px; font-weight: 700; }
+  .stat-legende { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   .stat-repere { margin-top: auto; font-size: 13px; opacity: 0.8; }
-  .violet { background: #EFE9FF; color: var(--violet-encre); }
-  .jaune { background: #FFF8E1; color: #7A4A00; }
-  .orange { background: #FFF1E0; color: #7A3F00; }
+  .violet, .jaune, .orange { background: var(--panneau); color: var(--ivoire); }
 
   .mise-en-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
   @media (max-width: 1080px) { .mise-en-page { grid-template-columns: minmax(0, 1fr); } }
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
   .titre-section h2 { font-size: clamp(22px, 2.4vw, 26px); }
-  .titre-section span { font-size: 14px; color: var(--gris); }
-  .aide { margin: 6px 0 12px; font-size: 15px; color: var(--texte-doux); }
+  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
+  .aide { margin: 6px 0 12px; font-size: 15px; color: var(--ivoire); }
   .filtres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .filtres button {
-    min-height: 40px; padding: 0 14px; border: 2px solid var(--bord); border-radius: 999px;
-    background: var(--fond); font-family: var(--police-titre); font-weight: 600; font-size: 14px;
-    color: var(--texte-doux); cursor: pointer;
+    min-height: 40px; padding: 0 14px; border: 1px solid var(--filet);
+    background: var(--panneau); font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ivoire); cursor: pointer;
   }
-  .filtres button[aria-pressed='true'] { background: var(--violet); border-color: var(--violet); color: #fff; }
+  .filtres button[aria-pressed='true'] { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
   @media (max-width: 700px) {
     .filtres { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
     .filtres button { flex: none; }
@@ -457,48 +437,47 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     font-size: 13px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #8A91A3;
+    color: var(--ivoire-2);
   }
   .lignes { margin: 0; padding: 0; list-style: none; }
-  .lignes li { min-height: 64px; padding: 10px 0; border-top: 2px solid var(--bord-leger); }
+  .lignes li { min-height: 64px; padding: 10px 0; border-top: 1px solid var(--filet); }
   .vote-titre { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .vote-titre a {
-    font-family: var(--police-titre); font-weight: 600; font-size: 15px; line-height: 1.3;
-    color: var(--texte); text-decoration: none;
+    font: 500 16px/1.4 var(--police-question);
+    color: var(--ivoire); text-decoration: none;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
-  .vote-titre a:hover { color: var(--violet-fonce); text-decoration: underline; }
-  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--gris); }
+  .vote-titre a:hover { color: var(--ivoire); text-decoration: underline; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--ivoire-2); }
   .etiquette {
-    padding: 2px 8px; border-radius: 999px; background: var(--fond-doux); color: var(--texte-doux);
-    font-family: var(--police-titre); font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 4px 7px; background: var(--panneau-2); color: var(--ivoire);
+    font-family: var(--police-titre); font-weight: 600; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
   }
-  .etiquette.solennel { background: var(--violet-voile); color: var(--violet-fonce); }
-  .etiquette.censure { background: #FFE6DA; color: #9C3207; }
+  .etiquette.solennel { background: var(--direct); color: var(--sur-direct); }
+  .etiquette.censure { background: var(--panneau-2); color: var(--ivoire); border: 1px solid var(--filet); }
   .cellule { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
-  .pastille {
-    padding: 4px 10px; border-radius: 10px; font-family: var(--police-titre); font-weight: 600;
-    font-size: 13px; background: var(--absent); color: var(--texte-doux); white-space: nowrap;
+  /* Un vote : une pastille de 10 px à la couleur du vote et le mot, sans capsule colorée. */
+  .pastille, .toi :global(.pastille) {
+    display: inline-flex; align-items: center; gap: 6px; font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); white-space: nowrap;
   }
-  .p-pour { background: var(--pour); color: #fff; }
-  .p-contre { background: #E5552A; color: #fff; }
-  .p-abstention { background: var(--abstention); color: var(--texte); }
-  .p-non_votant { background: var(--non-votant); color: #fff; }
-  .contre-groupe { font-size: 12px; font-weight: 700; color: var(--violet-fonce); }
-  .mise-au-point { font-size: 12px; color: var(--gris); }
-  .groupe { font-size: 14px; color: var(--texte-doux); }
+  .pastille::before, .toi :global(.pastille)::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--absent); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
+  .p-pour::before, .toi :global(.p-pour)::before { background: var(--pour); box-shadow: none; }
+  .p-contre::before, .toi :global(.p-contre)::before { background: var(--contre); box-shadow: none; }
+  .p-abstention::before { background: var(--abstention); box-shadow: none; }
+  .p-non_votant::before { background: var(--non-votant); box-shadow: none; }
+  .contre-groupe { font-size: 12px; font-weight: 700; color: var(--ivoire); }
+  .mise-au-point { font-size: 12px; color: var(--ivoire-2); }
+  .groupe { font-size: 14px; color: var(--ivoire); }
   .toi { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
   .toi :global(.marque) {
     display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
     border-radius: 50%; font-weight: 700; font-size: 14px; color: #fff;
   }
-  .toi :global(.oui) { background: #1CB37A; }
-  .toi :global(.non) { background: #9AA1B2; }
-  .toi :global(.pastille) {
-    padding: 4px 10px; border-radius: 10px; font-family: var(--police-titre); font-weight: 600; font-size: 13px;
-  }
-  .toi :global(.p-pour) { background: var(--pour); color: #fff; }
-  .toi :global(.p-contre) { background: #E5552A; color: #fff; }
+  /* Même vote que toi : ivoire plein ; vote différent : le gris secondaire (jamais une couleur de vote). */
+  .toi :global(.oui) { background: var(--ivoire); color: var(--nuit); }
+  .toi :global(.non) { background: var(--ivoire-2); }
   @media (max-width: 760px) {
     .entetes { display: none; }
     .lignes li { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 8px; padding: 14px 0; }
@@ -506,22 +485,22 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     .cellule { flex-direction: column; align-items: flex-start; }
     .cellule::before {
       content: attr(data-l); display: block; font-family: var(--police-titre); font-weight: 600;
-      font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #8A91A3;
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2);
     }
   }
-  .vide { padding: 16px; border-radius: 16px; background: var(--fond-doux); color: var(--texte-doux); }
+  .vide { padding: 16px; background: var(--panneau-2); color: var(--ivoire); }
   [data-plus] { margin-top: 14px; }
 
-  .cote { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .cote { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   @media (max-width: 1080px) {
     .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
   }
-  .encadre { padding: 20px 22px; border: 2px solid var(--bord); border-radius: 24px; }
-  .encadre.gris { border: 0; background: var(--fond-doux); }
-  .encadre h2 { font-size: 19px; margin-bottom: 12px; }
-  .encadre p { margin: 10px 0 0; font-size: 15px; color: var(--texte-doux); }
+  .encadre { padding: 20px 22px; background: var(--panneau); }
+  .encadre.gris { background: var(--panneau-2); }
+  .encadre h2 { font-size: 22px; margin-bottom: 12px; }
+  .encadre p { margin: 10px 0 0; font-size: 15px; color: var(--ivoire); }
   .parcours { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .parcours li { display: flex; flex-direction: column; font-size: 15px; }
-  .parcours span { font-size: 13px; color: var(--gris); }
+  .parcours span { font-size: 13px; color: var(--ivoire-2); }
   .note { font-size: 13px !important; }
 </style>

@@ -82,7 +82,7 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
   </section>
 
   <div class="duo">
-    <section aria-labelledby="titre-divisent">
+    <section class="serres" aria-labelledby="titre-divisent">
       <div class="titre-section">
         <h2 id="titre-divisent">Les votes qui divisent</h2>
         <span>Des députés contre leur propre groupe</span>
@@ -264,11 +264,11 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
     gap: 22px 28px;
     align-items: center;
     padding: clamp(20px, 3vw, 30px);
-    border-radius: 30px;
-    background: var(--violet-voile);
+    background: var(--panneau);
   }
   .accroche-texte { flex: 1 1 520px; min-width: 0; }
-  .accroche h1 { font-size: clamp(30px, 3.4vw, 40px); }
+  /* Un titre de page court, en capitales de régie (.t-section). */
+  .accroche h1 { font: 700 clamp(32px, 3.6vw, 48px)/0.95 var(--police-titre); text-transform: uppercase; }
   .accroche .sous-titre { margin: 8px 0 18px; font-size: 17px; }
   .recherche {
     display: flex;
@@ -276,13 +276,11 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
     gap: 12px;
     min-height: 60px;
     padding: 0 20px;
-    border: 2px solid #C9B8FF;
-    border-radius: 18px;
-    background: var(--fond);
-    color: var(--gris-legende);
-    box-shadow: 0 4px 0 #E3DAFF;
+    border: 1px solid var(--filet);
+    background: var(--panneau);
+    color: var(--ivoire-2);
   }
-  .recherche:focus-within { border-color: var(--violet); }
+  .recherche:focus-within { border-color: var(--ivoire); }
   .recherche input {
     flex: 1;
     min-width: 0;
@@ -291,75 +289,67 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
     background: transparent;
     font: inherit;
     font-size: 18px;
-    color: var(--texte);
+    color: var(--ivoire);
   }
-  .res-deputes { margin-top: 10px; padding: 12px 16px; border-radius: 16px; background: var(--fond); border: 2px solid #E3DAFF; }
-  .res-titre { margin: 0 0 6px; font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet); }
+  .res-deputes { margin-top: 10px; padding: 12px 16px; background: var(--panneau-2); }
+  .res-titre { margin: 0 0 6px; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   .res-deputes ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
-  .res-deputes :global(a) { display: block; padding: 6px 4px; border-radius: 10px; font-size: 15px; color: var(--texte-doux); text-decoration: none; }
-  .res-deputes :global(a:hover) { background: var(--fond-doux); }
-  .res-deputes :global(strong) { font-family: var(--police-titre); font-weight: 600; color: var(--texte); }
-  .suggestions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--gris); }
+  .res-deputes :global(a) { display: block; padding: 6px 4px; font-size: 15px; color: var(--ivoire); text-decoration: none; }
+  .res-deputes :global(a:hover) { background: var(--panneau); }
+  .res-deputes :global(strong) { font-weight: 600; color: var(--ivoire); }
+  .suggestions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--ivoire-2); }
   .suggestions button {
     min-height: 36px;
     padding: 0 12px;
-    border-radius: 999px;
-    border: 2px solid #E3DAFF;
-    background: var(--fond);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--violet-fonce);
+    border: 1px solid var(--filet);
+    background: var(--panneau);
+    font: 600 13px/1 var(--police-titre);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ivoire);
     cursor: pointer;
   }
-  .suggestions button:hover { border-color: var(--violet); }
+  .suggestions button:hover { border-color: var(--ivoire-2); }
   .carte-cp {
     flex: 0 1 340px;
     min-width: min(100%, 260px);
-    padding: 20px;
-    border-radius: 24px;
-    background: var(--fond);
-    box-shadow: 0 5px 0 #E3DAFF;
+    padding: 20px 22px;
+    background: var(--panneau-2);
   }
   .carte-cp h2 { font-size: 20px; }
-  .carte-cp p { margin: 4px 0 12px; font-size: 15px; color: var(--gris); }
+  .carte-cp p { margin: 4px 0 12px; font-size: 15px; color: var(--ivoire-2); }
   .cp { display: flex; gap: 8px; }
   .cp input {
     flex: 1;
     min-width: 0;
     min-height: 50px;
     padding: 0 14px;
-    border-radius: 14px;
-    border: 2px solid var(--bord);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 18px;
-    letter-spacing: 0.08em;
-    color: var(--texte);
+    border: 1px solid var(--filet);
+    background: var(--panneau);
+    font: 500 17px/1 var(--police-texte);
+    color: var(--ivoire);
   }
-  .cp input:focus { border-color: var(--violet); outline: none; }
+  .cp input:focus { border-color: var(--ivoire); }
   .cp button {
     min-height: 50px;
-    padding: 0 16px;
+    padding: 0 18px;
     border: 0;
-    border-radius: 14px;
-    background: var(--violet);
+    background: var(--direct);
     color: #fff;
-    box-shadow: 0 4px 0 var(--violet-fonce);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 16px;
+    font: 600 15px/1 var(--police-titre);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     cursor: pointer;
   }
   .carte-cp > a { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 700; }
 
-  .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 2px; align-items: stretch; }
   @media (max-width: 1080px) { .duo { grid-template-columns: minmax(0, 1fr); } }
-  .serres { padding: 18px 20px; border-radius: 26px; background: var(--fond-doux); }
-  .serres :global(.ligne) { border-top-color: #E6E9F0; }
-  .serres :global(.ligne a:hover) { background: var(--fond); }
+  .serres { padding: 20px 22px; background: var(--panneau); }
+  .serres :global(.ligne) { border-top-color: var(--filet); }
+  .serres :global(.ligne a:hover) { background: var(--panneau-2); }
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
-  .titre-section span { font-size: 14px; color: var(--gris); }
+  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
   .liste { margin: 0; padding: 0; list-style: none; }
   /* Dans les deux encarts, la ligne se replie comme sur mobile : ils sont étroits. */
   .duo :global(.ligne a) {
@@ -376,17 +366,18 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
     gap: 8px;
     min-height: 42px;
     padding: 0 14px;
-    border: 2px solid var(--bord);
-    border-radius: 999px;
-    background: var(--fond);
+    border: 1px solid var(--filet);
+    background: var(--panneau);
     font-family: var(--police-titre);
     font-weight: 600;
-    font-size: 15px;
-    color: var(--texte-doux);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ivoire);
     cursor: pointer;
   }
-  .filtres button:hover { border-color: var(--violet-pale); color: var(--violet-fonce); }
-  .filtres button[aria-pressed='true'] { background: var(--violet); border-color: var(--violet); color: #fff; }
+  .filtres button:hover { border-color: var(--ivoire-2); color: var(--ivoire); }
+  .filtres button[aria-pressed='true'] { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
   .n { font-size: 13px; opacity: 0.75; }
   @media (max-width: 700px) {
     /* Sur téléphone, les filtres défilent sur une ligne au lieu d'en occuper trois. */
@@ -394,7 +385,7 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
     .filtres::-webkit-scrollbar { display: none; }
     .filtres button { flex: none; }
   }
-  .vide { padding: 20px; border-radius: 18px; background: var(--fond-doux); color: var(--texte-doux); }
-  .vide button { border: 0; background: none; padding: 0; font: inherit; color: var(--violet-fonce); text-decoration: underline; cursor: pointer; }
+  .vide { padding: 20px; background: var(--panneau-2); color: var(--ivoire); }
+  .vide button { border: 0; background: none; padding: 0; font: inherit; color: var(--ivoire); text-decoration: underline; cursor: pointer; }
   .plus { margin-top: 14px; }
 </style>

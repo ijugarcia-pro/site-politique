@@ -3,7 +3,7 @@
 Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, l'utilisateur tranche 3 vrais votes avant les députés (scrutins solennels annoncés à l'agenda), puis découvre le verdict ; ses réponses dessinent son hémicycle (groupe le plus proche, jumeau parmi les 577, précision).
 
 ## Décisions fixées
-- Direction visuelle : maquette V5 « Le 578e siège » (Fredoka + Nunito, violet #7C4DFF ; pour #2F7BFF, contre #FF6A3D, abstention #FFC531, absent #DFE3EB). Navigation : Cette semaine · Mon hémicycle · Explorer.
+- Direction visuelle : « La Séance » (décision du 20 oct. 2026, remplace la maquette V5) : la salle de l'Assemblée en 3D est le décor, l'interface est une régie télé (bandeaux, puces de caméra, compteurs). Barlow Condensed (régie, toujours en capitales), Literata (questions et intitulés de loi), Barlow (texte) ; rouge de régie #B3132F (action principale, jamais une couleur de texte en thème sombre), lumière #F2C98A (toi seulement : ton siège, ta précision ; ton jumeau en ivoire, l'accord en intensités d'ivoire, décision du 20 oct.) ; pour #2F7BFF, contre #FF6A3D, abstention #FFC531, absent et non-votant éteints mais distincts ; thèmes « Séance » (sombre) et « Jour » (lecture longue). Navigation : Cette semaine · Mon hémicycle · Explorer. Sur l'accueil, le verdict et Mon hémicycle, la salle est plein cadre et la régie posée dessus ; en mode focus, la tribune reste visible derrière le panneau de vote ; en thème Jour, la régie reste sombre. Contrat : docs/refonte-la-seance.md (§ 2 et § 8) ; règles du design définitif (typographie, couleurs par rôle, gabarits, écran par écran) : docs/design-final/DESIGN-FINAL.md.
 - Mode de vote hybride : « Vote avant eux » pour les scrutins solennels (connus à l'avance par l'agenda) ; « Et toi, qu'aurais-tu voté ? » pour tous les autres votes.
 - Données publiques : pipeline de nuit (GitHub Actions) → Python + DuckDB → JSON statiques → Cloudflare Pages. Pas de base de données dans ce chemin. Un build en échec ne publie rien.
 - Calculs personnels dans le navigateur ; réponses en localStorage par défaut (les opinions politiques sont des données sensibles au sens du RGPD).
@@ -33,7 +33,7 @@ Site qui rend accessibles les votes de l'Assemblée nationale : chaque semaine, 
 - data/mesures/ : mesures versionnées (délai de publication…)
 - docs/ : décisions, rapports, inventaires, planning (docs/PLANNING.md)
 - tests/ : tests pytest
-- site/ : le site (Astro), créé plus tard
+- site/ : le site (Astro) ; site/src/salle3d/ : la salle 3D (three, chargée à la demande) ; site/scripts/ : inventaire, captures (`frames.mjs`, `--gpu` pour la vraie carte graphique), planches site / maquette, contrôle de la typographie, matières et images fixes (Playwright) ; site/public/salle3d/ : matières précalculées
 
 ## Planning
 docs/PLANNING.md est la source de vérité : il dit quoi faire, dans quel ordre, et quand une tâche est terminée.
@@ -49,6 +49,7 @@ docs/PLANNING.md est la source de vérité : il dit quoi faire, dans quel ordre,
 - Une tâche du planning = une session. Commence par relire ce fichier, docs/decisions.md et docs/PLANNING.md.
 - Tout le pipeline est testé avec pytest ; ne jamais publier des données qui échouent aux contrôles.
 - Commandes : `uv sync` pour installer, `uv run pytest` pour tester, `uv run ruff check .` pour le style, `uv run python -m scripts.<nom>` pour lancer un script.
+- Site : `npm test` (calculs du navigateur, géométrie de la salle, stockage local), `npm run build`, puis `npm run test:inventaire` (chaque attribut `data-*` garde sa place et son type ; le JavaScript initial ne s'alourdit pas) ; `npm run test:inventaire` lance aussi le contrôle typographique (aucune Barlow Condensed en bas de casse, bloquant) ; `npm run test:contrastes` mesure les contrastes AA des 62 écrans. Captures : `node scripts/frames.mjs <sortie> --gpu`, planches : `node scripts/planches.mjs`. Toute nouvelle clé du stockage local doit être annoncée sur /confidentialite/ et effacée par /calcul/ (test).
 - Textes en français, ton neutre et factuel. Toute donnée de maquette doit être marquée comme illustrative.
 - Une décision structurante prise en session = une entrée datée dans docs/decisions.md.
 - Avant d'installer quoi que ce soit hors du projet (outil global, service payant), demande-moi.

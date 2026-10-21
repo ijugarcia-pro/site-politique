@@ -9,11 +9,21 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test \"src/lib/*.test.ts\""
+    "test": "node --test \"src/lib/*.test.ts\" \"src/salle3d/*.test.ts\" tests/stockage.test.mjs",
+    "test:inventaire": "node --test tests/inventaire.test.mjs && node scripts/typo.mjs",
+    "test:typo": "node scripts/typo.mjs",
+    "test:contrastes": "node scripts/contrastes.mjs",
+    "inventaire:enregistrer": "node scripts/inventaire.mjs enregistrer"
   },
   "dependencies": {
-    "@fontsource-variable/fredoka": "5.3.0",
-    "@fontsource-variable/nunito": "5.3.0",
-    "astro": "7.3.7"
+    "@fontsource-variable/literata": "5.3.0",
+    "@fontsource/barlow": "5.3.0",
+    "@fontsource/barlow-condensed": "5.3.0",
+    "astro": "7.3.7",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "playwright": "1.64.1"
   }
 }

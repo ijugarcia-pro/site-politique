@@ -19,7 +19,7 @@
 - **Codes postaux, communes, circonscriptions et leurs contours** : données ouvertes de La Poste et du ministère de l'Intérieur, diffusées sur data.gouv.fr.
 - La page « État des données » donne, pour chaque source, son producteur, sa licence et son adresse.
 - **Recherche d'une adresse** : service de géocodage de la Géoplateforme de l'IGN, appelé seulement quand le visiteur saisit une adresse (voir la page « Confidentialité »).
-- **Polices** : Fredoka et Nunito, sous licence SIL Open Font License 1.1, servies par le site lui-même.
+- **Polices** : Barlow, Barlow Condensed et Literata, sous licence SIL Open Font License 1.1, servies par le site lui-même.
 - **Résumés des textes** (les questions et « Concrètement ») : rédigés à partir du texte officiel, contrôlés, puis validés par l'éditeur avant publication. Ils ne remplacent pas le texte : chaque vote renvoie à sa page, qui renvoie au dossier officiel de l'Assemblée nationale.
 
 ## Neutralité

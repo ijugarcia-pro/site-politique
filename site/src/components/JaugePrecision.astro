@@ -1,6 +1,6 @@
 ---
 // La jauge de précision (R4, docs/animations-lot-1.md § 3) : une piste à 9 encoches, un
-// remplissage violet et le pourcentage, animés de l'ancienne à la nouvelle valeur par
+// remplissage en lumière et le pourcentage, animés de l'ancienne à la nouvelle valeur par
 // lib/jauge.ts ; pastille « Fiable » à partir de 25 votes. La même jauge sert à la révélation
 // après chaque vote, à la fin d'un lot ou de la séance et au résultat du quiz.
 interface Props {
@@ -23,15 +23,13 @@ const { grand = false } = Astro.props;
   .jauge-precision { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .jauge-precision.grand { flex-wrap: wrap; }
   .jp-pct { order: 2; min-width: 48px; white-space: nowrap;
-    font-family: var(--police-titre); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
-  .grand .jp-pct { order: 0; flex-basis: 100%; font-size: 40px; line-height: 1; color: var(--violet-fonce); }
-  .jp-piste { order: 1; position: relative; flex: 1; min-width: 80px; height: 14px; border-radius: 999px;
-    background: #ECEEF3; overflow: hidden; }
-  .jp-plein { position: absolute; inset: 0; background: var(--violet); box-shadow: inset 0 4px 0 rgba(255,255,255,.28);
-    transform-origin: left; transform: scaleX(0); }
-  .jp-encoche { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #FFFFFF; }
-  .jp-fiable { order: 3; padding: 3px 10px; border-radius: 999px; background: #1F2433; color: #FFFFFF;
-    font-family: var(--police-titre); font-weight: 600; font-size: 13px; }
+    font: 600 17px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+  .grand .jp-pct { order: 0; flex-basis: 100%; font-size: 56px; line-height: 0.95; color: var(--ivoire); }
+  .jp-piste { order: 1; position: relative; flex: 1; min-width: 80px; height: 8px; background: var(--filet); overflow: hidden; }
+  .jp-plein { position: absolute; inset: 0; background: var(--lumiere); transform-origin: left; transform: scaleX(0); }
+  .jp-encoche { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--panneau); }
+  .jp-fiable { order: 3; padding: 4px 10px; background: var(--ivoire); color: var(--nuit);
+    font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
   .jp-fiable:global(.apparait) { animation: fiable 450ms var(--ease-doux) 500ms both; }
   @keyframes fiable { 0% { transform: scale(.3) rotate(-8deg); opacity: 0; }
     70% { transform: scale(1.12) rotate(2deg); opacity: 1; } 100% { transform: none; } }

@@ -124,7 +124,7 @@ const resume = mode === 'vote' && censure
           {libelles.map((l) => <path class="arc" d={l.arc} stroke={l.fond}></path>)}
           {libelles.map((l) => (
             <g transform={`translate(${l.x.toFixed(1)} ${l.y.toFixed(1)}) rotate(${l.rotation.toFixed(1)})`}>
-              <rect x={(-l.largeur / 2).toFixed(1)} y="-11" width={l.largeur.toFixed(1)} height="22" rx="11"
+              <rect x={(-l.largeur / 2).toFixed(1)} y="-11" width={l.largeur.toFixed(1)} height="22"
                 fill={l.fond}></rect>
               <text text-anchor="middle" dominant-baseline="central" fill={l.encre}>{l.texte}</text>
             </g>
@@ -428,31 +428,30 @@ const resume = mode === 'vote' && censure
     max-width: 100%;
     margin: 0 0 18px auto;
     padding: 4px;
-    border-radius: 14px;
-    background: var(--fond);
-    border: 2px solid var(--bord);
+    background: var(--panneau);
+    border: 1px solid var(--filet);
   }
   .filtres button {
-    min-height: 40px;
-    padding: 0 12px;
+    min-height: 36px;
+    padding: 0 14px;
     border: 0;
-    border-radius: 10px;
     background: transparent;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--gris);
+    font: 600 13px/1 var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ivoire-2);
     cursor: pointer;
   }
-  .filtres button:hover { color: var(--violet-fonce); background: var(--fond-doux); }
-  .filtres button[aria-pressed='true'] { background: var(--violet); color: #fff; }
+  .filtres button:hover { color: var(--ivoire); background: var(--panneau-2); }
+  /* Le filtre choisi : fond ivoire, comme une puce de caméra en cours, mais rectangulaire. */
+  .filtres button[aria-pressed='true'] { background: var(--ivoire); color: var(--nuit); }
   .cadre[data-filtre='dissidents'] .siege:not(.dissident),
   .cadre[data-filtre='depute'] .siege:not(.choisi),
   .cadre[data-filtre='depute'] .cercle-dissident,
   .cadre[data-filtre='jumeau'] .siege:not(.choisi),
   .cadre[data-filtre='jumeau'] .cercle-dissident { opacity: 0.16; }
   .siege { transition: opacity 0.15s; }
-  .siege.choisi { stroke: var(--texte); stroke-width: 2.5; }
+  .siege.choisi { stroke: var(--ivoire); stroke-width: 2.5; }
   .repere {
     position: absolute;
     z-index: 2;
@@ -464,12 +463,11 @@ const resume = mode === 'vote' && censure
   .repere-texte {
     display: block;
     padding: 4px 10px;
-    border-radius: 10px;
-    background: var(--texte);
-    color: #fff;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 13px;
+    background: var(--ivoire);
+    color: var(--nuit);
+    font: 600 13px/1.2 var(--police-titre);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     white-space: nowrap;
   }
   @media (max-width: 600px) {
@@ -477,25 +475,26 @@ const resume = mode === 'vote' && censure
     .filtres button { padding: 4px 6px; font-size: 13px; line-height: 1.1; }
   }
   @media (prefers-reduced-motion: reduce) { .siege { transition: none; } }
-  .zone { border-radius: 16px; touch-action: manipulation; }
+  .zone { touch-action: manipulation; }
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .etiquettes text {
     font-family: var(--police-titre);
     font-weight: 600;
     font-size: 15px;
+    text-transform: uppercase;
   }
   .etiquettes .arc { fill: none; stroke-width: 5; stroke-linecap: round; }
-  .siege { stroke: #FFFFFF; stroke-width: 0.8; cursor: pointer; }
-  .siege.vacant { stroke: #9AA1B2; stroke-width: 1.4; stroke-dasharray: 2.5 2; }
-  .cercle-dissident { fill: none; stroke: var(--texte); stroke-width: 1.9; }
-  .curseur { fill: none; stroke: var(--violet); stroke-width: 3; pointer-events: none;
+  .siege { stroke: var(--panneau); stroke-width: 0.8; cursor: pointer; }
+  .siege.vacant { stroke: var(--ivoire-2); stroke-width: 1.4; stroke-dasharray: 2.5 2; }
+  .cercle-dissident { fill: none; stroke: var(--ivoire); stroke-width: 1.9; }
+  .curseur { fill: none; stroke: var(--ivoire); stroke-width: 3; pointer-events: none;
     visibility: hidden; }
   .curseur.visible { visibility: visible; }
-  .centre-chiffres { font-family: var(--police-titre); font-weight: 700; font-size: 44px;
-    fill: var(--texte); }
-  .centre-legende { font-size: 19px; fill: var(--gris-legende); }
+  .centre-chiffres { font-family: var(--police-titre); font-weight: 600; font-size: 48px; font-variant-numeric: tabular-nums;
+    fill: var(--ivoire); }
+  .centre-legende { font-size: 19px; fill: var(--ivoire-2); }
   .info { min-height: 1.6em; margin: 10px 0 0; text-align: center; font-size: 15px;
-    color: var(--texte-doux); }
+    color: var(--ivoire); }
   .legende {
     display: flex;
     flex-wrap: wrap;
@@ -505,25 +504,26 @@ const resume = mode === 'vote' && censure
     padding: 0;
     list-style: none;
     font-size: 14px;
-    color: var(--texte-doux);
+    color: var(--ivoire);
   }
   .legende li { display: inline-flex; align-items: center; gap: 6px; }
   .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .legende .anneau { background: #FFFFFF; box-shadow: 0 0 0 2.5px var(--texte); }
-  .groupes { font-family: var(--police-titre); font-weight: 600; }
-  .legende .vide { background: #FFFFFF; border: 1.5px dashed #9AA1B2; }
+  .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--ivoire); }
+  .groupes { font-family: var(--police-titre); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .legende .vide { background: var(--panneau); border: 1.5px dashed var(--ivoire-2); }
   .detail { margin-top: 16px; }
   .detail summary {
     cursor: pointer;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    color: var(--violet-fonce);
+    font: 600 14px/1 var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ivoire);
     min-height: 44px;
     display: flex;
     align-items: center;
   }
   .detail .tableau { margin-top: 8px; }
-  .note { font-size: 14px; color: var(--gris); margin: 10px 0 0; }
+  .note { font-size: 14px; color: var(--ivoire-2); margin: 10px 0 0; }
   abbr { text-decoration: none; }
   @media (max-width: 600px) {
     .etiquettes { display: none; }

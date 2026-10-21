@@ -1,8 +1,14 @@
 ---
-// Mise en page commune : en-tête avec les 3 onglets (Cette semaine · Mon hémicycle · Explorer),
-// contenu, pied de page avec les sources. Polices servies par le site (aucun appel à Google).
-import '@fontsource-variable/fredoka/wght.css';
-import '@fontsource-variable/nunito/wght.css';
+// Mise en page commune : en-tête de régie avec les 3 onglets (Cette semaine · Mon hémicycle ·
+// Explorer), contenu, pied de page avec les sources. Charte « La Séance »
+// (docs/refonte-la-seance.md). Polices servies par le site (aucun appel à Google).
+import '@fontsource/barlow-condensed/500.css';
+import '@fontsource/barlow-condensed/600.css';
+import '@fontsource/barlow-condensed/700.css';
+import '@fontsource/barlow/400.css';
+import '@fontsource/barlow/500.css';
+import '@fontsource/barlow/600.css';
+import '@fontsource-variable/literata/opsz.css';
 import '../styles/global.css';
 import '../styles/motion.css';
 import { scrutins, semaine } from '../lib/donnees.ts';
@@ -16,9 +22,15 @@ interface Props {
   focus?: boolean;
   /** Données structurées schema.org de la page (JSON-LD), pour les moteurs de recherche. */
   jsonld?: Record<string, unknown>;
+  /** « seance » (sombre : la salle, le vote, le verdict) ou « jour » (lecture longue). Pendant
+   *  la refonte, une page garde « jour » tant que ses styles n'ont pas été repris (lots 2 à 4). */
+  theme?: 'seance' | 'jour';
+  /** La page s'ouvre sur une scène plein cadre (slot « scene ») : l'en-tête se pose dessus, sur
+   *  un voile, et le reste de la page suit en pleine largeur (DESIGN-FINAL.md, § 5.1). */
+  scene?: boolean;
 }
 
-const { titre, description, onglet, focus = false, jsonld } = Astro.props;
+const { titre, description, onglet, focus = false, jsonld, theme = 'jour', scene = false } = Astro.props;
 const canonique = new URL(Astro.url.pathname, Astro.site).href;
 const ONGLETS = [
   { id: 'semaine', href: '/', label: 'Cette semaine', icone: 'M3 5h14v12H3zM3 9h14M7 3v4M13 3v4' },
@@ -41,7 +53,7 @@ const tranches = JSON.stringify({
 });
 ---
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class={`theme-${theme}`}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -60,17 +72,14 @@ const tranches = JSON.stringify({
   </head>
   <body class:list={[{ focus }]}>
     <a class="evitement" href="#contenu">Aller au contenu</a>
-    <header class:list={['entete', { focus }]}>
+    <header class:list={['entete', 'theme-seance', { focus, 'sur-scene': scene && !focus }]}>
       <a class="logo" href="/" aria-label="Le 578e siège, accueil">
-        <svg width="40" height="24" viewBox="0 0 40 24" aria-hidden="true">
-          <circle cx="5" cy="20" r="3.2" fill="#C9CFDA"></circle>
-          <circle cx="9" cy="11" r="3.2" fill="#C9CFDA"></circle>
-          <circle cx="17" cy="5" r="3.2" fill="#C9CFDA"></circle>
-          <circle cx="26" cy="5" r="3.2" fill="#C9CFDA"></circle>
-          <circle cx="33" cy="11" r="3.2" fill="#C9CFDA"></circle>
-          <circle cx="36" cy="20" r="3.8" fill="#7C4DFF"></circle>
+        <svg width="46" height="28" viewBox="0 0 160 96" aria-hidden="true">
+          <path d="M 22 70 A 58 58 0 0 1 138 70 L 116 70 A 36 36 0 0 0 44 70 Z" fill="#F2EEE6"></path>
+          <rect x="0" y="76" width="160" height="12" fill="#B3132F"></rect>
+          <circle cx="80" cy="56" r="8" fill="#F2C98A"></circle>
         </svg>
-        <span>578<sup>e</sup> siège</span>
+        <span>Le 578<sup>e</sup> siège</span>
       </a>
       {focus ? <slot name="entete" /> : (
       <>
@@ -81,7 +90,7 @@ const tranches = JSON.stringify({
               <a href={o.href} aria-current={o.id === onglet ? 'page' : undefined}
                 aria-label={o.label}>
                 <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-                  <path d={o.icone} fill="none" stroke="currentColor" stroke-width="2.2"
+                  <path d={o.icone} fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
                 <span class="texte-onglet">{o.label}</span>
@@ -91,36 +100,38 @@ const tranches = JSON.stringify({
         </ul>
       </nav>
       <div class="outils">
+        <span class="mention">Site indépendant, non officiel</span>
         <a class="rond" href="/explorer/#recherche" aria-label="Rechercher un vote ou un député">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-            <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
-            <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+            <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"></circle>
+            <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
           </svg>
         </a>
         <a class="anneau-precision" href="/hemicycle/" data-precision-entete hidden
           title="Précision de ton hémicycle : plus tu tranches de votes, plus elle monte">
           <span data-precision-entete-pct></span>
         </a>
-        <a class="rond etoile" href="/hemicycle/" aria-label="Mon hémicycle : ta place">
-          <svg width="22" height="22" viewBox="0 0 34 34" aria-hidden="true">
-            <path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z"
-              fill="#FFC531" stroke="#1F2433" stroke-width="2.4" stroke-linejoin="round"></path>
-          </svg>
-        </a>
       </div>
       </>
       )}
     </header>
+    {scene ? (
+    <main id="contenu" class="avec-scene">
+      <slot name="scene" />
+      <div class="page sous-scene"><slot /></div>
+    </main>
+    ) : (
     <main id="contenu" class:list={['page', { focus }]}>
       <slot />
     </main>
+    )}
     {focus ? (
     <footer class="pied-focus" data-pied-focus>
       <span>Votes issus des données ouvertes de l'Assemblée nationale. Tes réponses restent dans ton navigateur.</span>
       <span><a href="/etat/">État des données</a> · <a href="/confidentialite/">Confidentialité</a></span>
     </footer>
     ) : (
-    <footer class="pied">
+    <footer class:list={['pied', { 'sous-scene': scene }]}>
       <p>
         Données : <a href="https://data.assemblee-nationale.fr/">open data de l'Assemblée
         nationale</a> (17<sup>e</sup> législature, Licence ouverte), retraitées chaque
@@ -173,116 +184,141 @@ const tranches = JSON.stringify({
     left: 12px;
     top: -60px;
     padding: 10px 16px;
-    border-radius: 12px;
-    background: var(--violet);
-    color: #fff;
-    z-index: 20;
+    background: var(--direct);
+    color: var(--sur-direct);
+    font: 600 15px/1 var(--police-titre);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    z-index: 30;
   }
   .evitement:focus { top: 12px; }
 
+  /* L'en-tête de régie : toujours sombre (classe theme-seance), quel que soit le thème de la page. */
   .entete {
     position: sticky;
     top: 0;
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 12px var(--gouttiere);
-    background: var(--fond);
-    border-bottom: 2px solid var(--bord-leger);
+    flex-wrap: wrap;
+    gap: 12px 36px;
+    padding: 14px var(--gouttiere);
+    background: var(--nuit);
+    color: var(--ivoire);
+    border-bottom: 1px solid var(--filet);
   }
   .logo {
     flex: none;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-decoration: none;
-    color: var(--texte);
-    font-family: var(--police-titre);
-    font-weight: 700;
-    font-size: 23px;
+    color: var(--ivoire);
+    font: 700 22px/1 var(--police-titre);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
-  .logo sup { font-size: 13px; }
-  nav { margin: 0 auto; }
-  nav ul {
-    display: flex;
-    gap: 4px;
-    margin: 0;
-    padding: 5px;
-    list-style: none;
-    border-radius: 18px;
-    background: var(--fond-doux);
-  }
+  .logo:hover { color: var(--ivoire); }
+  .logo sup { font-size: 12px; }
+  /* Posé sur la scène plein cadre : un voile, sans filet (maquette V6C-01). */
+  .entete.sur-scene { position: absolute; left: 0; right: 0; padding: 16px 32px; background: var(--voile); border-bottom: 0; }
+  nav ul { display: flex; gap: 28px; margin: 0; padding: 0; list-style: none; }
   nav a {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-height: 46px;
-    padding: 0 18px;
-    border-radius: 14px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--gris);
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+    font: 600 15px/1 var(--police-titre);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ivoire-2);
     text-decoration: none;
   }
-  nav a:hover { background: var(--fond); color: var(--gris); }
-  nav a[aria-current='page'] {
-    background: var(--fond);
-    color: var(--violet-fonce);
-    box-shadow: 0 3px 0 var(--bord);
+  nav a svg { display: none; }
+  nav a:hover { color: var(--ivoire); }
+  nav a[aria-current='page'] { color: var(--ivoire); border-bottom-color: var(--direct); }
+  .outils { flex: none; display: flex; align-items: center; gap: 18px; margin-left: auto; }
+  .mention {
+    font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ivoire-2);
   }
-  .outils { flex: none; display: flex; align-items: center; gap: 16px; }
   .rond {
     display: flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px; border-radius: 50%;
-    border: 2px solid var(--bord); background: var(--fond); color: var(--gris);
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid var(--filet); color: var(--ivoire-2);
   }
-  .rond:hover { background: var(--fond-doux); color: var(--gris); }
-  .etoile { background: var(--jaune-pale); border-color: var(--abstention); }
-  .etoile:hover { background: #FFE7A3; }
+  .rond:hover { color: var(--ivoire); border-color: var(--ivoire-2); }
+  /* L'anneau de précision : ta précision, en lumière (elle te désigne). */
   .anneau-precision {
     display: flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px; border-radius: 50%;
-    background: conic-gradient(var(--violet) 0 var(--pct, 0%), var(--bord-leger) var(--pct, 0%) 100%);
-    text-decoration: none; color: var(--texte);
+    width: 36px; height: 36px; border-radius: 50%;
+    background: conic-gradient(var(--lumiere) 0 var(--pct, 0%), var(--filet) var(--pct, 0%) 100%);
+    text-decoration: none; color: var(--ivoire);
   }
   .anneau-precision span {
     display: flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 50%; background: var(--fond);
-    font-family: var(--police-titre); font-weight: 700; font-size: 11px;
+    width: 30px; height: 30px; border-radius: 50%; background: var(--nuit);
+    font: 600 11px/1 var(--police-titre); font-variant-numeric: tabular-nums;
   }
-  @media (max-width: 900px) {
-    .texte-onglet { display: none; }
+  @media (max-width: 1000px) {
+    .mention { display: none; }
   }
+  /* Téléphone : la navigation passe en bas de l'écran, en barre de régie. */
   @media (max-width: 640px) {
-    .entete { position: static; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
-    nav { order: 3; width: 100%; }
-    nav ul { justify-content: space-between; }
+    .entete, .entete.sur-scene { gap: 12px; padding: 12px 16px; }
+    .logo { font-size: 19px; }
+    /* La navigation fixée en bas, sans icônes (maquettes V6C-05 et V6C-06). */
+    nav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+      background: var(--nuit); border-top: 1px solid var(--filet);
+      padding: 0 0 env(safe-area-inset-bottom);
+    }
+    nav ul { gap: 0; justify-content: space-around; }
     nav li { flex: 1; }
-    nav a { flex-direction: column; gap: 2px; padding: 6px 4px; font-size: 13px;
-      justify-content: center; text-align: center; }
-    .texte-onglet { display: inline; }
+    nav a { justify-content: center; min-height: 56px; padding: 6px 4px;
+      font-size: 13px; letter-spacing: 0.12em; text-align: center;
+      border-bottom: 0; border-top: 2px solid transparent; }
+    nav a[aria-current='page'] { border-top-color: var(--direct); }
+    .rond, .anneau-precision { width: 44px; height: 44px; }
+    .anneau-precision span { width: 36px; height: 36px; font-size: 12px; }
     .outils { gap: 10px; }
+    body:not(.focus) { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
   }
 
-  /* Mode focus (quiz, séance) : la page tient dans l'écran, contenu centré (frames V5). */
+  /* Mode focus (quiz, lots, séance) : pas d'onglets ; l'en-tête reçoit la progression. */
   body.focus { min-height: 100vh; display: flex; flex-direction: column; }
-  .entete.focus { position: static; flex-wrap: wrap; gap: 16px 32px; padding: 18px clamp(16px, 3.4vw, 48px);
-    border-bottom: 0; }
-  .entete.focus .logo span { font-size: 24px; letter-spacing: -0.01em; }
-  .entete.focus .logo sup { font-size: 14px; }
+  /* Mode focus : la tribune reste visible derrière l'en-tête (voile, sans filet). */
+  .entete.focus { position: static; gap: 16px 32px; padding: 16px 32px; background: var(--voile); border-bottom: 0; }
+  @media (max-width: 640px) { .entete.focus { padding: 12px 16px; } .pied-focus { padding: 16px; } }
   .pied-focus { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; width: 100%;
-    max-width: 1320px; margin: 0 auto; padding: 16px clamp(16px, 3.4vw, 48px) 22px; font-size: 13px; color: #8A91A3; }
+    padding: 18px 32px 28px; background: var(--voile);
+    font: 400 13px/1.5 var(--police-texte); color: var(--ivoire-2); }
   .pied-focus a { color: inherit; }
 
   .pied {
     max-width: 1320px;
     margin: 0 auto;
     padding: 24px var(--gouttiere) 40px;
-    border-top: 2px solid var(--bord-leger);
-    color: var(--gris);
-    font-size: 15px;
+    border-top: 1px solid var(--filet);
+    color: var(--ivoire-2);
+    font: 400 14px/1.6 var(--police-texte);
   }
   .pied p { margin: 0 0 6px; }
+  .pied a { color: inherit; }
+  /* Sous une scène : une ligne de légende, les sources à gauche, la neutralité à droite (V6C-01). */
+  .pied.sous-scene { max-width: none; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 32px;
+    padding: 24px 32px 32px; border-top: 0; font: 400 13px/1.5 var(--police-texte); }
+  .pied.sous-scene p { margin: 0; }
+  .pied.sous-scene p:first-child { flex: 1 1 520px; max-width: 900px; }
+  /* Une page à scène : la salle bord à bord, puis les sections en pleine largeur, gouttière de 32 px. */
+  .avec-scene { display: block; }
+  .page.sous-scene { max-width: none; padding: 40px 32px 24px; }
+  @media (max-width: 640px) {
+    .page.sous-scene { padding: 24px 16px 16px; }
+    .pied.sous-scene { padding: 20px 16px 28px; }
+  }
 </style>

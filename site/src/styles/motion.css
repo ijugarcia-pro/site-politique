@@ -9,6 +9,11 @@
   --ease-sortie: cubic-bezier(.5,0,.75,0);
   --ease-ressort: cubic-bezier(.3,.7,.4,1.4);
   --ease-odo: cubic-bezier(.3,1.35,.5,1);
+  /* « La Séance » (docs/refonte-la-seance.md, § 3) : la caméra (1,4 à 1,8 s, power2.inOut),
+     le bandeau qui entre depuis le bas (360 ms), les compteurs qui montent ensemble (1,2 s). */
+  --dur-camera: 1600ms; --dur-bandeau: 360ms; --dur-compteur: 1200ms;
+  --ease-camera: cubic-bezier(.455,.03,.515,.955);
+  --ease-bandeau: cubic-bezier(.2,.8,.2,1);
 }
 
 /* Compteur : style="--from:34;--to:39" et un aria-label portant la valeur finale. Sans
@@ -29,6 +34,11 @@
 @keyframes ressort { 0% { transform: translateY(5px); } 55% { transform: translateY(-3px) scale(1.03); } 100% { transform: none; } }
 @keyframes trace { to { stroke-dashoffset: 0; } }
 
+/* Le bandeau de régie entre depuis le bas ; il ne clignote jamais. */
+@keyframes bandeau { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+.entre-bandeau { animation: bandeau var(--dur-bandeau) var(--ease-bandeau) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .compte { animation: none; --num: var(--to); }
+  .entre-bandeau { animation: none; }
 }

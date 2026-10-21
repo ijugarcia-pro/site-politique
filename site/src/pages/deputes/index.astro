@@ -325,7 +325,7 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
 </script>
 
 <style>
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--gris-legende); }
+  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--ivoire-2); }
   .fil a { text-decoration: none; font-weight: 700; }
   .accroche {
     display: flex;
@@ -333,8 +333,7 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
     gap: 22px 32px;
     align-items: flex-start;
     padding: clamp(20px, 3vw, 30px);
-    border-radius: 30px;
-    background: var(--violet-voile);
+    background: var(--panneau);
   }
   .accroche-texte { flex: 1 1 380px; min-width: 0; }
   .accroche h1 { font-size: clamp(30px, 3.4vw, 40px); }
@@ -345,85 +344,63 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
     min-width: 0;
     min-height: 56px;
     padding: 0 16px;
-    border-radius: 16px;
-    border: 2px solid #C9B8FF;
-    background: var(--fond);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 20px;
-    letter-spacing: 0.08em;
-    color: var(--texte);
+    border: 1px solid var(--filet);
+    background: var(--panneau);
+    font: 500 17px/1 var(--police-texte);
+    color: var(--ivoire);
   }
-  .adresse input { letter-spacing: 0; font-size: 17px; }
-  .cp input:focus, .adresse input:focus { border-color: var(--violet); outline: none; }
+  .cp input:focus, .adresse input:focus { border-color: var(--ivoire); }
   .cp button, .adresse button {
     min-height: 56px;
     padding: 0 20px;
     border: 0;
-    border-radius: 16px;
-    background: var(--violet);
+    background: var(--direct);
     color: #fff;
-    box-shadow: 0 4px 0 var(--violet-fonce);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 16px;
+    font: 600 15px/1 var(--police-titre);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     cursor: pointer;
   }
-  .discret { margin: 10px 0 0; font-size: 14px; color: var(--gris); }
+  .discret { margin: 10px 0 0; font-size: 14px; color: var(--ivoire-2); }
   .resultat {
     flex: 1 1 420px;
     min-width: 0;
     padding: 20px;
-    border-radius: 24px;
-    background: var(--fond);
-    box-shadow: 0 5px 0 #E3DAFF;
+    background: var(--panneau);
   }
-  .resultat :global(.message) { margin: 0; font-size: 16px; color: var(--texte-doux); }
+  .resultat :global(.message) { margin: 0; font-size: 16px; color: var(--ivoire); }
   .resultat :global(p) { margin: 0 0 12px; }
   .resultat :global(.communes) { display: flex; flex-wrap: wrap; gap: 8px; }
   .resultat :global(.communes button) {
-    min-height: 44px; padding: 0 14px; border: 2px solid #E3DAFF; border-radius: 14px;
-    background: var(--fond); font-family: var(--police-titre); font-weight: 600; font-size: 15px;
-    color: var(--violet-fonce); cursor: pointer;
+    min-height: 44px; padding: 0 14px; border: 1px solid var(--filet);
+    background: var(--panneau); font: 600 14px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ivoire); cursor: pointer;
   }
-  .resultat :global(.communes button:hover) { border-color: var(--violet); }
+  .resultat :global(.communes button:hover) { border-color: var(--ivoire-2); }
   .resultat :global(.adresse-ligne) { display: flex; gap: 8px; }
   .resultat :global(.candidats) { margin-top: 14px; font-size: 15px; }
-  .resultat :global(.candidats summary) { cursor: pointer; font-family: var(--police-titre); font-weight: 600; color: var(--violet-fonce); min-height: 40px; display: flex; align-items: center; }
+  .resultat :global(.candidats summary) { cursor: pointer; font-weight: 600; color: var(--ivoire); min-height: 40px; display: flex; align-items: center; }
   .resultat :global(.candidats ul) { margin: 6px 0 0; padding-left: 20px; }
   .resultat :global(.candidats li) { margin-bottom: 6px; }
   .resultat :global(.trouve) { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; }
   .resultat :global(.trouve-texte) { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .resultat :global(.sur-titre) { font-family: var(--police-titre); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet); }
-  .resultat :global(.trouve-nom) { font-family: var(--police-titre); font-weight: 700; font-size: 24px; color: var(--texte); text-decoration: none; }
-  .resultat :global(.trouve-nom:hover) { color: var(--violet-fonce); }
-  .resultat :global(.trouve-detail) { font-size: 15px; color: var(--gris); }
+  .resultat :global(.sur-titre) { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .resultat :global(.trouve-nom) { font: 600 21px/1.25 var(--police-texte); color: var(--ivoire); text-decoration: none; }
+  .resultat :global(.trouve-nom:hover) { color: var(--ivoire); }
+  .resultat :global(.trouve-detail) { font-size: 15px; color: var(--ivoire-2); }
   .resultat :global(.trouve-actions) { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
   .resultat :global(.choisir) {
-    min-height: 46px; padding: 0 16px; border: 2px solid #C9B8FF; border-radius: 14px;
-    background: var(--fond); box-shadow: 0 4px 0 #E3DAFF; font-family: var(--police-titre);
-    font-weight: 600; font-size: 15px; color: var(--violet-fonce); cursor: pointer;
+    min-height: 46px; padding: 0 16px; border: 1px solid var(--filet);
+    background: var(--panneau); font: 600 14px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ivoire); cursor: pointer;
   }
-  .resultat :global(.choisir[aria-pressed='true']) { background: #DFF7EC; border-color: #9BE3C4; color: #0C7F57; box-shadow: 0 4px 0 #BCEBD6; }
-  .resultat :global(.voir) { text-align: center; font-family: var(--police-titre); font-weight: 600; font-size: 15px; }
-  .avatar, .resultat :global(.avatar) {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
-    background: var(--violet-voile);
-    color: var(--violet-fonce);
-    font-family: var(--police-titre);
-    font-weight: 700;
-    font-size: 22px;
-  }
-  .avatar.petit { width: 44px; height: 44px; border-radius: 14px; font-size: 16px; }
+  .resultat :global(.choisir[aria-pressed='true']) { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
+  .resultat :global(.voir) { text-align: center; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
+  /* Pas de vignettes à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
+  .avatar, .resultat :global(.avatar) { display: none; }
 
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 12px; }
-  .titre-section span { font-size: 14px; color: var(--gris); }
+  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
   .outils { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 14px; }
   .recherche {
     flex: 1 1 340px;
@@ -432,14 +409,13 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
     gap: 10px;
     min-height: 52px;
     padding: 0 16px;
-    border: 2px solid var(--bord);
-    border-radius: 16px;
-    color: var(--gris-legende);
+    border: 1px solid var(--filet);
+    color: var(--ivoire-2);
   }
-  .recherche:focus-within { border-color: var(--violet); }
-  .recherche input { flex: 1; min-width: 0; border: 0; outline: none; font: inherit; font-size: 17px; color: var(--texte); background: transparent; }
-  .anciens { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; color: var(--texte-doux); cursor: pointer; }
-  .anciens input { width: 20px; height: 20px; accent-color: var(--violet); }
+  .recherche:focus-within { border-color: var(--ivoire); }
+  .recherche input { flex: 1; min-width: 0; border: 0; outline: none; font: inherit; font-size: 17px; color: var(--ivoire); background: transparent; }
+  .anciens { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; color: var(--ivoire); cursor: pointer; }
+  .anciens input { width: 20px; height: 20px; accent-color: var(--ivoire); }
   .annuaire {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
@@ -453,14 +429,13 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
     align-items: center;
     gap: 12px;
     padding: 10px;
-    border-radius: 16px;
     color: inherit;
     text-decoration: none;
   }
-  .annuaire a:hover { background: var(--fond-doux); }
-  .annuaire a:hover .annuaire-nom { color: var(--violet-fonce); }
+  .annuaire a:hover { background: var(--panneau-2); }
+  .annuaire a:hover .annuaire-nom { color: var(--ivoire); }
   .annuaire-texte { display: flex; flex-direction: column; min-width: 0; }
-  .annuaire-nom { font-family: var(--police-titre); font-weight: 600; font-size: 16px; }
-  .annuaire-detail { font-size: 13px; color: var(--gris); }
-  .vide { padding: 16px; border-radius: 16px; background: var(--fond-doux); }
+  .annuaire-nom { font: 600 16px/1.3 var(--police-texte); }
+  .annuaire-detail { font-size: 13px; color: var(--ivoire-2); }
+  .vide { padding: 16px; background: var(--panneau-2); }
 </style>

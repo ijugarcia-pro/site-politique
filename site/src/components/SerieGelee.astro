@@ -16,13 +16,14 @@
 </div>
 
 <style>
-  /* Les bleus du gel (#0B6AAE, #DDF1FF, #BFE3FB) ne sont pas le bleu « Pour ». */
-  .serie-gelee { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 20px;
-    background: #F4FAFF; border: 2px solid #DDF1FF; text-align: left; }
-  .serie-gelee p { margin: 0; font-size: 16px; line-height: 1.45; color: #0B3E66; }
-  .pastille-gel { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
-    border-radius: 50%; background: #DDF1FF; box-shadow: 0 4px 0 #BFE3FB; }
-  .pastille-gel path { fill: none; stroke: #0B6AAE; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+  /* Le gel : un bleu glacier (#9CCBEA en Séance, #0B6AAE en Jour), jamais le bleu « Pour » des votes. */
+  .serie-gelee { --glace: #0B6AAE; display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+    background: var(--panneau-2); text-align: left; }
+  :global(.theme-seance) .serie-gelee { --glace: #9CCBEA; }
+  .serie-gelee p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--ivoire); }
+  .pastille-gel { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;
+    border-radius: 50%; border: 1px solid var(--glace); }
+  .pastille-gel path { fill: none; stroke: var(--glace); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
     stroke-dasharray: 1; stroke-dashoffset: 0; }
   .serie-gelee:global(.joue) .pastille-gel { animation: gel 600ms var(--ease-doux) both; }
   .serie-gelee:global(.joue) .pastille-gel path { stroke-dashoffset: 1; animation: trace 600ms ease-out 200ms both; }

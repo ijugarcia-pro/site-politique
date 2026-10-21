@@ -16,6 +16,10 @@ const GARDE = [
     pourquoi: 'Reprendre là où tu t\'étais arrêté' },
   { donnee: 'Le député que tu as choisi (son identifiant public)', cle: '578e.depute.v1',
     pourquoi: 'Afficher ton député' },
+  { donnee: 'Les verdicts que tu as déjà découverts (numéros des scrutins)', cle: '578e.verdicts-vus.v1',
+    pourquoi: 'Ne pas te refaire découvrir un verdict déjà vu' },
+  { donnee: "L'apparence de ton personnage dans la salle (peau, coiffure, tenue) et le siège où il s'est assis",
+    cle: '578e.personnage.v1', pourquoi: 'Le dessiner dans la salle 3D' },
 ];
 ---
 <Base titre="Confidentialité"
@@ -62,15 +66,17 @@ const GARDE = [
 
 <style>
   .texte { max-width: 760px; }
-  .texte h1 { font-size: clamp(32px, 3.4vw, 44px); }
-  .chapo { font-size: 19px; color: var(--texte-doux); }
-  .texte h2 { margin-top: 34px; font-size: 24px; }
-  .texte p, .texte li, .texte td { font-size: 17px; line-height: 1.6; color: var(--texte-doux); }
+  /* Un titre de page court, en capitales de régie (DESIGN-FINAL.md, § 6). */
+  .texte h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
+  .chapo { font-size: 19px; color: var(--ivoire); }
+  /* Des intertitres longs : une phrase en Literata (DESIGN-FINAL.md, § 3), pas des capitales. */
+  .texte h2 { margin-top: 34px; font: 500 23px/1.3 var(--police-question); text-transform: none; }
+  .texte p, .texte li, .texte td { font-size: 17px; line-height: 1.6; color: var(--ivoire); }
   .texte li { margin-bottom: 8px; }
   table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; }
-  th, td { padding: 10px 12px; border-bottom: 2px solid var(--bord-leger); text-align: left; vertical-align: top; }
-  th { font-family: var(--police-titre); font-weight: 600; font-size: 15px; color: var(--gris); }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--filet); text-align: left; vertical-align: top; }
+  th { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   td code { font-size: 14px; overflow-wrap: anywhere; }
   @media (max-width: 640px) { table { display: block; overflow-x: auto; } }
-  .maj { margin-top: 34px; font-size: 15px; color: var(--gris); }
+  .maj { margin-top: 34px; font-size: 15px; color: var(--ivoire-2); }
 </style>

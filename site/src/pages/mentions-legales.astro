@@ -32,7 +32,7 @@ const DEPOT = 'https://github.com/ijugarcia-pro/site-politique';
       <li> <strong>Codes postaux, communes, circonscriptions et leurs contours</strong> : données ouvertes de La Poste et du ministère de l'Intérieur, diffusées sur data.gouv.fr. </li>
       <li> La page « <a href="/etat/">État des données</a> » donne, pour chaque source, son producteur, sa licence et son adresse. </li>
       <li> <strong>Recherche d'une adresse</strong> : service de géocodage de la Géoplateforme de l'IGN, appelé seulement quand tu saisis une adresse (voir la page « <a href="/confidentialite/">Confidentialité</a> »). </li>
-      <li> <strong>Polices</strong> : Fredoka et Nunito, sous licence SIL Open Font License 1.1, servies par le site lui-même. </li>
+      <li> <strong>Polices</strong> : Barlow, Barlow Condensed et Literata, sous licence SIL Open Font License 1.1, servies par le site lui-même. </li>
       <li> <strong>Résumés des textes</strong> (les questions et « Concrètement ») : rédigés à partir du texte officiel, contrôlés, puis validés par l'éditeur avant publication. Ils ne remplacent pas le texte : chaque vote renvoie à sa page, qui renvoie au dossier officiel de l'Assemblée nationale. </li>
     </ul>
 
@@ -48,10 +48,12 @@ const DEPOT = 'https://github.com/ijugarcia-pro/site-politique';
 
 <style>
   .texte { max-width: 760px; }
-  .texte h1 { font-size: clamp(32px, 3.4vw, 44px); }
-  .chapo { font-size: 19px; color: var(--texte-doux); }
-  .texte h2 { margin-top: 34px; font-size: 24px; }
-  .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--texte-doux); }
+  /* Un titre de page court, en capitales de régie (DESIGN-FINAL.md, § 6). */
+  .texte h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
+  .chapo { font-size: 19px; color: var(--ivoire); }
+  /* Des intertitres longs : une phrase en Literata (DESIGN-FINAL.md, § 3), pas des capitales. */
+  .texte h2 { margin-top: 34px; font: 500 23px/1.3 var(--police-question); text-transform: none; }
+  .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--ivoire); }
   .texte li { margin-bottom: 8px; overflow-wrap: anywhere; }
-  .maj { margin-top: 34px; font-size: 15px; color: var(--gris); }
+  .maj { margin-top: 34px; font-size: 15px; color: var(--ivoire-2); }
 </style>

@@ -69,10 +69,7 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   </div>
   <div class="toi" data-salle-toi hidden>
     <div class="bulle">Toi · 578<sup>e</sup> siège</div>
-    <svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true">
-      <path d="M17 2l4.4 9.2 10 1.3-7.3 7 1.9 10L17 24.6 8 29.5l1.9-10-7.3-7 10-1.3z"
-        fill="#FFC531" stroke="#1F2433" stroke-width="2" stroke-linejoin="round"></path>
-    </svg>
+    <span class="toi-point" aria-hidden="true"></span>
   </div>
   <div class="marque-jumeau" data-salle-jumeau hidden><span>Ton jumeau</span><i></i></div>
   <div class="carte-siege" data-salle-carte hidden>
@@ -97,14 +94,27 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   .dessin { position: relative; width: 100%; container-type: inline-size; }
   .dessin > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .arcs path { fill: none; stroke-width: 5; stroke-linecap: round; }
-  .siege { fill: #D6DBE4; cursor: pointer; transition: fill .45s ease, opacity .3s ease; }
+  /* Les sièges au repos, puis les teintes « éteintes » que lib/ pose en dur (absent #DFE3EB,
+     non-votant #9AA1B2, attente #D6DBE4) : elles suivent le thème. Le style en ligne est lu
+     sous sa forme rgb(), celle que donnent les navigateurs. */
+  .dessin { --siege-repos: #D6DBE4; }
+  :global(.theme-seance) .dessin { --siege-repos: #4A4D55; }
+  .siege { fill: var(--siege-repos); cursor: pointer; transition: fill .45s ease, opacity .3s ease; }
+  .siege[style*="rgb(223, 227, 235)"] { fill: var(--absent) !important; }
+  .siege[style*="rgb(154, 161, 178)"] { fill: var(--non-votant) !important; }
+  .siege[style*="rgb(214, 219, 228)"] { fill: var(--siege-repos) !important; }
+  /* Les niveaux d'accord (lib/profil.ts) : des intensités d'ivoire (styles/global.css). */
+  .siege[style*="rgb(217, 204, 255)"] { fill: var(--accord-1) !important; }
+  .siege[style*="rgb(169, 139, 255)"] { fill: var(--accord-2) !important; }
+  .siege[style*="rgb(106, 61, 240)"] { fill: var(--accord-3) !important; }
   .dessin:global(.sans-transition) .siege { transition: none; }
-  .siege.vacant { fill: #FFFFFF; stroke: #9AA1B2; stroke-width: 1.4; stroke-dasharray: 2.5 2; cursor: default; }
-  .siege:global(.sans-commun) { fill: #FFFFFF; stroke: #DFE3EB; stroke-width: 2; }
-  .siege:global(.contre-groupe) { stroke: var(--texte); stroke-width: 2.4; r: 6.6px; }
+  .siege.vacant { fill: var(--panneau); stroke: var(--ivoire-2); stroke-width: 1.4; stroke-dasharray: 2.5 2; cursor: default; }
+  .siege:global(.sans-commun) { fill: var(--panneau); stroke: var(--filet); stroke-width: 2; }
+  .siege:global(.contre-groupe) { stroke: var(--ivoire); stroke-width: 2.4; r: 6.6px; }
   .siege:global(.estompe) { opacity: .38; }
-  .siege:global(.siege-jumeau) { r: 11.4px; fill: #6A3DF0 !important; stroke: #7C4DFF; stroke-width: 3; opacity: 1; }
-  .siege:hover { stroke: var(--texte); stroke-width: 2.4; }
+  /* Ton jumeau : en ivoire (la lumière est réservée à toi). */
+  .siege:global(.siege-jumeau) { r: 11.4px; fill: var(--ivoire) !important; stroke: var(--nuit); stroke-width: 3; opacity: 1; }
+  .siege:hover { stroke: var(--ivoire); stroke-width: 2.4; }
   /* L'onde de la révélation (R1) : chaque siège prend sa couleur à son tour, du centre vers
      l'extérieur. Repli mesuré (docs/decisions.md, 13 oct.) : la couleur seule, sans le
      grossissement des sièges, qui faisait décrocher l'affichage. */
@@ -116,58 +126,61 @@ const occupes = sieges.filter((s) => !s.vacant).length;
   }
   /* Les étiquettes grandissent avec le dessin : elles gardent leur place entre voisines. */
   .etiquette {
-    position: absolute; z-index: 1; padding: 0.08em 0.6em; border-radius: 999px;
+    position: absolute; z-index: 1; padding: 0.08em 0.6em;
     font-family: var(--police-titre); font-weight: 600; font-size: clamp(8px, 1.2cqw, 13px);
+    letter-spacing: 0.06em; text-transform: uppercase;
     line-height: 1.5; white-space: nowrap; text-decoration: none; cursor: help;
   }
   /* Sur un petit écran, les sigles passent sous l'hémicycle, dans l'ordre des places. */
   .groupes-salle { display: none; }
   .libre { position: absolute; z-index: 3; transform: translate(-50%, -50%); display: flex;
     flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
-  .libre span { padding: 5px 12px; border-radius: 12px; background: #FFFFFF; border: 2px dashed #B9A4FF;
-    color: var(--violet-fonce); font-family: var(--police-titre); font-weight: 600; font-size: 14px; white-space: nowrap; }
-  .libre i { width: 26px; height: 26px; border-radius: 50%; border: 2.5px dashed #B9A4FF; }
+  .libre span { padding: 5px 12px; background: var(--panneau); border: 1px dashed var(--ivoire-2);
+    color: var(--ivoire); font: 600 13px/1.2 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  .libre i { width: 26px; height: 26px; border-radius: 50%; border: 2px dashed var(--ivoire-2); }
   .toi { position: absolute; z-index: 4; transform: translate(-50%, -100%); text-align: center; pointer-events: none; }
-  .toi .bulle { padding: 6px 12px; border-radius: 12px; background: var(--texte); color: #fff;
-    font-family: var(--police-titre); font-weight: 600; font-size: 14px; white-space: nowrap; }
+  /* Toi : la lumière (un anneau qui brille), jamais une couleur de vote. */
+  .toi .bulle { padding: 6px 10px; background: var(--voile); border-left: 3px solid var(--lumiere); color: var(--lumiere);
+    font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+  .toi-point { display: block; width: 18px; height: 18px; margin: 6px auto 0; border-radius: 50%; border: 2px solid var(--lumiere);
+    box-shadow: 0 0 0 4px var(--voile), 0 0 18px var(--lumiere); }
   .toi sup, .libre sup { font-size: 0.65em; }
-  .toi svg { display: block; margin: 4px auto 0; }
   .marque-jumeau { position: absolute; z-index: 4; transform: translate(-50%, -100%); display: flex;
     flex-direction: column; align-items: center; pointer-events: none; }
   .marque-jumeau:global(.dessous) { transform: translate(-50%, 0); flex-direction: column-reverse; }
-  .marque-jumeau span { padding: 4px 10px; border-radius: 10px; background: var(--violet); color: #fff;
-    font-family: var(--police-titre); font-weight: 600; font-size: 12px; white-space: nowrap; box-shadow: 0 3px 0 var(--violet-fonce); }
-  .marque-jumeau i { width: 2px; height: 10px; background: var(--violet); }
+  .marque-jumeau span { padding: 5px 9px; background: var(--ivoire); color: var(--nuit);
+    font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+  .marque-jumeau i { width: 2px; height: 10px; background: var(--ivoire); }
   .marque-jumeau:global(.vers-droite) { transform: translate(0, -50%); flex-direction: row-reverse; }
   .marque-jumeau:global(.vers-gauche) { transform: translate(-100%, -50%); flex-direction: row; }
   .marque-jumeau:global(.vers-droite) i, .marque-jumeau:global(.vers-gauche) i { width: 10px; height: 2px; }
   .centre { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 30%; text-align: center; pointer-events: none; }
   .centre-chiffre { font-family: var(--police-titre); font-weight: 700; font-size: clamp(24px, 2.9vw, 42px);
     line-height: 1; letter-spacing: -0.02em; white-space: nowrap; }
-  .centre-legende { margin-top: 6px; font-size: clamp(11px, 1vw, 14px); line-height: 1.3; color: var(--gris-legende); }
+  .centre-legende { margin-top: 6px; font-size: clamp(11px, 1vw, 14px); line-height: 1.3; color: var(--ivoire-2); }
   .carte-siege {
     position: absolute; z-index: 6; transform: translate(-50%, -100%); display: flex; gap: 10px;
     align-items: center; width: max-content; max-width: 320px; padding: 10px 14px 10px 10px;
-    border: 2px solid var(--bord); border-radius: 18px; background: var(--fond);
-    box-shadow: 0 5px 0 var(--bord); pointer-events: none;
+    border: 1px solid var(--filet); background: var(--panneau);
+    box-shadow: var(--ombre-panneau); pointer-events: none;
   }
   .carte-siege:global(.a-gauche) { transform: translate(-12%, -100%); }
   .carte-siege:global(.a-droite) { transform: translate(-88%, -100%); }
   .carte-avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
-    border-radius: 13px; background: var(--violet-voile); color: var(--violet-fonce);
-    font-family: var(--police-titre); font-weight: 700; font-size: 15px; }
+    background: var(--panneau-2); color: var(--ivoire);
+    font-family: var(--police-titre); font-weight: 700; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
   .carte-texte { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .carte-nom { font-family: var(--police-titre); font-weight: 700; font-size: 16px; line-height: 1.2; }
-  .carte-groupe { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.25; color: var(--gris-legende); }
-  .carte-accord { font-size: 13px; line-height: 1.3; color: var(--texte-doux); }
+  .carte-nom { font: 600 16px/1.2 var(--police-texte); }
+  .carte-groupe { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.25; color: var(--ivoire-2); }
+  .carte-accord { font-size: 13px; line-height: 1.3; color: var(--ivoire); }
   @media (max-width: 600px) {
     .etiquette { display: none; }
     .groupes-salle { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0 0;
       padding: 0; list-style: none; }
-    .groupes-salle span { display: block; padding: 1px 8px; border-radius: 999px; font-family: var(--police-titre);
-      font-weight: 600; font-size: 12px; line-height: 1.5; }
-    .toi .bulle, .libre span { padding: 3px 7px; font-size: 11px; border-radius: 9px; }
-    .toi svg { width: 22px; height: 22px; }
+    .groupes-salle span { display: block; padding: 1px 8px; font-family: var(--police-titre);
+      font-weight: 600; font-size: 12px; line-height: 1.5; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toi .bulle, .libre span { padding: 3px 7px; font-size: 11px; }
+    .toi-point { width: 14px; height: 14px; }
     .libre i { width: 18px; height: 18px; }
     .marque-jumeau span { padding: 2px 6px; font-size: 10px; }
     .centre { width: 46%; }

@@ -16,8 +16,6 @@ const { vote: v, accent = 'verdict', niveau = 'h3' } = Astro.props;
 const Titre = niveau;
 const f = famille(v);
 const d = v.decompte;
-const exprimes = d.pour + d.contre;
-const partPour = exprimes ? (100 * d.pour) / exprimes : 0;
 const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
 ---
 <li class="ligne" data-uid={v.uid} data-famille={f} data-solennel={v.solennel ? '1' : undefined}
@@ -38,7 +36,9 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
         </span>
       ) : (
         <span class="mini" aria-hidden="true">
-          <span style={`width: ${partPour.toFixed(1)}%`}></span>
+          {d.pour > 0 && <span class="m-pour" style={`flex: ${d.pour}`}></span>}
+          {d.contre > 0 && <span class="m-contre" style={`flex: ${d.contre}`}></span>}
+          {d.abstention > 0 && <span class="m-abstention" style={`flex: ${d.abstention}`}></span>}
         </span>
       )}
       {accent === 'dissidents' ? (
@@ -47,7 +47,8 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
         <span class="accent violet">à {v.voix_pour_inverser} voix près</span>
       ) : (
         <span class="accent sombre">
-          {verdict(v)} · {v.motion_censure ? `${d.pour} / ${v.requis}` : `${d.pour}–${d.contre}`}
+          <span class="mot">{verdict(v)}</span>
+          <span class="score">{v.motion_censure ? `${d.pour} / ${v.requis}` : `${d.pour}–${d.contre}`}</span>
         </span>
       )}
     </span>
@@ -55,7 +56,10 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
 </li>
 
 <style>
-  .ligne { border-top: 2px solid var(--bord-leger); }
+  /* Un vote dans une liste (DESIGN-FINAL.md, § 6) : étiquette et date en puce de régie, intitulé
+     en Literata, verdict en capitales (le même pour les deux issues), barre de totaux aux
+     couleurs des votes, segments séparés de 2 px. */
+  .ligne { border-top: 1px solid var(--filet); }
   .ligne a {
     display: grid;
     grid-template-columns: 112px minmax(0, 1fr) 132px 168px;
@@ -63,40 +67,34 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
     gap: 6px 16px;
     align-items: center;
     min-height: 64px;
-    padding: 10px 10px;
-    border-radius: 14px;
+    padding: 12px 10px;
     color: inherit;
     text-decoration: none;
   }
-  .ligne a:hover { background: var(--fond-doux); }
-  .ligne a:hover .titre { color: var(--violet-fonce); }
+  .ligne a:hover { background: var(--panneau-2); }
+  .ligne a:hover .titre { text-decoration: underline; text-underline-offset: 3px; }
   .haut { grid-area: haut; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
   .bas { display: contents; }
   .etiquette {
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--fond-doux);
-    color: var(--texte-doux);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.06em;
+    padding: 5px 7px;
+    background: var(--panneau-2);
+    border: 1px solid var(--filet);
+    color: var(--ivoire-2);
+    font: 600 12px/1 var(--police-titre);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  .etiquette.solennel { background: var(--violet-voile); color: var(--violet-fonce); }
-  .e-censure { background: #FFE6DA; color: #9C3207; }
-  .e-budget { background: #FFF1CC; color: var(--jaune-encre); }
-  .date { font-size: 13px; color: var(--gris); }
-  /* Ta réponse, quand tu as déjà tranché ce vote (remplie dans le navigateur, Explorer). */
-  .tranche { padding: 3px 9px; border-radius: 999px; background: #E8F7EF; color: #1F7A45;
-    font-family: var(--police-titre); font-weight: 600; font-size: 12px; white-space: nowrap; }
+  /* Un vote solennel : l'étiquette rouge de régie. */
+  .etiquette.solennel { background: var(--direct); border-color: var(--direct); color: var(--sur-direct); }
+  .date { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  /* Ta réponse, quand tu as déjà tranché ce vote (remplie dans le navigateur, Explorer) : une
+     puce ivoire, la lumière restant à ta place dans la salle. */
+  .tranche { color: var(--ivoire);
+    font: 600 12px/1.2 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
   .titre {
     grid-area: titre;
     margin: 0;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 1.3;
+    font: 500 16px/1.4 var(--police-question);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -105,25 +103,26 @@ const recherche = normaliser(`${v.titre} ${v.dossier ?? ''} ${v.numero}`);
   .mini {
     grid-area: mini;
     display: flex;
-    height: 12px;
-    border-radius: 999px;
+    gap: 2px;
+    height: 6px;
     overflow: hidden;
-    background: var(--contre);
   }
-  .mini span { background: var(--pour); }
+  .m-pour { background: var(--pour); }
+  .m-contre { background: var(--contre); }
+  .m-abstention { background: var(--abstention); }
   .mini-censure { background: var(--absent); }
+  .mini-censure span { background: var(--pour); }
   .accent {
     grid-area: accent;
     justify-self: end;
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 13px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
-  .sombre { background: var(--texte); color: #fff; }
-  .violet { background: var(--violet-voile); color: var(--violet-fonce); }
+  .mot { font: 700 17px/1 var(--police-titre); text-transform: uppercase; color: var(--ivoire); }
+  .score, .violet { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
   @media (max-width: 760px) {
     .ligne a {
       grid-template-columns: minmax(0, 1fr) auto;

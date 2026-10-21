@@ -83,8 +83,9 @@ const niveaux = NIVEAUX.map((t, k) => ({
 
 <script>
   // Tout effacer : réponses, pronostics, député choisi, avancement du quiz, des lots et des
-  // séances. Rien d'autre à effacer : rien n'a été envoyé ailleurs.
-  const CLES = ['578e.reponses.v1', '578e.depute.v1', '578e.quiz.v1', '578e.lots.v1', '578e.seances.v1'];
+  // séances, verdicts déjà découverts, personnage. Rien d'autre à effacer : rien n'a été envoyé ailleurs.
+  const CLES = ['578e.reponses.v1', '578e.depute.v1', '578e.quiz.v1', '578e.lots.v1', '578e.seances.v1',
+    '578e.verdicts-vus.v1', '578e.personnage.v1'];
   document.querySelector('[data-tout-effacer]')?.addEventListener('click', () => {
     if (!window.confirm('Effacer toutes tes réponses, tes pronostics et ton député de ce navigateur ?')) return;
     for (const cle of CLES) {
@@ -96,19 +97,21 @@ const niveaux = NIVEAUX.map((t, k) => ({
 
 <style>
   .texte { max-width: 760px; }
-  .texte h1 { font-size: clamp(32px, 3.4vw, 44px); }
-  .chapo { font-size: 19px; color: var(--texte-doux); }
-  .texte h2 { margin-top: 34px; font-size: 24px; }
-  .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--texte-doux); }
-  .effacer { min-height: 48px; padding: 0 18px; border: 2px solid var(--bord); border-radius: 14px; background: var(--fond);
-    font-family: var(--police-titre); font-weight: 600; font-size: 15px; color: #B83C0A; cursor: pointer; }
-  .efface { margin-left: 10px; font-size: 15px; color: #0C7F57; }
-  .exemple { padding: 14px 18px; border-radius: 16px; background: var(--fond-doux); }
+  /* Un titre de page court, en capitales de régie (DESIGN-FINAL.md, § 6). */
+  .texte h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
+  .chapo { font-size: 19px; color: var(--ivoire); }
+  /* Des intertitres longs : une phrase en Literata (DESIGN-FINAL.md, § 3), pas des capitales. */
+  .texte h2 { margin-top: 34px; font: 500 23px/1.3 var(--police-question); text-transform: none; }
+  .texte p, .texte li { font-size: 17px; line-height: 1.6; color: var(--ivoire); }
+  .effacer { min-height: 48px; padding: 0 18px; border: 1px solid var(--ivoire-2); background: var(--panneau);
+    font-family: var(--police-titre); font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ivoire); cursor: pointer; }
+  .efface { margin-left: 10px; font-size: 15px; color: var(--ivoire); }
+  .exemple { padding: 14px 18px; background: var(--panneau-2); }
   .niveaux { list-style: none; padding: 0; }
   .niveaux li { display: flex; align-items: center; gap: 10px; }
   .niveaux span { width: 14px; height: 14px; border-radius: 50%; flex: none; }
   table { border-collapse: collapse; margin-top: 8px; font-size: 16px; }
-  th, td { padding: 8px 12px; border-bottom: 2px solid var(--bord-leger); text-align: center; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--filet); text-align: center; }
   th[scope="row"] { text-align: left; }
   @media (max-width: 640px) { table { display: block; overflow-x: auto; } }
 </style>

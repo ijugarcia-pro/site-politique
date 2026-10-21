@@ -1,0 +1,107 @@
+{
+ "/": {
+  "js": 18972,
+  "js_gzip": 7726,
+  "css": 39050,
+  "css_gzip": 6941,
+  "modules": 13
+ },
+ "/404/": {
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 22875,
+  "css_gzip": 4695,
+  "modules": 4
+ },
+ "/calcul/": {
+  "js": 4253,
+  "js_gzip": 2028,
+  "css": 22875,
+  "css_gzip": 4695,
+  "modules": 4
+ },
+ "/confidentialite/": {
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 22875,
+  "css_gzip": 4695,
+  "modules": 4
+ },
+ "/deputes/": {
+  "js": 10660,
+  "js_gzip": 4585,
+  "css": 28807,
+  "css_gzip": 5557,
+  "modules": 7
+ },
+ "/deputes/[uid]/": {
+  "js": 6376,
+  "js_gzip": 2684,
+  "css": 33689,
+  "css_gzip": 6184,
+  "modules": 5
+ },
+ "/etat/": {
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 22875,
+  "css_gzip": 4695,
+  "modules": 4
+ },
+ "/explorer/": {
+  "js": 7378,
+  "js_gzip": 3100,
+  "css": 31097,
+  "css_gzip": 5921,
+  "modules": 6
+ },
+ "/hemicycle/": {
+  "js": 24173,
+  "js_gzip": 9518,
+  "css": 48380,
+  "css_gzip": 8438,
+  "modules": 13
+ },
+ "/lots/": {
+  "js": 23623,
+  "js_gzip": 8902,
+  "css": 50619,
+  "css_gzip": 9006,
+  "modules": 11
+ },
+ "/mentions-legales/": {
+  "js": 3832,
+  "js_gzip": 1877,
+  "css": 22875,
+  "css_gzip": 4695,
+  "modules": 4
+ },
+ "/quiz/": {
+  "js": 26579,
+  "js_gzip": 10106,
+  "css": 52222,
+  "css_gzip": 9174,
+  "modules": 12
+ },
+ "/seance/": {
+  "js": 24540,
+  "js_gzip": 9112,
+  "css": 50619,
+  "css_gzip": 9006,
+  "modules": 12
+ },
+ "/verdict/": {
+  "js": 23783,
+  "js_gzip": 9319,
+  "css": 47472,
+  "css_gzip": 8403,
+  "modules": 12
+ },
+ "/votes/[numero]/": {
+  "js": 9206,
+  "js_gzip": 3833,
+  "css": 38830,
+  "css_gzip": 7162,
+  "modules": 6
+ }
+}

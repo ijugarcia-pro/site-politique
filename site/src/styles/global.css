@@ -212,6 +212,9 @@ a:hover { color: var(--ivoire); text-decoration-thickness: 2px; }
   padding: 8px 18px; background: var(--panneau-2); color: var(--ivoire-2);
   font: 500 14px/20px var(--police-texte);
 }
+/* La régie reste sombre dans les deux thèmes (DESIGN-FINAL.md, § 4) : en thème Jour, un bandeau est
+   un habillage télé posé sur la page claire, aux couleurs du thème Séance. */
+.theme-jour .bandeau { --panneau: #16181D; --panneau-2: #1F2229; --ivoire: #F2EEE6; --ivoire-2: #ABA69C; color: var(--ivoire); }
 @media (max-width: 640px) {
   .bandeau-titre { font-size: 22px; line-height: 26px; padding: 8px 14px; }
   .bandeau-etiquette { min-height: 42px; }

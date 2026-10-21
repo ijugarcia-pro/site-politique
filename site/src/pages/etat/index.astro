@@ -80,7 +80,10 @@ const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 </Base>
 
 <style>
+  /* Un titre de page court, en capitales de régie (DESIGN-FINAL.md, § 6). */
+  h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
   section { display: flex; flex-direction: column; gap: 12px; }
+  .cartes > :global(*) { padding: 20px 22px; background: var(--panneau); }
   section p { margin: 0; }
   .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2px; }
   .cartes strong { display: block; font: 600 32px/1.1 var(--police-titre); text-transform: uppercase; }

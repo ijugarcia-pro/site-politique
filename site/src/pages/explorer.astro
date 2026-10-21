@@ -82,7 +82,7 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
   </section>
 
   <div class="duo">
-    <section aria-labelledby="titre-divisent">
+    <section class="serres" aria-labelledby="titre-divisent">
       <div class="titre-section">
         <h2 id="titre-divisent">Les votes qui divisent</h2>
         <span>Des députés contre leur propre groupe</span>
@@ -343,7 +343,7 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
   }
   .carte-cp > a { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 700; }
 
-  .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 2px; align-items: stretch; }
   @media (max-width: 1080px) { .duo { grid-template-columns: minmax(0, 1fr); } }
   .serres { padding: 20px 22px; background: var(--panneau); }
   .serres :global(.ligne) { border-top-color: var(--filet); }

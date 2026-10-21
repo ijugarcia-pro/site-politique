@@ -31,15 +31,18 @@ interface Props {
   voile?: 'bas' | 'verdict';
   /** Où se posent les puces de caméra sur ordinateur. */
   camerasA?: 'droite' | 'gauche';
+  /** « pied » : le contenu se pose en bas de la salle ; « pleine » : il en occupe toute la hauteur,
+   *  sous les puces (verdict, Mon hémicycle), à la page de le répartir. */
+  disposition?: 'pied' | 'pleine';
 }
 
 const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], travee: ['Cam 3', 'Ta travée'], plan: ['Cam 4', 'Plan'] };
 const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)', planSurTelephone = false,
-  pleinCadre = false, fond, voile = 'bas', camerasA = 'droite' } = Astro.props;
+  pleinCadre = false, fond, voile = 'bas', camerasA = 'droite', disposition = 'pied' } = Astro.props;
 const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33');
 const styleFond = fond ? `--fond: url('/salle3d/fond-${fond}.webp'); --fond-telephone: url('/salle3d/fond-${fond}-telephone.webp');` : '';
 ---
-<figure class:list={['scene', 'theme-seance', `voile-${voile}`, `cameras-${camerasA}`,
+<figure class:list={['scene', 'theme-seance', `voile-${voile}`, `cameras-${camerasA}`, `disposition-${disposition}`,
   { 'plan-telephone': planSurTelephone, 'plein-cadre': pleinCadre, 'avec-fond': !!fond }]} data-salle3d
   style={`--hauteur-scene: ${hauteur}; ${styleFond}`}>
   <div class="ecran" tabindex="0" role="group"
@@ -107,6 +110,7 @@ const styleFond = fond ? `--fond: url('/salle3d/fond-${fond}.webp'); --fond-tele
   /* Le pied de scène : bandeau, action, programme ou compteurs, posés sur la salle. */
   .dessus { position: relative; z-index: 2; margin-top: auto; padding: 0 var(--gouttiere) 28px; }
   .plein-cadre .dessus { padding: 0 32px 28px; }
+  .disposition-pleine .dessus { flex: 1; display: flex; flex-direction: column; margin-top: 0; padding-top: 148px; }
   /* Les caméras n'ont de sens que dans la salle 3D : cachées dans le repli. */
   .scene:not([data-salle3d-etat='prete']) .cameras { display: none; }
   .cameras { position: absolute; top: 20px; right: var(--gouttiere); z-index: 3; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -131,5 +135,11 @@ const styleFond = fond ? `--fond: url('/salle3d/fond-${fond}.webp'); --fond-tele
     .plein-cadre .scene-voile { background: linear-gradient(180deg, rgba(12, 13, 16, 0) 55%, rgba(12, 13, 16, 0.9) 100%); }
     .plein-cadre .cameras { top: calc(var(--image-telephone, 58vh) - 48px); bottom: auto; left: 16px; right: 16px; }
     .plein-cadre .dessus { margin-top: calc(var(--image-telephone, 58vh) + 2px); padding: 0 16px 20px; }
+    /* Disposition pleine : la salle couvre toute la scène, les puces passent sous l'en-tête. */
+    .plein-cadre.disposition-pleine .image { inset: 0; height: auto; }
+    .plein-cadre.disposition-pleine .scene-voile { background: linear-gradient(180deg, rgba(12, 13, 16, 0.55) 0%,
+      rgba(12, 13, 16, 0) 25%, rgba(12, 13, 16, 0.2) 45%, rgba(12, 13, 16, 0.92) 70%); }
+    .plein-cadre.disposition-pleine .cameras { top: 72px; bottom: auto; }
+    .plein-cadre.disposition-pleine .dessus { margin-top: 0; padding: 124px 16px 20px; }
   }
 </style>

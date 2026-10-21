@@ -34,7 +34,7 @@ const parcours = lotsDuParcours();
         </div>
         <span class="bandeau-legende"><span class="tampon-haut">Votes passés</span> · <span data-tampon-bas></span></span>
       </div>
-      <h1 tabindex="-1" data-fin-titre>Lot terminé&nbsp;!</h1>
+      <h1 tabindex="-1" data-fin-titre>Lot terminé</h1>
       <p class="fin-texte" data-fin-texte></p>
       <div class="carte-precision">
         <JaugePrecision grand />
@@ -118,9 +118,9 @@ const parcours = lotsDuParcours();
     $('[data-tampon-lot]').textContent = k === null ? `${faits} lots` : `Lot ${k + 1}`;
     $('[data-tampon-bas]').textContent = k === null ? `${pluriel(faits * parLot, 'vote')} tranchés`
       : `${pluriel(dansLot, 'vote')} · 578e siège`;
-    $('[data-fin-titre]').textContent = k !== null ? 'Lot terminé !'
-      : suivant === null ? 'Tous les lots sont faits !'
-      : faits === parcours ? `Les ${parcours} lots sont faits !` : `${faits} lots sur ${nLots} sont faits`;
+    $('[data-fin-titre]').textContent = k !== null ? 'Lot terminé'
+      : suivant === null ? 'Tous les lots sont faits'
+      : faits === parcours ? `Les ${parcours} lots sont faits` : `${faits} lots sur ${nLots} sont faits`;
     $('[data-fin-texte]').textContent = (k === null || dansLot
       ? 'Tes réponses comptent dans ton hémicycle. '
       : 'Tu n\'as tranché aucun de ces votes : ton hémicycle ne change pas. ')

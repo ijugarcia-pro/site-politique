@@ -17,7 +17,9 @@ if (!sortie) { console.error('Usage : node scripts/parcours.mjs <sortie> [build]
 mkdirSync(sortie, { recursive: true });
 const serveur = await servir(resolve(dossier ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
-const navigateur = await chromium.launch();
+// Sans WebGL : le parcours contrôle les boutons et les états, pas la salle 3D, dont le rendu
+// logiciel (sans carte graphique) occupe le processeur au point de bloquer les clics.
+const navigateur = await chromium.launch({ args: ['--disable-3d-apis'] });
 
 /** Trancher les votes de l'écran ouvert (« Pour » à chaque fois) jusqu'à l'écran de fin. */
 async function trancher(page, max) {

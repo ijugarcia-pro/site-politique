@@ -21,17 +21,125 @@ const titres = Object.fromEntries(scrutins().map((s) => {
 }));
 const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 ---
-<Base titre="Mon hémicycle" onglet="hemicycle" theme="seance"
+<Base titre="Mon hémicycle" onglet="hemicycle" theme="seance" scene
   description="Ton hémicycle : les députés et les groupes qui votent le plus comme toi, calculés dans ton navigateur à partir de vrais votes.">
-  <Salle3D titre="La salle de l'Assemblée nationale : le voyant de chaque pupitre brille d'autant plus que ce député vote comme toi ; ta place, le siège de ton jumeau, est signalée."
+  <Salle3D slot="scene" pleinCadre disposition="pleine" fond="tribune" hauteur="980px" camerasA="gauche"
+    titre="La salle de l'Assemblée nationale : le voyant de chaque pupitre brille d'autant plus que ce député vote comme toi ; ta place, le siège de ton jumeau, est signalée."
     cameras={['travee', 'salle', 'tribune', 'plan']} planSurTelephone>
-    <div class="bandeau">
-      <div class="bandeau-ligne">
-        <span class="bandeau-etiquette">Mon hémicycle</span>
-        <span class="bandeau-titre" data-bandeau-place>Le 578<sup>e</sup> siège t'attend</span>
+    <div class="scene-hemi">
+      <div class="haut">
+        <p class="consigne">Glisse pour tourner la vue · double-touche pour revenir</p>
+        <details class="volet-personnage">
+          <summary>Ton personnage</summary>
+          <form class="personnage" data-personnage>
+            <p>Il t'attend au pied de la tribune, puis s'assoit à ta place, le siège de ton jumeau. Ses choix restent dans ton navigateur.</p>
+            <fieldset>
+              <legend>Peau</legend>
+              <div class="choix-perso">
+                {PEAUX.map((x) => (
+                  <label class="pastille-choix" title={x.nom}>
+                    <input type="radio" name="peau" value={x.id} class="visuellement-cache" />
+                    <span style={`--teinte: ${x.c}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Coiffure</legend>
+              <div class="choix-perso">
+                {COIFFURES.map((x) => (
+                  <label class="mot-choix"><input type="radio" name="coiffure" value={x.id} class="visuellement-cache" /><span>{x.nom}</span></label>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Tenue</legend>
+              <div class="choix-perso">
+                {TENUES.map((x) => (
+                  <label class="pastille-choix" title={x.nom}>
+                    <input type="radio" name="tenue" value={x.id} class="visuellement-cache" />
+                    <span style={`--teinte: ${x.haut}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </form>
+        </details>
+      </div>
+      <div class="bas">
+        <div class="bas-gauche">
+          <div class="bandeau">
+            <div class="bandeau-ligne">
+              <span class="bandeau-etiquette">Ta place</span>
+              <span class="bandeau-titre" data-bandeau-place>Le 578<sup>e</sup> siège t'attend</span>
+            </div>
+            <div class="bandeau-legende" data-place-titre>Réponds à 10 vrais votes pour prendre ta place</div>
+          </div>
+          <a class="b-direct" href="/quiz/" data-cta-quiz>Faire le quiz · 2 min</a>
+        </div>
+        <div class="panneau-precision">
+          <div class="precision" data-bloc-precision hidden>
+            <div class="titre-carte">
+              <span class="precision-titre">Précision de ton hémicycle</span>
+            </div>
+            <span class="grand" data-precision></span>
+            <div class="segments" aria-hidden="true" data-segments>
+              {Array.from({ length: 10 }, () => <span></span>)}
+              <i class="fiable" title="Fiable à 25 votes"></i>
+            </div>
+            <p data-precision-note></p>
+            <a class="bouton" href="/lots/">Trancher des votes passés</a>
+          </div>
+          <section class="groupes-bloc" aria-labelledby="titre-groupes" data-bloc-groupes hidden>
+            <h2 id="titre-groupes">Les groupes, du plus proche au plus lointain</h2>
+            <ul class="groupes" data-groupes></ul>
+          </section>
+        </div>
       </div>
     </div>
   </Salle3D>
+
+  <div class="cellules">
+    <div class="trio" data-trio hidden>
+      <a class="personne jumeau carte-relief" data-personne="jumeau">
+        <span class="sur-titre">Ton jumeau</span>
+        <span class="personne-ligne">
+          <span class="avatar" data-ini></span>
+          <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
+          <span class="score" data-score></span>
+        </span>
+        <span class="phrase">Le député qui vote le plus souvent comme toi, parmi ceux en exercice.</span>
+      </a>
+      <a class="personne oppose" data-personne="oppose">
+        <span class="sur-titre">Ton opposé</span>
+        <span class="personne-ligne">
+          <span class="avatar" data-ini></span>
+          <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
+          <span class="score" data-score></span>
+        </span>
+        <span class="phrase">Le député qui vote le moins souvent comme toi.</span>
+      </a>
+      <a class="personne depute carte-relief" data-personne="depute" href="/deputes/">
+        <span class="sur-titre" data-sur-titre-depute>Ton député</span>
+        <span class="personne-ligne">
+          <span class="avatar" data-ini>?</span>
+          <span class="personne-texte"><span class="nom" data-nom>À choisir</span><span class="detail" data-detail>Avec ton code postal</span></span>
+          <span class="score" data-score></span>
+        </span>
+        <span class="phrase" data-phrase>Retrouve qui te représente et compare ses votes aux tiens.</span>
+      </a>
+    </div>
+    <div class="tuiles" data-tuiles hidden>
+      <div class="tuile orange">
+        <div class="tuile-chiffre" data-tranches></div>
+        <div class="tuile-legende">votes tranchés</div>
+      </div>
+      <div class="tuile jaune">
+        <div class="tuile-chiffre"><span data-comme-final></span><small data-sur-final></small></div>
+        <div class="tuile-legende">comme le vote final</div>
+      </div>
+    </div>
+  </div>
 
   <div class="rangee">
     <section class="salle" aria-labelledby="titre-hemicycle">
@@ -39,6 +147,10 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
         <h1 id="titre-hemicycle">Ton hémicycle</h1>
         <span data-sous-titre>Les {occupes} députés du jour, à la couleur de leur groupe</span>
       </div>
+      <p class="place-texte" data-place-texte>
+        Réponds à 10 vrais votes : on compare tes réponses, une à une, à celles des 577
+        députés. Aucun axe gauche-droite : seulement des votes réels.
+      </p>
       <div class="cadre-salle">
         <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale"
           couleursGroupes chiffre={String(occupes)} legende="députés en exercice" />
@@ -50,114 +162,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
       </ul>
       <p class="aide-survol">Survole un siège pour voir son député ; clique pour ouvrir sa fiche.</p>
     </section>
-
-    <section class="cote" aria-label="Ta place">
-      <div class="encadre place">
-        <div class="sur-titre">Ta place</div>
-        <div class="place-titre" data-place-titre>Le 578<sup>e</sup> siège t'attend</div>
-        <p data-place-texte>
-          Réponds à 10 vrais votes : on compare tes réponses, une à une, à celles des 577
-          députés. Aucun axe gauche-droite : seulement des votes réels.
-        </p>
-        <a class="bouton-violet" href="/quiz/" data-cta-quiz>Faire le quiz · 2 min</a>
-      </div>
-
-      <div class="precision" data-bloc-precision hidden>
-        <div class="titre-carte">
-          <span class="precision-titre">Précision</span>
-          <span class="grand" data-precision></span>
-        </div>
-        <div class="segments" aria-hidden="true" data-segments>
-          {Array.from({ length: 10 }, () => <span></span>)}
-        </div>
-        <p data-precision-note></p>
-        <a class="bouton-violet" href="/lots/">Trancher des votes passés</a>
-      </div>
-
-      <div class="tuiles" data-tuiles hidden>
-        <div class="tuile orange">
-          <div class="tuile-chiffre" data-tranches></div>
-          <div class="tuile-legende">votes tranchés</div>
-        </div>
-        <div class="tuile jaune">
-          <div class="tuile-chiffre"><span data-comme-final></span><small data-sur-final></small></div>
-          <div class="tuile-legende">comme le vote final</div>
-        </div>
-      </div>
-
-      <form class="encadre personnage" data-personnage>
-        <div class="sur-titre">Ton personnage</div>
-        <p>Il t'attend au pied de la tribune, puis s'assoit à ta place, le siège de ton jumeau. Ses choix restent dans ton navigateur.</p>
-        <fieldset>
-          <legend>Peau</legend>
-          <div class="choix-perso">
-            {PEAUX.map((x) => (
-              <label class="pastille-choix" title={x.nom}>
-                <input type="radio" name="peau" value={x.id} class="visuellement-cache" />
-                <span style={`--teinte: ${x.c}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Coiffure</legend>
-          <div class="choix-perso">
-            {COIFFURES.map((x) => (
-              <label class="mot-choix"><input type="radio" name="coiffure" value={x.id} class="visuellement-cache" /><span>{x.nom}</span></label>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Tenue</legend>
-          <div class="choix-perso">
-            {TENUES.map((x) => (
-              <label class="pastille-choix" title={x.nom}>
-                <input type="radio" name="tenue" value={x.id} class="visuellement-cache" />
-                <span style={`--teinte: ${x.haut}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      </form>
-    </section>
-  </div>
-
-  <div class="trio" data-trio hidden>
-    <a class="personne jumeau carte-relief" data-personne="jumeau">
-      <span class="sur-titre">Ton jumeau</span>
-      <span class="personne-ligne">
-        <span class="avatar" data-ini></span>
-        <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
-        <span class="score" data-score></span>
-      </span>
-      <span class="phrase">Le député qui vote le plus souvent comme toi, parmi ceux en exercice.</span>
-    </a>
-    <a class="personne oppose" data-personne="oppose">
-      <span class="sur-titre">Ton opposé</span>
-      <span class="personne-ligne">
-        <span class="avatar" data-ini></span>
-        <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
-        <span class="score" data-score></span>
-      </span>
-      <span class="phrase">Le député qui vote le moins souvent comme toi.</span>
-    </a>
-    <a class="personne depute carte-relief" data-personne="depute" href="/deputes/">
-      <span class="sur-titre" data-sur-titre-depute>Ton député</span>
-      <span class="personne-ligne">
-        <span class="avatar" data-ini>?</span>
-        <span class="personne-texte"><span class="nom" data-nom>À choisir</span><span class="detail" data-detail>Avec ton code postal</span></span>
-        <span class="score" data-score></span>
-      </span>
-      <span class="phrase" data-phrase>Retrouve qui te représente et compare ses votes aux tiens.</span>
-    </a>
-  </div>
-
-  <div class="rangee">
-    <section class="encadre groupes-bloc" aria-labelledby="titre-groupes" data-bloc-groupes hidden>
-      <h2 id="titre-groupes">Les groupes, du plus proche au plus lointain</h2>
-      <ul class="groupes" data-groupes></ul>
-    </section>
-    <section class="encadre reponses" aria-labelledby="titre-reponses">
+    <section class="reponses" aria-labelledby="titre-reponses">
       <div class="titre-carte">
         <h2 id="titre-reponses">Tes réponses</h2>
         <span class="compteur" data-compteur>0</span>
@@ -311,7 +316,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
         s3.camera('travee', true);
         if (!telephone) s3.vue('travee', { instant: true });
         s3.repere(k, 'Toi · le siège de ton jumeau');
-        $('[data-bandeau-place]').textContent = `Ta place : le siège de ${p.jumeau!.ligne.n}`;
+        $('[data-bandeau-place]').textContent = `Le siège de ${p.jumeau!.ligne.n}`;
       } else {
         const reste = VOTES_POUR_SIEGER - p.reponses;
         s3.repere(null);
@@ -382,14 +387,106 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 </script>
 
 <style>
-  /* Cotes reprises de la frame V5 « ⑩ Mon hémicycle ». */
-  .rangee { display: flex; flex-wrap: wrap; gap: 22px; align-items: stretch; }
-  .salle { flex: 1.35 1 620px; min-width: 0; padding: 24px; background: var(--panneau); }
+  /* Mon hémicycle, maquettes V6C-04 et V6C-06 (docs/design-final/DESIGN-FINAL.md, § 6) : la salle
+     plein cadre depuis ta place (CAM 3), le bandeau « Ta place » et la précision posés dessus ;
+     sous la salle, ton jumeau, ton opposé, ton député, l'hémicycle « par accord » et tes réponses,
+     en aplats. */
+
+  /* --- Dans la salle --- */
+  .scene-hemi { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+  .haut { position: relative; display: flex; justify-content: center; align-items: flex-start; }
+  .consigne { margin: 0; padding: 7px 12px; background: var(--voile); font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); text-align: center; }
+  /* La consigne n'a de sens que dans la salle 3D. */
+  :global(.scene:not([data-salle3d-etat='prete'])) .consigne { visibility: hidden; }
+  /* Ton personnage : un panneau repliable, ouvert par un bouton secondaire (plus de grand bloc). */
+  .volet-personnage { position: absolute; top: -52px; right: 0; z-index: 3; max-width: min(420px, 100%); }
+  .volet-personnage summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; margin-left: auto;
+    border: 1px solid rgba(242, 238, 230, 0.4); background: var(--voile); color: var(--ivoire); cursor: pointer; list-style: none;
+    font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; }
+  .volet-personnage summary::-webkit-details-marker { display: none; }
+  .volet-personnage summary::after { content: ''; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px); }
+  .volet-personnage[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+  .volet-personnage { display: flex; flex-direction: column; align-items: flex-end; }
+  .personnage { margin-top: 2px; padding: 20px 22px; background: var(--panneau); box-shadow: var(--ombre-panneau); }
+  .personnage p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ivoire-2); }
+  .personnage fieldset { margin: 14px 0 0; padding: 0; border: 0; }
+  .personnage legend { margin-bottom: 8px; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ivoire-2); }
+  .choix-perso { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pastille-choix span[aria-hidden] { display: block; width: 32px; height: 32px; border-radius: 50%; background: var(--teinte);
+    box-shadow: inset 0 0 0 1px rgba(242, 238, 230, 0.25); cursor: pointer; }
+  .pastille-choix input:checked + span { outline: 2px solid var(--ivoire); outline-offset: 3px; }
+  .pastille-choix input:focus-visible + span, .mot-choix input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .mot-choix span { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px;
+    border: 1px solid var(--filet); font: 600 13px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  .mot-choix input:checked + span { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
+
+  .bas { margin-top: auto; display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+  .bas-gauche { flex: 1 1 420px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+  .bas .bandeau-etiquette { min-height: 52px; }
+  .bas .bandeau-titre { font-size: 32px; line-height: 1.05; }
+  .bandeau-titre sup { font-size: 0.55em; }
+  .b-direct { display: inline-flex; align-items: center; min-height: 56px; padding: 0 26px; background: var(--direct);
+    color: var(--sur-direct); font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+  .b-direct:hover { color: var(--sur-direct); background: #9A0F27; }
+  .b-direct[hidden] { display: none; }
+  /* La précision et les groupes : un aplat posé sur la salle (maquette V6C-04). */
+  .panneau-precision { flex: 1 1 380px; max-width: 560px; display: flex; flex-direction: column; gap: 14px; padding: 20px 22px;
+    background: var(--panneau); }
+  .panneau-precision:not(:has(> :not([hidden]))) { display: none; }
+  .precision { display: flex; flex-direction: column; gap: 10px; }
+  .precision[hidden] { display: none; }
+  .precision-titre { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .grand { font: 600 64px/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
+  /* La jauge : 8 px, en lumière (ta précision) ; un repère ivoire à la position « fiable » (25 votes). */
+  .segments { position: relative; display: flex; height: 8px; background: var(--filet); }
+  .segments span { flex: 1; }
+  .segments :global(span.plein) { background: var(--lumiere); }
+  .fiable { position: absolute; top: -4px; bottom: -4px; left: 71.3%; width: 2px; background: var(--ivoire); }
+  .precision p { margin: 0; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .precision .bouton { align-self: flex-start; min-height: 44px; }
+  .groupes-bloc[hidden] { display: none; }
+  .groupes-bloc h2 { margin: 4px 0 10px; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; color: var(--ivoire-2); }
+  .groupes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; padding: 0; list-style: none; }
+  .groupes :global(li) { display: grid; grid-template-columns: 80px minmax(0, 1fr) 40px; gap: 10px; align-items: center; padding: 5px 0; }
+  .groupes :global(.sigle) { display: inline-flex; align-items: center; gap: 6px; font: 600 14px/1 var(--police-titre);
+    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }
+  .groupes :global(.sigle)::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+  .groupes :global(.jauge) { height: 6px; background: var(--filet); overflow: hidden; }
+  .groupes :global(.jauge span) { display: block; height: 100%; background: var(--ivoire); }
+  .groupes :global(.pct) { text-align: right; font: 600 15px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+
+  /* --- Sous la salle : des aplats --- */
+  .cellules { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 2px; }
+  .trio, .tuiles { display: contents; }
+  .personne { display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; background: var(--panneau); color: inherit; text-decoration: none; }
+  .carte-relief:hover { background: var(--panneau-2); color: inherit; }
+  .personne[hidden] { display: none; }
+  .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .personne-ligne { display: flex; align-items: center; gap: 12px; }
+  /* Pas de cercles à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
+  .avatar { display: none; }
+  .personne-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .nom { font: 600 17px/1.3 var(--police-texte); }
+  .detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; font-size: 13px; color: var(--ivoire-2); }
+  .score { font: 600 28px/1 var(--police-titre); color: var(--ivoire); font-variant-numeric: tabular-nums; }
+  .phrase { font-size: 14px; line-height: 1.5; color: var(--ivoire-2); }
+  .tuile { display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 20px 22px; background: var(--panneau); }
+  .tuile-chiffre { font: 600 56px/0.9 var(--police-titre); font-variant-numeric: tabular-nums; }
+  .tuile-chiffre small { font-size: 22px; color: var(--ivoire-2); }
+  .tuile-legende { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+
+  .rangee { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 2px; align-items: stretch; }
+  @media (max-width: 1080px) { .rangee { grid-template-columns: minmax(0, 1fr); } }
+  .salle, .reponses { padding: 22px 24px; background: var(--panneau); min-width: 0; }
   .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
   /* Un titre de section court, en capitales de régie (.t-section). */
   .titre-section h1 { font: 700 32px/1 var(--police-titre); text-transform: uppercase; }
   .titre-section span { font-size: 14px; color: var(--ivoire-2); }
-  .cadre-salle { margin-top: 12px; }
+  .place-texte { margin: 10px 0 0; max-width: 720px; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
+  .cadre-salle { max-width: 760px; margin: 12px auto 0; }
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 16px 0 0; padding: 0;
     list-style: none; font-size: 14px; color: var(--ivoire); }
   .legende li { display: inline-flex; align-items: center; gap: 7px; }
@@ -397,74 +494,11 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .legende .sans { background: var(--panneau); border: 2px solid; }
   .aide-survol { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--ivoire-2); }
   @media (hover: none) { .aide-survol { display: none; } }
-
-  .cote { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-  .encadre { padding: 20px 22px; background: var(--panneau); }
-  .encadre p { margin: 8px 0 0; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
-  /* Les surtitres en ivoire : la lumière ne désigne que toi (ton siège, ta précision). */
-  .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--ivoire-2); }
-  .place-titre { margin-top: 6px; font-family: var(--police-titre); font-weight: 600; font-size: 34px; line-height: 1.02; text-transform: uppercase; }
-  .place-titre sup { font-size: 0.55em; }
-  .precision { padding: 20px 22px; background: var(--panneau-2); }
-  .precision p { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--ivoire-2); }
   .titre-carte { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .precision-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .grand { font-family: var(--police-titre); font-weight: 600; font-size: 56px; line-height: 0.95; font-variant-numeric: tabular-nums; }
-  .segments { display: flex; gap: 4px; margin-top: 12px; }
-  .segments span { flex: 1; height: 6px; background: var(--filet); }
-  .segments :global(span.plein) { background: var(--lumiere); }
-  .bouton-violet {
-    display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin-top: 14px;
-    background: var(--direct); color: var(--sur-direct);
-    font-family: var(--police-titre); font-weight: 600; font-size: 16px; letter-spacing: 0.08em;
-    text-transform: uppercase; text-decoration: none;
-  }
-  .bouton-violet:hover { color: var(--sur-direct); background: #9A0F27; }
-  .tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .tuile { padding: 18px 20px; }
-  .orange, .jaune { background: var(--panneau); }
-  .tuile-chiffre { font-family: var(--police-titre); font-weight: 600; font-size: 48px; line-height: 0.95; font-variant-numeric: tabular-nums; }
-
-  .tuile-chiffre small { font-size: 18px; opacity: .6; }
-  .tuile-legende { margin-top: 6px; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-
-
-  .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-  @media (max-width: 900px) { .trio { grid-template-columns: minmax(0, 1fr); } }
-  .personne { display: block; padding: 20px 22px; background: var(--panneau); color: inherit; text-decoration: none; }
-  .carte-relief:hover { background: var(--panneau-2); color: inherit; }
-  .jumeau { background: var(--panneau-2); }
-  .personne .sur-titre { display: block; font-size: 12px; }
-  .oppose .sur-titre, .depute .sur-titre { color: var(--ivoire-2); }
-  .depute .sur-titre { color: var(--ivoire-2); }
-  .personne-ligne { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-  /* Pas de cercles à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
-  .avatar { display: none; }
-  .personne-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .nom { font: 600 17px/1.3 var(--police-texte); }
-  .detail { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; font-size: 13px; color: var(--ivoire-2); }
-  .score { font-family: var(--police-titre); font-weight: 600; font-size: 28px; color: var(--ivoire); font-variant-numeric: tabular-nums; }
-  .depute .score { color: var(--ivoire); }
-  .phrase { display: block; margin-top: 12px; font-size: 14px; color: var(--ivoire-2); }
-
-  .groupes-bloc { flex: 1.2 1 560px; min-width: 0; padding: 22px 24px; align-self: flex-start; }
-  /* Un titre long devient une puce de régie (DESIGN-FINAL.md, § 3). */
-  .groupes-bloc h2 { margin: 0 0 10px; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; color: var(--ivoire-2); }
-  .groupes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin: 0; padding: 0; list-style: none; }
-  @media (max-width: 640px) { .groupes { grid-template-columns: minmax(0, 1fr); } }
-  .groupes :global(li) { display: grid; grid-template-columns: 66px minmax(0, 1fr) 46px; gap: 10px; align-items: center;
-    padding: 9px 0; border-top: 1px solid var(--filet); }
-  .groupes :global(.sigle) { display: inline-flex; align-items: center; gap: 6px; font: 600 14px/1 var(--police-titre);
-    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }
-  .groupes :global(.sigle)::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-  .groupes :global(.jauge) { height: 6px; background: var(--filet); overflow: hidden; }
-  .groupes :global(.jauge span) { display: block; height: 100%; background: var(--ivoire); }
-  .groupes :global(.pct) { text-align: right; font-family: var(--police-titre); font-weight: 600; font-size: 16px; font-variant-numeric: tabular-nums; }
-  .reponses { flex: 1 1 400px; min-width: 0; padding: 20px 22px; align-self: flex-start; }
-  .reponses h2 { font-size: 20px; }
-  .compteur { font-family: var(--police-titre); font-weight: 600; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
-  .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .reponses h2 { font-size: 26px; }
+  .compteur { font: 600 40px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+  .reponses p { font-size: 15px; color: var(--ivoire-2); }
+  .liste-reponses { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .liste-reponses :global(li) { display: flex; align-items: baseline; gap: 12px; }
   .liste-reponses :global(a) { color: var(--ivoire); text-decoration: none; font: 500 16px/1.4 var(--police-question); }
   .liste-reponses :global(a:hover) { color: var(--ivoire); text-decoration: underline; }
@@ -477,21 +511,20 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   .liste-reponses :global(.p-contre)::before { background: var(--contre); }
   .discret { font-size: 13px !important; color: var(--ivoire-2) !important; }
 
-  @media (max-width: 600px) {
-    .salle { padding: 18px 12px; }
-    .place-titre { font-size: 28px; }
-    .legende { gap: 6px 14px; font-size: 13px; }
+  /* --- Téléphone (maquette V6C-06) --- */
+  @media (max-width: 640px) {
+    /* La salle garde le haut de l'écran (V6C-06) ; bandeau et précision en dessous. */
+    .haut { justify-content: flex-start; min-height: 42vh; }
+    .consigne { display: none; }
+    .volet-personnage { position: static; align-items: flex-start; max-width: 100%; }
+    .bas { gap: 14px; }
+    .bas .bandeau-etiquette { min-height: 42px; }
+    .bas .bandeau-titre { font-size: 22px; line-height: 1.1; }
+    .b-direct { align-self: stretch; justify-content: center; }
+    .panneau-precision { padding: 16px; }
+    .grand { font-size: 48px; }
+    .groupes { grid-template-columns: minmax(0, 1fr); }
+    .salle, .reponses { padding: 18px 16px; }
+    .titre-section h1 { font-size: 26px; }
   }
-  /* Le choix du personnage : des pastilles de teinte et des mots, le choix en cours cerclé d'ivoire. */
-  .personnage fieldset { margin: 14px 0 0; padding: 0; border: 0; }
-  .personnage legend { margin-bottom: 8px; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--ivoire-2); }
-  .choix-perso { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pastille-choix span[aria-hidden] { display: block; width: 32px; height: 32px; border-radius: 50%; background: var(--teinte);
-    box-shadow: inset 0 0 0 1px rgba(242, 238, 230, 0.25); cursor: pointer; }
-  .pastille-choix input:checked + span { outline: 2px solid var(--ivoire); outline-offset: 3px; }
-  .pastille-choix input:focus-visible + span, .mot-choix input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
-  .mot-choix span { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px;
-    border: 1px solid var(--filet); font: 600 13px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
-  .mot-choix input:checked + span { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
 </style>

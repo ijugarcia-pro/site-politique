@@ -66,22 +66,27 @@ const exprimes = d.pour + d.contre;
       </header>
 
       <section class="verdict" aria-label="Résultat">
-        <span class="tampon">{verdict(s)}</span>
-        <div>
-          {censure ? (
-            <>
-              <p class="verdict-titre">{d.pour} voix sur {s.requis} requises</p>
-              <p class="verdict-detail">La censure doit réunir la majorité absolue des députés ; seules les voix pour sont comptées.</p>
-            </>
-          ) : (
-            <>
-              <p class="verdict-titre">{marge(s) ?? `${d.pour} – ${d.contre}`}</p>
-              <p class="verdict-detail">
-                {d.pour} pour · {d.contre} contre · {pluriel(d.abstention, 'abstention')}
-              </p>
-            </>
-          )}
+        <div class="bandeau">
+          <div class="bandeau-ligne">
+            <span class="bandeau-etiquette">Verdict</span>
+            <p class="bandeau-titre"><span class="tampon">{verdict(s)}</span>{' '}
+              <span class="verdict-titre">{censure ? `· ${d.pour} voix sur ${s.requis} requises` : (marge(s) ?? `${d.pour} – ${d.contre}`)}</span></p>
+          </div>
+          <p class="bandeau-legende verdict-detail">
+            {censure
+              ? 'La censure doit réunir la majorité absolue des députés ; seules les voix pour sont comptées.'
+              : `${d.pour} pour · ${d.contre} contre · ${pluriel(d.abstention, 'abstention')}${s.requis ? ` · majorité requise : ${s.requis}` : ''}`}
+          </p>
         </div>
+        {!censure && (
+          <ul class="compteurs" aria-label="Le décompte">
+            {([['pour', 'Pour', d.pour], ['contre', 'Contre', d.contre],
+              ['abstention', d.abstention > 1 ? 'Abstentions' : 'Abstention', d.abstention],
+              ['absent', d.absent > 1 ? 'Absents' : 'Absent', d.absent]] as const).map(([cle, mot, n]) => (
+              <li class={`compteur c-${cle}`}><span class="compteur-mot">{mot}</span><span class="chiffre">{n}</span></li>
+            ))}
+          </ul>
+        )}
       </section>
       {bascule(s) && <p class="bascule">{bascule(s)}</p>}
 
@@ -379,34 +384,26 @@ const exprimes = d.pour + d.contre;
   .pastille.violette:hover { background: var(--panneau-2); }
   .contexte { margin: 16px 0 0; max-width: 720px; font-size: 18px; color: var(--ivoire); }
 
-  .verdict {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px 22px;
-    padding: 20px 24px;
-    background: #16181D;
-    color: #F2EEE6;
-  }
-  /* L'issue, en titre d'écran sur un panneau de régie : la même pour les deux issues. */
-  .tampon {
-    flex: none;
-    font-family: var(--police-titre);
-    font-weight: 700;
-    font-size: clamp(40px, 5vw, 64px);
-    line-height: 0.9;
-    text-transform: uppercase;
-  }
+  /* Le résultat : un bandeau de régie sombre, à coins vifs, le même pour les deux issues, puis
+     les compteurs sur un aplat (DESIGN-FINAL.md, § 6, page d'un vote). */
+  .verdict { display: flex; flex-direction: column; gap: 2px; }
   .verdict p { margin: 0; }
-  .verdict-titre {
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: clamp(26px, 3vw, 34px);
-    line-height: 1.05;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
+  .verdict .bandeau-titre { font-size: 30px; line-height: 1.05; }
+  .compteurs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 16px 24px;
+    margin: 0; padding: 22px 26px; list-style: none; background: var(--panneau); }
+  .compteur { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .compteur-mot { display: flex; align-items: center; gap: 8px; font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
+  .compteur-mot::before { content: ''; width: 12px; height: 12px; }
+  .c-pour .compteur-mot::before { background: var(--pour); }
+  .c-contre .compteur-mot::before { background: var(--contre); }
+  .c-abstention .compteur-mot::before { background: var(--abstention); }
+  .c-absent .compteur-mot::before { background: var(--absent); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
+  .chiffre { font: 600 clamp(56px, 6vw, 84px)/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
+  @media (max-width: 640px) {
+    .compteurs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 16px; }
+    .verdict .bandeau-titre { font-size: 22px; }
   }
-  .verdict-detail { margin-top: 6px !important; font-size: 16px; color: #ABA69C; }
   .bascule { margin: -12px 0 0; font-size: 16px; color: var(--ivoire); }
 
   .salle {
@@ -556,9 +553,9 @@ const exprimes = d.pour + d.contre;
   .lecture, .mises, .sources { padding-left: 20px; }
   .lecture li, .mises li, .sources li { margin-bottom: 8px; }
 
-  .cote { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .cote { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   @media (max-width: 1080px) {
-    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
+    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: stretch; }
   }
   .encadre { padding: 20px 22px; background: var(--panneau); }
   .encadre h2 { font-size: 22px; }

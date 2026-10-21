@@ -30,7 +30,7 @@ const nLots = lotsDuParcours();
     </Fragment>
     <div class="resultat" slot="fin" data-ecran="resultat" hidden>
       <span class="puce-resultat" data-sur-titre-resultat></span>
-      <h1 tabindex="-1" data-titre-resultat>Ta place est prête&nbsp;!</h1>
+      <h1 tabindex="-1" data-titre-resultat>Ta place est prête</h1>
       <p class="phrase" data-phrase-groupe></p>
       <a class="jumeau" data-jumeau hidden>
         <span class="avatar" data-jumeau-ini></span>
@@ -125,7 +125,7 @@ const nLots = lotsDuParcours();
       $('[data-titre-resultat]').textContent = 'Pas encore de place';
       phrase.textContent = 'Tu n\'as tranché aucun vote : réponds « Pour » ou « Contre » à au moins une question pour voir qui vote comme toi.';
     } else {
-      $('[data-titre-resultat]').textContent = 'Ta place est prête !';
+      $('[data-titre-resultat]').textContent = 'Ta place est prête';
       const b = document.createElement('b');
       b.textContent = `côté ${g.ligne.sigle}`;
       b.title = g.ligne.libelle;
@@ -266,8 +266,10 @@ const nLots = lotsDuParcours();
   .puce-resultat { display: inline-flex; align-items: center; padding: 6px 8px; background: var(--direct);
     color: var(--sur-direct); font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
   .resultat { position: relative; }
-  .resultat h1 { margin: 18px 0 10px; font: 700 clamp(44px, 5vw, 72px)/0.92 var(--police-titre); text-transform: uppercase;
-    letter-spacing: -0.005em; outline: none; }
+  /* Le résultat en bandeau de régie : l'étiquette rouge, puis le titre en capitales (DESIGN-FINAL.md, § 6). */
+  .puce-resultat { min-height: 52px; padding: 0 14px; vertical-align: top; }
+  .resultat h1 { display: inline-block; margin: 0 0 14px; padding: 10px 20px; background: var(--panneau-2);
+    font: 600 30px/32px var(--police-titre); letter-spacing: 0.01em; text-transform: uppercase; vertical-align: top; outline: none; }
   .phrase { margin: 0 0 18px; font-size: 18px; line-height: 1.5; color: var(--ivoire-2); }
   .phrase b { color: var(--ivoire); }
   /* Ton jumeau : un panneau, son repère en ivoire (la lumière est pour toi). */

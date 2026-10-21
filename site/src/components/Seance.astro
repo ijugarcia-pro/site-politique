@@ -62,6 +62,13 @@ const questions = cartes.map((q, k) => {
 const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
 ---
 <div class="quiz" data-quiz>
+  <!-- Les puces de caméra, décoratives en mode focus : la salle est ici une image fixe (CAM 2). -->
+  <div class="cameras-deco" aria-hidden="true">
+    <span>Cam 1<span class="cam-nom"> · Salle</span></span>
+    <span class="actif">Cam 2<span class="cam-nom"> · Tribune</span></span>
+    <span>Cam 3<span class="cam-nom"> · Ta travée</span></span>
+    <span>Cam 4<span class="cam-nom"> · Plan</span></span>
+  </div>
   <section class="gauche" aria-live="polite">
     <div class="question" data-ecran="question">
       {Astro.slots.has('bulle') && (
@@ -85,12 +92,15 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       <h1 data-question tabindex="-1"></h1>
       <p class="concretement"><span class="concretement-titre">Ce que ça change, concrètement</span> <span data-concretement></span></p>
       </div>
+      <p class="choix-titre">{pronostic ? 'Et toi, tu voterais quoi ?' : 'Et toi, qu’aurais-tu voté ?'}</p>
       <div class="choix">
         <button type="button" class="b-pour" data-reponse="pour"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Pour</button>
         <button type="button" class="b-contre" data-reponse="contre"><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Contre</button>
       </div>
       <button type="button" class="b-passer" data-reponse=""><svg class="coche" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Je ne sais pas</button>
       <span class="visuellement-cache" data-annonce-vote></span>
+      <!-- L'action principale du panneau après la révélation (le bandeau de la révélation est à gauche). -->
+      <button type="button" class="b-continuer" data-continuer>Continuer</button>
       {pronostic && (
         <div class="pronostic" data-pronostic hidden>
           <div class="prono-tete">
@@ -111,10 +121,6 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
 
   <section class="panneau" aria-labelledby="titre-panneau">
     <div class="panneau-tete">
-      <div>
-        <h2 id="titre-panneau" data-panneau-titre>Ton hémicycle</h2>
-        <p data-panneau-sous>Il se construit à chaque réponse</p>
-      </div>
       <div class="precision-tete" data-precision-tete title="Plus tu tranches de votes, plus ton résultat est fiable">
         <span class="precision-tete-titre">Précision</span>
         <span class="precision-tete-segments" aria-hidden="true" data-segments-tete>
@@ -140,6 +146,14 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
       <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
     </ul>
+    <!-- Le bandeau de l'étape (maquette V6C-02), en bas de la colonne de gauche. -->
+    <div class="bandeau etape">
+      <div class="bandeau-ligne">
+        <span class="bandeau-etiquette">L’Assemblée</span>
+        <h2 id="titre-panneau" class="bandeau-titre" data-panneau-titre>Ton hémicycle</h2>
+      </div>
+      <p class="bandeau-legende" data-panneau-sous>Il se construit à chaque réponse</p>
+    </div>
   </section>
 </div>
 
@@ -163,37 +177,67 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
       </p>
       <p data-rv-voix></p>
     </div>
-    <button type="button" class="b-continuer" data-continuer>Continuer</button>
   </div>
 </div>
 
 <script type="application/json" data-donnees-seance set:html={donnees}></script>
 
 <style>
-  /* Le panneau de vote de « La Séance » (maquettes V6C-02 et V6C-05) : la question en Literata,
-     « Ce que ça change, concrètement », trois boutons identiques (une pastille de la couleur du
-     vote, « Ton vote » sur le choisi), le pronostic facultatif ; à droite, ton hémicycle. */
-  :global(main.page.focus) { flex: 1; justify-content: center; max-width: 1320px;
-    padding: 16px var(--gouttiere) 32px; }
-  /* Le fond du mode focus : une image fixe de la salle (CAM 2 · Tribune, scripts/images-fixes.mjs),
-     sous un voile ; la 3D ne s'ouvre pas en direct dans le quiz, les lots et la séance. */
+  /* Le mode focus de « La Séance » (maquettes V6C-02 et V6C-05, DESIGN-FINAL.md § 6) : la tribune
+     visible derrière ; à droite, le panneau de vote posé sur la salle (la question en Literata,
+     « Ce que ça change, concrètement », trois boutons identiques, le pronostic facultatif) ; à
+     gauche, les puces de caméra, ton hémicycle sur un voile et le bandeau de l'étape. */
+  :global(main.page.focus) { flex: 1; max-width: none; padding: 24px 32px 28px; }
+  /* Le fond : l'image fixe de la salle (CAM 2 · Tribune, scripts/images-fixes.mjs), nette à
+     gauche, assombrie seulement derrière le panneau ; la 3D ne s'ouvre pas en direct ici. */
   :global(body.focus)::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(12, 13, 16, 0.8) 0%, rgba(12, 13, 16, 0.93) 60%),
+    background: linear-gradient(90deg, rgba(12, 13, 16, 0.15) 0%, rgba(12, 13, 16, 0.25) 45%, rgba(12, 13, 16, 0.82) 62%),
       url('/salle3d/fond-tribune.webp') center 40% / cover no-repeat; }
-  @media (max-width: 640px) {
-    :global(body.focus)::before { background: linear-gradient(180deg, rgba(12, 13, 16, 0.8) 0%, rgba(12, 13, 16, 0.94) 55%),
-      url('/salle3d/fond-tribune-telephone.webp') center top / cover no-repeat; }
-  }
 
-  .quiz { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
-  .gauche { flex: 1 1 440px; min-width: 0; max-width: 600px; padding: 28px; border-radius: var(--rayon);
+  .quiz { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); grid-template-rows: auto 1fr;
+    grid-template-areas: 'cameras gauche' 'panneau gauche'; gap: 24px 48px; align-items: start; }
+  .cameras-deco { grid-area: cameras; display: flex; flex-wrap: wrap; gap: 8px; }
+  .cameras-deco > span { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: var(--rayon-puce);
+    border: 1px solid rgba(242, 238, 230, 0.28); background: rgba(12, 13, 16, 0.6); color: var(--ivoire);
+    font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+  .cameras-deco .actif { background: var(--ivoire); color: var(--nuit); border-color: var(--ivoire); }
+  .cameras-deco .actif::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--direct); }
+  /* Le panneau de vote : le seul carton posé sur la salle, avec ombre et rayon de 6 px. */
+  .gauche { grid-area: gauche; min-width: 0; padding: 28px; border-radius: var(--rayon);
     background: var(--panneau); box-shadow: var(--ombre-panneau); }
-  @media (max-width: 640px) { .gauche { padding: 20px 16px; } }
-  .panneau { flex: 1.25 1 520px; min-width: 0; padding: clamp(18px, 2.2vw, 28px);
-    background: var(--panneau); scroll-margin-top: 16px; }
-  .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; }
-  .panneau h2 { font-size: 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
-  .panneau-tete p { margin: 2px 0 0; font-size: 15px; color: var(--ivoire-2); }
+  /* Ton hémicycle, sur un voile, sans bordure ni ombre ; le bandeau de l'étape en bas. */
+  .panneau { grid-area: panneau; align-self: stretch; display: flex; flex-direction: column; gap: 14px; min-width: 0;
+    max-width: 640px; scroll-margin-top: 16px; }
+  .panneau-tete, .cadre-salle, .panneau > .legende { max-width: 520px; }
+  .panneau-tete { display: flex; justify-content: flex-start; }
+  .cadre-salle { padding: 16px 18px 6px; background: var(--voile); }
+  .panneau > .legende { margin: 0; padding: 10px 14px; background: var(--voile); }
+  .etape { margin-top: auto; }
+  .etape .bandeau-titre { margin: 0; font-size: 26px; line-height: 1.05; }
+  .etape .bandeau-legende { margin: 0; }
+  /* Pendant la révélation, son bandeau prend la place de celui de l'étape. */
+  :global(.quiz:has(~ .revelation:not([hidden]))) .etape { visibility: hidden; }
+  /* Tablette et téléphone : une colonne, le panneau de vote d'abord. */
+  @media (max-width: 1000px) {
+    :global(main.page.focus) { padding: 16px var(--gouttiere) 24px; }
+    .quiz { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: 'cameras' 'gauche' 'panneau'; gap: 20px; }
+    .panneau { max-width: none; }
+    .etape { margin-top: 0; }
+  }
+  /* Téléphone (maquette V6C-05) : la salle sur les 40 % du haut, les puces en bas de l'image, le
+     panneau de vote monte en feuille. */
+  @media (max-width: 640px) {
+    :global(body.focus)::before { background: linear-gradient(180deg, rgba(12, 13, 16, 0) 0, rgba(12, 13, 16, 0) 30vh, var(--nuit) 40vh),
+      url('/salle3d/fond-tribune-telephone.webp') center top / 100% auto no-repeat, var(--nuit); }
+    :global(main.page.focus) { padding: 0 0 16px; }
+    .quiz { gap: 0; }
+    .cameras-deco { flex-wrap: nowrap; justify-content: center; gap: 6px; padding: calc(40vh - 120px) 16px 12px; }
+    .cameras-deco > span { padding: 0 9px; gap: 5px; letter-spacing: 0.06em; }
+    .cameras-deco > span:not(.actif) .cam-nom { display: none; }
+    .gauche { padding: 16px; border-radius: 0; box-shadow: none; }
+    .panneau { padding: 16px; }
+    .revelation { margin: 0 16px; }
+  }
   .precision-tete { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--panneau-2); }
   .precision-tete-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ivoire-2); }
@@ -201,7 +245,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .precision-tete-segments span { width: 9px; height: 4px; background: var(--filet); }
   .precision-tete-segments :global(span.plein) { background: var(--lumiere); }
   .precision-tete-pct { min-width: 36px; font: 600 15px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
-  .cadre-salle { margin-top: 20px; }
+
   .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
     list-style: none; font-size: 14px; color: var(--ivoire-2); }
   .legende li { display: inline-flex; align-items: center; gap: 7px; }
@@ -230,15 +274,18 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     letter-spacing: 0; text-wrap: balance; outline: none; }
   .question h1:global(.longue) { font-size: 28px; line-height: 1.28; }
   @media (max-width: 640px) {
-    .question h1 { font-size: 27px; }
-    .question h1:global(.longue) { font-size: 23px; }
+    .question h1 { font-size: 22px; line-height: 1.3; }
+    .question h1:global(.longue) { font-size: 20px; }
+    .concretement { font-size: 15px; line-height: 1.45; }
   }
   .concretement { margin: 0 0 24px; font-size: 17px; line-height: 27px; color: var(--ivoire); }
   .concretement-titre { display: block; margin-bottom: 6px; font: 600 var(--taille-puce)/16px var(--police-titre);
     letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
 
   /* Les boutons de vote : strictement identiques, seule la pastille porte la couleur du vote. */
-  .choix { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--filet); }
+  .choix-titre { margin: 0; padding-top: 18px; border-top: 1px solid var(--filet); font: 600 13px/16px var(--police-titre);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); }
+  .choix { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }
   .choix button, .b-passer {
     position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 58px;
     padding: 0 18px; border: 1px solid var(--filet); border-radius: var(--rayon); background: var(--panneau-2);
@@ -257,7 +304,9 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .choix button:global(.choisi), .b-passer:global(.choisi) { border: 2px solid var(--ivoire); padding: 0 17px; }
   .choix button:global(.choisi)::after, .b-passer:global(.choisi)::after { content: 'Ton vote'; margin-left: auto;
     margin-right: 30px; font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .choix button:global(.estompe), .b-passer:global(.estompe) { opacity: .35; transform: translateY(5px); }
+  /* Après le vote, les autres réponses restent identiques (DESIGN-FINAL.md, § 6) : seul le choisi
+     prend son cadre ivoire. */
+  .choix button:global(.estompe), .b-passer:global(.estompe) { opacity: 1; transform: none; }
   /* Le geste de vote (A2 + A3, docs/animations-lot-1.md § 1) : la même animation pour chaque
      choix. Le bouton choisi rebondit et une coche se trace ; les autres s'éteignent. */
   .choix button:global(.choisi), .b-passer:global(.choisi) { animation: ressort var(--dur-s) var(--ease-ressort) both; }
@@ -273,27 +322,27 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     .choix button:global(.estompe), .b-passer:global(.estompe) { transition: none; }
   }
 
-  /* La révélation : un bandeau de régie posé en bas de l'écran. */
-  .revelation { position: relative; z-index: 5; margin: 24px calc(-1 * var(--gouttiere)) -32px;
-    border-top: 1px solid var(--filet); background: var(--voile); backdrop-filter: blur(6px);
-    animation: bandeau var(--dur-bandeau) var(--ease-bandeau) both; }
-  @media (min-width: 1000px) { .revelation { position: sticky; bottom: 0; } }
+  /* La révélation : un bandeau de régie posé en bas de la colonne de gauche, sur la salle ; l'action
+     « Continuer » reste dans le panneau de vote. */
+  .revelation { position: relative; z-index: 5; margin: 16px 0 0; animation: bandeau var(--dur-bandeau) var(--ease-bandeau) both; }
+  @media (min-width: 1000px) {
+    .revelation { position: fixed; left: 32px; bottom: 28px; width: min(640px, calc(100% - 560px - 112px)); margin: 0; }
+  }
   @media (prefers-reduced-motion: reduce) { .revelation { animation: none; } }
-  .revelation-dedans { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; max-width: 1320px;
-    margin: 0 auto; padding: 20px var(--gouttiere); }
-  .revelation-icone { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px;
-    border-radius: 50%; background: var(--panneau-2); color: var(--ivoire-2); border: 1px solid var(--filet); }
-  .revelation-texte { flex: 1 1 380px; }
+  .revelation-dedans { display: flex; flex-direction: column; align-items: stretch; }
+  .revelation-icone { display: none; }
+  .revelation-texte { display: flex; flex-direction: column; }
   .revelation p { margin: 0; }
-  .revelation-titre { font: 600 clamp(22px, 2.2vw, 28px)/1.1 var(--police-titre); text-transform: uppercase;
-    letter-spacing: 0.01em; color: var(--ivoire); }
-  .revelation-texte p + p { margin-top: 6px; font-size: 17px; line-height: 1.45; color: var(--ivoire-2); }
+  .revelation-titre { align-self: flex-start; padding: 10px 20px; background: var(--panneau);
+    font: 600 26px/1.05 var(--police-titre); text-transform: uppercase; letter-spacing: 0.01em; color: var(--ivoire); }
+  .revelation-texte p + p { padding: 8px 18px; background: var(--panneau-2); font: 500 14px/20px var(--police-texte); color: var(--ivoire-2); }
   .revelation-texte a { white-space: nowrap; color: var(--ivoire); }
-  .rv-precision { display: flex; align-items: center; gap: 12px; max-width: 360px; margin-top: 10px; }
+  .rv-precision { display: flex; align-items: center; gap: 12px; padding: 10px 18px; background: var(--voile); }
+  .rv-precision[hidden] { display: none; }
   .rv-precision-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ivoire-2); }
   .rv-precision > :global(.jauge-precision) { flex: 1; }
-  .ta-voix { flex: 0 1 330px; padding: 14px 16px; background: var(--panneau);
+  .ta-voix { margin-top: 2px; padding: 14px 18px; background: var(--panneau);
     font-size: 15px; line-height: 1.45; color: var(--ivoire); }
   .ta-voix .sur-titre { display: flex; align-items: center; gap: 8px; color: var(--lumiere); }
   /* Ta voix en plus (R3) : la carte monte, le rond se pose, ton chiffre prend +1. */
@@ -318,8 +367,9 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
   .b-continuer, .b-suivant { min-height: 56px; border: 0; background: var(--direct);
     color: var(--sur-direct); font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
   .b-continuer:hover, .b-suivant:hover { background: #9A0F27; }
-  .b-continuer { min-width: 220px; flex: 0 0 auto; padding: 0 26px; }
-  @media (max-width: 640px) { .b-continuer { width: 100%; } }
+  /* « Continuer » n'apparaît qu'avec la révélation. */
+  .b-continuer { display: none; width: 100%; margin-top: 16px; padding: 0 26px; }
+  :global(.quiz:has(~ .revelation:not([hidden]))) .b-continuer { display: block; }
 
   /* Le pronostic : facultatif, deux boutons identiques pour Adopté et Rejeté. */
   .pronostic { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--filet);

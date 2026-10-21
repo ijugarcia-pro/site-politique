@@ -15,8 +15,7 @@
 .fin .tampon:is(.anime) { animation: bandeau var(--dur-bandeau) var(--ease-bandeau) both; }
 @media (prefers-reduced-motion: reduce) { .fin .tampon:is(.anime) { animation: none; } }
 
-.fin h1 { margin: 28px 0 0; font: 700 clamp(44px, 5vw, 72px)/0.92 var(--police-titre); text-transform: uppercase;
-  letter-spacing: -0.005em; outline: none; }
+.fin h1 { margin: 24px 0 0; font: 700 32px/1 var(--police-titre); text-transform: uppercase; outline: none; }
 .fin-texte { margin: 14px 0 0; font-size: 17px; line-height: 27px; color: var(--ivoire-2); }
 
 /* Les panneaux du bilan. */

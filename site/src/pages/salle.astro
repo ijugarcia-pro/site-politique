@@ -70,6 +70,16 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
     <Bouton href="/deputes/" large data-carte-fiche>Voir sa fiche</Bouton>
   </section>
 
+  <aside class="encart-vote" aria-labelledby="titre-vote-salle" data-encart-vote hidden>
+    <p class="t-legende" id="titre-vote-salle" data-vote-salle-numero>Le vote dans la salle</p>
+    <p class="encart-titre" data-vote-salle-titre></p>
+    <ul class="legende-vote">
+      <li><span class="point pour"></span>Pour</li><li><span class="point contre"></span>Contre</li>
+      <li><span class="point abstention"></span>Abstention</li><li><span class="point absent"></span>Absent ou non-votant</li>
+    </ul>
+    <a class="retour-vote" href="/explorer/" data-vote-salle-lien>Revenir au vote</a>
+  </aside>
+
   <aside class="encart-palier" aria-label="Palier 2 · La salle éclairée" data-encart-palier>
     <div class="encart-attente" data-encart-attente>
       <span class="anneau-encart" aria-hidden="true" data-encart-anneau></span>
@@ -96,7 +106,7 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
   import { deputeChoisi, lireJSON } from '../lib/navigateur.ts';
   import { palierAtteint, PALIERS, votesTranches } from '../lib/paliers.ts';
   import { comparer, colonnes, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
-  import { $, mesReps, pluriel } from '../lib/trancher.ts';
+  import { $, mesReps, pluriel, VOYANTS } from '../lib/trancher.ts';
   import { salle3D, type RepereSalle } from '../salle3d/pilote.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
 
@@ -192,9 +202,34 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
       cercles.forEach((c, i) => c.setAttribute('fill', couleurs[i] ?? (sieges[i] ? '#BDBDBD' : '#FFFFFF')));
     };
     peindre(voyantsAccord());
+    // « Voir le vote dans la salle » (page d'un vote) : /salle/#vote=VTANR… allume chaque siège
+    // à la couleur du vote de son député, lu dans la matrice.
+    const uidVote = /^#vote=(VTANR\w+)$/.exec(location.hash)?.[1] ?? null;
+    let voyantsVote: (string | null)[] | null = null;
+    if (uidVote) {
+      try {
+        const m = matrice ?? await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        const k = m.votes.indexOf(uidVote);
+        if (k >= 0) {
+          const lettres = new Map(m.deputes.map((x) => [x.u, x.s[k]]));
+          voyantsVote = sieges.map((s) => (s ? VOYANTS[lettres.get(s[0]) ?? 'x'] ?? null : null));
+          peindre(voyantsVote);
+          $('[data-encart-vote]').hidden = false;
+          $('[data-encart-palier]').hidden = true;
+          const votes = await (await fetch('/donnees/votes.json')).json() as Record<string, [number, string, string, number, string]>;
+          const v = votes[uidVote];
+          if (v) {
+            $('[data-vote-salle-numero]').textContent = `Le vote n° ${v[0].toLocaleString('fr-FR')} dans la salle`;
+            $('[data-vote-salle-titre]').textContent = v[1];
+            $<HTMLAnchorElement>('[data-vote-salle-lien]').href = `/votes/${v[0]}/`;
+          }
+          annonce.textContent = 'Chaque siège a la couleur du vote de son député.';
+        }
+      } catch { /* hors ligne : la salle sans le vote */ }
+    }
     $<HTMLSelectElement>('[data-groupe]').addEventListener('change', (ev) => {
       const g = (ev.target as HTMLSelectElement).value;
-      if (!g) { peindre(voyantsAccord()); annonce.textContent = 'Aucun groupe montré.'; return; }
+      if (!g) { peindre(voyantsVote ?? voyantsAccord()); annonce.textContent = 'Aucun groupe montré.'; return; }
       const couleurs = sieges.map((s) => (s && s[2] === g ? '#F4EDE2' : null));
       peindre(couleurs);
       const nb = couleurs.filter(Boolean).length;
@@ -317,6 +352,14 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
   .mini-barre .contraires { flex: var(--contraires, 0) 0 0; background: var(--inactif); }
   .mini-barre .absents { flex: var(--absents, 0) 0 0; background: var(--bord); }
 
+  .encart-vote {
+    position: absolute; z-index: 3; right: var(--marge); bottom: var(--marge); width: 360px; padding: 18px 20px;
+    border-radius: 20px; background: var(--feuille); box-shadow: var(--ombre-feuille);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .legende-vote { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+  .legende-vote li { display: flex; align-items: center; gap: 8px; font: 500 13px/1.3 var(--police-texte); }
+  .retour-vote { color: var(--encre); font: 700 14px/1 var(--police-texte); min-height: var(--cible); display: inline-flex; align-items: center; }
   .encart-palier { right: var(--marge); bottom: var(--marge); width: 360px; padding: 18px 20px; border-radius: 20px; }
   .encart-attente { display: flex; align-items: center; gap: 16px; }
   .anneau-encart {
@@ -333,7 +376,7 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
   .pastille-intensite.eteinte { background: var(--feuille); box-shadow: inset 0 0 0 2px var(--absent); }
 
   @media (max-width: 720px) {
-    .panneau, .carte-depute, .encart-palier {
+    .panneau, .carte-depute, .encart-palier, .encart-vote {
       position: relative; inset: auto; width: auto; max-height: none; box-shadow: none;
     }
     .panneau {
@@ -341,7 +384,7 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
       padding: 20px 16px 12px; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
     }
     .carte-depute { margin: 0 16px 12px; border: 1px solid var(--filet); }
-    .encart-palier { margin: 0 16px 16px; background: var(--surface); }
+    .encart-palier, .encart-vote { margin: 0 16px 16px; background: var(--surface); box-shadow: none; }
     :global(main:has([data-panneau-salle])) { background: var(--feuille); }
   }
 </style>

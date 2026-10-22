@@ -8,7 +8,7 @@ import Base from '../layouts/Base.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import { cartesThemes, scrutins, semaine } from '../lib/donnees.ts';
 import { PALIERS, SEUIL_DOSSIER } from '../lib/paliers.ts';
-import { THEMES } from '../lib/themes.ts';
+import { slugTheme, THEMES } from '../lib/themes.ts';
 
 const sem = semaine();
 const TEXTES: Record<string, string> = {
@@ -64,7 +64,7 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
     <p class="t-texte">Un dossier raconte tout ce que l’Assemblée a voté sur ce thème depuis le début de la législature, et où tu te situes vote après vote.</p>
     <ul class="grille-dossiers">
       {THEMES.map((t) => (
-        <li class="dossier" data-dossier={t}>
+        <li><a class="dossier" href={`/dossiers/${slugTheme(t)}/`} data-dossier={t}>
           <span class="dossier-haut">
             <span class="dossier-nom">{t}</span>
             <svg class="cadenas" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d={cadenas}></path></svg>
@@ -72,7 +72,7 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
           </span>
           <span class="barre" aria-hidden="true"><span data-dossier-plein></span></span>
           <span class="t-legende" data-dossier-texte>0 / {SEUIL_DOSSIER} votes</span>
-        </li>
+        </a></li>
       ))}
     </ul>
   </section>
@@ -188,7 +188,8 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
   .dossiers { display: flex; flex-direction: column; gap: 12px; }
   .titre-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .grille-dossiers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .dossier { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: var(--surface); }
+  .dossier { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: var(--surface); color: var(--encre); text-decoration: none; }
+  .dossier:hover { box-shadow: inset 0 0 0 2px var(--encre); }
   .dossier .barre { background: var(--feuille); }
   .dossier-haut { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .dossier-nom { font: 700 16px/1.2 var(--police-texte); }

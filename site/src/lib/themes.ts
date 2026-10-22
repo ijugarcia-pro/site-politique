@@ -13,3 +13,8 @@ export const puceTheme = (theme: string): string => {
   const p = PUCES_THEMES[theme] ?? ETIQUETTE;
   return `${p.fond}:${p.encre}`;
 };
+
+/** L'adresse du dossier d'un thème : « Économie » → « economie » (/dossiers/economie/). */
+export const slugTheme = (theme: string): string =>
+  theme.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');

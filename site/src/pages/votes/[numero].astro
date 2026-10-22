@@ -1,14 +1,26 @@
 ---
-// Page d'un vote (frame V5 « Vote ») : verdict, « Et toi ? », hémicycle avec filtres, groupe
-// par groupe, voix qui auraient fait basculer le résultat, parcours du texte, sources.
-// Tant qu'aucune fiche « Ce que ça change » n'est validée (t27), le vote est affiché sans
-// cartes : l'objet officiel et les liens vers l'Assemblée en tiennent lieu.
-import Base from '../../layouts/BaseSeance.astro';
-import { couleurGroupe } from '../../lib/couleurs.ts';
-import Hemicycle from '../../components/Hemicycle.astro';
-import { dateLisible, LIBELLES, lienVote, majuscule, scrutin, scrutins,
+// La page d'un vote (VDEF, captures 14a, 14b, 14c ; lot V7) : la question en titre (celle de sa
+// carte, sinon le titre court), l'issue en pilule noire et « à N voix près », puis trois niveaux
+// de lecture en vrais onglets (components/vdef/Onglets.astro, reflétés dans l'adresse) :
+// - L'essentiel : la phrase-réponse, la barre et les pastilles, toi / ton jumeau / ton député,
+//   ta réponse (« Et toi, qu'aurais-tu voté ? ») ;
+// - Comprendre : « Concrètement » si le vote a une carte validée, qui a voté quoi groupe par
+//   groupe, le parcours du texte ;
+// - Fouiller : l'intitulé officiel, le type, la majorité requise, les votes contre leur groupe,
+//   les sources, les 577 votes un par un et leur téléchargement (CSV fait dans le navigateur).
+// Les 3 cartes « Ce que ça change » n'apparaissent que validées (docs/vulgarisation-controles.md) :
+// aucune ne l'est encore. Un seul hémicycle par écran : « Voir le vote dans la salle » ouvre la
+// salle 3D aux couleurs du vote (/salle/#vote=…).
+import Base from '../../layouts/Base.astro';
+import BarreVote from '../../components/vdef/BarreVote.astro';
+import Bouton from '../../components/vdef/Bouton.astro';
+import Onglets from '../../components/vdef/Onglets.astro';
+import Pastille from '../../components/vdef/Pastille.astro';
+import { cartesParVote, dateLisible, LIBELLES, lienVote, majuscule, scrutin, scrutins,
   type Position } from '../../lib/donnees.ts';
-import { barre, bascule, ligneGroupe, marge, nature, verdict } from '../../lib/votes.ts';
+import { slugTheme, THEMES } from '../../lib/themes.ts';
+import { avecSonGroupe, bascule, ligneGroupe, marge, nature, phraseGroupes, positionGroupe,
+  verdict } from '../../lib/votes.ts';
 
 export function getStaticPaths() {
   const liste = scrutins();
@@ -20,620 +32,379 @@ export function getStaticPaths() {
 
 const { uid, plusRecent, plusAncien } = Astro.props;
 const s = scrutin(uid);
-const titre = majuscule(s.titre).replace(/\.$/, '');
+const carte = cartesParVote().get(uid) ?? null;
+const officiel = majuscule(s.titre).replace(/\.$/, '');
 const censure = s.motion_censure;
 const d = s.decompte;
-const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+const pluriel = (n: number, mot: string) => `${n.toLocaleString('fr-FR')} ${mot}${n > 1 ? 's' : ''}`;
+const court = s.dossier?.titre ?? officiel;
+const titre = carte?.question.replace(/ ([?!:;])/g, ' $1') ?? (court.length > 140 ? `${court.slice(0, 138)}…` : court);
+const issue = verdict(s);
+const adopte = issue.startsWith('Adopt');
+const n = s.voix_pour_inverser;
+// La phrase-réponse : la question de la carte appelle un oui ou un non ; sans carte, l'issue.
+const phrase = censure
+  ? `${issue} : ${d.pour} voix pour la censure, ${s.requis} étaient requises.`
+  : `${carte ? `${adopte ? 'Oui' : 'Non'}. ` : ''}${issue} par ${d.pour.toLocaleString('fr-FR')} voix pour et ${d.contre.toLocaleString('fr-FR')} contre.`;
+const suffit = !censure && n && n > 0
+  ? `Il aurait suffi que ${pluriel(n, 'député')} change${n > 1 ? 'nt' : ''} d’avis pour que le résultat bascule.`
+  : bascule(s);
+const exprimes = d.pour + d.contre;
 const parcours = s.dossier?.parcours ?? [];
-const derniere = parcours.at(-1);
-const etat = !derniere ? null
-  : derniere.code === 'PROM' ? `Loi promulguée le ${dateLisible(derniere.fin)}`
-  : `Dernière étape connue : ${derniere.libelle.charAt(0).toLowerCase()}${derniere.libelle.slice(1)}`;
 const misesAuPoint = s.sieges.filter((x) => x.mise_au_point);
-// Le titre de l'onglet et des moteurs de recherche : celui du dossier, plus parlant que l'objet
-// officiel (« l'ensemble de la proposition de loi visant à… »).
-const court = s.dossier?.titre ?? titre;
+const parGroupe = new Map(s.groupes.map((g) => [g.uid, g]));
+const groupesTries = [...s.groupes].filter((g) => g.membres > 0).sort((a, b) => b.membres - a.membres);
+const dissidentsParGroupe = groupesTries.filter((g) => !g.non_inscrits && g.dissidents)
+  .sort((a, b) => b.dissidents! - a.dissidents!);
+// Les 577 votes, un par un : [député, nom, sigle, vote, avec son groupe ?].
+const lignes = s.sieges.filter((x) => x.depute).map((x) => {
+  const g = parGroupe.get(x.groupe ?? '');
+  const position = g?.decompte ? positionGroupe(g.decompte) : null;
+  return [x.depute, x.nom ?? '', g?.sigle ?? '', x.vote ?? 'absent',
+    avecSonGroupe(x.vote, x.dissident, position, !!g?.non_inscrits)];
+}).sort((a, b) => (a[1] as string).localeCompare(b[1] as string, 'fr'));
+const donnees = JSON.stringify({ uid, numero: s.numero, censure, adopte, lignes,
+  decompte: { pour: d.pour, contre: d.contre } }).replace(/</g, '\\u003c');
 const titrePage = `Vote n° ${s.numero} : ${court.length > 70 ? `${court.slice(0, 68)}…` : court}`;
 const description = censure
-  ? `Motion de censure ${verdict(s).toLowerCase()} le ${dateLisible(s.date)} : ${d.pour} voix pour, ${s.requis} requises. Le vote de chaque député.`
-  : `${verdict(s)} le ${dateLisible(s.date)} par ${d.pour} voix pour et ${d.contre} contre. Le vote de chaque député, groupe par groupe.`;
-const exprimes = d.pour + d.contre;
+  ? `Motion de censure ${issue.toLowerCase()} le ${dateLisible(s.date)} : ${d.pour} voix pour, ${s.requis} requises. Le vote de chaque député.`
+  : `${issue} le ${dateLisible(s.date)} par ${d.pour} voix pour et ${d.contre} contre. Le vote de chaque député, groupe par groupe.`;
 ---
-<Base titre={titrePage} description={description} onglet="explorer">
-  <nav class="fil" aria-label="Fil d'Ariane">
-    <a href="/explorer/">Explorer</a> <span aria-hidden="true">›</span>
-    <span aria-current="page">Vote n° {s.numero}</span>
-  </nav>
-
-  <div class="mise-en-page">
-    <div class="principal">
-      <header class="tete">
-        <span class="puce">{nature(s)}</span>
-        <h1>{titre}</h1>
-        <p class="quand">Scrutin n° {s.numero} · {dateLisible(s.date)}</p>
-        <div class="pastilles">
-          {etat && <span class="pastille">{etat}</span>}
-          {s.dissidents > 0 && (
-            <a class="pastille violette" href="#qui-a-vote">{pluriel(s.dissidents, 'vote')} contre leur groupe</a>
-          )}
-        </div>
-        {s.dossier && !censure && (
-          <p class="contexte">
-            Ce vote porte sur le dossier « {s.dossier.titre} ». Le résumé « Ce que ça change »
-            de ce texte n'est pas encore rédigé : voici le vote, tel que l'Assemblée l'a publié.
-          </p>
-        )}
-      </header>
-
-      <section class="verdict" aria-label="Résultat">
-        <div class="bandeau">
-          <div class="bandeau-ligne">
-            <span class="bandeau-etiquette">Verdict</span>
-            <p class="bandeau-titre"><span class="tampon">{verdict(s)}</span>{' '}
-              <span class="verdict-titre">{censure ? `· ${d.pour} voix sur ${s.requis} requises` : (marge(s) ?? `${d.pour} – ${d.contre}`)}</span></p>
-          </div>
-          <p class="bandeau-legende verdict-detail">
-            {censure
-              ? 'La censure doit réunir la majorité absolue des députés ; seules les voix pour sont comptées.'
-              : `${d.pour} pour · ${d.contre} contre · ${pluriel(d.abstention, 'abstention')}${s.requis ? ` · majorité requise : ${s.requis}` : ''}`}
-          </p>
-        </div>
-        {!censure && (
-          <ul class="compteurs" aria-label="Le décompte">
-            {([['pour', 'Pour', d.pour], ['contre', 'Contre', d.contre],
-              ['abstention', d.abstention > 1 ? 'Abstentions' : 'Abstention', d.abstention],
-              ['absent', d.absent > 1 ? 'Absents' : 'Absent', d.absent]] as const).map(([cle, mot, n]) => (
-              <li class={`compteur c-${cle}`}><span class="compteur-mot">{mot}</span><span class="chiffre">{n}</span></li>
-            ))}
-          </ul>
-        )}
-      </section>
-      {bascule(s) && <p class="bascule">{bascule(s)}</p>}
-
-      <section class="salle" id="qui-a-vote" aria-labelledby="titre-salle">
-        {!censure && (
-          <div class="et-toi" data-et-toi data-uid={s.uid} data-pour={d.pour} data-contre={d.contre}
-            data-marge={s.voix_pour_inverser ?? ''}>
-            <h2>Et toi, qu'aurais-tu voté&#8239;?</h2>
-            <p class="et-toi-texte" aria-live="polite">
-              Choisis, puis compare avec les 577. Ta réponse reste dans ton navigateur.
-            </p>
-            <div class="choix" role="group" aria-label="Ta réponse">
-              <button type="button" class="choix-pour" data-v="pour" aria-pressed="false">Pour</button>
-              <button type="button" class="choix-contre" data-v="contre" aria-pressed="false">Contre</button>
-            </div>
-            <button type="button" class="effacer" data-effacer hidden>Effacer ma réponse</button>
-            <div class="ta-voix" data-ta-voix hidden>
-              <p class="sur-titre">Ta voix de 578<sup>e</sup></p>
-              <p data-voix></p>
-            </div>
-          </div>
-        )}
-        <div class="qui">
-          <h2 id="titre-salle">Qui a voté quoi</h2>
-          <Hemicycle sieges={s.sieges} groupes={s.groupes} mode="vote" filtres detail={false} censure={censure}
-            titre={`Hémicycle du scrutin n° ${s.numero}`} />
-        </div>
-      </section>
-
-      <section aria-labelledby="titre-groupes">
-        <h2 id="titre-groupes">Groupe par groupe</h2>
-        <ul class="groupes">
-          {s.groupes.map((g) => {
-            const b = barre(g.decompte!, g.membres);
-            return (
-              <li>
-                <abbr class="pastille-groupe" style={`--c: ${couleurGroupe(g.couleur)}`} title={g.libelle}>{g.sigle}</abbr>
-                <span class="barre" aria-hidden="true">
-                  <span style={`width: ${b.pour}%; background: var(--pour)`}></span>
-                  <span style={`width: ${b.abstention}%; background: var(--abstention)`}></span>
-                  <span style={`width: ${b.contre}%; background: var(--contre)`}></span>
-                </span>
-                <span class="ligne">
-                  {censure ? `${g.decompte!.pour} sur ${g.membres}` : ligneGroupe(g.decompte!)}
-                  {!g.non_inscrits && g.dissidents ? <span class="contre-groupe"> · {g.dissidents} contre le groupe</span> : null}
-                </span>
-                <span class="visuellement-cache">
-                  {`${g.libelle} : ${g.membres} membres, ${g.decompte!.pour} pour, ${g.decompte!.contre} contre, ${g.decompte!.abstention} abstentions, ${g.decompte!.non_votant} non-votants, ${g.decompte!.absent} absents.`}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-        <p class="note">
-          Chaque barre représente tous les membres du groupe ; la partie grise, ceux qui n'ont
-          pas pris part au vote (absents et non-votants).
-        </p>
-      </section>
-
-      <section class="plus" aria-labelledby="titre-plus">
-        <h2 id="titre-plus">Pour aller plus loin</h2>
-        <details>
-          <summary>Le résultat à la loupe</summary>
-          <dl class="chiffres">
-            {censure ? (
-              <>
-                <div><dt>Voix pour la censure</dt><dd>{s.publie.pour}</dd></div>
-                <div><dt>Majorité requise</dt><dd>{s.requis}</dd></div>
-              </>
-            ) : (
-              <>
-                <div><dt>Suffrages exprimés (pour et contre)</dt><dd>{exprimes}</dd></div>
-                <div><dt>Majorité requise</dt><dd>{s.requis ?? '—'}</dd></div>
-                <div><dt>Abstentions</dt><dd>{d.abstention}</dd></div>
-                <div><dt>Non-votants</dt><dd>{d.non_votant}</dd></div>
-                <div><dt>Absents</dt><dd>{d.absent}</dd></div>
-              </>
-            )}
-          </dl>
-          {bascule(s) && <p>{bascule(s)} Le calcul suppose que les suffrages exprimés restent les mêmes.</p>}
-          <p>
-            Le décompte ci-dessus est reconstitué siège par siège à partir de la liste
-            nominative publiée ; il est contrôlé chaque nuit contre le décompte officiel.
-          </p>
-        </details>
-        <details>
-          <summary>Comment lire ce vote</summary>
-          <ul class="lecture">
-            {censure ? (
-              <li>Pour une motion de censure, l'Assemblée ne publie que les voix pour. Un député
-              qui n'apparaît pas n'a pas voté la censure : il peut être présent ou absent.</li>
-            ) : (
-              <li><strong>Absent</strong> : le député n'a pas pris part au scrutin.
-              <strong>Non-votant</strong> : il était là mais n'a pas voté, souvent parce qu'il
-              présidait la séance ou siège au Gouvernement.</li>
-            )}
-            <li><strong>Contre son groupe</strong> : un vote pour quand la majorité du groupe a
-            voté contre, ou l'inverse. C'est notre calcul, pas une mention officielle ; il se
-            vérifie avec le décompte du groupe. Jamais pour les non-inscrits ; une abstention
-            n'en est pas un.</li>
-            <li>Une absence n'est pas forcément un désintérêt : un député peut siéger en
-            commission au même moment.</li>
-          </ul>
-        </details>
-        {misesAuPoint.length > 0 && (
-          <details>
-            <summary>{pluriel(misesAuPoint.length, 'mise')} au point</summary>
-            <p>
-              Après le scrutin, ces députés ont indiqué qu'ils auraient voulu voter autrement.
-              Leur mise au point est publiée, mais le résultat officiel ne change pas : le site
-              compte leur vote officiel.
-            </p>
-            <ul class="mises">
-              {misesAuPoint.map((x) => (
-                <li>
-                  <a href={`/deputes/${x.depute}/`}>{x.nom}</a> : a voté {LIBELLES[x.vote as Position]},
-                  voulait voter {LIBELLES[x.mise_au_point as Position] ?? x.mise_au_point}
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-        <details>
-          <summary>Sources</summary>
-          <ul class="sources">
-            <li><a href={s.lien}>Le scrutin n° {s.numero} sur le site de l'Assemblée nationale</a></li>
-            {s.dossier && <li><a href={s.dossier.lien}>Le dossier « {s.dossier.titre} »</a></li>}
-            <li><a href="/etat/">L'état des données du site</a> : dernière mise à jour et contrôles</li>
-          </ul>
-        </details>
-      </section>
+<Base titre={titrePage} description={description} gabarit="lecture" vue="tribune" bas="galerie">
+  <a class="retour" href="/explorer/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    La galerie
+  </a>
+  <header class="entete">
+    <div class="pastilles">
+      {carte && THEMES.includes(carte.theme as never)
+        ? <Pastille href={`/dossiers/${slugTheme(carte.theme)}/`} class="pastille-theme">{carte.theme}</Pastille>
+        : carte && <Pastille>{carte.theme}</Pastille>}
+      <Pastille>{s.solennel && !censure ? 'Vote solennel' : nature(s)}</Pastille>
+      <Pastille>{dateLisible(s.date)}</Pastille>
     </div>
-
-    <aside class="cote">
-      <section class="encadre ton-depute" data-ton-depute aria-labelledby="titre-ton-depute">
-        <h2 id="titre-ton-depute">Ton député sur ce vote</h2>
-        <p data-ton-depute-texte>
-          Retrouve qui te représente et ce qu'il a voté.
-        </p>
-        <a class="bouton" href="/deputes/" data-ton-depute-lien>Trouver avec mon code postal</a>
-      </section>
-
-      {s.dossier && parcours.length > 0 && (
-        <section class="encadre parcours" aria-labelledby="titre-parcours">
-          <h2 id="titre-parcours">Le parcours du texte</h2>
-          <ol>
-            {parcours.map((e, i) => (
-              <li class:list={{ actuel: e.ce_vote, fini: i < parcours.length - 1 || e.code === 'PROM' }}>
-                <span class="point" aria-hidden="true"></span>
-                <span>
-                  <span class="etape">{e.libelle}</span>
-                  {e.ce_vote && <span class="ce-vote">Ce vote</span>}
-                  {e.debut && (
-                    <span class="dates">
-                      {e.debut === e.fin ? dateLisible(e.debut) : `${dateLisible(e.debut)} → ${dateLisible(e.fin)}`}
-                    </span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <a href={s.dossier.lien}>Le dossier complet sur le site de l'Assemblée</a>
-        </section>
+    <h1 class="t-ecran titre-vote">{titre}</h1>
+    <div class="issue-ligne">
+      <span class="issue-pilule">{issue}</span>
+      {!censure && marge(s) && <span class="t-interface">{marge(s)}</span>}
+      {!censure && (
+        <a class="voir-salle" href={`/salle/#vote=${uid}`}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 19a9 9 0 0 1 18 0"></path><path d="M7 19a5 5 0 0 1 10 0"></path></svg>
+          Voir le vote dans la salle
+        </a>
       )}
+    </div>
+  </header>
 
-      <nav class="encadre voisins" aria-label="Autres votes">
-        {plusRecent && (
-          <a href={lienVote(plusRecent)}>
-            <span class="sens">← Vote plus récent</span>
-            <span class="voisin-titre">{majuscule(plusRecent.titre)}</span>
-          </a>
-        )}
-        {plusAncien && (
-          <a href={lienVote(plusAncien)}>
-            <span class="sens">Vote plus ancien →</span>
-            <span class="voisin-titre">{majuscule(plusAncien.titre)}</span>
-          </a>
-        )}
-        <a href="/explorer/" class="tous">Tous les votes</a>
-      </nav>
-    </aside>
-  </div>
+  <Onglets etiquette="Niveau de lecture du vote" />
+
+  <section id="panneau-essentiel" role="tabpanel" aria-labelledby="onglet-essentiel" class="panneau">
+    <p class="t-phrase phrase">{phrase}</p>
+    <BarreVote pour={d.pour} contre={d.contre} abstention={d.abstention} absents={d.absent} hauteur={14} pastilles />
+    {suffit && <p class="t-texte">{suffit}</p>}
+    <ul class="lignes personnes" data-vote-lignes>
+      <li data-ligne-toi><span>Toi</span><span data-toi-vote>{censure ? 'Hors de ta place : seules les voix pour sont publiées' : 'Pas encore tranché'}</span></li>
+    </ul>
+    {!censure && (
+      <div class="repondre" data-repondre data-uid={uid}>
+        <p class="t-interface" data-repondre-texte>Et toi, qu’aurais-tu voté ? Ta réponse reste dans ton navigateur.</p>
+        <div class="choix" role="group" aria-label="Ta réponse">
+          <button type="button" class="choix-bouton" data-v="pour" aria-pressed="false"><span class="point pour" aria-hidden="true"></span>Pour</button>
+          <button type="button" class="choix-bouton" data-v="contre" aria-pressed="false"><span class="point contre" aria-hidden="true"></span>Contre</button>
+          <button type="button" class="effacer" data-effacer hidden>Effacer ma réponse</button>
+        </div>
+      </div>
+    )}
+    <div class="actions">
+      <Bouton href="#comprendre" data-vers-comprendre>Comprendre ce que ça change</Bouton>
+      {!censure && <Bouton variante="contour" data-changer hidden>Changer ma réponse</Bouton>}
+    </div>
+  </section>
+
+  <section id="panneau-comprendre" role="tabpanel" aria-labelledby="onglet-comprendre" class="panneau" hidden>
+    {carte?.concretement && (
+      <div class="bloc">
+        <h2 class="t-section">Concrètement</h2>
+        <p class="t-texte concret">{carte.concretement}</p>
+      </div>
+    )}
+    <div class="bloc">
+      <h2 class="t-section">Qui a voté quoi</h2>
+      {phraseGroupes(groupesTries) && <p class="t-texte">{phraseGroupes(groupesTries)}</p>}
+      <ul class="groupes">
+        {groupesTries.map((g) => {
+          const dg = g.decompte!;
+          return (
+            <li>
+              <abbr class="sigle" title={g.libelle}>{g.sigle}</abbr>
+              <span class="barre-groupe" aria-hidden="true">
+                {dg.pour > 0 && <span class="point pour" style={`flex: ${dg.pour}`}></span>}
+                {dg.contre > 0 && <span class="point contre" style={`flex: ${dg.contre}`}></span>}
+                {dg.abstention > 0 && <span class="point abstention" style={`flex: ${dg.abstention}`}></span>}
+                {dg.absent + dg.non_votant > 0 && <span class="point absent" style={`flex: ${dg.absent + dg.non_votant}`}></span>}
+              </span>
+              <span class="t-legende">
+                {censure ? `${dg.pour} sur ${g.membres}` : ligneGroupe(dg)}
+                {!g.non_inscrits && g.dissidents ? ` · ${g.dissidents} contre le groupe` : ''}
+              </span>
+              <span class="visuellement-cache">{`${g.libelle} : ${g.membres} membres, ${dg.pour} pour, ${dg.contre} contre, ${dg.abstention} abstentions, ${dg.non_votant} non-votants, ${dg.absent} absents.`}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <p class="t-legende">La partie grise de chaque barre : les membres du groupe qui n’ont pas pris part au vote (absents et non-votants).</p>
+    </div>
+    {s.dossier && parcours.length > 0 && (
+      <div class="bloc">
+        <h2 class="t-section">Le parcours du texte</h2>
+        <ol class="etapes">
+          {parcours.map((e) => (
+            <li class:list={{ ce: e.ce_vote }}>
+              <span class="etape-nom">{e.libelle}</span>
+              <span class="etape-date">{e.ce_vote ? 'Ce vote' : ''}{e.ce_vote && e.debut ? ' · ' : ''}{e.debut ? dateLisible(e.debut) : ''}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    )}
+    <Bouton href="#fouiller" variante="contour">Fouiller : texte officiel et décompte</Bouton>
+  </section>
+
+  <section id="panneau-fouiller" role="tabpanel" aria-labelledby="onglet-fouiller" class="panneau" hidden>
+    <dl class="fiche">
+      <div><dt>Intitulé officiel</dt><dd>{officiel}</dd></div>
+      <div><dt>Type de vote</dt><dd>{nature(s)} · scrutin n° {s.numero.toLocaleString('fr-FR')} du {dateLisible(s.date)}</dd></div>
+      <div><dt>Majorité requise</dt><dd>{censure ? `${s.requis} voix (la majorité des membres de l’Assemblée)` : s.requis ? `${s.requis} voix sur ${exprimes} exprimées` : 'Non publiée'}</dd></div>
+      <div><dt>Contre leur groupe</dt><dd>{s.dissidents
+        ? `${pluriel(s.dissidents, 'député')}${dissidentsParGroupe[0] ? `, dont ${dissidentsParGroupe[0].dissidents} du groupe ${dissidentsParGroupe[0].sigle}` : ''}`
+        : 'Aucun'}</dd></div>
+      <div><dt>Décompte</dt><dd>{d.pour} pour · {d.contre} contre · {pluriel(d.abstention, 'abstention')} · {pluriel(d.non_votant, 'non-votant')} · {pluriel(d.absent, 'absent')}</dd></div>
+      {misesAuPoint.length > 0 && (
+        <div><dt>Mises au point</dt><dd>
+          {misesAuPoint.map((x, k) => (
+            <>{k > 0 && ' · '}<a href={`/deputes/${x.depute}/`}>{x.nom}</a> a voté {LIBELLES[x.vote as Position]}, voulait voter {LIBELLES[x.mise_au_point as Position] ?? x.mise_au_point}</>
+          ))}
+          <span class="t-legende"> (le site compte le vote officiel)</span>
+        </dd></div>
+      )}
+      <div><dt>Sources</dt><dd>
+        <a href={s.lien}>Le scrutin sur le site de l’Assemblée</a>
+        {s.dossier && <> · <a href={s.dossier.lien}>Le dossier législatif</a></>}
+        {' · '}<a href="/calcul/">Comment c’est calculé</a>
+      </dd></div>
+    </dl>
+    <div class="tableau-cadre">
+      <table class="tableau">
+        <caption>Les {lignes.length} votes, un par un</caption>
+        <thead><tr><th scope="col">Député</th><th scope="col">Groupe</th><th scope="col">Vote</th><th scope="col">Avec son groupe ?</th></tr></thead>
+        <tbody data-tableau></tbody>
+      </table>
+    </div>
+    <Bouton variante="contour" data-csv>Télécharger le décompte (CSV)</Bouton>
+    <p class="t-legende">« Avec son groupe ? » : « Non » pour un vote opposé à la position majoritaire de son groupe ; jamais pour les non-inscrits, et une abstention n’est jamais comptée contre son groupe.</p>
+  </section>
+
+  <nav class="voisins" aria-label="Autres votes">
+    {plusRecent && <a href={lienVote(plusRecent)}>‹ Vote plus récent</a>}
+    {plusAncien && <a href={lienVote(plusAncien)}>Vote plus ancien ›</a>}
+  </nav>
+  <script type="application/json" data-donnees-vote set:html={donnees}></script>
 </Base>
 
 <script>
   import { deputeChoisi, repondre, reponse, type Reponse } from '../../lib/navigateur.ts';
+  import { profil, type Matrice } from '../../lib/profil.ts';
+  import { mesReps } from '../../lib/trancher.ts';
 
-  // « Et toi ? » : la réponse est gardée dans le navigateur ; on la compare au résultat.
-  const bloc = document.querySelector<HTMLElement>('[data-et-toi]');
-  if (bloc) {
-    const uid = bloc.dataset.uid!;
-    const pour = Number(bloc.dataset.pour);
-    const contre = Number(bloc.dataset.contre);
-    const marge = Number(bloc.dataset.marge) || 0;
-    const texte = bloc.querySelector<HTMLElement>('.et-toi-texte')!;
-    const consigne = texte.textContent;
-    const boutons = [...bloc.querySelectorAll<HTMLButtonElement>('[data-v]')];
-    const effacer = bloc.querySelector<HTMLButtonElement>('[data-effacer]')!;
-    const taVoix = bloc.querySelector<HTMLElement>('[data-ta-voix]')!;
-    const voix = bloc.querySelector<HTMLElement>('[data-voix]')!;
+  type Ligne = [string, string, string, string, string];
+  const MOTS: Record<string, string> = { pour: 'Pour', contre: 'Contre', abstention: 'Abstention',
+    non_votant: 'Non-votant', absent: 'Absent' };
+  const POINTS: Record<string, string> = { pour: 'pour', contre: 'contre', abstention: 'abstention',
+    non_votant: 'non-votant', absent: 'absent' };
 
-    const afficher = (v: Reponse | null) => {
-      for (const b of boutons) b.setAttribute('aria-pressed', String(b.dataset.v === v));
-      effacer.hidden = !v;
-      taVoix.hidden = !v;
-      if (!v) { texte.textContent = consigne; return; }
-      const exprimes = pour + contre;
-      const part = exprimes ? Math.round((100 * (v === 'pour' ? pour : contre)) / exprimes) : 0;
-      texte.innerHTML = '';
-      const fort = document.createElement('strong');
-      fort.textContent = v;
-      texte.append('Tu aurais voté ', fort, `, comme ${part} % des députés qui se sont exprimés.`);
-      const p2 = v === 'pour' ? pour + 1 : pour;
-      const c2 = v === 'contre' ? contre + 1 : contre;
-      voix.textContent = `Avec ta voix : ${p2} pour, ${c2} contre. `
-        + (marge > 1 ? `Le résultat ne change pas : il s'est joué à ${marge} voix.`
-          : 'Le résultat s\'est joué à une voix.');
+  document.addEventListener('astro:page-load', async () => {
+    const brut = document.querySelector('[data-donnees-vote]')?.textContent;
+    if (!brut) return;
+    const d = JSON.parse(brut) as { uid: string; numero: number; censure: boolean; adopte: boolean; lignes: Ligne[];
+      decompte: { pour: number; contre: number } };
+    const parDepute = new Map(d.lignes.map((l) => [l[0], l]));
+    const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s);
+    const lignesUl = $('[data-vote-lignes]')!;
+    const marques = new Map<string, string>();
+
+    /** Une ligne « Ton jumeau, … » ou « Ton député, … » : son vote, avec sa pastille. */
+    const ligne = (etiquette: string, vote: string | null, lien: string) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = lien;
+      a.textContent = etiquette;
+      const droite = document.createElement('span');
+      if (vote) {
+        const p = document.createElement('span');
+        p.className = `point ${POINTS[vote]}`;
+        p.setAttribute('aria-hidden', 'true');
+        droite.append(p, MOTS[vote]);
+      } else droite.textContent = 'Pas député lors de ce vote';
+      li.append(a, droite);
+      return li;
     };
-    for (const b of boutons) {
-      b.addEventListener('click', () => {
-        const v = b.dataset.v as Reponse;
-        if (!repondre(uid, v)) {
-          texte.textContent = 'Ton navigateur bloque l\'enregistrement : ta réponse ne sera pas gardée.';
-        }
-        afficher(v);
-      });
-    }
-    effacer.addEventListener('click', () => { repondre(uid, null); afficher(null); boutons[0].focus(); });
-    afficher(reponse(uid));
-  }
 
-  // « Ton député sur ce vote » : lu dans l'hémicycle de la page, à partir du député choisi.
-  const encadre = document.querySelector<HTMLElement>('[data-ton-depute]');
-  const choisi = deputeChoisi();
-  if (encadre && choisi) {
-    const siege = document.querySelector<SVGCircleElement>(`circle.siege[data-d="${choisi}"]`);
-    const annonces: [string, number][] = JSON.parse(
-      document.querySelector('[data-annonces]')?.textContent ?? '[]');
-    const texte = encadre.querySelector<HTMLElement>('[data-ton-depute-texte]')!;
-    const lien = encadre.querySelector<HTMLAnchorElement>('[data-ton-depute-lien]')!;
-    lien.href = `/deputes/${choisi}/`;
-    lien.textContent = 'Voir sa fiche';
-    if (!siege) {
-      texte.textContent = "Ton député ne siégeait pas à l'Assemblée lors de ce vote.";
-    } else {
-      const [nom, groupe, vote, ...reste] = annonces[Number(siege.dataset.i)][0].split(' · ');
-      texte.innerHTML = '';
-      const n = document.createElement('strong');
-      n.textContent = nom;
-      const pastille = document.createElement('span');
-      pastille.className = `vote-pastille vote-${(vote ?? '').replace(/[^a-z]/g, '')}`;
-      pastille.textContent = vote ?? '';
-      texte.append(n, ` (${groupe}) a voté `, pastille, reste.length ? ` · ${reste.join(' · ')}.` : '.');
+    // --- Toi ---
+    const toi = $('[data-toi-vote]')!;
+    const bloc = $('[data-repondre]');
+    const changer = $<HTMLButtonElement>('[data-changer]');
+    const afficher = (v: Reponse | null, ouvrir = false) => {
+      if (d.censure) return;
+      if (v) {
+        const p = document.createElement('span');
+        p.className = `point ${v}`;
+        p.setAttribute('aria-hidden', 'true');
+        toi.replaceChildren(p, `${MOTS[v]} · ${(v === 'pour') === d.adopte ? 'avec la majorité' : 'à contre-courant'}`);
+      } else toi.textContent = 'Pas encore tranché';
+      for (const b of bloc!.querySelectorAll<HTMLButtonElement>('[data-v]')) b.setAttribute('aria-pressed', String(b.dataset.v === v));
+      bloc!.querySelector<HTMLButtonElement>('[data-effacer]')!.hidden = !v;
+      bloc!.hidden = !!v && !ouvrir;
+      if (changer) changer.hidden = !v || ouvrir;
+    };
+    if (bloc) {
+      for (const b of bloc.querySelectorAll<HTMLButtonElement>('[data-v]')) {
+        b.addEventListener('click', () => {
+          const v = b.dataset.v as Reponse;
+          if (!repondre(d.uid, v)) $('[data-repondre-texte]')!.textContent = 'Ton navigateur bloque l’enregistrement : ta réponse ne sera pas gardée.';
+          document.dispatchEvent(new Event('vdef:reponses'));
+          afficher(v);
+          changer?.focus();
+        });
+      }
+      bloc.querySelector('[data-effacer]')!.addEventListener('click', () => {
+        repondre(d.uid, null);
+        document.dispatchEvent(new Event('vdef:reponses'));
+        afficher(null, true);
+        bloc.querySelector<HTMLButtonElement>('[data-v]')!.focus();
+      });
+      changer?.addEventListener('click', () => { afficher(reponse(d.uid), true); bloc.querySelector<HTMLButtonElement>('[data-v]')!.focus(); });
+      afficher(reponse(d.uid));
     }
-  }
+
+    // --- Ton député ---
+    const monDepute = deputeChoisi();
+    if (monDepute) {
+      const l = parDepute.get(monDepute);
+      marques.set(monDepute, 'ton député');
+      lignesUl.append(ligne(`Ton député${l ? `, ${l[1]}` : ''}`, l?.[3] ?? null, `/deputes/${monDepute}/`));
+    } else {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '/deputes/';
+      a.textContent = 'Ton député';
+      const s = document.createElement('span');
+      s.textContent = 'À choisir avec ton code postal';
+      li.append(a, s);
+      lignesUl.append(li);
+    }
+
+    // --- Ton jumeau (calculé sur tes réponses, dans ton navigateur) ---
+    const reps = mesReps();
+    if (Object.keys(reps).length) {
+      try {
+        const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+        const j = profil(m, reps).jumeau;
+        if (j) {
+          const l = parDepute.get(j.ligne.u);
+          marques.set(j.ligne.u, marques.has(j.ligne.u) ? 'ton jumeau et ton député' : 'ton jumeau');
+          lignesUl.querySelector('[data-ligne-toi]')!.after(ligne(`Ton jumeau, ${j.ligne.n}`, l?.[3] ?? null, `/deputes/${j.ligne.u}/`));
+        }
+      } catch { /* hors ligne : pas de jumeau */ }
+    }
+
+    // --- Fouiller : les 577 votes et le CSV ---
+    const corps = $('[data-tableau]')!;
+    const tries = [...d.lignes].sort((a, b) => (marques.has(b[0]) ? 1 : 0) - (marques.has(a[0]) ? 1 : 0));
+    corps.replaceChildren(...tries.map((l) => {
+      const tr = document.createElement('tr');
+      const nom = document.createElement('td');
+      const a = document.createElement('a');
+      a.href = `/deputes/${l[0]}/`;
+      a.textContent = l[1];
+      nom.append(a, marques.has(l[0]) ? ` · ${marques.get(l[0])}` : '');
+      const cellules = [l[2], MOTS[l[3]] ?? l[3], l[4]].map((t) => { const td = document.createElement('td'); td.textContent = t; return td; });
+      tr.append(nom, ...cellules);
+      return tr;
+    }));
+    $('[data-csv]')?.addEventListener('click', () => {
+      const champ = (t: string) => `"${t.replace(/"/g, '""')}"`;
+      const csv = ['depute_id;nom;groupe;vote;avec_son_groupe',
+        ...d.lignes.map((l) => [l[0], l[1], l[2], l[3], l[4]].map(champ).join(';'))].join('\r\n');
+      const url = URL.createObjectURL(new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scrutin-${d.numero}.csv`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  });
 </script>
 
 <style>
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--ivoire-2); }
-  .fil a { text-decoration: none; font-weight: 700; }
-  .fil a:hover { text-decoration: underline; }
-
-  .mise-en-page {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 32px;
-    align-items: start;
+  .entete { display: flex; flex-direction: column; gap: 18px; }
+  .pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .entete :global(.pastille-theme) { min-height: 0; padding: 7px 12px; font-size: 13px; }
+  .titre-vote { max-width: 900px; overflow-wrap: anywhere; }
+  .issue-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+  .issue-pilule {
+    display: inline-flex; align-items: center; min-height: 40px; padding: 0 18px; border-radius: var(--pilule);
+    background: var(--encre); color: var(--feuille); font: 800 20px/1 var(--police-titre);
   }
-  @media (max-width: 1080px) {
-    .mise-en-page { grid-template-columns: minmax(0, 1fr); }
+  .voir-salle {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 8px; min-height: var(--cible);
+    color: var(--encre); font: 700 15px/1 var(--police-texte);
   }
-  .principal { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
-
-  /* L'intitulé du vote, mot pour mot, en Literata (.t-question). */
-  .tete h1 {
-    margin: 14px 0 8px;
-    font-size: clamp(26px, 2.8vw, 34px);
-    overflow-wrap: anywhere;
+  .panneau { display: flex; flex-direction: column; gap: 22px; }
+  .phrase { max-width: 760px; }
+  .personnes { max-width: 620px; }
+  .personnes :global(a) { color: var(--encre); text-decoration: none; }
+  .personnes :global(a:hover) { text-decoration: underline; }
+  .repondre { display: flex; flex-direction: column; gap: 10px; }
+  .choix { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .choix-bouton {
+    display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 22px;
+    border: 1px solid var(--bord); border-radius: var(--pilule); background: var(--feuille);
+    color: var(--encre); font: 700 16px/1 var(--police-texte); cursor: pointer;
   }
-  .quand { margin: 0; color: var(--ivoire-2); font-size: 16px; }
-  .pastilles { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-  .pastille {
-    display: inline-flex;
-    align-items: center;
-    min-height: 38px;
-    padding: 6px 12px;
-    background: var(--panneau-2);
-    font: 600 13px/16px var(--police-titre);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ivoire);
-    text-decoration: none;
+  .choix-bouton[aria-pressed='true'] { border: 2px solid var(--encre); padding: 0 21px; }
+  .effacer { border: 0; background: none; color: var(--encre); font: 600 14px/1 var(--police-texte); text-decoration: underline; cursor: pointer; min-height: var(--cible); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .bloc { display: flex; flex-direction: column; gap: 12px; }
+  .concret { max-width: 760px; }
+  .groupes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .groupes li { display: grid; grid-template-columns: 110px minmax(0, 1fr) 230px; align-items: center; gap: 14px; }
+  .sigle { font: 600 14px/1.3 var(--police-texte); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .barre-groupe { display: flex; gap: 2px; height: 8px; border-radius: var(--pilule); overflow: hidden; background: var(--surface); }
+  .barre-groupe .point { width: auto; height: auto; border-radius: 0; }
+  .etapes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+  .etapes li { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 14px; background: var(--surface); }
+  .etapes li.ce { background: var(--encre); color: var(--feuille); }
+  .etape-nom { font: 700 15px/1.3 var(--police-texte); }
+  .etape-date { font: 500 13px/1.3 var(--police-texte); color: var(--texte-2); }
+  .ce .etape-date { color: var(--sur-encre-2); }
+  .fiche { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .fiche div { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; }
+  .fiche dt { font: 500 15px/1.45 var(--police-texte); color: var(--texte-2); }
+  .fiche dd { margin: 0; font: 500 15px/1.45 var(--police-texte); color: var(--encre); }
+  .fiche a { color: var(--encre); }
+  .tableau-cadre { max-height: 520px; overflow: auto; border: 1px solid var(--filet); border-radius: 16px; }
+  .tableau { width: 100%; border-collapse: collapse; font: 500 14px/1.35 var(--police-texte); }
+  .tableau caption { text-align: left; padding: 14px 16px; font: 700 15px/1.3 var(--police-texte); }
+  .tableau th { position: sticky; top: 0; background: var(--surface); text-align: left; padding: 12px 16px; font-weight: 700; }
+  .tableau :global(td) { padding: 11px 16px; border-top: 1px solid var(--filet); }
+  .tableau :global(td a) { color: var(--encre); text-decoration: none; }
+  .tableau :global(td a:hover) { text-decoration: underline; }
+  .voisins { display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--filet); }
+  .voisins a { color: var(--encre); font: 600 15px/1 var(--police-texte); min-height: var(--cible); display: inline-flex; align-items: center; }
+  @media (max-width: 720px) {
+    .voir-salle { margin-left: 0; }
+    .groupes li { grid-template-columns: 70px minmax(0, 1fr); }
+    .groupes li .t-legende { grid-column: 2; }
+    .fiche div { grid-template-columns: 1fr; gap: 2px; }
   }
-  .pastille.violette { background: var(--panneau); color: var(--ivoire); }
-  .pastille.violette:hover { background: var(--panneau-2); }
-  .contexte { margin: 16px 0 0; max-width: 720px; font-size: 18px; color: var(--ivoire); }
-
-  /* Le résultat : un bandeau de régie sombre, à coins vifs, le même pour les deux issues, puis
-     les compteurs sur un aplat (DESIGN-FINAL.md, § 6, page d'un vote). */
-  .verdict { display: flex; flex-direction: column; gap: 2px; }
-  .verdict p { margin: 0; }
-  .verdict .bandeau-titre { font-size: 30px; line-height: 1.05; }
-  .compteurs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 16px 24px;
-    margin: 0; padding: 22px 26px; list-style: none; background: var(--panneau); }
-  .compteur { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .compteur-mot { display: flex; align-items: center; gap: 8px; font: 600 13px/16px var(--police-titre);
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .compteur-mot::before { content: ''; width: 12px; height: 12px; }
-  .c-pour .compteur-mot::before { background: var(--pour); }
-  .c-contre .compteur-mot::before { background: var(--contre); }
-  .c-abstention .compteur-mot::before { background: var(--abstention); }
-  .c-absent .compteur-mot::before { background: var(--absent); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
-  .chiffre { font: 600 clamp(56px, 6vw, 84px)/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
-  @media (max-width: 640px) {
-    .compteurs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 16px; }
-    .verdict .bandeau-titre { font-size: 22px; }
-  }
-  .bascule { margin: -12px 0 0; font-size: 16px; color: var(--ivoire); }
-
-  .salle {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 28px;
-    padding: clamp(16px, 2.4vw, 26px);
-    background: var(--panneau);
-    scroll-margin-top: 90px;
-  }
-  .salle h2 { font-size: 22px; }
-  .et-toi { flex: 0 1 280px; min-width: 230px; display: flex; flex-direction: column; gap: 14px; }
-  .et-toi-texte { margin: 0; font-size: 16px; color: var(--ivoire); }
-  .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  /* « Et toi ? » : deux boutons identiques, une pastille à la couleur du vote ; le choisi prend
-     un cadre de 2 px, comme dans la séance. */
-  .choix button {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 14px;
-    min-height: 54px;
-    border: 1px solid var(--filet);
-    border-radius: var(--rayon);
-    background: var(--panneau-2);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 17px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ivoire);
-    cursor: pointer;
-  }
-  .choix button:active { transform: translateY(3px); }
-  .choix button::before { content: ''; flex: none; width: 14px; height: 14px; border-radius: 50%; }
-  .choix .choix-pour::before { background: var(--pour); }
-  .choix .choix-contre::before { background: var(--contre); }
-  .choix button[aria-pressed='true'] { border: 2px solid var(--ivoire); padding: 0 13px; }
-  .effacer {
-    align-self: flex-start;
-    min-height: 40px;
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    font-size: 15px;
-    color: var(--ivoire);
-    text-decoration: underline;
-    cursor: pointer;
-  }
-  .ta-voix {
-    padding: 14px 16px;
-    background: var(--panneau-2);
-  }
-  .ta-voix p { margin: 0; font-size: 15px; color: var(--ivoire); }
-  .ta-voix .sur-titre {
-    margin-bottom: 4px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--lumiere);
-  }
-  .qui { flex: 1 1 440px; min-width: 0; }
-  .qui:only-child { max-width: 760px; margin: 0 auto; }
-  .qui h2 { margin-bottom: 10px; }
-
-  .groupes {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 32px;
-    margin: 14px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  @media (max-width: 760px) { .groupes { grid-template-columns: minmax(0, 1fr); } }
-  .groupes li {
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    grid-template-areas: 'sigle barre' 'sigle ligne';
-    gap: 2px 12px;
-    align-items: center;
-    padding: 9px 0;
-    border-top: 1px solid var(--filet);
-  }
-  .groupes abbr {
-    grid-area: sigle;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration: none;
-    overflow-wrap: anywhere;
-  }
-  .barre {
-    grid-area: barre;
-    display: flex;
-    gap: 2px;
-    height: 10px;
-    overflow: hidden;
-    background: var(--absent);
-  }
-  .ligne { grid-area: ligne; font-size: 14px; color: var(--ivoire-2); }
-  .contre-groupe { color: var(--ivoire); font-weight: 700; }
-  .note { margin: 10px 0 0; font-size: 14px; color: var(--ivoire-2); }
-
-  .plus { display: flex; flex-direction: column; gap: 12px; }
-  .plus h2 { margin-bottom: 4px; }
-  /* Des accordéons à coins vifs, en aplats. */
-  .plus details {
-    background: var(--panneau);
-    padding: 0 20px;
-  }
-  .plus summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    min-height: 60px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    list-style: none;
-  }
-  .plus summary::-webkit-details-marker { display: none; }
-  .plus summary::after {
-    content: '';
-    flex: none;
-    width: 10px;
-    height: 10px;
-    border-right: 2.5px solid var(--ivoire-2);
-    border-bottom: 2.5px solid var(--ivoire-2);
-    transform: rotate(45deg) translateY(-3px);
-    transition: transform 0.15s;
-  }
-  .plus details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
-  .plus details > :not(summary) { margin: 0 0 16px; font-size: 16px; color: var(--ivoire); }
-  .chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-  .chiffres div { padding: 12px 14px; background: var(--panneau-2); }
-  .chiffres dt { font-size: 14px; color: var(--ivoire-2); }
-  .chiffres dd { margin: 2px 0 0; font-family: var(--police-titre); font-weight: 700; font-size: 24px; text-transform: uppercase; color: var(--ivoire); }
-  .lecture, .mises, .sources { padding-left: 20px; }
-  .lecture li, .mises li, .sources li { margin-bottom: 8px; }
-
-  .cote { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  @media (max-width: 1080px) {
-    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: stretch; }
-  }
-  .encadre { padding: 20px 22px; background: var(--panneau); }
-  .encadre h2 { font-size: 22px; }
-  .ton-depute { background: var(--panneau-2); }
-  .ton-depute p { margin: 8px 0 14px; font-size: 16px; color: var(--ivoire); }
-  .ton-depute .bouton { width: 100%; }
-  /* Son vote : une pastille de vote de 10 px et le mot, pas de capsule colorée. */
-  .ton-depute :global(.vote-pastille) {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font: 600 13px/16px var(--police-titre);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ivoire);
-  }
-  .ton-depute :global(.vote-pastille)::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--absent); }
-  .ton-depute :global(.vote-pour)::before { background: var(--pour); }
-  .ton-depute :global(.vote-contre)::before { background: var(--contre); }
-  .ton-depute :global(.vote-abstention)::before { background: var(--abstention); }
-
-  .parcours ol { margin: 14px 0 12px; padding: 0; list-style: none; }
-  .parcours li { display: flex; gap: 12px; position: relative; padding-bottom: 14px; }
-  .parcours li::before {
-    content: '';
-    position: absolute;
-    left: 7px;
-    top: 18px;
-    bottom: 0;
-    width: 2px;
-    background: var(--filet);
-  }
-  .parcours li:last-child::before { display: none; }
-  .parcours li.fini::before { background: var(--ivoire-2); }
-  .point {
-    flex: none;
-    width: 16px;
-    height: 16px;
-    margin-top: 3px;
-    border-radius: 50%;
-    border: 2.5px solid var(--filet);
-    background: var(--panneau);
-    position: relative;
-  }
-  .fini .point { border-color: var(--ivoire-2); background: var(--ivoire-2); }
-  .actuel .point { border-color: var(--direct); background: var(--direct); box-shadow: 0 0 0 4px var(--panneau-2); }
-  .etape { font: 600 15px/1.3 var(--police-texte); }
-  .ce-vote {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 3px 6px;
-    background: var(--direct);
-    color: #fff;
-    font: 600 11px/1 var(--police-titre);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    vertical-align: 2px;
-  }
-  .dates { display: block; font-size: 13px; color: var(--ivoire-2); }
-  .parcours > a { font-size: 15px; font-weight: 700; }
-
-  .voisins { display: flex; flex-direction: column; gap: 4px; padding: 10px; }
-  .voisins a {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 10px 12px;
-    text-decoration: none;
-    color: var(--ivoire);
-  }
-  .voisins a:hover { background: var(--panneau-2); }
-  .sens { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .voisin-titre {
-    font: 500 16px/1.4 var(--police-question);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .voisins .tous { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); }
 </style>

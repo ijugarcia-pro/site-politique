@@ -1,14 +1,20 @@
 ---
-// Explorer (frame V5 « Explorer ») : chercher un vote, retrouver son député, les votes qui
-// divisent, les plus serrés, puis tous les votes qui ont une page, filtrables.
-// Les thèmes (t28) et « les plus suivis » (comptes, reportés) viendront plus tard : en
-// attendant, les filtres portent sur le type de vote.
-import Base from '../layouts/BaseSeance.astro';
-import LigneVote from '../components/LigneVote.astro';
-import { scrutins } from '../lib/donnees.ts';
-import { FAMILLES, famille, normaliser, type Famille } from '../lib/votes.ts';
+// La galerie (VDEF, captures 13 et T4 ; lot V7), à l'adresse /explorer/ : la recherche (votes et
+// députés), les 12 thèmes et leurs dossiers, les votes qui divisent, les plus serrés, puis tous
+// les votes, filtrables (tous, solennels, tranchés par toi, pas encore tranchés). Un vote sans
+// carte n'a pas de thème : il n'est que dans « Tous les votes » (le classement de tous les votes
+// par thème est la tâche t28). Tes réponses sont lues dans le navigateur.
+import Base from '../layouts/Base.astro';
+import Bouton from '../components/vdef/Bouton.astro';
+import { cartesParVote, dateLisible, lienVote, majuscule, scrutins } from '../lib/donnees.ts';
+import { slugTheme, THEMES } from '../lib/themes.ts';
+import { marge, normaliser, verdict } from '../lib/votes.ts';
 
 const tous = scrutins();
+const cartes = cartesParVote();
+const avecPage = new Set(tous.map((v) => v.uid));
+const parTheme = THEMES.map((t) => ({ theme: t,
+  n: [...cartes.values()].filter((c) => c.theme === t && avecPage.has(c.uid)).length }));
 // Un seul vote par dossier dans les deux encarts : les lectures successives d'un même texte
 // ne doivent pas occuper toute la liste.
 const unParDossier = (liste: typeof tous) => {
@@ -20,111 +26,109 @@ const unParDossier = (liste: typeof tous) => {
     return true;
   });
 };
-const divisent = unParDossier([...tous].sort((a, b) => b.dissidents - a.dissidents)).slice(0, 5);
+const titreDe = (v: (typeof tous)[number]) => {
+  const q = cartes.get(v.uid)?.question;
+  return q ? q.replace(/ ([?!:;])/g, ' $1') : majuscule(v.titre).replace(/\.$/, '');
+};
+const divisent = unParDossier([...tous].filter((v) => v.dissidents > 0).sort((a, b) => b.dissidents - a.dissidents)).slice(0, 3);
 const serres = unParDossier(tous
   .filter((v) => !v.motion_censure && v.voix_pour_inverser && v.voix_pour_inverser > 0)
   .sort((a, b) => a.voix_pour_inverser! - b.voix_pour_inverser! || b.numero - a.numero))
-  .slice(0, 5);
-const nombre = (f: Famille) => tous.filter((v) => famille(v) === f).length;
-const filtres: { id: string; label: string; n: number }[] = [
-  { id: '', label: 'Tous', n: tous.length },
-  { id: 'solennel', label: 'Solennels', n: tous.filter((v) => v.solennel).length },
-  ...(Object.keys(FAMILLES) as Famille[]).map((f) => ({
-    id: f, label: { texte: 'Textes', budget: 'Budget', resolution: 'Résolutions',
-      declaration: 'Déclarations', censure: 'Censures' }[f], n: nombre(f),
-  })),
-].filter((f) => f.n > 0);
-// Suggestions de recherche : seulement celles qui trouvent au moins un vote.
-const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'sécurité sociale',
-  'Nouvelle-Calédonie'].filter((m) => tous.some((v) =>
-  normaliser(`${v.titre} ${v.dossier ?? ''}`).includes(normaliser(m)))).slice(0, 4);
+  .slice(0, 3);
+const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const dateCourte = (iso: string) => `${Number(iso.slice(8, 10))} ${MOIS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+const PAR_PAGE = 20;
 ---
-<Base titre="Explorer" onglet="explorer"
-  description="Tous les votes de l'Assemblée nationale qui comptent : textes, budgets, résolutions, motions de censure, député par député.">
-  <section class="accroche">
-    <div class="accroche-texte">
-      <h1>Tous les votes, tous les députés</h1>
-      <p class="sous-titre">
-        {tous.length} votes de la 17<sup>e</sup> législature, siège par siège : chaque texte
-        voté dans son ensemble, les budgets, les résolutions et les motions de censure.
-      </p>
-      <label class="recherche">
-        <svg width="20" height="20" viewBox="0 0 18 18" aria-hidden="true">
-          <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
-          <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
-        </svg>
-        <span class="visuellement-cache">Rechercher un vote</span>
-        <input type="search" id="recherche" placeholder="Une loi, un député, un mot…"
-          autocomplete="off" aria-controls="liste" />
-      </label>
-      <div class="res-deputes" data-res-deputes hidden>
-        <p class="res-titre">Députés</p>
-        <ul data-res-liste></ul>
-      </div>
-      {suggestions.length > 0 && (
-        <div class="suggestions">
-          <span>Par exemple :</span>
-          {suggestions.map((m) => <button type="button" data-suggestion={m}>{m}</button>)}
-        </div>
-      )}
+<Base titre="La galerie" gabarit="lecture" vue="tribune" bas="galerie"
+  description="Tous les votes de l'Assemblée nationale de la 17e législature : chercher un vote ou un député, les thèmes, les votes qui divisent, les plus serrés.">
+  <header class="entete">
+    <div>
+      <span class="t-etiquette">La galerie du public · ouverte à tous</span>
+      <h1 class="t-ecran">Tous les votes de la législature</h1>
     </div>
-    <form class="carte-cp" action="/deputes/" method="get">
-      <h2>Qui te représente&#8239;?</h2>
-      <p>Ton code postal suffit.</p>
-      <div class="cp">
-        <label for="cp" class="visuellement-cache">Code postal</label>
-        <input id="cp" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
-          placeholder="Code postal" autocomplete="postal-code" required />
-        <button type="submit">Trouver</button>
-      </div>
-      <a href="/deputes/">Ou cherche un député par son nom</a>
-    </form>
+    <Bouton href="/deputes/" variante="contour" class="trouver">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+      Trouver ton député
+    </Bouton>
+  </header>
+
+  <div class="recherche-bloc">
+    <label class="recherche">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <span class="visuellement-cache">Chercher un vote ou un député</span>
+      <input type="search" id="recherche" placeholder="Une loi, un mot, un député…" autocomplete="off" aria-controls="liste" />
+    </label>
+    <div class="res-deputes" data-res-deputes hidden>
+      <p class="t-etiquette">Députés</p>
+      <ul data-res-liste></ul>
+    </div>
+  </div>
+
+  <section class="bloc" aria-labelledby="titre-themes">
+    <h2 id="titre-themes" class="t-section">Par thème</h2>
+    <ul class="themes">
+      {parTheme.map((t) => (
+        <li><a href={`/dossiers/${slugTheme(t.theme)}/`}><span class="theme-nom">{t.theme}</span><span class="t-legende">{t.n} vote{t.n > 1 ? 's' : ''}</span></a></li>
+      ))}
+    </ul>
   </section>
 
   <div class="duo">
-    <section class="serres" aria-labelledby="titre-divisent">
-      <div class="titre-section">
-        <h2 id="titre-divisent">Les votes qui divisent</h2>
-        <span>Des députés contre leur propre groupe</span>
-      </div>
-      <ul class="liste">
-        {divisent.map((v) => <LigneVote vote={v} accent="dissidents" />)}
+    <section class="bloc" aria-labelledby="titre-divisent">
+      <div><h2 id="titre-divisent" class="t-section">Les votes qui divisent</h2><p class="t-legende">Des députés ont voté contre leur propre groupe</p></div>
+      <ul class="courte">
+        {divisent.map((v) => (
+          <li><a href={lienVote(v)}><span class="c-texte"><span class="c-titre">{titreDe(v)}</span><span class="t-legende">{dateLisible(v.date)} · {verdict(v)}</span></span><span class="badge">{v.dissidents} contre leur groupe</span></a></li>
+        ))}
       </ul>
     </section>
-    <section class="serres" aria-labelledby="titre-serres">
-      <div class="titre-section">
-        <h2 id="titre-serres">Les plus serrés</h2>
-        <span>Le moins de voix pour faire basculer le résultat</span>
-      </div>
-      <ul class="liste">
-        {serres.map((v) => <LigneVote vote={v} accent="marge" />)}
+    <section class="bloc" aria-labelledby="titre-serres">
+      <div><h2 id="titre-serres" class="t-section">Les plus serrés</h2><p class="t-legende">Le moins de voix pour faire basculer le résultat</p></div>
+      <ul class="courte">
+        {serres.map((v) => (
+          <li><a href={lienVote(v)}><span class="c-texte"><span class="c-titre">{titreDe(v)}</span><span class="t-legende">{dateLisible(v.date)} · {verdict(v)}</span></span><span class="badge">{marge(v)}</span></a></li>
+        ))}
       </ul>
     </section>
   </div>
 
-  <section id="tous" aria-labelledby="titre-tous">
-    <div class="titre-section">
-      <h2 id="titre-tous">Tous les votes</h2>
-      <span aria-live="polite" data-compte>{tous.length} votes, du plus récent au plus ancien</span>
+  <section class="bloc" id="tous" aria-labelledby="titre-tous">
+    <div class="titre-ligne">
+      <h2 id="titre-tous" class="t-section">Tous les votes</h2>
+      <span class="t-legende" aria-live="polite" data-compte>Du plus récent au plus ancien</span>
     </div>
-    <div class="filtres" role="group" aria-label="Filtrer par type de vote">
-      {filtres.map((f, i) => (
-        <button type="button" data-filtre={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
-          {f.label} <span class="n">{f.n}</span>
-        </button>
-      ))}
-    </div>
-    <div class="filtres" role="group" aria-label="Filtrer selon tes réponses" data-filtres-tranche>
-      <button type="button" data-tranche-filtre="a-trancher" aria-pressed="false">À trancher <span class="n" data-n-a-trancher></span></button>
-      <button type="button" data-tranche-filtre="tranches" aria-pressed="false">Tranchés <span class="n" data-n-tranches></span></button>
+    <div class="filtres" role="group" aria-label="Filtrer les votes">
+      <button type="button" class="filtre" data-filtre="" aria-pressed="true">Tous · <span>{tous.length}</span></button>
+      <button type="button" class="filtre" data-filtre="solennels" aria-pressed="false">Solennels · <span>{tous.filter((v) => v.solennel).length}</span></button>
+      <button type="button" class="filtre" data-filtre="tranches" aria-pressed="false">Tranchés par toi · <span data-n-tranches>0</span></button>
+      <button type="button" class="filtre" data-filtre="a-trancher" aria-pressed="false">Pas encore tranchés · <span data-n-a-trancher>{tous.filter((v) => !v.motion_censure).length}</span></button>
     </div>
     <ul class="liste" id="liste">
-      {tous.map((v) => <LigneVote vote={v} />)}
+      {tous.map((v, k) => {
+        const carte = cartes.get(v.uid);
+        const d = v.decompte;
+        return (
+          <li data-uid={v.uid} data-solennel={v.solennel ? '1' : undefined} data-censure={v.motion_censure ? '1' : undefined}
+            data-recherche={normaliser(`${v.titre} ${v.dossier ?? ''} ${carte?.question ?? ''} ${carte?.theme ?? ''} ${v.numero}`)}
+            hidden={k >= PAR_PAGE}>
+            <a href={lienVote(v)}>
+              <span class="l-date t-legende">{dateCourte(v.date)}</span>
+              <span class="l-texte"><span class="l-titre">{titreDe(v)}</span>{carte && <span class="t-legende">{carte.theme}</span>}</span>
+              <span class="l-barre" aria-hidden="true">
+                {d.pour > 0 && <span class="point pour" style={`flex: ${d.pour}`}></span>}
+                {d.contre > 0 && <span class="point contre" style={`flex: ${d.contre}`}></span>}
+                {d.abstention > 0 && <span class="point abstention" style={`flex: ${d.abstention}`}></span>}
+                {d.absent + d.non_votant > 0 && <span class="point absent" style={`flex: ${d.absent + d.non_votant}`}></span>}
+              </span>
+              <span class="l-issue"><span class="issue">{verdict(v)}</span><span class="t-legende">{v.motion_censure ? `${d.pour} pour` : `${d.pour} – ${d.contre}`}</span></span>
+              <span class="l-etat t-legende" data-etat>{v.motion_censure ? '' : 'À trancher'}</span>
+            </a>
+          </li>
+        );
+      })}
     </ul>
-    <p class="vide" data-vide hidden>
-      Aucun vote ne correspond. Essaie un autre mot, ou <button type="button" data-tout-voir>montre-moi tous les votes</button>.
-    </p>
-    <button type="button" class="bouton plus" data-plus hidden>Afficher plus de votes</button>
+    <p class="t-texte" data-vide hidden>Aucun vote ne correspond. Essaie un autre mot.</p>
+    <Bouton variante="contour" data-plus>Afficher {PAR_PAGE} votes de plus</Bouton>
   </section>
 </Base>
 
@@ -132,260 +136,143 @@ const suggestions = ['finances', 'aide à mourir', 'agricole', 'logement', 'séc
   import { reponses } from '../lib/navigateur.ts';
   import { normaliser } from '../lib/votes.ts';
 
-  // Tes réponses, lues dans le navigateur : chaque vote déjà tranché le dit.
-  const mes = reponses();
-  for (const l of document.querySelectorAll<HTMLElement>('li[data-uid]')) {
-    const r = mes[l.dataset.uid ?? '']?.v;
-    if (!r) continue;
-    l.dataset.repondu = '1';
-    const t = l.querySelector<HTMLElement>('[data-tranche]');
-    if (t) { t.textContent = `✓ Tranché · ${r}`; t.hidden = false; }
-  }
-
-  const PAR_PAGE = 30;
-  const champ = document.querySelector<HTMLInputElement>('#recherche')!;
-  // La loupe de l'en-tête mène ici (#recherche) : le champ est prêt à recevoir la saisie.
-  if (location.hash === '#recherche') champ.focus();
-  const lignes = [...document.querySelectorAll<HTMLElement>('#liste > li')];
-  const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
-  const compte = document.querySelector<HTMLElement>('[data-compte]')!;
-  const vide = document.querySelector<HTMLElement>('[data-vide]')!;
-  const plus = document.querySelector<HTMLButtonElement>('[data-plus]')!;
-  let filtre = '';
-  let tranche = location.hash === '#a-trancher' ? 'a-trancher' : '';
-  let limite = PAR_PAGE;
-  const boutonsTranche = [...document.querySelectorAll<HTMLButtonElement>('[data-tranche-filtre]')];
-  // À trancher : les votes qui comptent dans ton hémicycle (pas les motions de censure).
-  const aTrancher = (l: HTMLElement) => !l.dataset.repondu && l.dataset.famille !== 'censure';
-  document.querySelector('[data-n-tranches]')!.textContent = String(lignes.filter((l) => l.dataset.repondu).length);
-  document.querySelector('[data-n-a-trancher]')!.textContent = String(lignes.filter(aTrancher).length);
-  const marquerTranche = () => {
-    for (const b of boutonsTranche) b.setAttribute('aria-pressed', String((b.dataset.trancheFiltre ?? '') === tranche));
-  };
-  marquerTranche();
-  for (const b of boutonsTranche) {
-    b.addEventListener('click', () => {
-      // Un second appui sur le filtre actif le retire.
-      tranche = tranche === b.dataset.trancheFiltre ? '' : b.dataset.trancheFiltre ?? '';
-      marquerTranche();
-      limite = PAR_PAGE;
-      appliquer();
-    });
-  }
-
-  const appliquer = () => {
-    const mots = normaliser(champ.value).split(' ').filter(Boolean);
-    const retenues = lignes.filter((l) => {
-      const bonType = !filtre || (filtre === 'solennel' ? l.dataset.solennel === '1'
-        : l.dataset.famille === filtre);
-      const texte = l.dataset.recherche ?? '';
-      const bonneReponse = !tranche || (tranche === 'tranches' ? !!l.dataset.repondu : aTrancher(l));
-      return bonType && bonneReponse && mots.every((m) => texte.includes(m));
-    });
-    for (const l of lignes) l.hidden = true;
-    retenues.slice(0, limite).forEach((l) => { l.hidden = false; });
-    const n = retenues.length;
-    compte.textContent = n === lignes.length
-      ? `${n} votes, du plus récent au plus ancien`
-      : `${n} vote${n > 1 ? 's' : ''} sur ${lignes.length}`;
-    vide.hidden = n > 0;
-    plus.hidden = n <= limite;
-    plus.textContent = `Afficher plus de votes (${n - Math.min(n, limite)} restants)`;
-  };
-
-  champ.addEventListener('input', () => { limite = PAR_PAGE; appliquer(); chercherDeputes(); });
-
-  // Les députés qui correspondent à la recherche, au-dessus des votes. La liste n'est
-  // chargée qu'à la première recherche.
-  type D = { u: string; n: string; g: string | null; c: string; d: string; e?: 1 };
-  let liste: (D & { r: string })[] | null = null;
-  const blocDeputes = document.querySelector<HTMLElement>('[data-res-deputes]')!;
-  const ulDeputes = document.querySelector<HTMLElement>('[data-res-liste]')!;
-  const chercherDeputes = async () => {
-    const mots = normaliser(champ.value).split(' ').filter(Boolean);
-    if (mots.join('').length < 3) { blocDeputes.hidden = true; return; }
-    if (!liste) {
-      try {
-        const brut: D[] = await (await fetch('/donnees/deputes.json')).json();
-        liste = brut.map((d) => ({ ...d, r: normaliser(`${d.n} ${d.g ?? ''} ${d.d}`) }));
-      } catch { return; }
+  const PAR_PAGE = 20;
+  document.addEventListener('astro:page-load', () => {
+    const champ = document.querySelector<HTMLInputElement>('#recherche');
+    const liste = document.querySelector('#liste');
+    if (!champ || !liste) return;
+    const mes = reponses();
+    const lignes = [...liste.querySelectorAll<HTMLElement>(':scope > li')];
+    for (const l of lignes) {
+      if (!mes[l.dataset.uid ?? '']?.v) continue;
+      l.dataset.repondu = '1';
+      l.querySelector('[data-etat]')!.textContent = 'Tranché';
     }
-    const trouves = liste.filter((d) => mots.every((m) => d.r.includes(m)))
-      .sort((a, b) => (b.e ?? 0) - (a.e ?? 0)).slice(0, 6);
-    ulDeputes.replaceChildren(...trouves.map((d) => {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = `/deputes/${d.u}/`;
-      const nom = document.createElement('strong');
-      nom.textContent = d.n;
-      a.append(nom, ` · ${d.g ?? 'sans groupe'} · ${d.d}${d.e ? '' : ' · ancien député'}`);
-      li.append(a);
-      return li;
-    }));
-    blocDeputes.hidden = trouves.length === 0;
-  };
-  for (const b of boutons) {
-    b.addEventListener('click', () => {
-      filtre = b.dataset.filtre ?? '';
-      for (const autre of boutons) autre.setAttribute('aria-pressed', String(autre === b));
-      limite = PAR_PAGE;
+    const aTrancher = (l: HTMLElement) => !l.dataset.repondu && !l.dataset.censure;
+    document.querySelector('[data-n-tranches]')!.textContent = String(lignes.filter((l) => l.dataset.repondu).length);
+    document.querySelector('[data-n-a-trancher]')!.textContent = String(lignes.filter(aTrancher).length);
+
+    const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
+    const compte = document.querySelector<HTMLElement>('[data-compte]')!;
+    const vide = document.querySelector<HTMLElement>('[data-vide]')!;
+    const plus = document.querySelector<HTMLButtonElement>('[data-plus]')!;
+    let filtre = location.hash === '#a-trancher' ? 'a-trancher' : '';
+    let limite = PAR_PAGE;
+    const appliquer = () => {
+      const mots = normaliser(champ.value).split(' ').filter(Boolean);
+      const retenues = lignes.filter((l) => {
+        const bon = !filtre || (filtre === 'solennels' ? l.dataset.solennel === '1'
+          : filtre === 'tranches' ? !!l.dataset.repondu : aTrancher(l));
+        return bon && mots.every((m) => (l.dataset.recherche ?? '').includes(m));
+      });
+      for (const l of lignes) l.hidden = true;
+      retenues.slice(0, limite).forEach((l) => { l.hidden = false; });
+      const n = retenues.length;
+      compte.textContent = n === lignes.length ? 'Du plus récent au plus ancien' : `${n} vote${n > 1 ? 's' : ''} sur ${lignes.length}`;
+      vide.hidden = n > 0;
+      plus.hidden = n <= limite;
+      plus.textContent = `Afficher ${Math.min(PAR_PAGE, n - limite)} votes de plus`;
+      for (const b of boutons) b.setAttribute('aria-pressed', String((b.dataset.filtre ?? '') === filtre));
+    };
+    for (const b of boutons) b.addEventListener('click', () => { filtre = b.dataset.filtre ?? ''; limite = PAR_PAGE; appliquer(); });
+    plus.addEventListener('click', () => {
+      const premiere = lignes.filter((l) => !l.hidden).length;
+      limite += PAR_PAGE;
       appliquer();
+      lignes.filter((l) => !l.hidden)[premiere]?.querySelector('a')?.focus();
     });
-  }
-  plus.addEventListener('click', () => {
-    const premiere = lignes.filter((l) => !l.hidden).length;
-    limite += PAR_PAGE;
+
+    // Les députés qui correspondent à la recherche ; la liste n'est chargée qu'à la première.
+    type D = { u: string; n: string; g: string | null; c: string; d: string; e?: 1 };
+    let deputes: (D & { r: string })[] | null = null;
+    const bloc = document.querySelector<HTMLElement>('[data-res-deputes]')!;
+    const ul = document.querySelector<HTMLElement>('[data-res-liste]')!;
+    const chercherDeputes = async () => {
+      const mots = normaliser(champ.value).split(' ').filter(Boolean);
+      if (mots.join('').length < 3) { bloc.hidden = true; return; }
+      if (!deputes) {
+        try {
+          const brut: D[] = await (await fetch('/donnees/deputes.json')).json();
+          deputes = brut.map((x) => ({ ...x, r: normaliser(`${x.n} ${x.g ?? ''} ${x.d}`) }));
+        } catch { return; }
+      }
+      const trouves = deputes.filter((x) => mots.every((m) => x.r.includes(m))).sort((a, b) => (b.e ?? 0) - (a.e ?? 0)).slice(0, 6);
+      ul.replaceChildren(...trouves.map((x) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `/deputes/${x.u}/`;
+        const nom = document.createElement('strong');
+        nom.textContent = x.n;
+        a.append(nom, ` · ${x.g ?? 'sans groupe'} · ${x.d}${x.e ? '' : ' · ancien député'}`);
+        li.append(a);
+        return li;
+      }));
+      bloc.hidden = trouves.length === 0;
+    };
+    champ.addEventListener('input', () => { limite = PAR_PAGE; appliquer(); void chercherDeputes(); });
+    // La loupe de la barre du haut mène ici : le champ est prêt à recevoir la saisie.
+    if (location.hash === '#recherche') champ.focus();
     appliquer();
-    lignes.filter((l) => !l.hidden)[premiere]?.querySelector('a')?.focus();
+    if (filtre) document.querySelector('#tous')?.scrollIntoView({ block: 'start' });
   });
-  for (const s of document.querySelectorAll<HTMLButtonElement>('[data-suggestion]')) {
-    s.addEventListener('click', () => {
-      champ.value = s.dataset.suggestion ?? '';
-      limite = PAR_PAGE;
-      appliquer();
-      document.querySelector('#tous')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }
-  document.querySelector('[data-tout-voir]')?.addEventListener('click', () => {
-    champ.value = '';
-    tranche = '';
-    marquerTranche();
-    boutons[0].click();
-  });
-  appliquer();
-  // Venu de « Trancher d'autres votes » : la liste des votes à trancher, tout de suite.
-  if (tranche) document.querySelector('#tous')?.scrollIntoView({ block: 'start' });
 </script>
 
 <style>
-  .accroche {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 22px 28px;
-    align-items: center;
-    padding: clamp(20px, 3vw, 30px);
-    background: var(--panneau);
-  }
-  .accroche-texte { flex: 1 1 520px; min-width: 0; }
-  /* Un titre de page court, en capitales de régie (.t-section). */
-  .accroche h1 { font: 700 clamp(32px, 3.6vw, 48px)/0.95 var(--police-titre); text-transform: uppercase; }
-  .accroche .sous-titre { margin: 8px 0 18px; font-size: 17px; }
+  .entete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .entete > div { display: flex; flex-direction: column; gap: 8px; }
+  .recherche-bloc { display: flex; flex-direction: column; gap: 10px; }
   .recherche {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 60px;
-    padding: 0 20px;
-    border: 1px solid var(--filet);
-    background: var(--panneau);
-    color: var(--ivoire-2);
+    display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 22px;
+    border-radius: var(--pilule); background: var(--surface); color: var(--texte-2);
   }
-  .recherche:focus-within { border-color: var(--ivoire); }
-  .recherche input {
-    flex: 1;
-    min-width: 0;
-    border: 0;
-    outline: none;
-    background: transparent;
-    font: inherit;
-    font-size: 18px;
-    color: var(--ivoire);
+  .recherche:focus-within { box-shadow: inset 0 0 0 2px var(--encre); }
+  .recherche input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font: 500 18px/1 var(--police-texte); color: var(--encre); }
+  .res-deputes { padding: 12px 18px; border-radius: 16px; border: 1px solid var(--filet); }
+  .res-deputes ul { list-style: none; margin: 6px 0 0; padding: 0; }
+  .res-deputes :global(a) { display: block; padding: 8px 0; color: var(--encre); text-decoration: none; font: 500 15px/1.3 var(--police-texte); }
+  .res-deputes :global(a:hover) { text-decoration: underline; }
+  .bloc { display: flex; flex-direction: column; gap: 14px; }
+  .themes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .themes a { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 16px; background: var(--surface); color: var(--encre); text-decoration: none; }
+  .themes a:hover { box-shadow: inset 0 0 0 2px var(--encre); }
+  .theme-nom { font: 700 16px/1.2 var(--police-texte); }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .courte { list-style: none; margin: 0; padding: 0; }
+  .courte li { border-top: 1px solid var(--filet); }
+  .courte a { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; color: var(--encre); text-decoration: none; }
+  .courte a:hover .c-titre { text-decoration: underline; }
+  .c-texte { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .c-titre { font: 600 15px/1.35 var(--police-texte); }
+  .badge { flex: 0 0 auto; padding: 7px 12px; border-radius: var(--pilule); background: var(--surface); font: 600 13px/1 var(--police-texte); white-space: nowrap; }
+  .titre-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .filtres { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filtre {
+    min-height: 44px; padding: 0 16px; border-radius: var(--pilule); border: 1px solid var(--bord);
+    background: var(--feuille); color: var(--encre); font: 600 14px/1 var(--police-texte); cursor: pointer;
   }
-  .res-deputes { margin-top: 10px; padding: 12px 16px; background: var(--panneau-2); }
-  .res-titre { margin: 0 0 6px; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .res-deputes ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
-  .res-deputes :global(a) { display: block; padding: 6px 4px; font-size: 15px; color: var(--ivoire); text-decoration: none; }
-  .res-deputes :global(a:hover) { background: var(--panneau); }
-  .res-deputes :global(strong) { font-weight: 600; color: var(--ivoire); }
-  .suggestions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--ivoire-2); }
-  .suggestions button {
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid var(--filet);
-    background: var(--panneau);
-    font: 600 13px/1 var(--police-titre);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ivoire);
-    cursor: pointer;
+  .filtre[aria-pressed='true'] { background: var(--encre); border-color: var(--encre); color: var(--feuille); }
+  .liste { list-style: none; margin: 0; padding: 0; }
+  .liste li { border-top: 1px solid var(--filet); }
+  .liste a {
+    display: grid; grid-template-columns: 80px minmax(0, 1fr) 160px 120px 90px; align-items: center; gap: 16px;
+    padding: 14px 4px; color: var(--encre); text-decoration: none;
   }
-  .suggestions button:hover { border-color: var(--ivoire-2); }
-  .carte-cp {
-    flex: 0 1 340px;
-    min-width: min(100%, 260px);
-    padding: 20px 22px;
-    background: var(--panneau-2);
+  .liste a:hover { background: var(--surface); }
+  .l-texte { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .l-titre { font: 600 15px/1.35 var(--police-texte); }
+  .l-barre { display: flex; gap: 2px; height: 8px; border-radius: var(--pilule); overflow: hidden; background: var(--surface); }
+  .l-barre .point { width: auto; height: auto; border-radius: 0; }
+  .l-issue { display: flex; flex-direction: column; gap: 2px; }
+  .issue { font: 800 17px/1.1 var(--police-titre); }
+  @media (max-width: 1000px) {
+    .themes { grid-template-columns: repeat(3, 1fr); }
+    .duo { grid-template-columns: 1fr; }
+    .liste a { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'texte issue' 'barre barre' 'date etat'; gap: 8px 12px; }
+    .l-texte { grid-area: texte; }
+    .l-issue { grid-area: issue; text-align: right; }
+    .l-barre { grid-area: barre; }
+    .l-date { grid-area: date; }
+    .l-etat { grid-area: etat; text-align: right; }
   }
-  .carte-cp h2 { font-size: 20px; }
-  .carte-cp p { margin: 4px 0 12px; font-size: 15px; color: var(--ivoire-2); }
-  .cp { display: flex; gap: 8px; }
-  .cp input {
-    flex: 1;
-    min-width: 0;
-    min-height: 50px;
-    padding: 0 14px;
-    border: 1px solid var(--filet);
-    background: var(--panneau);
-    font: 500 17px/1 var(--police-texte);
-    color: var(--ivoire);
-  }
-  .cp input:focus { border-color: var(--ivoire); }
-  .cp button {
-    min-height: 50px;
-    padding: 0 18px;
-    border: 0;
-    background: var(--direct);
-    color: #fff;
-    font: 600 15px/1 var(--police-titre);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  .carte-cp > a { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 700; }
-
-  .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 2px; align-items: stretch; }
-  @media (max-width: 1080px) { .duo { grid-template-columns: minmax(0, 1fr); } }
-  .serres { padding: 20px 22px; background: var(--panneau); }
-  .serres :global(.ligne) { border-top-color: var(--filet); }
-  .serres :global(.ligne a:hover) { background: var(--panneau-2); }
-  .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
-  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
-  .liste { margin: 0; padding: 0; list-style: none; }
-  /* Dans les deux encarts, la ligne se replie comme sur mobile : ils sont étroits. */
-  .duo :global(.ligne a) {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: 'haut haut' 'titre titre' 'mini accent';
-    gap: 8px 12px;
-  }
-  .duo :global(.haut) { flex-direction: row; align-items: center; gap: 10px; }
-
-  .filtres { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px; }
-  .filtres button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 42px;
-    padding: 0 14px;
-    border: 1px solid var(--filet);
-    background: var(--panneau);
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ivoire);
-    cursor: pointer;
-  }
-  .filtres button:hover { border-color: var(--ivoire-2); color: var(--ivoire); }
-  .filtres button[aria-pressed='true'] { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
-  .n { font-size: 13px; opacity: 0.75; }
-  @media (max-width: 700px) {
-    /* Sur téléphone, les filtres défilent sur une ligne au lieu d'en occuper trois. */
-    .filtres { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
-    .filtres::-webkit-scrollbar { display: none; }
-    .filtres button { flex: none; }
-  }
-  .vide { padding: 20px; background: var(--panneau-2); color: var(--ivoire); }
-  .vide button { border: 0; background: none; padding: 0; font: inherit; color: var(--ivoire); text-decoration: underline; cursor: pointer; }
-  .plus { margin-top: 14px; }
+  @media (max-width: 520px) { .themes { grid-template-columns: repeat(2, 1fr); } }
 </style>

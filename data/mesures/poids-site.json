@@ -1,69 +1,153 @@
 {
  "/": {
-  "js": 37226,
-  "js_gzip": 13637,
+  "js": 37221,
+  "js_gzip": 13628,
   "css": 23697,
   "css_gzip": 5054,
   "modules": 10
  },
  "/404/": {
-  "js": 4142,
+  "js": 4147,
   "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/calcul/": {
-  "js": 4585,
-  "js_gzip": 2137,
+  "js": 4590,
+  "js_gzip": 2138,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/confidentialite/": {
-  "js": 4142,
+  "js": 4147,
   "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/deputes/": {
-  "js": 10838,
-  "js_gzip": 4645,
+  "js": 10843,
+  "js_gzip": 4639,
   "css": 27706,
   "css_gzip": 5080,
   "modules": 6
  },
  "/deputes/[uid]/": {
-  "js": 6827,
-  "js_gzip": 2836,
+  "js": 6832,
+  "js_gzip": 2835,
   "css": 32600,
   "css_gzip": 5714,
   "modules": 5
  },
+ "/dossiers/droits/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/economie/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/education/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/energie/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/environnement/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/immigration/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/institutions/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/logement/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/numerique/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/sante/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/securite/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
+ "/dossiers/travail/": {
+  "js": 34216,
+  "js_gzip": 12443,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 9
+ },
  "/etat/": {
-  "js": 4142,
+  "js": 4147,
   "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/explorer/": {
-  "js": 7688,
-  "js_gzip": 3209,
-  "css": 29997,
-  "css_gzip": 5442,
-  "modules": 6
+  "js": 32715,
+  "js_gzip": 11878,
+  "css": 21853,
+  "css_gzip": 4742,
+  "modules": 9
  },
  "/lots/": {
   "js": 41282,
-  "js_gzip": 14836,
+  "js_gzip": 14828,
   "css": 22493,
   "css_gzip": 4796,
   "modules": 11
  },
  "/mentions-legales/": {
-  "js": 4142,
+  "js": 4147,
   "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
@@ -71,42 +155,42 @@
  },
  "/parcours/": {
   "js": 39524,
-  "js_gzip": 14212,
-  "css": 21412,
-  "css_gzip": 4649,
+  "js_gzip": 14203,
+  "css": 21532,
+  "css_gzip": 4664,
   "modules": 10
  },
  "/quiz/": {
   "js": 45956,
-  "js_gzip": 16738,
+  "js_gzip": 16718,
   "css": 22493,
   "css_gzip": 4796,
   "modules": 13
  },
  "/salle/": {
-  "js": 45004,
-  "js_gzip": 16350,
-  "css": 22136,
-  "css_gzip": 4818,
+  "js": 45684,
+  "js_gzip": 16565,
+  "css": 22920,
+  "css_gzip": 4890,
   "modules": 12
  },
  "/seance/": {
   "js": 41454,
-  "js_gzip": 14954,
+  "js_gzip": 14944,
   "css": 22493,
   "css_gzip": 4796,
   "modules": 11
  },
  "/ta-place/": {
-  "js": 44209,
-  "js_gzip": 16022,
+  "js": 44204,
+  "js_gzip": 16005,
   "css": 16946,
   "css_gzip": 4008,
   "modules": 12
  },
  "/tes-reponses/": {
-  "js": 43960,
-  "js_gzip": 15802,
+  "js": 43955,
+  "js_gzip": 15782,
   "css": 16946,
   "css_gzip": 4008,
   "modules": 11
@@ -140,17 +224,17 @@
   "modules": 7
  },
  "/verdict/": {
-  "js": 43614,
-  "js_gzip": 15547,
+  "js": 43604,
+  "js_gzip": 15532,
   "css": 16946,
   "css_gzip": 4008,
   "modules": 11
  },
  "/votes/[numero]/": {
-  "js": 9521,
-  "js_gzip": 3927,
-  "css": 38707,
-  "css_gzip": 6805,
-  "modules": 6
+  "js": 43807,
+  "js_gzip": 15700,
+  "css": 22350,
+  "css_gzip": 4824,
+  "modules": 11
  }
 }

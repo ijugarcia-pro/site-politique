@@ -1,0 +1,124 @@
+---
+// La barre du haut (VDEF § 3), flottante sur la salle : logo, les trois vues en pastilles, la
+// loupe (→ la galerie) et l'anneau de progression (→ ton parcours). En mode focus (quiz, lots,
+// séance) : « Quitter » et la progression en segments, que la page met à jour
+// (data-focus-libelle, data-focus-segment). Sur téléphone : le logo rond et l'anneau ; les vues
+// passent dans la barre du bas. L'anneau et le cadenas de « Ta place » sont calculés dans le
+// navigateur par Base.astro (lib/paliers.ts) : sans JavaScript, ils restent à zéro et fermés.
+type Vue = 'tribune' | 'salle' | 'place';
+
+interface Props {
+  vue?: Vue;
+  focus?: { quitter: string; total: number; fait?: number; libelle?: string };
+}
+const { vue, focus } = Astro.props;
+const VUES: { id: Vue; href: string; libelle: string }[] = [
+  { id: 'tribune', href: '/', libelle: 'La tribune' },
+  { id: 'salle', href: '/salle/', libelle: 'La salle' },
+  { id: 'place', href: '/ta-place/', libelle: 'Ta place' },
+];
+---
+<header class:list={['barre-haut', { focus: !!focus }]}>
+  {focus ? (
+    <>
+      <a class="flottant pilule" href={focus.quitter}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+        Quitter
+      </a>
+      <span class="flottant pilule progression-focus">
+        <span data-focus-libelle>{focus.libelle ?? `Vote ${(focus.fait ?? 0) + 1} sur ${focus.total}`}</span>
+        <span class="segments" aria-hidden="true">
+          {Array.from({ length: focus.total }, (_, k) => (
+            <span class:list={['segment', { plein: k < (focus.fait ?? 0) }]} data-focus-segment={k}></span>
+          ))}
+        </span>
+      </span>
+    </>
+  ) : (
+    <>
+      <a class="flottant pilule logo" href="/" aria-label="Le 578e siège, la tribune">
+        <svg width="30" height="18" viewBox="0 0 34 20" aria-hidden="true">
+          <path d="M3 18 A14 14 0 0 1 31 18" fill="none" stroke="currentColor" stroke-width="3"></path>
+          <circle cx="12" cy="11" r="3" fill="currentColor"></circle>
+        </svg>
+        <span class="nom-site">Le 578<sup>e</sup> siège</span>
+      </a>
+      <nav class="flottant vues" aria-label="Les trois vues de la salle">
+        {VUES.map((v) => (
+          <a href={v.href} aria-current={v.id === vue ? 'page' : undefined}
+            data-vue={v.id} data-verrou={v.id === 'place' ? '' : undefined}>
+            {v.id === 'place' && (
+              <svg class="cadenas" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            )}
+            {v.libelle}
+            {v.id === 'place' && <span class="visuellement-cache" data-verrou-texte> (s'ouvre à 10 votes)</span>}
+          </a>
+        ))}
+      </nav>
+      <a class="flottant rond loupe" href="/explorer/" aria-label="Chercher un vote ou un député, dans la galerie">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      </a>
+      <a class="flottant pilule parcours" href="/parcours/" data-anneau>
+        <span class="anneau" aria-hidden="true"></span>
+        <span data-anneau-texte>Ton parcours · 0 vote</span>
+      </a>
+    </>
+  )}
+</header>
+
+<style>
+  .barre-haut {
+    position: absolute; z-index: 5; top: var(--haut-barre); left: var(--marge); right: var(--marge);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    pointer-events: none;
+  }
+  .flottant { pointer-events: auto; background: var(--feuille); box-shadow: var(--ombre-flottant); }
+  .pilule {
+    display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 18px;
+    border-radius: var(--pilule); color: var(--encre); text-decoration: none;
+    font: 600 14px/1 var(--police-texte); white-space: nowrap;
+  }
+  .logo { font: 700 18px/1 var(--police-titre); }
+  .logo sup { font-size: 10px; line-height: 0; }
+  .vues { margin: 0 auto; display: inline-flex; gap: 4px; padding: 4px; border-radius: var(--pilule); }
+  .vues a {
+    display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px;
+    border-radius: var(--pilule); text-decoration: none; color: var(--encre);
+    font: 600 15px/1 var(--police-texte);
+  }
+  .vues a[aria-current='page'] { background: var(--encre); color: var(--feuille); }
+  .cadenas { display: none; }
+  .vues a[data-verrou]:not([aria-current='page']) { color: var(--inactif); }
+  .vues a[data-verrou] .cadenas { display: block; }
+  .rond {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px; border-radius: var(--pilule); color: var(--encre);
+  }
+  .anneau {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: var(--pilule);
+    background: conic-gradient(var(--encre) var(--angle, 0deg), var(--filet) 0);
+    -webkit-mask: radial-gradient(circle, transparent 8.5px, #000 9px);
+    mask: radial-gradient(circle, transparent 8.5px, #000 9px);
+  }
+  .focus { justify-content: flex-start; gap: 10px; }
+  .focus .pilule { font-size: 15px; gap: 8px; }
+  .progression-focus { gap: 12px; }
+  .segments { display: flex; gap: 4px; }
+  .segment { width: 60px; height: 6px; border-radius: var(--pilule); background: var(--bord); }
+  .segment.plein { background: var(--encre); }
+
+  @media (max-width: 720px) {
+    .barre-haut { top: 12px; left: 12px; right: 12px; justify-content: space-between; }
+    .vues, .loupe { display: none; }
+    .logo { width: var(--cible); height: var(--cible); padding: 0; justify-content: center; }
+    .nom-site { display: none; }
+    .pilule { height: var(--cible); padding: 0 14px; font-size: 13px; gap: 8px; }
+    .anneau { width: 22px; height: 22px;
+      -webkit-mask: radial-gradient(circle, transparent 7px, #000 7.5px);
+      mask: radial-gradient(circle, transparent 7px, #000 7.5px); }
+    .segment { width: 28px; }
+  }
+</style>

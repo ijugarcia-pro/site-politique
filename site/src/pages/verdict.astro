@@ -7,7 +7,7 @@
 // utilisateurs du site : il faudrait des agrégats (reportés). Tant que la séance n'est tranchée
 // qu'en partie, un bandeau le dit et chaque vote à venir garde une étape en pointillés (retour de
 // Julien du 12 octobre 2026) : la page ne laisse pas croire que la séance est finie.
-import Base from '../layouts/Base.astro';
+import Base from '../layouts/BaseSeance.astro';
 import Salle from '../components/Salle.astro';
 import Salle3D from '../components/Salle3D.astro';
 import { avancementSeance, composition, dateLisible, lienVote, quandVote, questionSeance,
@@ -208,7 +208,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
     const s3 = scene ? salle3D(scene) : null;
     const VOYANTS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531' };
     const voyantsDe = (v: Verdict) => [...v.sieges].map((l) => VOYANTS[l.toUpperCase()] ?? null);
-    // Absent et non-votant : les teintes « éteintes » du thème (styles/global.css).
+    // Absent et non-votant : les teintes « éteintes » du thème (styles/seance.css).
     const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', N: 'var(--non-votant)', '-': 'var(--absent)' };
     const MOTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention' };
     const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;

@@ -1,0 +1,26 @@
+---
+// La ligne des sources, discrète, en bas d'une feuille (maquettes 01, 13 et 18) : d'où viennent
+// les votes (Licence ouverte : la source est toujours citée), et les pages de service.
+---
+<footer class="pied-feuille">
+  <p>
+    Site indépendant, sans commentaire politique. Votes issus des <a href="https://data.assemblee-nationale.fr/">données
+    ouvertes de l'Assemblée nationale</a> (17<sup>e</sup> législature, Licence ouverte), mis à jour chaque nuit.
+  </p>
+  <p class="liens">
+    <a href="/calcul/">Comment c'est calculé</a>
+    <a href="/etat/">État des données</a>
+    <a href="/confidentialite/">Confidentialité</a>
+    <a href="/mentions-legales/">Mentions légales</a>
+  </p>
+</footer>
+
+<style>
+  .pied-feuille {
+    display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 16px;
+    border-top: 1px solid var(--filet); font: 500 13px/1.45 var(--police-texte); color: var(--texte-2);
+  }
+  a { color: var(--texte-2); }
+  .liens { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .liens a { display: inline-flex; align-items: center; min-height: 32px; color: var(--encre); font-weight: 600; }
+</style>

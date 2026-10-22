@@ -1,0 +1,149 @@
+---
+// Page de démonstration interne de la VDEF (lot V0, t71) : chaque composant, aux mesures des
+// maquettes (docs/design-vdef/). Hors du plan du site, jamais indexée. Toutes les données de
+// cette page sont illustratives, comme celles des maquettes.
+import Base from '../../layouts/Base.astro';
+import BarreHaut from '../../components/vdef/BarreHaut.astro';
+import BarreVote from '../../components/vdef/BarreVote.astro';
+import Bouton from '../../components/vdef/Bouton.astro';
+import Carte from '../../components/vdef/Carte.astro';
+import Feuille from '../../components/vdef/Feuille.astro';
+import Onglets from '../../components/vdef/Onglets.astro';
+import Palier from '../../components/vdef/Palier.astro';
+import Pastille from '../../components/vdef/Pastille.astro';
+import Repere from '../../components/vdef/Repere.astro';
+
+const GROUPES = [['Groupe A', 78, 2, 1, 3], ['Groupe B', 96, 4, 2, 2], ['Groupe C', 70, 52, 4, 3]] as const;
+---
+<Base titre="Composants de la VDEF" description="Page interne : les composants de la maquette VDEF, avec des données illustratives."
+  gabarit="lecture" vue="tribune" noindex>
+  <a class="retour" href="/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    La tribune
+  </a>
+  <div class="rangee">
+    <Pastille>Logement</Pastille>
+    <Pastille>Vote solennel</Pastille>
+    <Pastille noire>Données illustratives</Pastille>
+  </div>
+  <h1 class="t-ecran">Composants de la VDEF</h1>
+  <p class="t-texte">Page interne, hors du plan du site : chaque composant de la maquette « La salle est le menu », aux mesures des maquettes. Toutes les données sont illustratives. Voir aussi <a href="/vdef-composants/tribune/">la feuille du bas</a> et <a href="/vdef-composants/place/">la feuille de gauche</a>.</p>
+
+  <div class="rangee issue">
+    <span class="issue-pilule">Adopté</span>
+    <span class="t-interface">à 12 voix près</span>
+  </div>
+
+  <Onglets actif="comprendre" />
+  <div id="panneau-essentiel" role="tabpanel" aria-labelledby="onglet-essentiel" class="panneau">
+    <p class="t-phrase">Oui. Phrase-réponse d'exemple, en langage courant.</p>
+    <BarreVote pour={289} contre={266} abstention={9} absents={13} hauteur={14} pastilles />
+    <ul class="lignes">
+      <li>Toi<span><span class="point pour" aria-hidden="true"></span>Pour · avec la majorité</span></li>
+      <li>Ton jumeau<span><span class="point pour" aria-hidden="true"></span>Pour</span></li>
+    </ul>
+  </div>
+  <div id="panneau-comprendre" role="tabpanel" aria-labelledby="onglet-comprendre" class="panneau">
+    <h2 class="t-section">Ce que ça change</h2>
+    <ol class="trois">
+      {[1, 2, 3].map((k) => <li class="t-carte-petit"><span class="t-chiffre">{k}</span>Carte « Ce que ça change » d'exemple.</li>)}
+    </ol>
+    <h2 class="t-section">Qui a voté quoi</h2>
+    <ul class="groupes">
+      {GROUPES.map(([nom, p, c, a, abs]) => (
+        <li><span class="t-interface">{nom}</span><BarreVote pour={p} contre={c} abstention={a} absents={abs} /><span class="t-legende">{p} pour · {c} contre · {a} abst.</span></li>
+      ))}
+    </ul>
+  </div>
+  <div id="panneau-fouiller" role="tabpanel" aria-labelledby="onglet-fouiller" class="panneau">
+    <p class="t-texte">Intitulé officiel, type, numéro, sources : le niveau « Fouiller ».</p>
+  </div>
+
+  <h2 class="t-section">Boutons</h2>
+  <div class="rangee">
+    <Bouton>Action principale</Bouton>
+    <Bouton variante="contour">Action secondaire</Bouton>
+    <Bouton disabled>Indisponible</Bouton>
+  </div>
+
+  <h2 class="t-section">Pastilles</h2>
+  <div class="rangee">
+    <Pastille>Santé</Pastille>
+    <Pastille noire>Ils votent mardi à 16 h</Pastille>
+    <Pastille point="pour">289 pour</Pastille>
+    <Pastille point="contre">266 contre</Pastille>
+    <Pastille point="abstention">9 abstentions</Pastille>
+    <Pastille point="absent">13 absents</Pastille>
+    <Pastille point="non-votant">1 non-votant</Pastille>
+    <Pastille href="#">Pastille cliquable</Pastille>
+  </div>
+
+  <h2 class="t-section">Cartes</h2>
+  <div class="grille">
+    <Carte etiquette="Le dernier verdict" href="#">
+      <span class="t-carte-petit">Question d'exemple ?</span>
+      <span class="rangee bas"><span class="t-chiffre">Rejeté</span><span class="t-etiquette">à 21 voix près</span></span>
+      <BarreVote pour={248} contre={289} abstention={23} absents={17} />
+    </Carte>
+    <Carte etiquette="Ton jumeau · le plus proche" variante="noire" href="#">
+      <span class="t-carte">Nom d'exemple</span>
+      <span class="t-interface">A voté comme toi sur <strong>10</strong> de tes 12 votes.</span>
+    </Carte>
+    <Carte etiquette="Cette semaine · vote avant eux" variante="bordee">
+      <span class="t-feuille">3 votes à trancher</span>
+    </Carte>
+  </div>
+
+  <h2 class="t-section">Paliers</h2>
+  <div class="grille paliers">
+    <Palier etat="fait" libelle="Ta place" detail="Débloquée à 10 votes" />
+    <Palier etat="en-cours" libelle="La salle éclairée" detail="12 / 25 votes" progression={12 / 25} />
+    <Palier etat="verrouille" libelle="Ton bilan" detail="À 40 votes" />
+  </div>
+
+  <h2 class="t-section">Repères et barre du mode focus</h2>
+  <div class="cadre-demo">
+    <img src="/salle3d/fond-salle.webp" alt="" />
+    <BarreHaut focus={{ quitter: '/', total: 3, fait: 1 }} />
+    <Repere libelle="Toi et ton jumeau" toi x={38} y={62} />
+    <Repere libelle="Ton opposé" x={72} y={55} />
+    <Repere libelle="Ton député" x={56} y={78} />
+    <Repere libelle="La tribune · repère de lieu" forme="lieu" x={50} y={30} />
+  </div>
+
+  <h2 class="t-section">Feuille de droite</h2>
+  <div class="cadre-demo haut">
+    <img src="/salle3d/fond-tribune.webp" alt="" />
+    <Feuille position="droite" titre="demo-question">
+      <div class="rangee"><Pastille>Santé</Pastille><Pastille noire>Ils votent mardi à 16 h</Pastille></div>
+      <span class="t-etiquette">Vote avant eux</span>
+      <h3 id="demo-question" class="t-feuille">Question d'exemple, posée sur la feuille ?</h3>
+      <p class="t-texte">« Concrètement » : deux phrases d'exemple.</p>
+      <Bouton large>Pour</Bouton>
+    </Feuille>
+  </div>
+</Base>
+
+<style>
+  .rangee { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; }
+  .rangee.bas { align-items: baseline; gap: 10px; }
+  .issue-pilule {
+    background: var(--encre); color: var(--feuille); border-radius: var(--pilule);
+    padding: 10px 18px; font: 800 20px/1 var(--police-titre);
+  }
+  .panneau { display: flex; flex-direction: column; gap: 22px; }
+  .trois { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .trois li { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: var(--rayon-carte); background: var(--surface); font-weight: 500; }
+  .groupes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .groupes li { display: grid; grid-template-columns: 110px 1fr 190px; align-items: center; gap: 14px; }
+  .grille { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .cadre-demo { position: relative; height: 420px; border-radius: var(--rayon-carte); overflow: hidden; background: var(--fond-salle); }
+  .cadre-demo.haut { height: 640px; }
+  .cadre-demo > img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 720px) {
+    .trois, .grille { grid-template-columns: 1fr; }
+    .groupes li { grid-template-columns: 1fr; gap: 6px; }
+    .cadre-demo.haut { height: auto; }
+    .cadre-demo.haut > img { height: 300px; }
+  }
+</style>

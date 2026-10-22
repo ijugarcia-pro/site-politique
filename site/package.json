@@ -16,6 +16,8 @@
     "inventaire:enregistrer": "node scripts/inventaire.mjs enregistrer"
   },
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource-variable/figtree": "5.3.0",
     "@fontsource-variable/literata": "5.3.0",
     "@fontsource/barlow": "5.3.0",
     "@fontsource/barlow-condensed": "5.3.0",

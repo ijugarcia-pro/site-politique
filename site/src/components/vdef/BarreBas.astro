@@ -1,0 +1,44 @@
+---
+// La barre du bas du téléphone (VDEF § 3, maquettes T1 à T5) : Tribune, Salle, Ta place,
+// Galerie. Absente des écrans de vote (T2) et sur ordinateur. Le cadenas de « Ta place » suit
+// celui de la barre du haut (Base.astro).
+interface Props {
+  actif?: 'tribune' | 'salle' | 'place' | 'galerie';
+}
+const { actif } = Astro.props;
+const ENTREES = [
+  { id: 'tribune', href: '/', libelle: 'Tribune', icone: ['M4 20h16', 'M6 20V10h12v10', 'M9 10V6h6v4'] },
+  { id: 'salle', href: '/salle/', libelle: 'Salle', icone: ['M3 19a9 9 0 0 1 18 0', 'M7 19a5 5 0 0 1 10 0'] },
+  { id: 'place', href: '/ta-place/', libelle: 'Ta place', icone: ['M12 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z', 'M5 20a7 7 0 0 1 14 0'] },
+  { id: 'galerie', href: '/explorer/', libelle: 'Galerie', icone: ['M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14z', 'M20 20l-3.5-3.5'] },
+];
+---
+<nav class="barre-bas" aria-label="Navigation">
+  {ENTREES.map((e) => (
+    <a href={e.href} aria-current={e.id === actif ? 'page' : undefined}
+      data-vue={e.id} data-verrou={e.id === 'place' ? '' : undefined}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        {e.icone.map((d) => <path d={d}></path>)}
+      </svg>
+      {e.libelle}
+      {e.id === 'place' && <span class="visuellement-cache" data-verrou-texte> (s'ouvre à 10 votes)</span>}
+    </a>
+  ))}
+</nav>
+
+<style>
+  .barre-bas { display: none; }
+  @media (max-width: 720px) {
+    .barre-bas {
+      position: fixed; z-index: 6; left: 0; right: 0; bottom: 0;
+      display: flex; height: 74px; padding: 6px 8px 14px;
+      background: var(--feuille); border-top: 1px solid var(--filet);
+    }
+    a {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0;
+      text-decoration: none; color: var(--inactif); font: 600 12px/1 var(--police-texte);
+    }
+    a[aria-current='page'] { color: var(--encre); font-weight: 700; }
+  }
+</style>

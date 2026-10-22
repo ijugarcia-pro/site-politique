@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Quiz · une question · VDEF</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#2A211B;color:#121212;font-family:Figtree, system-ui, sans-serif}
+a{color:#121212}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #121212;outline-offset:2px}
+summary{cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}
+</style>
+</helmet>
+<div style="position: relative; height: 900px; min-height: 760px; overflow: hidden; background: #2A211B">
+<img src="/_blob/383414f96838ea3744cccd09b10333ee" alt="La tribune de l'Assemblée en 3D, vue depuis l'hémicycle." style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+<div style="position: absolute; top: 20px; left: 24px; z-index: 5; display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><a href="VDEF-01-Tribune-premiere-visite.dc.html" style="display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px; background: #FFFFFF; border-radius: 999px; text-decoration: none; font: 600 15px/1 Figtree, sans-serif; box-shadow: 0 4px 16px rgba(0,0,0,0.18)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Quitter</a><span style="display: inline-flex; align-items: center; gap: 12px; height: 48px; padding: 0 18px; background: #FFFFFF; border-radius: 999px; font: 600 15px/1 Figtree, sans-serif; box-shadow: 0 4px 16px rgba(0,0,0,0.18)">Question 3 sur 10<span aria-hidden="true" style="display: flex; gap: 4px"><span style="width: 18px; height: 6px; border-radius: 999px; background: #121212"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #121212"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #121212"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span><span style="width: 18px; height: 6px; border-radius: 999px; background: #D9D9D9"></span></span></span></div>
+<span style="position: absolute; left: 46%; top: 55%; z-index: 2; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; background: #FFFFFF; padding: 7px 14px 7px 8px; border-radius: 999px; font: 600 14px/1 Figtree, sans-serif; box-shadow: 0 2px 10px rgba(0,0,0,0.3); white-space: nowrap"><span aria-hidden="true" style="width: 16px; height: 16px; border-radius: 999px; background: #121212; border: 3px solid #FFFFFF; box-shadow: 0 0 0 2px #121212"></span>La tribune · ce texte y a été voté</span>
+<section aria-labelledby="question" style="position: absolute; top: 20px; right: 24px; bottom: 24px; z-index: 3; width: 480px; max-width: calc(100% - 48px); background: #FFFFFF; border-radius: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.28); box-sizing: border-box; overflow: auto; padding: 28px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><span style="display: inline-flex; align-items: center; gap: 6px; background: #F2F2F2; color: #121212; border-radius: 999px; padding: 7px 12px; font: 600 13px/1 Figtree, sans-serif">Santé</span><span style="display: inline-flex; align-items: center; gap: 6px; background: #F2F2F2; color: #121212; border-radius: 999px; padding: 7px 12px; font: 600 13px/1 Figtree, sans-serif">Voté le 10 avril 2025</span></div>
+<span style="font: 600 14px/1.35 Figtree, sans-serif; color: #5E5E5E;">Et toi, qu’aurais-tu voté ?</span>
+<h1 id="question" style="margin: 0; font: 700 34px/1.1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.01em">Faut-il interdire la vente des cigarettes électroniques jetables ?</h1>
+<p style="margin: 0; font: 500 17px/1.5 Figtree, sans-serif; color: #3A3A3A;">Ces « puffs » à usage unique, très prisées des adolescents, ne pourraient plus être vendues en France.</p>
+<div role="group" aria-label="Ta réponse" style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{reponses}}" as="r" hint-placeholder-count="3">
+<button type="button" onClick="{{r.choisir}}" aria-pressed="{{r.presse}}" style="{{r.style}}"><span aria-hidden="true" style="{{r.pastille}}"></span><span style="flex: 1; text-align: left">{{r.libelle}}</span><span style="font: 600 13px/1 Figtree, sans-serif">{{r.marque}}</span></button>
+</sc-for>
+</div>
+<sc-if value="{{choisi}}" hint-placeholder-val="{{ false }}">
+<div style="background: #F2F2F2; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px"><span style="font: 600 16px/1.4 Figtree, sans-serif">Voyons ce que les 577 députés ont voté.</span><a href="VDEF-03-Quiz-revelation.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px; border-radius: 999px; text-decoration: none; font: 700 16px/1 Figtree, sans-serif; background: #121212; color: #FFFFFF;">Voir la salle</a></div>
+</sc-if>
+<details style="border-top: 1px solid #E7E7E7; margin-top: auto">
+<summary style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; font: 700 16px/1.3 Figtree, sans-serif">Comprendre ce texte <span aria-hidden="true" style="font-weight: 500">+</span></summary>
+<ul style="margin: 0 0 8px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font: 500 15px/1.5 Figtree, sans-serif; color: #3A3A3A">
+<li>Ce que le texte change, en trois phrases.</li><li>Qui l’a déposé, et quand.</li><li>Le texte officiel et ses sources, au niveau « Fouiller ».</li>
+</ul>
+</details>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 1440, "height": 900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { choix: null }; }
+  renderVals() {
+    const base = "display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 0 18px; border-radius: 16px; cursor: pointer; font: 600 17px/1 Figtree, sans-serif; ";
+    const items = [
+      { id: 'pour', libelle: 'Pour', couleur: '#2F7BFF' },
+      { id: 'contre', libelle: 'Contre', couleur: '#FF6A3D' },
+      { id: 'nsp', libelle: 'Je ne sais pas', couleur: null },
+    ];
+    const c = this.state.choix;
+    return {
+      choisi: c !== null,
+      reponses: items.map((x) => {
+        const sel = c === x.id;
+        return {
+          libelle: x.libelle, presse: sel ? 'true' : 'false', marque: sel ? 'Ton vote' : '',
+          choisir: () => this.setState({ choix: x.id }),
+          style: base + (sel ? 'background: #121212; color: #FFFFFF; border: 2px solid #121212;' : 'background: #FFFFFF; color: #121212; border: 1px solid #D9D9D9;') + (c !== null && !sel ? ' color: #6B6B6B;' : ''),
+          pastille: 'width: 14px; height: 14px; border-radius: 999px; flex: 0 0 auto; ' + (x.couleur ? 'background: ' + x.couleur + ';' : 'border: 2px solid #8A8A8A; box-sizing: border-box;') + (sel ? ' box-shadow: 0 0 0 2px #FFFFFF;' : ''),
+        };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

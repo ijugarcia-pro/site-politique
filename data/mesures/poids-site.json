@@ -28,18 +28,18 @@
   "modules": 4
  },
  "/deputes/": {
-  "js": 10843,
-  "js_gzip": 4639,
-  "css": 27706,
-  "css_gzip": 5080,
-  "modules": 6
+  "js": 36825,
+  "js_gzip": 13524,
+  "css": 21162,
+  "css_gzip": 4649,
+  "modules": 9
  },
  "/deputes/[uid]/": {
-  "js": 6832,
-  "js_gzip": 2835,
-  "css": 32600,
-  "css_gzip": 5714,
-  "modules": 5
+  "js": 32150,
+  "js_gzip": 11655,
+  "css": 22548,
+  "css_gzip": 4797,
+  "modules": 8
  },
  "/dossiers/droits/": {
   "js": 34216,
@@ -135,8 +135,8 @@
  "/explorer/": {
   "js": 32715,
   "js_gzip": 11878,
-  "css": 21853,
-  "css_gzip": 4742,
+  "css": 21914,
+  "css_gzip": 4758,
   "modules": 9
  },
  "/lots/": {
@@ -168,8 +168,8 @@
   "modules": 13
  },
  "/salle/": {
-  "js": 45684,
-  "js_gzip": 16565,
+  "js": 45893,
+  "js_gzip": 16637,
   "css": 22920,
   "css_gzip": 4890,
   "modules": 12
@@ -233,8 +233,8 @@
  "/votes/[numero]/": {
   "js": 43807,
   "js_gzip": 15700,
-  "css": 22350,
-  "css_gzip": 4824,
+  "css": 22475,
+  "css_gzip": 4843,
   "modules": 11
  }
 }

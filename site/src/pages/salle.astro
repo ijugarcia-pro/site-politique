@@ -5,6 +5,7 @@
 // siège s'éclaire selon ses votes communs avec toi (intensités, lib/profil.ts) ; avant, un
 // encart dit ce qu'il manque. Tout est calculé dans le navigateur. Sans 3D, l'hémicycle 2D
 // prend le relais (un clic sur un siège donne sa carte) ; au clavier, « Trouver un député ».
+// L'adresse peut demander un vote (#vote=), un député (#depute=) ou un groupe (#groupe=).
 import Base from '../layouts/Base.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
@@ -293,6 +294,16 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
       if (i >= 0) { montrer(i, true); return true; }
       return false;
     };
+    // Depuis une fiche (« Voir dans la salle ») ou la liste des groupes : #depute=PA… montre son
+    // siège et sa carte, #groupe=PO… allume les sièges du groupe.
+    const depuisAdresse = /^#(depute|groupe)=(\w+)$/.exec(location.hash);
+    if (depuisAdresse?.[1] === 'depute' && parUid.has(depuisAdresse[2])) {
+      montrer(parUid.get(depuisAdresse[2])!);
+    } else if (depuisAdresse?.[1] === 'groupe' && groupes[depuisAdresse[2]]) {
+      const choix = $<HTMLSelectElement>('[data-groupe]');
+      choix.value = depuisAdresse[2];
+      choix.dispatchEvent(new Event('change'));
+    }
     trouver.addEventListener('change', chercher);
     $<HTMLFormElement>('[data-recherche]').addEventListener('submit', (ev) => {
       ev.preventDefault();

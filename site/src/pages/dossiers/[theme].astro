@@ -180,6 +180,7 @@ const donnees = JSON.stringify({ theme, sur, votes: votes.map((v) => ({ uid: v.s
   .chiffre { display: flex; flex-direction: column; gap: 10px; padding: 22px 20px; border-radius: 20px; background: var(--surface); }
   .chiffre .t-texte { font-size: 15px; line-height: 1.4; }
   .bloc { display: flex; flex-direction: column; gap: 12px; }
+  .bloc > :global(.bouton) { align-self: flex-start; }
   .titre-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .fil { list-style: none; margin: 0; padding: 0; }
   .fil li { display: grid; grid-template-columns: 110px 20px minmax(0, 1fr) 110px 170px; align-items: center; gap: 14px; padding: 12px 0; }

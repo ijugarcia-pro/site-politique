@@ -360,6 +360,7 @@ const description = censure
     color: var(--encre); font: 700 15px/1 var(--police-texte);
   }
   .panneau { display: flex; flex-direction: column; gap: 22px; }
+  .panneau > :global(.bouton) { align-self: flex-start; }
   .phrase { max-width: 760px; }
   .personnes { max-width: 620px; }
   .personnes :global(a) { color: var(--encre); text-decoration: none; }
@@ -375,6 +376,7 @@ const description = censure
   .effacer { border: 0; background: none; color: var(--encre); font: 600 14px/1 var(--police-texte); text-decoration: underline; cursor: pointer; min-height: var(--cible); }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .bloc { display: flex; flex-direction: column; gap: 12px; }
+  .bloc > :global(.bouton) { align-self: flex-start; }
   .concret { max-width: 760px; }
   .groupes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
   .groupes li { display: grid; grid-template-columns: 110px minmax(0, 1fr) 230px; align-items: center; gap: 14px; }

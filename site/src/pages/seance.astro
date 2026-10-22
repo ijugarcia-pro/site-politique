@@ -1,281 +1,173 @@
 ---
-// La séance de la semaine (t24, frames V5 « ⑥ Séance » et « ⑦ Séance terminée ») : les 3 votes
-// choisis par pipeline/semaine.py. Un vote annoncé se tranche avant les députés, avec un
-// pronostic facultatif ; un vote déjà tenu (vote passé, ou séance faite après le scrutin) est
-// révélé comme dans le quiz. Fin de séance : le tampon, la série (gelée pendant les vacances),
-// la précision, les pronostics en jeu et le rendez-vous du verdict. Tout reste dans le
-// navigateur (lib/seances.ts). Ce qui n'existe pas encore n'est pas montré : ni duel, ni
-// alerte, ni barre « utilisateurs du site » (il faudrait des agrégats, reportés, et au moins
-// 200 participants).
-import Base from '../layouts/BaseSeance.astro';
-import EnteteSeance from '../components/EnteteSeance.astro';
-import JaugePrecision from '../components/JaugePrecision.astro';
-import SerieGelee from '../components/SerieGelee.astro';
-import Seance from '../components/Seance.astro';
-import { avancementSeance, dateLisible, lotsDuParcours, quandVote, questionSeance, semaine } from '../lib/donnees.ts';
-import { puceTheme } from '../lib/themes.ts';
-import '../styles/fin-seance.css';
+// La séance de la semaine (t24 ; VDEF, lot V5 ; maquettes 06, 06b, 07) : les 3 votes choisis par
+// pipeline/semaine.py, tranchés sur la tribune (components/vdef/Trancher.astro). Un vote annoncé
+// se tranche avant les députés (« Vote avant eux »), avec un pronostic facultatif ; un vote déjà
+// tenu est révélé dans la salle, comme dans le quiz. Fin de séance : « A voté. », tes réponses,
+// le rendez-vous du verdict et « Ajouter le verdict à mon agenda » (un fichier .ics créé dans le
+// navigateur : rien n'est envoyé ; les comptes et les e-mails viendront avec t30 à t32). Tout
+// reste dans le navigateur (lib/seances.ts).
+import Base from '../layouts/Base.astro';
+import Bouton from '../components/vdef/Bouton.astro';
+import Feuille from '../components/vdef/Feuille.astro';
+import Trancher from '../components/vdef/Trancher.astro';
+import { dateLisible, lotsDuParcours, quandVote, questionSeance, scrutins, semaine } from '../lib/donnees.ts';
 
 const sem = semaine();
-const votes = sem.votes.filter((v) => v.statut !== 'retiré');
-const retires = sem.votes.length - votes.length;
+const votes = sem.vacances ? [] : sem.votes.filter((v) => v.statut !== 'retiré');
+const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+const jourHeure = (v: (typeof votes)[number]) => {
+  const jour = JOURS[new Date(`${v.date}T12:00:00Z`).getUTCDay()];
+  return v.debut ? `${jour} à ${Number(v.debut.slice(11, 13))} h${v.debut.slice(14, 16) !== '00' ? ` ${v.debut.slice(14, 16)}` : ''}` : jour;
+};
 const cartes = votes.map((v) => {
   const q = questionSeance(v);
   return { uid: v.statut === 'voté' ? v.scrutin?.uid ?? '' : '', numero: v.scrutin?.numero ?? 0,
-    theme: v.carte?.theme ?? 'Vote solennel', question: q.question, concretement: q.concretement,
-    quand: quandVote(v) };
+    theme: v.carte?.theme ?? 'Vote solennel', question: q.question, concretement: q.concretement, titre: q.titre,
+    quand: quandVote(v), quandCourt: jourHeure(v) };
 });
-const puces = votes.map((v) => (v.carte ? puceTheme(v.carte.theme) : '#B3132F:#FFFFFF'));
-const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
-  'oct.', 'nov.', 'déc.'];
-const tampon = `${Number(sem.lundi.slice(8, 10))} ${MOIS_COURTS[Number(sem.lundi.slice(5, 7)) - 1]}`;
-// Les rendez-vous du verdict : les votes annoncés pas encore tenus.
+// Les rendez-vous du verdict : les votes annoncés pas encore tenus ; le verdict le lendemain matin.
 const attendus = votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
-const premier = attendus[0];
-// Séance tranchée en partie : le lien vers le verdict dit « 1/3 ».
-const etape = avancementSeance(sem);
+const dernier = attendus.map((v) => v.date).sort().at(-1) ?? null;
+const lendemainIso = dernier ? new Date(Date.parse(`${dernier}T12:00:00Z`) + 86400000).toISOString().slice(0, 10) : null;
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const seanceDu = `Séance du ${Number(sem.lundi.slice(8, 10))} ${MOIS[Number(sem.lundi.slice(5, 7)) - 1]}`;
 const donnees = JSON.stringify({
-  lundi: sem.lundi, cles: votes.map((v) => v.cle), retires,
-  quand: premier ? quandVote(premier) : null,
-  historique: sem.historique, vacances: sem.vacances,
-  // Les lots du parcours : la fin de séance y renvoie en attendant le verdict.
+  lundi: sem.lundi, cles: votes.map((v) => v.cle),
+  premier: attendus[0] ? { quand: jourHeure(attendus[0]) } : null,
+  verdict: lendemainIso ? { date: lendemainIso, jour: JOURS[new Date(`${lendemainIso}T12:00:00Z`).getUTCDay()] } : null,
+  site: Astro.site?.href ?? 'https://le578esiege.pages.dev/',
+  horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
   parcours: lotsDuParcours(),
 }).replace(/</g, '\\u003c');
-const JOURS_COURTS = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
-const tuile = premier ? {
-  jour: JOURS_COURTS[new Date(`${premier.date}T12:00:00Z`).getUTCDay()],
-  date: Number(premier.date.slice(8, 10)),
-  heure: premier.debut ? `${Number(premier.debut.slice(11, 13))} h` : '',
-} : null;
 ---
-<Base titre="La séance de la semaine" focus theme="seance"
-  description="3 vrais votes de l'Assemblée à trancher avant les députés, puis le verdict.">
-  <EnteteSeance slot="entete" total={Math.max(1, votes.length)} libelle="Progression de la séance"
-    titre="Séance de la semaine" serie sortie={{ href: '/', texte: 'Quitter la séance' }} />
-
-  {sem.vacances || votes.length === 0 ? (
-    <section class="vacances">
-      <p class="sur-titre">Semaine du {dateLisible(sem.lundi)}</p>
-      <h1>Pas de séance cette semaine</h1>
-      <p>
-        {sem.vacances
-          ? 'L\'Assemblée ne siège pas : ce sont les vacances parlementaires.'
-          : 'Aucun vote n\'est prévu cette semaine.'}
-      </p>
-      {sem.vacances && <SerieGelee />}
+{votes.length === 0 ? (
+  <Base titre="La séance de la semaine" vue="tribune" fond="tribune"
+    description="3 vrais votes de l'Assemblée à trancher avant les députés, puis le verdict.">
+    <Feuille position="droite" titre="titre-vacances">
+      <span class="t-etiquette">Semaine du {dateLisible(sem.lundi)}</span>
+      <h1 id="titre-vacances" class="t-feuille">Pas de séance cette semaine</h1>
+      <p class="t-texte">{sem.vacances
+        ? 'L’Assemblée ne siège pas : ce sont les vacances parlementaires. Ta série attend la reprise.'
+        : 'Aucun vote n’est prévu cette semaine.'}</p>
       <div class="actions">
-        <a class="b-principal" href="/lots/">Trancher des votes passés</a>
-        <a class="b-second" href="/">Retour à l'accueil</a>
+        <Bouton href="/lots/" large>Trancher des votes passés</Bouton>
+        <Bouton href="/" variante="contour" large>Retour à la tribune</Bouton>
       </div>
-    </section>
-  ) : (
-    <Seance cartes={cartes} puces={puces} dates pronostic>
-      <div class="fin" slot="fin" data-ecran="fin" hidden>
-        <button type="button" class="b-passer-seq" data-passer-seq hidden>Passer</button>
-        <div class="tampon bandeau" data-tampon>
-          <div class="bandeau-ligne">
-            <span class="bandeau-etiquette tampon-a-vote">A voté</span>
-            <span class="bandeau-titre"><span class="tampon-haut">Séance du</span> <span class="tampon-grand">{tampon}</span></span>
-          </div>
-          <span class="bandeau-legende" data-tampon-bas></span>
-        </div>
-        <h1 tabindex="-1" data-fin-titre>Séance terminée</h1>
-        <p class="fin-texte" data-fin-texte></p>
-        <div class="cartes">
-          <div class="carte orange" data-carte-serie>
-            <span class="grand">
-              <svg class="flamme" width="26" height="28" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#F2C98A"></path></svg>
-              <span class="odo" aria-hidden="true"><span class="odo-colonne"><span data-odo-avant></span><span data-fin-serie></span></span></span>
-              <span class="visuellement-cache" data-fin-serie-lu></span>
+    </Feuille>
+  </Base>
+) : (
+  <Base titre="La séance de la semaine" fond="tribune" vueSalle="tribune" focus={{ quitter: '/', total: votes.length }}
+    description="3 vrais votes de l'Assemblée à trancher avant les députés, puis le verdict.">
+    <Trancher cartes={cartes} pronostic>
+      <div class="ecran fin" slot="fin" data-ecran="fin" hidden>
+        <span class="annonce-palier" data-annonce-fin hidden></span>
+        <span class="t-etiquette">{seanceDu} · terminée pour toi</span>
+        <h1 class="t-ecran titre-fin" tabindex="-1" data-fin-titre>A voté.</h1>
+        <p class="t-texte" data-fin-texte></p>
+        <ul class="lignes" data-fin-reponses></ul>
+        {lendemainIso && (
+          <div class="agenda" data-agenda>
+            <span class="agenda-titre">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+              Le rendez-vous du verdict
             </span>
-            <span class="libelle" data-fin-serie-libelle></span>
-            <span class="petit" data-fin-serie-detail></span>
-          </div>
-          <div class="carte violette">
-            <JaugePrecision grand />
-            <span class="libelle">de précision</span>
-            <span class="petit" data-fin-gain></span>
-          </div>
-          <div class="carte jaune" data-carte-pronos hidden>
-            <span class="grand" data-fin-pronos></span>
-            <span class="libelle" data-fin-pronos-libelle></span>
-            <span class="petit">{premier ? `résultat ${quandVote(premier).replace(/ à .*/, '')}` : ''}</span>
-          </div>
-        </div>
-        {tuile && (
-          <div class="rendez-vous" data-rendez-vous>
-            <span class="tuile">
-              <span class="tuile-jour">{tuile.jour}</span>
-              <span class="tuile-date">{tuile.date}</span>
-              <span class="tuile-heure">{tuile.heure}</span>
-            </span>
-            <span class="rdv-texte">
-              <span class="rdv-titre">Rendez-vous pour le verdict</span>
-              <span>Les députés votent {quandVote(premier)}. Le verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</span>
-            </span>
+            <p class="t-legende">Un rappel dans ton agenda, le matin du verdict. Le fichier est créé sur ton appareil : rien n’est envoyé, aucun compte n’est nécessaire.</p>
+            <Bouton variante="contour" data-ajouter-agenda>Ajouter le verdict à mon agenda</Bouton>
           </div>
         )}
-        <div class="carnet">
-          <div class="carnet-tete">
-            <span class="carnet-titre">Ton carnet de séances</span>
-            <span class="carnet-compte" data-carnet-compte></span>
-          </div>
-          <ol class="tampons" data-tampons aria-label="Tes dernières séances"></ol>
-        </div>
+        <p class="t-legende attente" data-fin-attente></p>
         <div class="actions">
-          <a class="b-principal" href="/verdict/" data-fin-principal>Voir le verdict{etape.etat === 'partiel' ? ` · ${etape.fraction}` : ''} →</a>
-          <a class="b-second" href="/">Retour à l'accueil</a>
+          <Bouton href="/lots/" large data-fin-principal>Trancher des votes passés</Bouton>
+          <Bouton href="/" variante="contour" large>Retour à la tribune</Bouton>
         </div>
       </div>
-    </Seance>
-  )}
-  <script type="application/json" data-donnees-semaine set:html={donnees}></script>
-</Base>
+    </Trancher>
+    <script type="application/json" data-donnees-semaine set:html={donnees}></script>
+  </Base>
+)}
 
 <script>
-  import { repondre, reponses } from '../lib/navigateur.ts';
+  import { repondre } from '../lib/navigateur.ts';
   import { etatLots, prochainLot } from '../lib/lots.ts';
-  import { precision, type Matrice, type Reponse } from '../lib/profil.ts';
-  import { jauge } from '../lib/jauge.ts';
-  import { mouvementReduit, sequence } from '../lib/motion.ts';
-  import { montrerGel } from '../lib/gel.ts';
-  import { $, pluriel, seance } from '../lib/seance.ts';
-  import { etatSeance, sauverSeance, seancesFaites, serie, type Pronostic } from '../lib/seances.ts';
+  import { prochainPalier } from '../lib/paliers.ts';
+  import type { Reponse } from '../lib/profil.ts';
+  import { etatSeance, sauverSeance, type Pronostic } from '../lib/seances.ts';
+  import { $, pluriel, tranches, trancher } from '../lib/trancher.ts';
 
-  const { lundi, cles, historique, parcours, vacances: enVacances } = JSON.parse($('[data-donnees-semaine]').textContent!) as {
-    lundi: string; cles: string[]; quand: string | null; parcours: number; vacances: boolean;
-    historique: { lundi: string; vacances: boolean }[];
+  /** Le fichier d'agenda du verdict (iCalendar), créé dans le navigateur. */
+  const fichierAgenda = (date: string, site: string) => {
+    const jour = date.replaceAll('-', '');
+    const suivant = new Date(Date.parse(`${date}T12:00:00Z`) + 86400000).toISOString().slice(0, 10).replaceAll('-', '');
+    const maintenant = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Le 578e siège//Verdict//FR', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT', `UID:verdict-${jour}@le578esiege`, `DTSTAMP:${maintenant}`,
+      `DTSTART;VALUE=DATE:${jour}`, `DTEND;VALUE=DATE:${suivant}`,
+      'SUMMARY:Le verdict de la séance · Le 578e siège',
+      `DESCRIPTION:Les députés ont voté : découvre le verdict et compare-le à tes réponses. ${site}verdict/`,
+      `URL:${site}verdict/`, 'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n');
   };
-  const vacances = new Set(historique.filter((h) => h.vacances).map((h) => h.lundi));
-  const afficherSerie = () => {
-    const n = serie(seancesFaites(), vacances, lundi);
-    const el = document.querySelector<HTMLElement>('[data-serie]');
-    if (!el) return n;
-    el.hidden = n === 0;
-    $('[data-serie-texte]').textContent = pluriel(n, 'semaine');
-    return n;
-  };
-  const n0 = afficherSerie();
-  if (enVacances) montrerGel(n0, lundi);
 
-  if (document.querySelector('[data-donnees-seance]')) {
+  document.addEventListener('astro:page-load', () => {
+    const brut = document.querySelector('[data-donnees-semaine]')?.textContent;
+    if (!brut) return;
+    const { lundi, cles, premier, verdict, site, horsMatrice, parcours } = JSON.parse(brut) as {
+      lundi: string; cles: string[]; premier: { quand: string } | null;
+      verdict: { date: string; jour: string } | null; site: string; horsMatrice: string[]; parcours: number };
+    const hors = new Set(horsMatrice);
     const etat = etatSeance(lundi);
-    const s = seance({
-      libelleContinuer: (i) => (i + 1 < cles.length ? 'Vote suivant' : 'Fin de la séance'),
-    });
-    const { questions } = s;
+    const t = trancher({ libelleSuivant: (i) => (i + 1 < cles.length ? 'Vote suivant' : 'Fin de la séance') });
+    const { questions } = t;
     const sauver = () => sauverSeance(lundi, etat);
+
+    const fin = () => {
+      etat.fini = true;
+      sauver();
+      t.finir('fin');
+      t.annoncer($('[data-annonce-fin]'), hors);
+      t.salle?.vue('tribune');
+      const enAttente = questions.some((q, k) => q.attente && cles[k] in etat.reponses);
+      $('[data-fin-texte]').textContent = enAttente && premier && verdict
+        ? `${premier.quand.charAt(0).toUpperCase()}${premier.quand.slice(1)}, les 577 députés votent à leur tour. Le verdict arrive ${verdict.jour} matin, dès que l’Assemblée publie le scrutin.`
+        : 'Tes réponses comptent dans ta place.';
+      $('[data-fin-reponses]').replaceChildren(...questions.map((q, k) => {
+        const li = document.createElement('li');
+        const r = etat.reponses[cles[k]];
+        const titre = document.createElement('span');
+        titre.textContent = q.titre;
+        const droite = document.createElement('span');
+        const pt = document.createElement('span');
+        pt.className = `point ${r ?? 'non-votant'}`;
+        pt.setAttribute('aria-hidden', 'true');
+        droite.append(pt, r === undefined ? 'Pas tranché' : r === 'pour' ? 'Pour' : r === 'contre' ? 'Contre' : 'Je ne sais pas');
+        li.append(titre, droite);
+        return li;
+      }));
+      const prochain = prochainPalier(tranches(hors));
+      $('[data-fin-attente]').textContent = prochain
+        ? `En attendant : ${pluriel(prochain.reste, 'vote')} avant ${prochain.palier.libelle.toLowerCase()}.` : '';
+      // L'action principale : le verdict s'il y en a un, sinon des votes passés.
+      const principal = $<HTMLAnchorElement>('[data-fin-principal]');
+      if (questions.some((q) => !q.attente)) { principal.href = '/verdict/'; principal.textContent = 'Voir le verdict'; }
+      else if (prochainLot(etatLots().faits, parcours) === null) { principal.href = '/explorer/#a-trancher'; principal.textContent = 'Trancher d’autres votes'; }
+      $('[data-fin-titre]').focus();
+    };
 
     const suivant = () => {
       etat.i += 1;
       sauver();
-      if (etat.i < questions.length) s.poser(etat.i);
+      if (etat.i < questions.length) t.poser(etat.i);
       else fin();
     };
-
-    const fin = async () => {
-      etat.fini = true;
-      sauver();
-      s.finir('fin');
-      const m: Matrice = s.matrice() ?? await s.chargement;
-      const reps = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
-      const p = s.tonHemicycle(m)!;
-      s.panneauHemicycle('Plus un siège est lumineux, plus ce député a voté comme toi');
-      const tranches = cles.filter((c) => etat.reponses[c]).length;
-      const comptees = questions.filter((q) => !q.attente && reps[q.uid]).length;
-      const gain = Math.round(100 * p.precision) - Math.round(100 * precision(p.reponses - comptees));
-      const enAttente = questions.filter((q, k) => q.attente && etat.reponses[cles[k]]).length;
-      $('[data-tampon-bas]').textContent = `${pluriel(tranches, 'vote')} · 578e siège`;
-      $('[data-fin-texte]').textContent = enAttente
-        ? `Tes ${pluriel(enAttente, 'vote')} ${enAttente > 1 ? 'sont enregistrés' : 'est enregistré'} avant ceux des députés. `
-          + 'Le verdict arrive dès la publication du scrutin, le lendemain matin au plus tard.'
-        : 'Tes réponses comptent dans ton hémicycle.';
-      // La série, gelée pendant les vacances.
-      const n = afficherSerie();
-      $('[data-fin-serie]').textContent = String(n);
-      $('[data-odo-avant]').textContent = String(Math.max(0, n - 1));
-      $('[data-fin-serie-lu]').textContent = String(n);
-      $('[data-fin-serie-libelle]').textContent = n > 1 ? 'semaines d\'affilée' : 'semaine d\'affilée';
-      $('[data-fin-serie-detail]').textContent = '+1 cette semaine';
-      const jaugeFin = $('.violette [data-jauge]');
-      jauge(jaugeFin, p.reponses - comptees, p.reponses, 850);
-      $('[data-fin-gain]').textContent = `${gain > 0 ? `+${gain} point${gain > 1 ? 's' : ''} · ` : ''}`
-        + pluriel(p.reponses, 'vote');
-      const pronos = Object.keys(etat.pronostics).length;
-      $('[data-carte-pronos]').hidden = pronos === 0;
-      $('[data-fin-pronos]').textContent = String(pronos);
-      $('[data-fin-pronos-libelle]').textContent = pronos > 1 ? 'pronostics en jeu' : 'pronostic en jeu';
-      // Le carnet : les 8 dernières semaines.
-      const faites = seancesFaites();
-      const semaines = [...historique.map((h) => h.lundi), lundi].slice(-8);
-      $('[data-carnet-compte]').textContent = pluriel(faites.size, 'séance');
-      $('[data-tampons]').replaceChildren(...semaines.map((l) => {
-        const li = document.createElement('li');
-        const [, mm, jj] = l.split('-');
-        li.className = l === lundi ? 'vient' : faites.has(l) ? 'fait' : vacances.has(l) ? 'vacances' : 'manque';
-        const mini = document.createElement('span');
-        mini.className = 'mini';
-        mini.textContent = vacances.has(l) ? 'vac.' : 'séance';
-        li.append(mini, `${Number(jj)}/${Number(mm)}`);
-        return li;
-      }));
-      // L'action principale : le verdict s'il y en a un, sinon des votes passés.
-      const principal = $<HTMLAnchorElement>('[data-fin-principal]');
-      const auMoinsUnVerdict = questions.some((q) => !q.attente);
-      if (!auMoinsUnVerdict) {
-        const lot = prochainLot(etatLots().faits, parcours);
-        principal.href = lot === null ? '/explorer/#a-trancher' : '/lots/';
-        principal.textContent = lot === null ? 'Trancher d\'autres votes' : 'En attendant : 3 votes passés →';
-      }
-      $('[data-fin-titre]').focus();
-      cascade(() => jauge(jaugeFin, p.reponses, p.reponses));
-    };
-
-    /** F1 + F2 : le tampon, puis le bilan en cascade (les cartes à 650 ms, la précision à
-     *  850 ms, le rendez-vous à 1 500 ms) ; « Passer » ou un appui sur l'écran donne l'état
-     *  final. Le carnet est affiché sans animation. Mouvement réduit : un fondu de 200 ms. */
-    const cascade = (jaugeFinale: () => void) => {
-      const ecran = $('[data-ecran="fin"]');
-      const bouton = $('[data-passer-seq]');
-      const cartes = [...ecran.querySelectorAll<HTMLElement>('.cartes > .carte:not([hidden])')];
-      const rdv = document.querySelector<HTMLElement>('[data-rendez-vous]');
-      const montrer = (el: HTMLElement, delai: number) => {
-        el.style.setProperty('--delai-c', `${delai}ms`);
-        el.classList.add('apparait');
-      };
-      const finir = () => {
-        ecran.classList.remove('en-cascade');
-        bouton.hidden = true;
-        document.removeEventListener('click', appui);
-      };
-      const appui = () => { suite.passer(); jaugeFinale(); };
-      if (mouvementReduit()) ecran.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
-      else {
-        ecran.classList.add('en-cascade');
-        bouton.hidden = false;
-        // Après le toucher qui a ouvert cet écran.
-        setTimeout(() => document.addEventListener('click', appui), 0);
-      }
-      const suite = sequence([
-        { a: 0, faire: () => $('[data-tampon]').classList.add('anime') },
-        { a: 650, faire: () => cartes.forEach((c, k) => montrer(c, 80 * k)) },
-        { a: 1500, faire: () => { if (rdv) montrer(rdv, 0); } },
-        { a: 1850, faire: finir },
-      ], ecran);
-    };
-
+    let reponse: Reponse | null = null;
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-reponse]')) {
       b.addEventListener('click', () => {
         const q = questions[etat.i];
-        const v = (b.dataset.reponse || null) as Reponse | null;
-        etat.reponses[cles[etat.i]] = v;
+        reponse = (b.dataset.reponse || null) as Reponse | null;
+        etat.reponses[cles[etat.i]] = reponse;
         sauver();
-        if (q.attente) {
-          s.attendre(etat.i, v);
-        } else {
-          repondre(q.uid, v);
-          s.reveler(etat.i, v);
-        }
+        if (!q.attente) repondre(q.uid, reponse);
+        t.repondu(etat.i, reponse, { lendemain: q.attente && verdict ? verdict.jour : null,
+          pronostic: etat.pronostics[cles[etat.i]] });
       });
     }
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-prono]')) {
@@ -286,58 +178,41 @@ const tuile = premier ? {
         else etat.pronostics[cle] = choix;
         sauver();
         for (const x of document.querySelectorAll<HTMLButtonElement>('[data-prono]')) {
-          x.classList.toggle('choisi', etat.pronostics[cle] === x.dataset.prono);
+          x.setAttribute('aria-pressed', String(etat.pronostics[cle] === x.dataset.prono));
         }
       });
     }
+    $('[data-continuer]').addEventListener('click', () => {
+      if (questions[etat.i].attente) suivant(); else t.reveler(etat.i, reponse, hors);
+    });
     $('[data-suivant]').addEventListener('click', suivant);
-    $('[data-continuer]').addEventListener('click', suivant);
+    document.querySelector('[data-ajouter-agenda]')?.addEventListener('click', () => {
+      if (!verdict) return;
+      const blob = new Blob([fichierAgenda(verdict.date, site)], { type: 'text/calendar;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `verdict-${verdict.date}.ics`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    });
     if (etat.fini || etat.i >= questions.length) fin();
-    else s.poser(etat.i);
-  }
+    else t.poser(etat.i);
+  });
 </script>
 
 <style>
-  /* La fin de séance (styles/fin-seance.css pour le bandeau, le bilan, le carnet et les
-     actions) ; sans duel ni alerte « Me prévenir » (reportés). */
-  .vacances { max-width: 640px; margin: 40px auto; padding: 28px; border-radius: var(--rayon); background: var(--panneau);
-    box-shadow: var(--ombre-panneau); text-align: center; }
-  .vacances .sur-titre { font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--ivoire-2); }
-  .vacances h1 { margin: 10px 0 12px; font: 700 clamp(36px, 4vw, 56px)/0.95 var(--police-titre); text-transform: uppercase; }
-  .vacances p { font-size: 17px; color: var(--ivoire-2); }
-  .vacances .actions { justify-content: center; }
-  .vacances > :global(.serie-gelee) { max-width: 520px; margin: 22px auto 0; }
-
-  /* Le bilan en cascade (F2) : les cartes et le rendez-vous attendent leur tour, puis montent. */
-  .fin:global(.en-cascade) .cartes > .carte:not(:global(.apparait)),
-  .fin:global(.en-cascade) .rendez-vous:not(:global(.apparait)) { opacity: 0; }
-  .fin :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) var(--delai-c, 0ms) both; }
-  @media (prefers-reduced-motion: reduce) { .fin :global(.apparait) { animation: none; } }
-  .tampon-haut { color: var(--ivoire-2); }
-  /* La série : en ivoire, comme les autres chiffres (la lumière ne désigne que toi). */
-  .orange .grand { color: var(--ivoire); }
-  /* La série qui roule (F3) : le chiffre passe de N à N + 1 comme un compteur kilométrique, la
-     flamme s'anime une fois, quand la carte du bilan monte. */
-  .odo { display: inline-block; height: 1em; overflow: hidden; }
-  .odo-colonne { display: flex; flex-direction: column; transform: translateY(-50%); }
-  .odo-colonne > span { height: 1em; }
-  .carte:global(.apparait) .odo-colonne { animation: odo 700ms var(--ease-odo) var(--delai-c, 0ms) both; }
-  .carte:global(.apparait) .flamme { transform-origin: 50% 90%; animation: flamme 600ms ease var(--delai-c, 0ms) both; }
-  @keyframes odo { 0%, 25% { transform: none; } 100% { transform: translateY(-50%); } }
-  @keyframes flamme { 60% { transform: scale(1.35) rotate(-6deg); } }
-  @media (prefers-reduced-motion: reduce) {
-    .carte:global(.apparait) .odo-colonne, .carte:global(.apparait) .flamme { animation: none; }
+  .fin { gap: 16px; }
+  .titre-fin { font-size: 56px; }
+  .annonce-palier {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+    border-radius: var(--pilule); background: var(--encre); color: var(--feuille); font: 700 13px/1 var(--police-texte);
   }
-  /* Le rendez-vous du verdict. */
-  .rendez-vous { align-self: stretch; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin-top: 2px;
-    padding: 18px 20px; background: var(--panneau-2); }
-  .tuile { flex: none; display: flex; flex-direction: column; align-items: center; width: 76px; height: 82px;
-    background: var(--panneau); overflow: hidden; }
-  .tuile-jour { align-self: stretch; padding: 4px 0; background: var(--direct); color: var(--sur-direct); text-align: center;
-    font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
-  .tuile-date { font: 600 34px/1.15 var(--police-titre); font-variant-numeric: tabular-nums; }
-  .tuile-heure { font: 600 12px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ivoire-2); }
-  .rdv-texte { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.45; color: var(--ivoire-2); }
-  .rdv-titre { font: 600 22px/1.1 var(--police-titre); text-transform: uppercase; color: var(--ivoire); }
+  .annonce-palier[hidden] { display: none; }
+  .lignes :global(li > span:first-child) { flex: 1; min-width: 0; }
+  .lignes :global(li > span:last-child) { white-space: nowrap; }
+  .agenda { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border-radius: var(--rayon-carte); background: var(--surface); }
+  .agenda-titre { display: inline-flex; align-items: center; gap: 8px; font: 700 16px/1.2 var(--police-texte); }
+  .attente { margin-top: auto; }
+  .actions { display: flex; flex-direction: column; gap: 8px; }
+  @media (max-width: 720px) { .titre-fin { font-size: 34px; } }
 </style>

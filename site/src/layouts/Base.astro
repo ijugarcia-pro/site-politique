@@ -93,7 +93,9 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
         </picture>
         <Salle />
       </div>
-      <BarreHaut vue={vue} focus={focus} />
+      {focus && <BarreHaut focus={focus} data-barre-focus />}
+      <!-- En mode focus, la barre normale attend la fin (lib/trancher.ts, finir) : cachée. -->
+      <BarreHaut vue={vue} data-barre-normale hidden={!!focus} />
       {gabarit === 'lecture' ? (
         <main id="contenu" class="page-lecture" data-vue-salle={vueSalle}>
           <Feuille position="lecture" balise="div">
@@ -107,7 +109,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
         </main>
       )}
     </div>
-    {!focus && <BarreBas actif={bas} />}
+    <BarreBas actif={bas} />
     <script type="application/json" data-hors-matrice set:html={horsMatrice}></script>
     <script type="application/json" data-tranches-seance set:html={tranches}></script>
     <script>
@@ -115,33 +117,39 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
       import { palierAtteint, PALIERS, prochainPalier, votesTranches } from '../lib/paliers.ts';
       import { reporterReponses } from '../lib/seances.ts';
 
+      // L'anneau de progression et le cadenas de « Ta place » (VDEF § 3 et § 5) : calculés sur
+      // place à partir des votes tranchés, comme tout le profil ; recalculés quand une page
+      // enregistre une réponse (événement « vdef:reponses », lib/trancher.ts).
+      const majAnneau = () => {
+        const hors = new Set(JSON.parse(
+          document.querySelector('[data-hors-matrice]')?.textContent ?? '[]') as string[]);
+        const n = votesTranches(Object.fromEntries(
+          Object.entries(reponses()).filter(([uid]) => !hors.has(uid))));
+        const atteint = palierAtteint(n);
+        const prochain = prochainPalier(n);
+        const votes = `${n} vote${n > 1 ? 's' : ''}`;
+        for (const a of document.querySelectorAll<HTMLElement>('[data-anneau]')) {
+          const part = prochain ? n / prochain.palier.seuil : 1;
+          a.style.setProperty('--angle', `${Math.round(360 * part)}deg`);
+          a.querySelector('[data-anneau-texte]')!.textContent = atteint
+            ? `${votes} · Palier ${atteint.rang} sur ${PALIERS.length}` : `Ton parcours · ${votes}`;
+          a.setAttribute('aria-label', `Ton parcours : ${votes} tranché${n > 1 ? 's' : ''}`
+            + (prochain ? `, encore ${prochain.reste} pour « ${prochain.palier.libelle} »` : ', tous les paliers débloqués'));
+        }
+        if (atteint) {
+          for (const lien of document.querySelectorAll<HTMLElement>('[data-verrou]')) {
+            lien.removeAttribute('data-verrou');
+            lien.querySelector('[data-verrou-texte]')?.remove();
+          }
+        }
+      };
+      document.addEventListener('vdef:reponses', majAnneau);
+
       document.addEventListener('astro:page-load', () => {
       reporterReponses(JSON.parse(
         document.querySelector('[data-tranches-seance]')?.textContent ?? '{}') as Record<string, Record<string, string>>);
 
-      // L'anneau de progression et le cadenas de « Ta place » (VDEF § 3 et § 5) : calculés sur
-      // place à partir des votes tranchés, comme tout le profil.
-      const hors = new Set(JSON.parse(
-        document.querySelector('[data-hors-matrice]')?.textContent ?? '[]') as string[]);
-      const n = votesTranches(Object.fromEntries(
-        Object.entries(reponses()).filter(([uid]) => !hors.has(uid))));
-      const atteint = palierAtteint(n);
-      const prochain = prochainPalier(n);
-      const votes = `${n} vote${n > 1 ? 's' : ''}`;
-      for (const a of document.querySelectorAll<HTMLElement>('[data-anneau]')) {
-        const part = prochain ? n / prochain.palier.seuil : 1;
-        a.style.setProperty('--angle', `${Math.round(360 * part)}deg`);
-        a.querySelector('[data-anneau-texte]')!.textContent = atteint
-          ? `${votes} · Palier ${atteint.rang} sur ${PALIERS.length}` : `Ton parcours · ${votes}`;
-        a.setAttribute('aria-label', `Ton parcours : ${votes} tranché${n > 1 ? 's' : ''}`
-          + (prochain ? `, encore ${prochain.reste} pour « ${prochain.palier.libelle} »` : ', tous les paliers débloqués'));
-      }
-      if (atteint) {
-        for (const lien of document.querySelectorAll<HTMLElement>('[data-verrou]')) {
-          lien.removeAttribute('data-verrou');
-          lien.querySelector('[data-verrou-texte]')?.remove();
-        }
-      }
+      majAnneau();
 
       // Les formulaires « code postal » mènent à /deputes/#cp=… : le fragment n'est jamais
       // envoyé au serveur. Sans JavaScript, ils passent par ?cp=, que la page efface.
@@ -164,6 +172,8 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
     background: var(--encre); color: var(--feuille); font: 700 15px/1 var(--police-texte);
   }
   .evitement:focus { top: 12px; }
+  /* Mode focus : pas de barre du bas (maquette T2). */
+  :global(body.focus .barre-bas) { display: none !important; }
 
   .cadre { position: relative; }
   .scene { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--fond-salle); }

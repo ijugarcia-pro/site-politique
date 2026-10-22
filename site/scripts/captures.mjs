@@ -43,7 +43,7 @@ const nomDe = (chemin) => (chemin === '/' ? 'accueil' : chemin.replace(/^\/|\/$|
 async function avecReponses(page, base) {
   await page.goto(`${base}/quiz/`);
   await page.evaluate(() => {
-    const { questions } = JSON.parse(document.querySelector('[data-donnees-seance]')?.textContent ?? '{"questions":[]}');
+    const { questions } = JSON.parse(document.querySelector('[data-donnees-trancher]')?.textContent ?? '{"questions":[]}');
     const rep = Object.fromEntries(questions.map((q, i) =>
       [q.uid, { v: i % 3 ? 'pour' : 'contre', le: '2026-10-20T10:00:00.000Z' }]));
     localStorage.setItem('578e.reponses.v1', JSON.stringify(rep));

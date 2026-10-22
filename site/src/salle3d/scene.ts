@@ -252,7 +252,9 @@ function matieres(T: Textures, telephone: boolean) {
   M.p578 = new THREE.MeshStandardMaterial({ map: T.plaque, metalness: 0.85, roughness: 0.35, envMapIntensity: 1.2 });
   M.voyant = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
   const lueur = new THREE.CanvasTexture(lueurCanvas()); lueur.colorSpace = THREE.SRGBColorSpace;
-  M.lueur = new THREE.MeshBasicMaterial({ color: 0xffffff, map: lueur, transparent: true, opacity: 0.7, depthWrite: false, toneMapped: false, fog: false });
+  // La lueur d'un voyant allumé, posée sur le pupitre : assez large pour que la salle prenne les
+  // couleurs d'un vote vue du perchoir (VDEF, lot V5), sans changer les matières de la salle.
+  M.lueur = new THREE.MeshBasicMaterial({ color: 0xffffff, map: lueur, transparent: true, opacity: 0.95, depthWrite: false, toneMapped: false, fog: false });
   M.faisceau = new THREE.ShaderMaterial({
     uniforms: { uCouleur: { value: new THREE.Color(1.0, 0.86, 0.62) }, uForce: { value: 0.11 } },
     vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0); vV=-mv.xyz; vN=normalMatrix*normal; gl_Position=projectionMatrix*mv; }',
@@ -340,12 +342,32 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     [new THREE.BoxGeometry(0.5, 0.4, 0.42), mat4(0, 0.2, -0.02)],
   ]);
   const n = sieges.length;
-  I.velours = ombre(new THREE.InstancedMesh(velG, M.velours, n));
+  // La teinte d'un siège (VDEF, lot V5) : le velours de chaque fauteuil se mêle à la couleur de
+  // son voyant (un vote, un niveau d'accord), pour que la salle en prenne les couleurs vue du
+  // perchoir ; sans voyant, le velours reste tel quel. Les matières de la salle ne changent pas.
+  const velI = velG.clone();
+  const teintes = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4);
+  velI.setAttribute('teinte', teintes);
+  const veloursSieges = M.velours.clone() as THREE.MeshPhysicalMaterial;
+  veloursSieges.onBeforeCompile = (sh: { vertexShader: string; fragmentShader: string }) => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 teinte;\nvarying vec4 vTeinte;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTeinte = teinte;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec4 vTeinte;')
+      .replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vTeinte.rgb, vTeinte.a);');
+    (M.velours.onBeforeCompile as (x: typeof sh) => void)(sh);
+  };
+  veloursSieges.customProgramCacheKey = () => 'velours-teinte';
+  I.velours = ombre(new THREE.InstancedMesh(velI, veloursSieges, n));
+  /** La teinte d'un siège : la couleur de son voyant, ou rien. */
+  const POIDS_TEINTE = 0.82;
+  const teinter = (k: number, c: THREE.Color | null) => {
+    teintes.setXYZW(k, c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? POIDS_TEINTE : 0);
+  };
   I.bois = ombre(new THREE.InstancedMesh(boisG, M.noyer, n));
   I.plaque = new THREE.InstancedMesh(new THREE.BoxGeometry(0.15, 0.008, 0.045), M.laiton, n);
   I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 20), M.laiton, n);
   I.voyant = new THREE.InstancedMesh(new THREE.SphereGeometry(0.026, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.voyant, n);
-  I.lueur = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.6, 0.6), M.lueur, n);
+  I.lueur = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.62, 0.5), M.lueur, n);
   const o = new THREE.Object3D(), pente = Math.atan(0.14 / 0.47), noir = new THREE.Color(0x1d1714), zero = new THREE.Color(0, 0, 0);
   const mVoyant: { p: THREE.Vector3; q: THREE.Quaternion }[] = [];
   const mLueur: { p: THREE.Vector3; q: THREE.Quaternion }[] = [];
@@ -365,7 +387,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     o.position.set((s.rd - 0.015) * Math.cos(s.th), s.y + 0.862, (s.rd - 0.015) * Math.sin(s.th)); o.rotation.set(0, yaw, 0); o.updateMatrix();
     I.voyant.setMatrixAt(k, o.matrix); I.voyant.setColorAt(k, noir);
     mVoyant.push({ p: o.position.clone(), q: o.quaternion.clone() });
-    o.position.y += 0.01; o.rotation.set(-Math.PI / 2, yaw, 0, 'YXZ'); o.updateMatrix(); I.lueur.setMatrixAt(k, o.matrix); I.lueur.setColorAt(k, zero);
+    surPupitre(s.rd + 0.2, 0); o.position.y += 0.006; o.rotation.set(-Math.PI / 2 - pente, yaw, 0, 'YXZ');
+    o.scale.set(e, 1, 1); o.updateMatrix(); o.scale.setScalar(1); I.lueur.setMatrixAt(k, o.matrix); I.lueur.setColorAt(k, zero);
     mLueur.push({ p: o.position.clone(), q: o.quaternion.clone() });
   });
   for (const k of ['velours', 'bois', 'plaque', 'bague', 'voyant', 'lueur']) racine.add(I[k]);
@@ -652,9 +675,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       for (let k = 0; k < n; k++) {
         const v = couleurs[k] ?? null;
         allumes[k] = !!v;
-        if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); }
+        if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); teinter(k, null); }
       }
-      I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); demander();
+      I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); demander();
     },
     voyantsEnOnde(couleurs, duree = 1000) {
       if (opt.mouvementReduit) { salle.voyants(couleurs); return Promise.resolve(); }
@@ -677,9 +700,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
           if (allume[k] || delais[k] * echelle > t) continue;
           allume[k] = true; change = true;
           const v = couleurs[k] ?? null; allumes[k] = !!v;
-          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); }
+          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); }
         }
-        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); rendre(); }
+        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); rendre(); }
       };
       const image = () => {
         if (fini) return;

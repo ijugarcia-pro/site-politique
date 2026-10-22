@@ -45,7 +45,7 @@ page.on('pageerror', (e) => console.log(`  erreur de page : ${e.message}`));
 
 // Un visiteur qui a répondu aux 10 votes du quiz (illustratif), pour avoir une place (CAM 3).
 await page.goto(`${base}/quiz/`);
-const uids = await page.evaluate(() => JSON.parse(document.querySelector('[data-donnees-seance]').textContent).questions.map((q) => q.uid));
+const uids = await page.evaluate(() => JSON.parse(document.querySelector('[data-donnees-trancher]').textContent).questions.map((q) => q.uid));
 const reponses = Object.fromEntries(uids.map((u, i) => [u, { v: i % 3 ? 'pour' : 'contre', le: '2026-10-20T10:00:00Z' }]));
 
 for (const v of VUES) {

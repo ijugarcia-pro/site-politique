@@ -62,7 +62,7 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
 
   // Les 10 votes du quiz, pour fabriquer un visiteur qui a répondu (une réponse sur trois « contre »).
   await page.goto(`${base}/quiz/`);
-  const uids = await page.evaluate(() => JSON.parse(document.querySelector('[data-donnees-seance]').textContent).questions.map((q) => q.uid));
+  const uids = await page.evaluate(() => JSON.parse(document.querySelector('[data-donnees-trancher]').textContent).questions.map((q) => q.uid));
   const reponses = Object.fromEntries(uids.map((u, i) => [u, { v: i % 3 ? 'pour' : 'contre', le: '2026-10-20T10:00:00Z' }]));
   const avecReponses = { '578e.reponses.v1': reponses };
 
@@ -82,8 +82,12 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
       const r = await page.$('[data-reponse="pour"]:not([disabled]):visible');
       if (!r) break;
       await r.click(); await attendre(400);
-      const suite = await page.$('[data-suivant]:visible, [data-continuer]:visible');
-      if (suite) { await suite.click(); await attendre(500); }
+      // VDEF : « Voir la salle » (ou « Vote suivant » avant le vote des députés), puis, après la
+      // révélation, « Question suivante ».
+      for (const sel of ['[data-continuer]:visible', '[data-suivant]:visible']) {
+        const suite = await page.$(sel);
+        if (suite) { await suite.click(); await attendre(500); }
+      }
     }
     await attendre(1500);
   };
@@ -99,7 +103,7 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
     },
     quiz: async () => {
       await etat(); await aller('/quiz/'); await ecran('05-quiz-question');
-      await page.click('[data-reponse="contre"]'); await attendre(2500); await ecran('06-quiz-revelation');
+      await page.click('[data-reponse="contre"]'); await page.click('[data-continuer]'); await attendre(2500); await ecran('06-quiz-revelation');
       await etat({ ...avecReponses, '578e.quiz.v1': { i: 10, fini: true } }); await aller('/quiz/'); await attendre(2500);
       await ecran('07-quiz-resultat');
       if (garde('08')) {
@@ -110,7 +114,7 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
     },
     lots: async () => {
       await etat(avecReponses); await aller('/lots/'); await ecran('09-lots-question');
-      await page.click('[data-reponse="pour"]'); await attendre(2500); await ecran('10-lots-revelation');
+      await page.click('[data-reponse="pour"]'); await page.click('[data-continuer]'); await attendre(2500); await ecran('10-lots-revelation');
       if (garde('11')) { await etat(avecReponses); await aller('/lots/'); await trancher(3); await ecran('11-lots-fin-de-lot'); }
     },
     seance: async () => {

@@ -417,3 +417,9 @@
 - Décision (lot V5, à valider par Julien) : à la révélation et au verdict, en vue « La salle », le velours de chaque fauteuil se teinte de la couleur du vote de son député (pour, contre, abstention ; non-votant et absent éteints mais distincts), en plus du voyant de son pupitre.
 - Raison : depuis le perchoir, les voyants des pupitres font quelques pixels et ne se lisaient pas ; la maquette 03 montre une salle colorée par les votes.
 - Conséquence : `site/src/salle3d/scene.ts` (attribut `teinte` des fauteuils instanciés, matière de velours clonée, poids de la teinte 0,82, `teinter`), appelé par `voyants` et `voyantsEnOnde`. Les lumières et les matières du jour ne changent pas ; hors révélation, les fauteuils gardent leur velours.
+
+## 2026-10-22 · « Ta place » remplace « Mon hémicycle »
+- Décision (prompt VDEF, lot V6) : `/hemicycle/` disparaît, remplacée par `/ta-place/` (vue subjective, jumeau, opposé, 3 groupes) et redirigée en 301 par `site/public/_redirects` (Cloudflare Pages). Ce que montrait l'ancienne page se répartit : la salle et les accords dans `/salle/` (intensités au palier 2), la liste des réponses dans `/tes-reponses/`, la progression dans `/parcours/`, le choix du personnage replié en bas de `/ta-place/`.
+- Raison : « la salle est le menu » (VDEF § 3) ; un seul hémicycle par écran.
+- Conséquence : la liste des votes de `/tes-reponses/` est servie à part (`/donnees/votes.json`) pour ne pas alourdir la page ; aucune nouvelle clé dans le navigateur.
+

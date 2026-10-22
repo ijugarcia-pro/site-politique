@@ -1,0 +1,277 @@
+---
+// Ta place (VDEF, capture 10 et T3 ; lot V6) : la vue subjective depuis le siège de ton jumeau,
+// aux yeux de ton personnage assis. La feuille de gauche ne montre que l'essentiel : ton jumeau,
+// ton opposé, les 3 groupes les plus proches et « Revoir mes votes ». Tout est calculé dans le
+// navigateur (lib/profil.ts, règle du 22 oct. 2026). Avant 10 votes tranchés, la vue est
+// fermée : la salle vue du perchoir montre le 578e fauteuil, et la feuille dit ce qu'il manque.
+// Remplace /hemicycle/ (redirection 301, public/_redirects).
+import Base from '../layouts/Base.astro';
+import Bouton from '../components/vdef/Bouton.astro';
+import Carte from '../components/vdef/Carte.astro';
+import Feuille from '../components/vdef/Feuille.astro';
+import MiniHemicycle from '../components/MiniHemicycle.astro';
+import { composition, scrutins } from '../lib/donnees.ts';
+import { COIFFURES, PEAUX, TENUES } from '../salle3d/apparence.ts';
+
+const compo = composition();
+const donnees = JSON.stringify({
+  sieges: compo.sieges.map((s) => s.depute ?? null),
+  horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
+});
+const gris = compo.sieges.map(() => '#E7E7E7');
+---
+<Base titre="Ta place" vue="place" fond="salle" vueSalle="place"
+  description="Qui vote comme toi à l'Assemblée : ton jumeau parmi les 577 députés, ton opposé et les groupes les plus proches, calculés dans ton navigateur.">
+  <Feuille position="gauche" titre="titre-place" class="feuille-place" data-ta-place>
+    <div class="entete">
+      <span class="t-etiquette" data-place-etiquette>Ta place</span>
+      <h1 id="titre-place" class="t-feuille titre" tabindex="-1" data-place-titre>Ta place s’ouvre à 10 votes</h1>
+    </div>
+
+    <!-- Avant le palier 1 : ce qu'il manque, et où trancher. -->
+    <div class="verrou" data-place-verrou>
+      <p class="t-texte" data-place-texte>Tranche 10 vrais votes de l’Assemblée : on compare tes réponses, une à une, à celles des 577 députés. Tu prendras la place du député qui vote le plus comme toi.</p>
+      <div class="progression" data-place-progression hidden>
+        <span class="progression-ligne"><span class="t-interface">Ta place</span><span class="t-legende" data-place-chiffre></span></span>
+        <span class="progression-barre"><span data-place-plein></span></span>
+      </div>
+      <Bouton href="/quiz/" large data-place-action>Faire le quiz · 10 votes</Bouton>
+    </div>
+
+    <!-- À partir du palier 1 : qui vote comme toi. -->
+    <div class="ouverte" data-place-ouverte hidden>
+      <Carte etiquette="Ton jumeau · le plus proche" variante="noire" href="/deputes/" data-place-jumeau>
+        <span class="t-carte" data-nom></span>
+        <span class="sous" data-sous></span>
+        <span class="phrase" data-phrase></span>
+      </Carte>
+      <Carte etiquette="Ton opposé · le plus éloigné" href="/deputes/" data-place-oppose hidden>
+        <span class="t-carte" data-nom></span>
+        <span class="sous gris" data-sous></span>
+        <span class="phrase" data-phrase></span>
+      </Carte>
+      <section class="groupes" aria-labelledby="titre-groupes" data-place-groupes hidden>
+        <h2 id="titre-groupes" class="titre-groupes">Les 3 groupes les plus proches</h2>
+        <ol data-place-liste></ol>
+      </section>
+      <div class="repli-2d" data-repli-2d hidden>
+        <MiniHemicycle couleurs={gris} titre="Ta place dans l'hémicycle : le siège de ton jumeau est entouré." />
+      </div>
+    </div>
+
+    <div class="bas">
+      <Bouton href="/tes-reponses/" large class="revoir" data-place-revoir hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+        <span data-place-revoir-texte>Revoir mes votes</span>
+      </Bouton>
+      <details class="personnage">
+        <summary>Ton personnage</summary>
+        <form data-personnage>
+          <p class="t-legende">Il s’assoit à ta place, le siège de ton jumeau. Ses choix restent dans ton navigateur.</p>
+          <fieldset>
+            <legend>Peau</legend>
+            <div class="choix">
+              {PEAUX.map((x) => (
+                <label class="teinte" title={x.nom}>
+                  <input type="radio" name="peau" value={x.id} class="visuellement-cache" />
+                  <span style={`--teinte: ${x.c}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Coiffure</legend>
+            <div class="choix">
+              {COIFFURES.map((x) => (
+                <label class="mot"><input type="radio" name="coiffure" value={x.id} class="visuellement-cache" /><span>{x.nom}</span></label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Tenue</legend>
+            <div class="choix">
+              {TENUES.map((x) => (
+                <label class="teinte" title={x.nom}>
+                  <input type="radio" name="tenue" value={x.id} class="visuellement-cache" />
+                  <span style={`--teinte: ${x.haut}`} aria-hidden="true"></span><span class="visuellement-cache">{x.nom}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </form>
+      </details>
+    </div>
+  </Feuille>
+  <p class="consigne-salle" data-place-consigne>Depuis ton siège · glisse pour tourner la tête</p>
+  <script type="application/json" data-donnees-place set:html={donnees}></script>
+</Base>
+
+<script>
+  import { lireJSON } from '../lib/navigateur.ts';
+  import { palierAtteint, prochainPalier } from '../lib/paliers.ts';
+  import { profil, type Classe, type LigneDepute, type Matrice } from '../lib/profil.ts';
+  import { $, mesReps, pluriel, tranches } from '../lib/trancher.ts';
+  import { salle3D } from '../salle3d/pilote.ts';
+  import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
+
+  const lirePerso = () => lireJSON<Record<string, unknown>>(CLE_PERSONNAGE, {}) ?? {};
+  const sauverPerso = (x: object) => {
+    try { localStorage.setItem(CLE_PERSONNAGE, JSON.stringify({ ...lirePerso(), ...x })); } catch { /* stockage indisponible */ }
+  };
+
+  document.addEventListener('astro:page-load', async () => {
+    const brut = document.querySelector('[data-donnees-place]')?.textContent;
+    if (!brut) return;
+    const { sieges, horsMatrice } = JSON.parse(brut) as { sieges: (string | null)[]; horsMatrice: string[] };
+    const racine = document.querySelector<HTMLElement>('[data-salle-vdef]');
+    const salle = racine ? salle3D(racine) : null;
+    let sans3D = !salle;
+    void salle?.prete.then((s) => {
+      sans3D = !s;
+      document.body.classList.toggle('salle-sans-3d', sans3D);
+      $('[data-repli-2d]').hidden = !sans3D || $('[data-place-ouverte]').hidden;
+    });
+
+    // Ton personnage : son apparence, changée sur place.
+    let apparence = lireApparence(lirePerso());
+    salle?.personnage(apparence);
+    const formulaire = $<HTMLFormElement>('[data-personnage]');
+    for (const [nom, v] of Object.entries(apparence)) {
+      const r = formulaire.querySelector<HTMLInputElement>(`input[name="${nom}"][value="${v}"]`);
+      if (r) r.checked = true;
+    }
+    formulaire.addEventListener('change', () => {
+      const f = new FormData(formulaire);
+      apparence = lireApparence({ peau: f.get('peau'), coiffure: f.get('coiffure'), tenue: f.get('tenue') });
+      sauverPerso(apparence);
+      salle?.personnage(apparence);
+    });
+
+    const n = tranches(new Set(horsMatrice));
+    if (!palierAtteint(n)) {
+      // La vue est fermée : la salle du perchoir et le 578e fauteuil qui t'attend.
+      const reste = prochainPalier(n)!.reste;
+      salle?.asseoir(null);
+      salle?.vue('salle');
+      salle?.reperes([{ i: -1, libelle: 'Ta place t’attend', toi: true }]);
+      $('[data-place-consigne]').hidden = true;
+      if (n > 0) {
+        $('[data-place-titre]').textContent = `Encore ${pluriel(reste, 'vote')} pour prendre ta place`;
+        $('[data-place-texte]').textContent = `Tu as tranché ${pluriel(n, 'vote')}. À 10, ton personnage s’assoit sur le siège du député qui vote le plus comme toi. Les « Je ne sais pas » ne comptent pas.`;
+        $('[data-place-progression]').hidden = false;
+        $('[data-place-chiffre]').textContent = `${n} / 10`;
+        $('[data-place-plein]').style.width = `${10 * n}%`;
+        const action = $<HTMLAnchorElement>('[data-place-action]');
+        const quiz = lireJSON<{ fini?: boolean }>('578e.quiz.v1', {});
+        if (quiz.fini) { action.href = '/lots/'; action.textContent = 'Trancher 3 votes passés'; }
+        else { action.textContent = 'Reprendre le quiz'; }
+      }
+      return;
+    }
+
+    const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+    const p = profil(m, mesReps());
+    const groupe = (uid: string | null) => m.groupes.find((g) => g.u === uid);
+    $('[data-place-verrou]').hidden = true;
+    $('[data-place-ouverte]').hidden = false;
+    $('[data-place-etiquette]').textContent = `D’après tes ${pluriel(p.reponses, 'vote')}`;
+    $('[data-place-titre]').textContent = 'Qui vote comme toi';
+    const revoir = $('[data-place-revoir]');
+    revoir.hidden = false;
+    $('[data-place-revoir-texte]').textContent = `Revoir mes votes · ${n}`;
+
+    const carte = (sel: string, c: Classe<LigneDepute>, sous: string, avant: string, chiffre: number, apres: string) => {
+      const el = $<HTMLAnchorElement>(sel);
+      el.hidden = false;
+      el.href = `/deputes/${c.ligne.u}/`;
+      el.querySelector('[data-nom]')!.textContent = c.ligne.n;
+      el.querySelector('[data-sous]')!.textContent = sous;
+      const b = document.createElement('strong');
+      b.textContent = String(chiffre);
+      el.querySelector('[data-phrase]')!.replaceChildren(avant, b, apres);
+    };
+    const nomGroupe = (c: Classe<LigneDepute>) => groupe(c.ligne.g)?.libelle ?? 'Non inscrit';
+    const j = p.jumeau!;
+    carte('[data-place-jumeau]', j,
+      `${nomGroupe(j)} · tu es assis à sa place${p.egalites ? ` · et ${pluriel(p.egalites, 'autre')} à égalité` : ''}`,
+      'A voté comme toi sur ', j.identiques, ` de tes ${pluriel(p.reponses, 'vote')}.`);
+    if (p.oppose) {
+      carte('[data-place-oppose]', p.oppose, nomGroupe(p.oppose),
+        'A voté autrement que toi sur ', p.oppose.contraires, ` de tes ${pluriel(p.reponses, 'vote')}.`);
+    }
+    const top = p.groupes.slice(0, 3);
+    $('[data-place-groupes]').hidden = !top.length;
+    $('[data-place-liste]').replaceChildren(...top.map((g, r) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="rang"></span><span class="t-interface nom"></span><span class="jauge" aria-hidden="true"><span></span></span><span class="t-legende sur"></span>';
+      li.querySelector('.rang')!.textContent = String(r + 1);
+      li.querySelector('.nom')!.textContent = g.ligne.libelle;
+      li.querySelector<HTMLElement>('.jauge span')!.style.width = `${(100 * g.identiques) / p.reponses}%`;
+      li.querySelector('.sur')!.textContent = `${g.identiques} sur ${p.reponses}`;
+      return li;
+    }));
+
+    // Ton personnage s'assoit sur le siège de ton jumeau ; la vue est la sienne.
+    const k = sieges.indexOf(j.ligne.u);
+    if (k >= 0) {
+      salle?.asseoir(k, { marcher: false });
+      sauverPerso({ siege: j.ligne.u });
+      salle?.vue('place');
+      const repli = document.querySelector('[data-repli-2d] svg');
+      const c = repli?.querySelectorAll('circle')[k];
+      if (c) { c.setAttribute('fill', '#121212'); c.setAttribute('r', String(Number(c.getAttribute('r')) * 1.8)); }
+    }
+    $('[data-repli-2d]').hidden = !sans3D;
+  });
+</script>
+
+<style>
+  .entete { display: flex; flex-direction: column; gap: 6px; }
+  .titre { font-size: 30px; }
+  .titre:focus { outline: none; }
+  .verrou, .ouverte { display: flex; flex-direction: column; gap: 14px; }
+  .sous { font: 600 14px/1.3 var(--police-texte); color: var(--sur-encre-2); }
+  .sous.gris { color: var(--texte-2); }
+  .phrase { font: 500 16px/1.45 var(--police-texte); }
+  .groupes { display: flex; flex-direction: column; gap: 4px; padding: 6px 4px 0; }
+  .titre-groupes { font: 700 18px/1.2 var(--police-titre); }
+  ol { list-style: none; margin: 0; padding: 0; }
+  ol :global(li) { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+  ol :global(.rang) {
+    flex: 0 0 28px; height: 28px; border-radius: var(--pilule); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; font: 700 14px/1 var(--police-texte);
+  }
+  ol :global(.nom) { flex: 0 1 140px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  ol :global(.jauge) { flex: 1; height: 8px; border-radius: var(--pilule); background: var(--surface); overflow: hidden; }
+  ol :global(.jauge span) { display: block; height: 100%; background: var(--encre); border-radius: var(--pilule); }
+  ol :global(.sur) { flex: 0 0 auto; }
+  .progression { display: flex; flex-direction: column; gap: 8px; }
+  .progression-ligne { display: flex; justify-content: space-between; gap: 12px; }
+  .progression-barre { height: 8px; border-radius: var(--pilule); background: var(--surface); overflow: hidden; }
+  .progression-barre span { display: block; height: 100%; width: 0; background: var(--encre); border-radius: var(--pilule); }
+  .repli-2d { padding: 8px; border-radius: var(--rayon-carte); background: var(--surface); }
+  .bas { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+  .personnage summary {
+    cursor: pointer; min-height: var(--cible); display: flex; align-items: center; justify-content: center;
+    font: 600 14px/1 var(--police-texte); color: var(--texte-2); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .personnage summary::-webkit-details-marker { display: none; }
+  .personnage form { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  legend { font: 600 14px/1.3 var(--police-texte); padding: 0 0 6px; }
+  .choix { display: flex; flex-wrap: wrap; gap: 8px; }
+  .teinte span:not(.visuellement-cache) {
+    display: block; width: 36px; height: 36px; border-radius: var(--pilule); background: var(--teinte);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); cursor: pointer;
+  }
+  .teinte input:checked + span { box-shadow: 0 0 0 3px var(--feuille), 0 0 0 5px var(--encre); }
+  .mot span {
+    display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: var(--pilule);
+    background: var(--surface); font: 600 14px/1 var(--police-texte); cursor: pointer;
+  }
+  .mot input:checked + span { background: var(--encre); color: var(--feuille); }
+  .choix input:focus-visible + span { outline: 3px solid var(--encre); outline-offset: 2px; }
+  @media (max-width: 720px) {
+    .titre { font-size: 26px; }
+  }
+</style>

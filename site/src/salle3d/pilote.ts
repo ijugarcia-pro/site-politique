@@ -244,7 +244,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     arreter();
     try { canvas.setPointerCapture(e.pointerId); } catch { /* pointeur déjà relâché */ }
     pointeurs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    appui = pointeurs.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now(), bouge: 0 } : null;
+    appui = pointeurs.size === 1 ? { x: e.clientX, y: e.clientY, t: e.timeStamp, bouge: 0 } : null;
     vitesse = { lacet: 0, tangage: 0, t: performance.now() };
     racine.classList.add('saisie');
     if (pointeurs.size === 2) { const [a, b] = [...pointeurs.values()]; ecart0 = Math.hypot(a.x - b.x, a.y - b.y); }
@@ -299,7 +299,9 @@ function creerPilote(racine: HTMLElement): Pilote {
     const a = appui;
     appui = null;
     if (!a || annule) return;
-    const clic = a.bouge < GLISSER.clic && performance.now() - a.t < 500;
+    // La durée de l'appui se lit sur l'horodatage des événements : une page chargée ne change
+    // pas un clic en glisser.
+    const clic = a.bouge < GLISSER.clic && e.timeStamp - a.t < 500;
     if (clic) {
       if (toucheSiege && salle && salle.vueCourante === 'salle') {
         const p = point(e);

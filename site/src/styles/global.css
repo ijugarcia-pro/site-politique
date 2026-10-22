@@ -137,3 +137,14 @@ summary::-webkit-details-marker { display: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* La consigne posée en bas de la salle (« Glisse pour tourner · touche un siège », maquettes 09
+   et 10) : cachée sans 3D et au téléphone, où la salle n'est qu'une image en haut. */
+.consigne-salle {
+  position: absolute; z-index: 3; bottom: 24px; left: 50%; transform: translateX(-50%);
+  padding: 9px 16px; border-radius: var(--pilule); background: var(--feuille); color: var(--encre);
+  font: 600 14px/1 var(--police-texte); white-space: nowrap; box-shadow: var(--ombre-flottant);
+  pointer-events: none;
+}
+.salle-sans-3d .consigne-salle { display: none; }
+@media (max-width: 720px) { .consigne-salle { display: none; } }

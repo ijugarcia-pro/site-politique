@@ -13,7 +13,7 @@ export const PARCOURS = [
   ['lots', ['09-lots-question', '10-lots-revelation', '11-lots-fin-de-lot']],
   ['seance', ['12-seance-question', '13-seance-apres-vote', '14-seance-terminee']],
   ['verdict', ['15-verdict-avant-le-toucher', '16-verdict-decouvert', '17-verdict-cam4-plan']],
-  ['hemicycle', ['18-hemicycle-sans-reponse-attente', '19-hemicycle-cam3-ta-travee', '20-hemicycle-cam1-salle', '21-hemicycle-cam4-plan']],
+  ['place', ['18-ta-place-fermee', '19-ta-place', '20-la-salle', '21-ton-parcours']],
   ['lecture', ['22-explorer', '23-page-d-un-vote', '24-deputes-qui-te-represente', '25-deputes-recherche-code-postal',
     '26-fiche-depute', '27-comment-c-est-calcule', '28-etat-des-donnees', '29-confidentialite', '30-mentions-legales',
     '31-page-introuvable']],
@@ -129,12 +129,12 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
       await page.evaluate(() => scrollTo(0, 0)); await ecran('16-verdict-decouvert');
       if (garde('17')) { await camera('plan'); await page.evaluate(() => scrollTo(0, 0)); await ecran('17-verdict-cam4-plan'); }
     },
-    hemicycle: async () => {
-      if (garde('18')) { await etat(); await aller('/hemicycle/'); await salle(); await attendre(1500); await ecran('18-hemicycle-sans-reponse-attente'); }
+    place: async () => {
+      if (garde('18')) { await etat(); await aller('/ta-place/'); await salle(); await attendre(1500); await ecran('18-ta-place-fermee'); }
       await etat({ ...avecReponses, '578e.personnage.v1': { peau: 'p3', coiffure: 'courte', tenue: 'ardoise' } });
-      await aller('/hemicycle/'); await salle(); await camera('travee'); await ecran('19-hemicycle-cam3-ta-travee');
-      await camera('salle'); await ecran('20-hemicycle-cam1-salle');
-      await camera('plan'); await ecran('21-hemicycle-cam4-plan');
+      await aller('/ta-place/'); await salle(); await attendre(1500); await ecran('19-ta-place');
+      await aller('/salle/'); await salle(); await attendre(1500); await ecran('20-la-salle');
+      await aller('/parcours/'); await ecran('21-ton-parcours');
     },
     lecture: async () => {
       await etat(avecReponses);

@@ -32,7 +32,7 @@ export function servir(dist) {
 /** Les pages à photographier : les pages fixes, plus un vote et un député pris dans le build. */
 export function pagesParDefaut(dist) {
   const premier = (dossier, motif) => readdirSync(join(dist, dossier)).filter((n) => motif.test(n)).sort()[0];
-  return ['/', '/quiz/', '/lots/', '/seance/', '/verdict/', '/hemicycle/', '/explorer/',
+  return ['/', '/quiz/', '/lots/', '/seance/', '/verdict/', '/salle/', '/ta-place/', '/tes-reponses/', '/parcours/', '/explorer/',
     `/votes/${premier('votes', /^\d+$/)}/`, '/deputes/', `/deputes/${premier('deputes', /^PA\d+$/)}/`,
     '/calcul/', '/etat/', '/confidentialite/', '/mentions-legales/', '/404.html'];
 }

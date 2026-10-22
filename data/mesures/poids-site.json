@@ -1,133 +1,154 @@
 {
  "/": {
-  "js": 36734,
-  "js_gzip": 13402,
-  "css": 23312,
-  "css_gzip": 5008,
+  "js": 37226,
+  "js_gzip": 13637,
+  "css": 23697,
+  "css_gzip": 5054,
   "modules": 10
  },
  "/404/": {
-  "js": 3638,
-  "js_gzip": 1730,
+  "js": 4142,
+  "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/calcul/": {
-  "js": 4081,
-  "js_gzip": 1881,
+  "js": 4585,
+  "js_gzip": 2137,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/confidentialite/": {
-  "js": 3638,
-  "js_gzip": 1730,
+  "js": 4142,
+  "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/deputes/": {
-  "js": 10466,
-  "js_gzip": 4454,
+  "js": 10838,
+  "js_gzip": 4645,
   "css": 27706,
   "css_gzip": 5080,
-  "modules": 7
+  "modules": 6
  },
  "/deputes/[uid]/": {
-  "js": 6323,
-  "js_gzip": 2589,
+  "js": 6827,
+  "js_gzip": 2836,
   "css": 32600,
   "css_gzip": 5714,
   "modules": 5
  },
  "/etat/": {
-  "js": 3638,
-  "js_gzip": 1730,
+  "js": 4142,
+  "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
  "/explorer/": {
-  "js": 7184,
-  "js_gzip": 2962,
+  "js": 7688,
+  "js_gzip": 3209,
   "css": 29997,
   "css_gzip": 5442,
   "modules": 6
  },
- "/hemicycle/": {
-  "js": 26891,
-  "js_gzip": 10469,
-  "css": 47715,
-  "css_gzip": 8110,
-  "modules": 10
- },
  "/lots/": {
-  "js": 40790,
-  "js_gzip": 14594,
-  "css": 22108,
-  "css_gzip": 4748,
+  "js": 41282,
+  "js_gzip": 14836,
+  "css": 22493,
+  "css_gzip": 4796,
   "modules": 11
  },
  "/mentions-legales/": {
-  "js": 3638,
-  "js_gzip": 1730,
+  "js": 4142,
+  "js_gzip": 1987,
   "css": 21787,
   "css_gzip": 4219,
   "modules": 4
  },
+ "/parcours/": {
+  "js": 39524,
+  "js_gzip": 14212,
+  "css": 21412,
+  "css_gzip": 4649,
+  "modules": 10
+ },
  "/quiz/": {
-  "js": 45464,
-  "js_gzip": 16513,
-  "css": 22108,
-  "css_gzip": 4748,
+  "js": 45956,
+  "js_gzip": 16738,
+  "css": 22493,
+  "css_gzip": 4796,
   "modules": 13
  },
+ "/salle/": {
+  "js": 45004,
+  "js_gzip": 16350,
+  "css": 22136,
+  "css_gzip": 4818,
+  "modules": 12
+ },
  "/seance/": {
-  "js": 40962,
-  "js_gzip": 14729,
-  "css": 22108,
-  "css_gzip": 4748,
+  "js": 41454,
+  "js_gzip": 14954,
+  "css": 22493,
+  "css_gzip": 4796,
+  "modules": 11
+ },
+ "/ta-place/": {
+  "js": 44209,
+  "js_gzip": 16022,
+  "css": 16946,
+  "css_gzip": 4008,
+  "modules": 12
+ },
+ "/tes-reponses/": {
+  "js": 43960,
+  "js_gzip": 15802,
+  "css": 16946,
+  "css_gzip": 4008,
   "modules": 11
  },
  "/vdef-composants/": {
-  "js": 30365,
-  "js_gzip": 10974,
-  "css": 16561,
-  "css_gzip": 3959,
+  "js": 30857,
+  "js_gzip": 11233,
+  "css": 16946,
+  "css_gzip": 4008,
   "modules": 7
  },
  "/vdef-composants/place/": {
-  "js": 29695,
-  "js_gzip": 10730,
-  "css": 16561,
-  "css_gzip": 3959,
+  "js": 30187,
+  "js_gzip": 10989,
+  "css": 16946,
+  "css_gzip": 4008,
   "modules": 8
  },
  "/vdef-composants/salle/": {
-  "js": 29751,
-  "js_gzip": 10760,
-  "css": 16561,
-  "css_gzip": 3959,
+  "js": 30243,
+  "js_gzip": 11014,
+  "css": 16946,
+  "css_gzip": 4008,
   "modules": 8
  },
  "/vdef-composants/tribune/": {
-  "js": 29354,
-  "js_gzip": 10639,
-  "css": 16561,
-  "css_gzip": 3959,
+  "js": 29846,
+  "js_gzip": 10895,
+  "css": 16946,
+  "css_gzip": 4008,
   "modules": 7
  },
  "/verdict/": {
-  "js": 43122,
-  "js_gzip": 15301,
-  "css": 16561,
-  "css_gzip": 3959,
+  "js": 43614,
+  "js_gzip": 15547,
+  "css": 16946,
+  "css_gzip": 4008,
   "modules": 11
  },
  "/votes/[numero]/": {
-  "js": 9017,
-  "js_gzip": 3679,
+  "js": 9521,
+  "js_gzip": 3927,
   "css": 38707,
   "css_gzip": 6805,
   "modules": 6

@@ -35,7 +35,7 @@ const { titre, description, onglet, focus = false, jsonld, theme = 'jour', scene
 const canonique = new URL(Astro.url.pathname, Astro.site).href;
 const ONGLETS = [
   { id: 'semaine', href: '/', label: 'Cette semaine', icone: 'M3 5h14v12H3zM3 9h14M7 3v4M13 3v4' },
-  { id: 'hemicycle', href: '/hemicycle/', label: 'Mon hémicycle',
+  { id: 'hemicycle', href: '/ta-place/', label: 'Ta place',
     icone: 'M2 16a8 8 0 0 1 16 0M6 16a4 4 0 0 1 8 0' },
   { id: 'explorer', href: '/explorer/', label: 'Explorer',
     icone: 'M9 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM13.5 13.5L18 18' },
@@ -108,7 +108,7 @@ const tranches = JSON.stringify({
             <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
           </svg>
         </a>
-        <a class="anneau-precision" href="/hemicycle/" data-precision-entete hidden
+        <a class="anneau-precision" href="/ta-place/" data-precision-entete hidden
           title="Précision de ton hémicycle : plus tu tranches de votes, plus elle monte">
           <span data-precision-entete-pct></span>
         </a>

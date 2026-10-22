@@ -101,7 +101,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 ### VDEF « La salle est le menu » (ajoutée le 22 oct. 2026 à la demande de Julien ; spec : docs/design-vdef/VDEF.md ; prompt : docs/PROMPT-VDEF.md)
 - [ ] t71 🤖 V0 · Fondations : jetons, polices, gabarits, composants *(attend `docs/design-vdef/captures/` et `maquettes/` pour le critère de fin ; voir sa fiche)*
 - [x] t72 🤖 V1 · Le jumeau se compte en votes identiques *(fait le 22 oct. 2026, branche `claude/keen-turing-hk7ufr` ; build et mesure sur la vraie matrice non faits : réseau de la session)*
-- [ ] t73 🤖 V2 · Les paliers et les dossiers (la logique, sans écran)
+- [x] t73 🤖 V2 · Les paliers et les dossiers (la logique, sans écran) *(fait le 22 oct. 2026, branche `claude/keen-turing-hk7ufr`)*
 - [ ] t74 🤖 V3 · La salle 3D : trois vues, la souris, la vue subjective, les sièges qu'on touche
 - [ ] t75 🤖 V4 · La tribune : l'accueil et le tableau de bord
 - [ ] t76 🤖 V5 · Trancher : quiz, lots, séance, révélation, verdict
@@ -493,6 +493,7 @@ site/          le site (Astro), créé en phase 2 ; site/tests/ et site/scripts/
 - **À faire :** `site/src/lib/paliers.ts`, pur : `votesTranches`, `PALIERS` (place 10, salle-eclairee 25, bilan 40), `palierAtteint`, `prochainPalier` (avec le reste), `nouveauxPaliers` ; `dossiers(reponses, cartes)` sur les 12 thèmes de `lib/themes.ts` (un vote n'a de thème que s'il a une carte), ouvert à 3 votes tranchés ; annonce unique d'un palier, clé `578e.paliers-vus.v1` (annoncée, effacée, test).
 - **Critère de fin :** tests des seuils (9, 10, 24, 25, 39, 40), d'un « Je ne sais pas » qui ne compte pas, d'un dossier ouvert au 3e vote, de l'annonce unique.
 - **Ne pas faire :** rien qui dépende du contenu d'une réponse ; pas de points ni de classement.
+- **Réalisé (22 oct.) :** `site/src/lib/paliers.ts` : `votesTranches` (accepte le format de `578e.reponses.v1` et celui des séances, liste de la matrice facultative), `PALIERS` (avec rang et libellé), `palierAtteint`, `prochainPalier`, `nouveauxPaliers`, `paliersAAnnoncer` (annonce unique), `dossiers` (12 thèmes, doublons de cartes fusionnés, `reste`). `lib/themes.ts` exporte `THEMES`. `lib/navigateur.ts` : `paliersVus`, `marquerPaliersVus` (clé `578e.paliers-vus.v1`, annoncée dans `/confidentialite/` et docs/confidentialite.md, effacée par `/calcul/`). Tests : `paliers.test.ts` (6) ; `npm test` : 88 au vert, dont `stockage.test.mjs`. **Non vérifié :** `npm run build` (pas d'export dans la session). **Écart à signaler :** 8 des 10 cartes du quiz ont un thème hors des 12 (décision du jour) : aucun dossier pour elles. **Reste :** les écrans (V4 à V7) branchent ces fonctions.
 
 #### t74 🤖 V3 · La salle 3D
 - **À faire :** vues `tribune`, `salle`, `place` (vue subjective depuis le siège du jumeau, hauteur des yeux lue dans `personnage3d.ts`, tête cachée, lacet ±80°, tangage −30° à +20°, champ 40° à 70°) ; suppression de `plan`, `echV`, `planSurTelephone` ; souris réparée (cause à vérifier : `.dessus` de `Salle3D.astro`), capture du pointeur, amortissement, inertie, rendu à la demande, mouvement réduit ; sièges cliquables (raycast) et survol ; repli clavier 2D ; quatre modes de voyants ; repères multiples ; transitions d'Astro (`<ClientRouter />`, `transition:persist`) si elles tiennent ; repli sans WebGL ; images fixes recalculées si les cadrages changent.

@@ -3,9 +3,10 @@
 // les 12 (rouge de régie, texte blanc, 6,9:1), comme dans les maquettes V6C ; aucun thème ne
 // prend une couleur qui pourrait le rapprocher d'un groupe ou d'un vote.
 const ETIQUETTE = { fond: '#B3132F', encre: '#FFFFFF' };
+export const THEMES = ['Numérique', 'Droits', 'Travail', 'Économie', 'Immigration',
+  'Environnement', 'Éducation', 'Institutions', 'Énergie', 'Sécurité', 'Logement', 'Santé'] as const;
 export const PUCES_THEMES: Record<string, { fond: string; encre: string }> = Object.fromEntries(
-  ['Numérique', 'Droits', 'Travail', 'Économie', 'Immigration', 'Environnement', 'Éducation',
-    'Institutions', 'Énergie', 'Sécurité', 'Logement', 'Santé'].map((t) => [t, ETIQUETTE]));
+  THEMES.map((t) => [t, ETIQUETTE]));
 
 /** La puce d'un thème, « fond:encre » ; un thème inconnu prend la même étiquette. */
 export const puceTheme = (theme: string): string => {

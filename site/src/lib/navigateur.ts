@@ -5,6 +5,7 @@
 
 const CLE_REPONSES = '578e.reponses.v1';
 const CLE_DEPUTE = '578e.depute.v1';
+const CLE_PALIERS_VUS = '578e.paliers-vus.v1';
 
 export type Reponse = 'pour' | 'contre';
 
@@ -55,3 +56,10 @@ export const choisirDepute = (uid: string | null): boolean => ecrire(CLE_DEPUTE,
 
 /** Lecture protégée d'une valeur JSON du navigateur (état du quiz…). */
 export const lireJSON = lire;
+
+/** Les paliers déjà annoncés (identifiants de lib/paliers.ts) : chacun s'annonce une seule fois. */
+export const paliersVus = (): string[] => lire<string[]>(CLE_PALIERS_VUS, []);
+
+/** Note des paliers comme annoncés. */
+export const marquerPaliersVus = (ids: string[]): boolean =>
+  ecrire(CLE_PALIERS_VUS, [...new Set([...paliersVus(), ...ids])]);

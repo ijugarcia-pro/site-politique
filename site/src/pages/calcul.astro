@@ -81,7 +81,7 @@ const niveaux = NIVEAUX.map((t, k) => ({
   // Tout effacer : réponses, pronostics, député choisi, avancement du quiz, des lots et des
   // séances, verdicts déjà découverts, personnage. Rien d'autre à effacer : rien n'a été envoyé ailleurs.
   const CLES = ['578e.reponses.v1', '578e.depute.v1', '578e.quiz.v1', '578e.lots.v1', '578e.seances.v1',
-    '578e.verdicts-vus.v1', '578e.personnage.v1'];
+    '578e.verdicts-vus.v1', '578e.personnage.v1', '578e.paliers-vus.v1'];
   document.querySelector('[data-tout-effacer]')?.addEventListener('click', () => {
     if (!window.confirm('Effacer toutes tes réponses, tes pronostics et ton député de ce navigateur ?')) return;
     for (const cle of CLES) {

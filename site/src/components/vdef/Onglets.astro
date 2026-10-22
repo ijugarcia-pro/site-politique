@@ -26,7 +26,10 @@ const actif = Astro.props.actif ?? onglets[0].id;
 </div>
 
 <script>
-  for (const liste of document.querySelectorAll<HTMLElement>('[data-onglets]')) {
+  // Relancé à chaque page (transitions d'Astro) : chaque liste n'est liée qu'une fois.
+  document.addEventListener('astro:page-load', () => {
+  for (const liste of document.querySelectorAll<HTMLElement>('[data-onglets]:not([data-onglets-lie])')) {
+    liste.dataset.ongletsLie = '';
     const onglets = [...liste.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
     const ids = onglets.map((o) => o.dataset.onglet!);
     const ouvrir = (id: string, focus = false, adresse = false) => {
@@ -62,6 +65,7 @@ const actif = Astro.props.actif ?? onglets[0].id;
       ouvrir(ids[(cible + ids.length) % ids.length], true, true);
     });
   }
+  });
 </script>
 
 <style>

@@ -18,11 +18,9 @@ interface Props {
   /** La couleur du voyant de chaque siège au départ (repli compris) ; vide : tous éteints. */
   couleurs?: (string | null)[];
   /** Les puces de caméra proposées, la première est en cours. */
-  cameras?: ('salle' | 'tribune' | 'travee' | 'plan')[];
+  cameras?: ('salle' | 'tribune' | 'place')[];
   /** Hauteur minimale de la scène sur ordinateur (la largeur est celle de la page). */
   hauteur?: string;
-  /** Sur téléphone, ouvrir la salle vue de dessus (CAM 4 · Plan), comme la maquette V6C-06. */
-  planSurTelephone?: boolean;
   /** Plein cadre : bord à bord, sous l'en-tête (BaseSeance.astro, slot « scene »). */
   pleinCadre?: boolean;
   /** L'image fixe du repli (public/salle3d/fond-<nom>.webp), de la caméra qui s'ouvre. */
@@ -36,14 +34,14 @@ interface Props {
   disposition?: 'pied' | 'pleine';
 }
 
-const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], travee: ['Cam 3', 'Ta travée'], plan: ['Cam 4', 'Plan'] };
-const { titre, couleurs = [], cameras = ['salle', 'plan'], hauteur = 'min(72vh, 680px)', planSurTelephone = false,
+const NOMS = { salle: ['Cam 1', 'Salle'], tribune: ['Cam 2', 'Tribune'], place: ['Cam 3', 'Ta place'] };
+const { titre, couleurs = [], cameras = ['salle'], hauteur = 'min(72vh, 680px)',
   pleinCadre = false, fond, voile = 'bas', camerasA = 'droite', disposition = 'pied' } = Astro.props;
 const repli = Array.from({ length: SIEGES }, (_, i) => couleurs[i] ?? '#2A2D33');
 const styleFond = fond ? `--fond: url('/salle3d/fond-${fond}.webp'); --fond-telephone: url('/salle3d/fond-${fond}-telephone.webp');` : '';
 ---
 <figure class:list={['scene', 'theme-seance', `voile-${voile}`, `cameras-${camerasA}`, `disposition-${disposition}`,
-  { 'plan-telephone': planSurTelephone, 'plein-cadre': pleinCadre, 'avec-fond': !!fond }]} data-salle3d
+  { 'plein-cadre': pleinCadre, 'avec-fond': !!fond }]} data-salle3d
   style={`--hauteur-scene: ${hauteur}; ${styleFond}`}>
   <div class="ecran" tabindex="0" role="group"
     aria-label="Salle en 3D. Flèches : tourner la caméra ; + et − : zoomer ; Échap : revenir.">
@@ -108,7 +106,15 @@ const styleFond = fond ? `--fond: url('/salle3d/fond-${fond}.webp'); --fond-tele
     box-shadow: 0 0 0 4px rgba(12, 13, 16, 0.45), 0 0 18px var(--lumiere); }
   .ecran:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
   /* Le pied de scène : bandeau, action, programme ou compteurs, posés sur la salle. */
+  /* Ce qui est posé sur la salle laisse passer le pointeur vers le canevas (glisser pour tourner),
+     sauf ce qui est interactif ou se lit (VDEF, lot V3). */
   .dessus { position: relative; z-index: 2; margin-top: auto; padding: 0 var(--gouttiere) 28px; }
+  .dessus, .dessus :global(*) { pointer-events: none; }
+  .dessus :global(:is(a, button, input, select, textarea, summary, label, details, [tabindex], [role='button'], svg, svg *)) {
+    pointer-events: auto;
+  }
+  .scene[data-salle3d-etat='prete'] canvas { cursor: grab; }
+  .scene.saisie canvas { cursor: grabbing; }
   .plein-cadre .dessus { padding: 0 32px 28px; }
   .disposition-pleine .dessus { flex: 1; display: flex; flex-direction: column; margin-top: 0; padding-top: 148px; }
   /* Les caméras n'ont de sens que dans la salle 3D : cachées dans le repli. */

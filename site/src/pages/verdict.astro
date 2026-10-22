@@ -53,7 +53,7 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
   {verdicts.length > 0 && (
   <Salle3D slot="scene" pleinCadre disposition="pleine" fond="verdict" voile="verdict" hauteur="980px"
     titre="La salle de l'Assemblée nationale : chaque voyant de pupitre s'allume à la couleur du vote du député (pour, contre, abstention) ; éteint, il n'a pas pris part au vote."
-    cameras={['salle', 'plan']}>
+    cameras={['salle']}>
     <script is:inline define:vars={{ uids: verdicts.map((v) => v.uid) }}>
       // Un verdict pas encore découvert : il reste caché jusqu'au toucher (D1).
       try {

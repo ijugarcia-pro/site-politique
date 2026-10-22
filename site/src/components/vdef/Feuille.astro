@@ -34,7 +34,9 @@ const { position, titre, etiquette, balise: Balise = 'section', class: classe, .
     overflow: auto; overscroll-behavior: contain;
     max-width: calc(100% - 2 * var(--marge));
   }
-  .droite { top: var(--haut-barre); right: var(--marge); width: var(--feuille-droite); padding: 28px; }
+  /* Sous la barre du haut ; en mode focus, la barre n'a rien à droite : la feuille monte. */
+  .droite { top: 88px; right: var(--marge); width: var(--feuille-droite); padding: 28px; }
+  :global(body.focus) .droite { top: var(--haut-barre); }
   .gauche { top: 88px; left: var(--marge); width: var(--feuille-gauche); padding: 24px; gap: 14px; }
   .bas {
     position: absolute; z-index: 3; left: var(--marge); right: var(--marge); bottom: var(--marge);

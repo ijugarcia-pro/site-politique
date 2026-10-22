@@ -19,3 +19,23 @@ test('au clavier : flèches pour tourner, + et − pour zoomer, Échap pour reve
   assert.deepEqual(geste('Escape'), { recentrer: true });
   assert.equal(geste('a'), null);
 });
+
+test('le glisser est amorti : 15 % de l’écart par image, jusqu’à le rattraper', async () => {
+  const { amortir, GLISSER } = await import('./pilote.ts');
+  assert.equal(GLISSER.rattrapage, 0.15);
+  let reste = 1, total = 0, images = 0;
+  while (reste !== 0 && images < 200) { const a = amortir(reste); total += a.pas; reste = a.reste; images += 1; }
+  assert.equal(reste, 0);
+  assert.ok(Math.abs(total - 1) < 1e-12);
+  assert.ok(images > 10 && images < 100);
+  assert.deepEqual(amortir(0.5), { pas: 0.075, reste: 0.425 });
+});
+
+test('l’inertie au lâcher s’éteint en 400 ms', async () => {
+  const { vitesseInertie, GLISSER } = await import('./pilote.ts');
+  assert.equal(GLISSER.inertie, 400);
+  assert.equal(vitesseInertie(2, 0), 2);
+  assert.equal(vitesseInertie(2, 200), 1);
+  assert.equal(vitesseInertie(2, 400), 0);
+  assert.equal(vitesseInertie(2, 900), 0);
+});

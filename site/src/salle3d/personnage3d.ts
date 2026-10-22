@@ -11,6 +11,8 @@ import { couleursDe, type Apparence } from './apparence.ts';
 
 export interface Personnage {
   groupe: THREE.Group;
+  /** La tête (cachée dans la vue « Ta place », quand la caméra est à ses yeux). */
+  tete: THREE.Object3D;
   assis(): void;
   debout(): void;
   /** Une image de la marche : phase en radians (un pas = π). */
@@ -18,6 +20,18 @@ export interface Personnage {
 }
 
 const CUISSE = 0.44, TIBIA = 0.48, BRAS = 0.3, AVANT_BRAS = 0.28;
+/** Assis : le bassin sur l'assise du fauteuil (room.js : assise vers y = 0,55), légèrement en
+ *  arrière et incliné ; la tête au-dessus du bassin ; les yeux devant le centre de la tête. */
+const BASSIN_ASSIS = { y: 0.6, z: -0.08, inclinaison: -0.06 } as const;
+const TETE = { y: 0.67, z: -0.04 } as const;
+const YEUX = { y: 0.01, z: 0.09 } as const;
+
+/** Les yeux du personnage assis, dans le repère du fauteuil (le personnage regarde vers +z) :
+ *  la caméra de la vue « Ta place » s'y pose (scene.ts). */
+export function yeuxAssis(): [number, number, number] {
+  const y = TETE.y + YEUX.y, z = TETE.z + YEUX.z, a = BASSIN_ASSIS.inclinaison;
+  return [0, BASSIN_ASSIS.y + y * Math.cos(a) - z * Math.sin(a), BASSIN_ASSIS.z + y * Math.sin(a) + z * Math.cos(a)];
+}
 
 export function creerPersonnage(a: Apparence): Personnage {
   const c = couleursDe(a);
@@ -39,7 +53,7 @@ export function creerPersonnage(a: Apparence): Personnage {
     .map(([r, y]) => new THREE.Vector2(r, y));
   const buste = maillage(new THREE.LatheGeometry(prof, 36), haut); buste.scale.set(1, 1, 0.66); buste.position.set(0, -0.03, -0.04); bassin.add(buste);
   const cou = maillage(new THREE.CylinderGeometry(0.046, 0.046, 0.1, 18), peau); cou.position.set(0, 0.53, -0.05); bassin.add(cou);
-  const tete = new THREE.Group(); tete.position.set(0, 0.67, -0.04); bassin.add(tete);
+  const tete = new THREE.Group(); tete.position.set(0, TETE.y, TETE.z); bassin.add(tete);
   const visage = maillage(new THREE.SphereGeometry(0.1, 36, 26), peau); visage.scale.set(0.9, 1.1, 0.98); tete.add(visage);
   coiffer(tete, a.coiffure, cheveux, maillage);
 
@@ -63,8 +77,7 @@ export function creerPersonnage(a: Apparence): Personnage {
   });
 
   const assis = () => {
-    // Le bassin sur l'assise du fauteuil (room.js : assise vers y = 0,55), légèrement en arrière.
-    bassin.position.set(0, 0.6, -0.08); bassin.rotation.set(-0.06, 0, 0);
+    bassin.position.set(0, BASSIN_ASSIS.y, BASSIN_ASSIS.z); bassin.rotation.set(BASSIN_ASSIS.inclinaison, 0, 0);
     for (const j of jambes) { j.hanche.rotation.set(-Math.PI / 2, 0, 0); j.genou.rotation.set(Math.PI / 2, 0, 0); }
     for (const b of bras) { b.epaule.rotation.set(-0.35, 0, 0); b.coude.rotation.set(-1.1, 0, 0); }
   };
@@ -85,7 +98,7 @@ export function creerPersonnage(a: Apparence): Personnage {
     bras.forEach((b, k) => { b.epaule.rotation.x = 0.35 * (k === 0 ? -s : s); });
   };
   assis();
-  return { groupe, assis, debout, marcher };
+  return { groupe, tete, assis, debout, marcher };
 }
 
 /** Les 6 coiffures, sans genre : rasée, courte, carré, longue, bouclée, chignon. */

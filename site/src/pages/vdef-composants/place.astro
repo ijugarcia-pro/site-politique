@@ -1,6 +1,7 @@
 ---
 // Démonstration interne (lot V0) : la feuille de gauche, aux mesures de la maquette 10. Données
-// illustratives ; la vraie vue « Ta place » arrive au lot V6 (t77).
+// illustratives ; la vraie vue « Ta place » arrive au lot V6 (t77). ?siege=N : la vue depuis le
+// siège n° N (0 à 576), pour vérifier la vue subjective (lot V3).
 import Base from '../../layouts/Base.astro';
 import Bouton from '../../components/vdef/Bouton.astro';
 import Carte from '../../components/vdef/Carte.astro';
@@ -39,6 +40,18 @@ const GROUPES = [['Groupe A', 9], ['Groupe B', 8], ['Groupe C', 6]] as const;
     </Bouton>
   </Feuille>
 </Base>
+
+<script>
+  import { salle3D } from '../../salle3d/pilote.ts';
+  document.addEventListener('astro:page-load', () => {
+    const racine = document.querySelector<HTMLElement>('[data-salle-vdef]');
+    const n = Number(new URLSearchParams(location.search).get('siege'));
+    if (!racine || !document.querySelector('#demo-place') || !Number.isInteger(n) || n < 0 || n > 576) return;
+    const pilote = salle3D(racine);
+    pilote.asseoir(n);
+    pilote.vue('place', { instant: true });
+  });
+</script>
 
 <style>
   .entete { display: flex; flex-direction: column; gap: 6px; }

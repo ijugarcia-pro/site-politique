@@ -25,7 +25,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   description="Ton hémicycle : les députés et les groupes qui votent le plus comme toi, calculés dans ton navigateur à partir de vrais votes.">
   <Salle3D slot="scene" pleinCadre disposition="pleine" fond="tribune" hauteur="980px" camerasA="gauche"
     titre="La salle de l'Assemblée nationale : le voyant de chaque pupitre brille d'autant plus que ce député vote comme toi ; ta place, le siège de ton jumeau, est signalée."
-    cameras={['travee', 'salle', 'tribune', 'plan']} planSurTelephone>
+    cameras={['place', 'salle', 'tribune']}>
     <div class="scene-hemi">
       <div class="haut">
         <p class="consigne">Glisse pour tourner la vue · double-touche pour revenir</p>
@@ -199,7 +199,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
   // Au départ, il attend au pied de la tribune ; CAM 3 n'existe qu'avec une place.
   s3p?.personnage(apparence);
   s3p?.asseoir(null);
-  s3p?.camera('travee', false);
+  s3p?.camera('place', false);
   // Il attend au pied de la tribune : la vue depuis le sol le montre (CAM 2).
   if (!telephone) s3p?.vue('tribune', { instant: true });
   const formulaire = document.querySelector<HTMLFormElement>('[data-personnage]')!;
@@ -313,8 +313,8 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
         const marcher = lirePerso().siege !== uidJumeau;
         sauverPerso({ siege: uidJumeau });
         s3.asseoir(k, { marcher });
-        s3.camera('travee', true);
-        if (!telephone) s3.vue('travee', { instant: true });
+        s3.camera('place', true);
+        if (!telephone) s3.vue('place', { instant: true });
         s3.repere(k, 'Toi · le siège de ton jumeau');
         $('[data-bandeau-place]').textContent = `Le siège de ${p.jumeau!.ligne.n}`;
       } else {

@@ -6,15 +6,20 @@
 // - « lecture » : la salle floutée, une feuille pleine page (pages de lecture et de service).
 // Mode focus (quiz, lots, séance) : « Quitter » et la progression, pas de barre du bas.
 // Sur téléphone : la salle sur 300 px en haut, la feuille qui monte, la barre du bas.
-// Polices servies par le site (aucun appel à Google).
+// La salle reste d'une page à l'autre (transitions d'Astro, components/vdef/Salle.astro) : les
+// scripts des pages s'abonnent à « astro:page-load » (qui suit aussi le premier chargement) et
+// vérifient qu'ils sont sur leur page ; une page de l'ancien gabarit (BaseSeance.astro) se charge
+// en entier. Polices servies par le site (aucun appel à Google).
 import '@fontsource-variable/bricolage-grotesque/index.css';
 import '@fontsource-variable/figtree/index.css';
 import '../styles/global.css';
 import '../styles/motion.css';
+import { ClientRouter } from 'astro:transitions';
 import BarreBas from '../components/vdef/BarreBas.astro';
 import BarreHaut from '../components/vdef/BarreHaut.astro';
 import Feuille from '../components/vdef/Feuille.astro';
 import PiedFeuille from '../components/vdef/PiedFeuille.astro';
+import Salle from '../components/vdef/Salle.astro';
 import { scrutins, semaine } from '../lib/donnees.ts';
 
 type Vue = 'tribune' | 'salle' | 'place';
@@ -29,6 +34,8 @@ interface Props {
   bas?: Vue | 'galerie';
   /** L'image fixe de la salle : la tribune ou la salle vue du perchoir. */
   fond?: 'tribune' | 'salle';
+  /** La vue de la salle 3D (par défaut, celle de la barre, sinon celle de l'image fixe). */
+  vueSalle?: Vue;
   focus?: { quitter: string; total: number; fait?: number; libelle?: string };
   /** Données structurées schema.org de la page (JSON-LD). */
   jsonld?: Record<string, unknown>;
@@ -39,6 +46,7 @@ interface Props {
 const { titre, description, gabarit = 'salle', vue, fond = gabarit === 'lecture' ? 'salle' : 'tribune',
   focus, jsonld, noindex = false } = Astro.props;
 const bas = Astro.props.bas ?? vue;
+const vueSalle = Astro.props.vueSalle ?? vue ?? fond;
 const canonique = new URL(Astro.url.pathname, Astro.site).href;
 const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e siège`;
 // Les votes tranchés comptent les réponses aux votes de la matrice : tous les votes à page, sauf
@@ -72,6 +80,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
     <meta name="twitter:card" content="summary" />
     {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld).replace(/</g, '\\u003c')}></script>}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <ClientRouter />
   </head>
   <body class:list={['vdef', `gabarit-${gabarit}`, { focus: !!focus }]}>
     <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -82,18 +91,18 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
           <img class="fond" src={`/salle3d/fond-${fond}.webp`} alt={gabarit === 'lecture' ? '' : ALT[fond]}
             aria-hidden={gabarit === 'lecture' ? 'true' : undefined} decoding="async" />
         </picture>
-        <slot name="salle" />
+        <Salle />
       </div>
       <BarreHaut vue={vue} focus={focus} />
       {gabarit === 'lecture' ? (
-        <main id="contenu" class="page-lecture">
+        <main id="contenu" class="page-lecture" data-vue-salle={vueSalle}>
           <Feuille position="lecture" balise="div">
             <slot />
             <PiedFeuille />
           </Feuille>
         </main>
       ) : (
-        <main id="contenu" class="sur-salle">
+        <main id="contenu" class="sur-salle" data-vue-salle={vueSalle}>
           <slot />
         </main>
       )}
@@ -106,6 +115,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
       import { palierAtteint, PALIERS, prochainPalier, votesTranches } from '../lib/paliers.ts';
       import { reporterReponses } from '../lib/seances.ts';
 
+      document.addEventListener('astro:page-load', () => {
       reporterReponses(JSON.parse(
         document.querySelector('[data-tranches-seance]')?.textContent ?? '{}') as Record<string, Record<string, string>>);
 
@@ -142,6 +152,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
           location.href = `/deputes/#cp=${encodeURIComponent(cp)}`;
         });
       }
+      });
     </script>
   </body>
 </html>

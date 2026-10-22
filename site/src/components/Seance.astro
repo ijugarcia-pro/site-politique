@@ -144,7 +144,7 @@ const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
     </ul>
     <ul class="legende" data-legende-accord>
       {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
-      <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
+      <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>N’a voté sur aucun de tes votes</li>
     </ul>
     <!-- Le bandeau de l'étape (maquette V6C-02), en bas de la colonne de gauche. -->
     <div class="bandeau etape">

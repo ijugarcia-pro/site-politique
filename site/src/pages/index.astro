@@ -345,7 +345,7 @@ const donnees = JSON.stringify({
     matrice.then((m) => {
       const p = profil(m, Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v])));
       if (!p.reponses) return;
-      const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.lisse]));
+      const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.part]));
       const cercles = document.querySelectorAll<SVGCircleElement>('.mini-hemicycle circle');
       sieges.forEach(([d], i) => {
         if (d) cercles[i]?.setAttribute('fill', teinte(parDepute.get(d) ?? null));
@@ -381,7 +381,7 @@ const donnees = JSON.stringify({
         $('[data-jumeau-ini]').textContent = initiales(j.ligne.n);
         $('[data-jumeau-nom]').textContent = `${j.ligne.n} · ${sigle}`;
         $('[data-jumeau-pct]').textContent = `${j.taux} %`;
-        $('[data-jumeau]').classList.toggle('proche', niveau(j.lisse).haut);
+        $('[data-jumeau]').classList.toggle('proche', niveau(j.part).haut);
         $('[data-jumeau]').hidden = false;
       }
     }).catch(() => {});

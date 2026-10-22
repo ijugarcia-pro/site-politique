@@ -11,19 +11,23 @@ const votes = [
   { uid: 'V6', vote: 'pour' },
 ];
 
-test('aucun vote en commun', () => {
-  assert.deepEqual(accord(votes, {}), { communs: 0, identiques: 0, taux: null });
-  // Le député était absent ou non-votant : rien en commun.
-  assert.deepEqual(accord(votes, { V4: 'pour', V5: 'contre' }),
-    { communs: 0, identiques: 0, taux: null });
+test('aucune réponse', () => {
+  assert.deepEqual(accord(votes, {}),
+    { n: 0, identiques: 0, contraires: 0, absents: 0, taux: null });
 });
 
-test("l'abstention du député compte comme un désaccord", () => {
+test("une absence n'est pas un accord", () => {
+  // Absent, non-votant, ou vote hors de son mandat (V9) : compté dans N, jamais identique.
+  assert.deepEqual(accord(votes, { V1: 'pour', V4: 'pour', V5: 'contre', V9: 'pour' }),
+    { n: 4, identiques: 1, contraires: 0, absents: 3, taux: 25 });
+});
+
+test("l'abstention du député compte comme un vote contraire", () => {
   assert.deepEqual(accord(votes, { V1: 'pour', V2: 'pour', V3: 'contre' }),
-    { communs: 3, identiques: 1, taux: 33 });
+    { n: 3, identiques: 1, contraires: 2, absents: 0, taux: 33 });
 });
 
 test('les motions de censure sont exclues', () => {
   assert.deepEqual(accord(votes, { V1: 'pour', V6: 'pour' }, new Set(['V6'])),
-    { communs: 1, identiques: 1, taux: 100 });
+    { n: 1, identiques: 1, contraires: 0, absents: 0, taux: 100 });
 });

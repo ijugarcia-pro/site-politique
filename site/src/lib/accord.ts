@@ -1,9 +1,8 @@
-// Accord entre les réponses du visiteur et les votes d'un député, calculé dans le navigateur.
-// Un vote compte « en commun » quand le visiteur a répondu (pour ou contre) et que le député a
-// pris position (pour, contre ou abstention) ; ils sont d'accord quand les deux réponses sont
-// identiques. Les motions de censure ne comptent pas (seuls les « pour » y sont publiés).
-// Pas de lissage ici : c'est un taux brut, affiché avec son nombre de votes. Le lissage
-// (m + 2) / (n + 4) sert au classement du jumeau (t21).
+// Accord entre les réponses du visiteur et les votes d'un député, calculé dans le navigateur,
+// avec la règle du jumeau (lib/profil.ts, décision du 22 oct. 2026) : sur tes N réponses (pour
+// ou contre), le député a voté comme toi (identiques), autrement (contraires : vote inverse ou
+// abstention), ou n'a pas voté (absents : absent, non-votant ou hors mandat). Une absence n'est
+// pas un accord. Les motions de censure ne comptent pas (seuls les « pour » y sont publiés).
 
 export type Reponse = 'pour' | 'contre';
 
@@ -13,23 +12,28 @@ export interface VoteDepute {
 }
 
 export interface Accord {
-  communs: number;
+  /** Tes réponses, hors motions de censure. */
+  n: number;
   identiques: number;
-  /** En pourcentage arrondi, ou null sans vote en commun. */
+  contraires: number;
+  absents: number;
+  /** identiques / N en pourcentage arrondi, ou null sans réponse. */
   taux: number | null;
 }
 
-const PRISES_DE_POSITION = new Set(['pour', 'contre', 'abstention']);
-
 export function accord(votes: VoteDepute[], reponses: Record<string, Reponse>,
   censures: Set<string> = new Set()): Accord {
-  let communs = 0;
+  const siens = new Map(votes.map((v) => [v.uid, v.vote]));
+  let n = 0;
   let identiques = 0;
-  for (const v of votes) {
-    const r = reponses[v.uid];
-    if (!r || censures.has(v.uid) || !PRISES_DE_POSITION.has(v.vote)) continue;
-    communs += 1;
-    if (v.vote === r) identiques += 1;
+  let contraires = 0;
+  for (const [uid, r] of Object.entries(reponses)) {
+    if (censures.has(uid)) continue;
+    n += 1;
+    const v = siens.get(uid);
+    if (v === r) identiques += 1;
+    else if (v === 'pour' || v === 'contre' || v === 'abstention') contraires += 1;
   }
-  return { communs, identiques, taux: communs ? Math.round((100 * identiques) / communs) : null };
+  return { n, identiques, contraires, absents: n - identiques - contraires,
+    taux: n ? Math.round((100 * identiques) / n) : null };
 }

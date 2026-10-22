@@ -252,7 +252,7 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     }
   }
 
-  // Taux d'accord, s'il y a des votes en commun.
+  // Ses votes face aux tiens : X votes comme toi sur tes N (une absence n'est pas un accord).
   const a = accord(lignes.map((l) => ({ uid: l.dataset.uid!, vote: l.dataset.vote! })),
     mesReponses, censures);
   if (a.taux !== null) {
@@ -262,10 +262,11 @@ const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${
     document.querySelector('[data-anneau-pct]')!.textContent = `${a.taux} %`;
     const note = document.querySelector<HTMLElement>('[data-anneau-note]')!;
     note.hidden = false;
-    note.textContent = `sur ${a.communs} vote${a.communs > 1 ? 's' : ''} en commun`;
+    note.textContent = `${a.identiques} vote${a.identiques > 1 ? 's' : ''} comme toi sur ${a.n}`;
     document.querySelector('[data-aide]')!.textContent =
-      `Vous avez pris position tous les deux sur ${a.communs} vote${a.communs > 1 ? 's' : ''} : `
-      + `même réponse ${a.identiques} fois. Une abstention de sa part compte comme une réponse différente.`;
+      `Sur tes ${a.n} réponse${a.n > 1 ? 's' : ''} : même vote ${a.identiques} fois, vote différent `
+      + `${a.contraires} fois, pas de vote ${a.absents} fois. Une abstention de sa part compte comme `
+      + 'un vote différent ; une absence ne compte jamais comme un accord.';
   }
 
   // « C'est mon député ».

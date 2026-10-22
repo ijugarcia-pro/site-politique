@@ -76,9 +76,9 @@ export function seance({ libelleContinuer, rang }: Options) {
     const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x]));
     salle.colorer((_, uid) => {
       const x = parDepute.get(uid);
-      return x ? { fond: niveau(x.lisse).couleur } : { sansCommun: true };
+      return x ? { fond: niveau(x.part).couleur } : { sansCommun: true };
     });
-    const proches = p.deputes.filter((x) => niveau(x.lisse).haut).length;
+    const proches = p.deputes.filter((x) => niveau(x.part).haut).length;
     salle.centre(String(proches), `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`);
     salle.libre(false);
     return p;

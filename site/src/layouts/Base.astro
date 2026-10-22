@@ -1,19 +1,16 @@
 ---
 // Gabarit de la VDEF « La salle est le menu » (docs/design-vdef/VDEF.md) : la salle en fond plein
-// écran (image fixe de la vue, la 3D se pose dans le slot « salle » à partir du lot V3), la
-// barre du haut flottante dessus, le contenu dans des feuilles. Deux gabarits :
+// écran (image fixe de la vue, la 3D posée dessus quand elle peut s'ouvrir), la barre du haut flottante dessus, le contenu dans des feuilles. Deux gabarits :
 // - « salle » : la salle nette, les feuilles posées dessus (Feuille droite, gauche ou bas) ;
 // - « lecture » : la salle floutée, une feuille pleine page (pages de lecture et de service).
 // Mode focus (quiz, lots, séance) : « Quitter » et la progression, pas de barre du bas.
 // Sur téléphone : la salle sur 300 px en haut, la feuille qui monte, la barre du bas.
 // La salle reste d'une page à l'autre (transitions d'Astro, components/vdef/Salle.astro) : les
 // scripts des pages s'abonnent à « astro:page-load » (qui suit aussi le premier chargement) et
-// vérifient qu'ils sont sur leur page ; une page de l'ancien gabarit (BaseSeance.astro) se charge
-// en entier. Polices servies par le site (aucun appel à Google).
+// vérifient qu'ils sont sur leur page. Polices servies par le site (aucun appel à Google).
 import '@fontsource-variable/bricolage-grotesque/index.css';
 import '@fontsource-variable/figtree/index.css';
 import '../styles/global.css';
-import '../styles/motion.css';
 import { ClientRouter } from 'astro:transitions';
 import BarreBas from '../components/vdef/BarreBas.astro';
 import BarreHaut from '../components/vdef/BarreHaut.astro';

@@ -1,7 +1,8 @@
 // Le pilote de la salle 3D, seul morceau chargé avec la page : il décide d'ouvrir la 3D, la charge
 // à la demande (import dynamique de three et de la scène) et garde les ordres de la page (voyants,
 // vue, cadre des feuilles, repères) jusqu'à ce qu'elle soit prête. Tant qu'elle ne l'est pas, ou
-// si elle ne doit pas s'ouvrir, le repli reste affiché (image fixe de la vue, ou hémicycle SVG).
+// si elle ne doit pas s'ouvrir, le repli reste affiché (l'image fixe de la vue ; la page montre au
+// besoin l'hémicycle 2D).
 // Il porte aussi les gestes (VDEF, lot V3) : glisser pour tourner (pointeur capturé, amortissement,
 // petite inertie ; ni l'un ni l'autre en mouvement réduit), pincer ou Ctrl + molette pour zoomer,
 // double clic ou Échap pour revenir ; au clavier, flèches, + et −, Échap. La molette seule fait
@@ -71,10 +72,6 @@ export interface Pilote {
   vue(nom: NomVue, opt?: { instant?: boolean }): void;
   /** Ce que les feuilles couvrent : la vue se centre sur le reste. */
   cadre(c: Cadre): void;
-  ambiance(nom: 'jour' | 'verdict'): void;
-  jumeau(i: number | null): void;
-  /** Un repère au-dessus d'un siège (ancien gabarit) ; null : aucun. */
-  repere(i: number | null, texte?: string): void;
   /** Les repères de la VDEF, plusieurs à la fois ; cachés quand ils sortent du cadre. */
   reperes(liste: RepereSalle[]): void;
   /** Le siège touché (clic, toucher) et le siège survolé (null en sortant) ; sans gestionnaire,
@@ -85,8 +82,6 @@ export interface Pilote {
   /** Le personnage du visiteur, et sa place (null : au pied de la tribune). */
   personnage(a: Apparence | null): void;
   asseoir(i: number | null, opt?: { marcher?: boolean }): void;
-  /** Montrer ou cacher une puce de caméra (ancien gabarit). */
-  camera(nom: NomVue, disponible: boolean): void;
   /** Résolue quand la salle est à l'écran ; null si elle ne s'ouvre pas (le repli reste). */
   prete: Promise<Salle3D | null>;
 }
@@ -104,7 +99,7 @@ function anneau(calque: HTMLElement | null, sorte: string): HTMLElement | null {
   return el;
 }
 
-/** `racine` : l'élément [data-salle3d] (components/vdef/Salle.astro, ou l'ancien Salle3D.astro).
+/** `racine` : l'élément [data-salle3d] (components/vdef/Salle.astro).
  *  Un seul pilote par salle : le composant l'ouvre lui-même, la page récupère le même. */
 export function salle3D(racine: HTMLElement): Pilote {
   const deja = pilotes.get(racine);
@@ -117,11 +112,9 @@ export function salle3D(racine: HTMLElement): Pilote {
 function creerPilote(racine: HTMLElement): Pilote {
   const canvas = racine.querySelector<HTMLCanvasElement>('canvas')!;
   const ecran = racine.querySelector<HTMLElement>('.ecran') ?? racine;
-  const marque = racine.querySelector<HTMLElement>('.repere');
   const calque = racine.querySelector<HTMLElement>('[data-reperes]');
   const attente: ((s: Salle3D) => void)[] = [];
   let salle: Salle3D | null = null;
-  let repere: { i: number; texte: string } | null = null;
   let liste: { r: RepereSalle; el: HTMLElement }[] = [];
   let toucheSiege: ((i: number) => void) | null = null;
   let survole: number | null = null;
@@ -135,17 +128,6 @@ function creerPilote(racine: HTMLElement): Pilote {
   const dansLeCadre = (p: { x: number; y: number; devant: boolean }) =>
     p.devant && p.x > 0.02 && p.x < 0.98 && p.y > 0.04 && p.y < 0.96;
   const placerReperes = () => {
-    if (marque) {
-      if (!salle || !repere) marque.hidden = true;
-      else {
-        const [p] = salle.projeter([salle.positionSiege(repere.i, 1.05)]);
-        marque.hidden = !dansLeCadre(p);
-        marque.style.left = `${(100 * p.x).toFixed(2)}%`;
-        marque.style.top = `${(100 * p.y).toFixed(2)}%`;
-        marque.classList.toggle('a-gauche', p.x < 0.3);
-        marque.classList.toggle('a-droite', p.x > 0.7);
-      }
-    }
     if (!salle) return;
     const points = salle.projeter(liste.map(({ r }) => salle!.positionSiege(r.i, 1.05)));
     liste.forEach(({ el }, k) => poser(el, points[k]));
@@ -191,13 +173,6 @@ function creerPilote(racine: HTMLElement): Pilote {
     io.observe(racine);
   });
 
-  // Les puces de caméra de l'ancien gabarit : une caméra en cours à la fois (aria-pressed).
-  for (const b of racine.querySelectorAll<HTMLButtonElement>('[data-camera]')) {
-    b.addEventListener('click', () => {
-      for (const x of racine.querySelectorAll('[data-camera]')) x.setAttribute('aria-pressed', String(x === b));
-      faire((s) => { void s.vue(b.dataset.camera as NomVue); });
-    });
-  }
 
   // Le glisser, amorti : l'écart demandé est rattrapé par images ; au lâcher, une petite inertie.
   const ecart = { lacet: 0, tangage: 0 };
@@ -343,36 +318,18 @@ function creerPilote(racine: HTMLElement): Pilote {
     else salle.orbiter(g.lacet ?? 0, g.tangage ?? 0);
   });
 
-  // Le repli (hémicycle SVG) montre les mêmes voyants que la salle, siège par siège.
-  const peindreRepli = (couleurs: (string | null)[]) => {
-    racine.querySelectorAll<SVGCircleElement>('.repli circle:not(.marque)').forEach((c, i) => {
-      c.setAttribute('fill', couleurs[i] ?? '#2A2D33');
-    });
-  };
 
   return {
-    voyants: (c) => { peindreRepli(c); faire((s) => s.voyants(c)); },
-    onde: (c, duree) => { peindreRepli(c); faire((s) => { void s.voyantsEnOnde(c, duree); }); },
+    voyants: (c) => faire((s) => s.voyants(c)),
+    onde: (c, duree) => faire((s) => { void s.voyantsEnOnde(c, duree); }),
     vue: (nom, opt) => {
       racine.dataset.vue = nom;
-      for (const x of racine.querySelectorAll<HTMLElement>('[data-camera]')) x.setAttribute('aria-pressed', String(x.dataset.camera === nom));
       arreter();
       faire((s) => { void s.vue(nom, opt); });
     },
     cadre: (c) => faire((s) => s.cadre(c)),
-    ambiance: (nom) => faire((s) => s.ambiance(nom)),
-    jumeau: (i) => faire((s) => s.jumeau(i)),
     personnage: (a) => faire((s) => s.personnage(a)),
     asseoir: (i, opt) => faire((s) => { void s.asseoir(i, opt); }),
-    camera: (nom, disponible) => {
-      const b = racine.querySelector<HTMLElement>(`[data-camera="${nom}"]`);
-      if (b) b.hidden = !disponible;
-    },
-    repere: (i, texte = '') => {
-      repere = i === null ? null : { i, texte };
-      if (marque) marque.querySelector('span')!.textContent = texte;
-      if (salle) placerReperes(); else if (marque) marque.hidden = true;
-    },
     reperes: (nouveaux) => {
       if (!calque) return;
       for (const { el } of liste) el.remove();

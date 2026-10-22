@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { prochainLot, suiteDesLots } from './lots.ts';
 import { precision, VOTES_FIABLES } from './profil.ts';
-import { puceTheme, PUCES_THEMES } from './themes.ts';
+import { THEMES } from './themes.ts';
 
 test('le prochain lot est le premier pas encore fait', () => {
   assert.equal(prochainLot([], 5), 0);
@@ -43,8 +43,6 @@ test('les lots versionnés : le parcours mène au seuil de fiabilité, les facul
   assert.deepEqual(jauge, [48, 55, 61, 67, 71, 75, 79, 82, 84]);
 });
 
-test('chaque thème a sa puce, un thème inconnu prend la violette', () => {
-  assert.equal(Object.keys(PUCES_THEMES).length, 12);
-  assert.equal(puceTheme('Logement'), '#B3132F:#FFFFFF');
-  assert.equal(puceTheme('Inconnu'), '#B3132F:#FFFFFF');
+test('la liste fermée compte 12 thèmes distincts', () => {
+  assert.equal(new Set(THEMES).size, 12);
 });

@@ -1,5 +1,7 @@
 # Design définitif · « La Séance »
 
+> **Remplacé par docs/design-vdef/VDEF.md** (VDEF « La salle est le menu », décision du 22 oct. 2026). Ce document décrit « La Séance », appliquée du 20 au 22 octobre ; il n'est plus la référence de l'apparence ni du parcours.
+
 Rédigé le 20 octobre 2026, après comparaison des captures du site (`captures-la-seance/`, 31 écrans × 2 formats) avec les maquettes validées (page « V6 · C · La Séance » du canvas https://claude.ai/artifact/1VD3vDVnxpncGnMrNA6Lg9) et le design system « Le 578e siège · La Séance » (https://claude.ai/artifact/4i8ZqFLTaEVLJJgZGhHhMM).
 
 **But** : que le site ressemble aux maquettes. Les lots 0 à 6 ont posé la mécanique (3D, personnage, thèmes, inventaire des `data-*`) ; ils sont bons. Ce qui manque, c'est l'**application** de la charte : les jetons de couleur sont justes dans `global.css`, mais la typographie, la mise en page et la lumière de la salle trahissent les maquettes.

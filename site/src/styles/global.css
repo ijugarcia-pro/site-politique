@@ -148,3 +148,7 @@ summary::-webkit-details-marker { display: none; }
 }
 .salle-sans-3d .consigne-salle { display: none; }
 @media (max-width: 720px) { .consigne-salle { display: none; } }
+
+/* Les noms techniques (clés du navigateur, fichiers) : en Figtree, comme tout le texte (VDEF § 6 :
+   deux polices seulement), en gras pour les distinguer. */
+code { font-family: var(--police-texte); font-weight: 600; font-size: 0.95em; }

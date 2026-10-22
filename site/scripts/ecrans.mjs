@@ -1,5 +1,5 @@
-// Les 31 écrans du site (docs/design-final/DESIGN-FINAL.md, § 9) : chaque page et chaque état qui
-// demande un geste (révélation, fin de lot, verdict découvert, caméras de la salle…). Les états
+// Les 31 écrans du site (VDEF, docs/design-vdef/VDEF.md, § 4) : chaque page et chaque état qui
+// demande un geste (révélation, fin de lot, verdict découvert, onglets d'un vote…). Les états
 // sont préparés dans le stockage local (réponses illustratives, jamais envoyées) ; les animations
 // sont coupées (mouvement réduit) pour voir les états finaux. Partagé par frames.mjs (captures)
 // et typo.mjs (contrôle de la typographie), pour qu'ils parcourent exactement les mêmes états.
@@ -8,13 +8,13 @@ import { chromium } from 'playwright';
 
 /** Les écrans, dans l'ordre, regroupés par parcours (un parcours prépare ses états une fois). */
 export const PARCOURS = [
-  ['accueil', ['01-accueil-nouveau-visiteur', '02-accueil-avec-reponses', '03-accueil-cam2-tribune', '04-accueil-cam4-plan']],
+  ['accueil', ['01-tribune-premiere-visite', '02-tribune-tableau-de-bord', '03-la-salle-d-un-vote', '04-dossier-theme']],
   ['quiz', ['05-quiz-question', '06-quiz-revelation', '07-quiz-resultat', '08-quiz-partage-stories']],
   ['lots', ['09-lots-question', '10-lots-revelation', '11-lots-fin-de-lot']],
   ['seance', ['12-seance-question', '13-seance-apres-vote', '14-seance-terminee']],
-  ['verdict', ['15-verdict-avant-le-toucher', '16-verdict-decouvert', '17-verdict-cam4-plan']],
+  ['verdict', ['15-verdict-avant-le-toucher', '16-verdict-decouvert', '17-tes-reponses']],
   ['place', ['18-ta-place-fermee', '19-ta-place', '20-la-salle', '21-ton-parcours']],
-  ['lecture', ['22-explorer', '23-page-d-un-vote', '24-deputes-qui-te-represente', '25-deputes-recherche-code-postal',
+  ['lecture', ['22-la-galerie', '23-page-d-un-vote', '24-deputes-qui-te-represente', '25-deputes-recherche-code-postal',
     '26-fiche-depute', '27-comment-c-est-calcule', '28-etat-des-donnees', '29-confidentialite', '30-mentions-legales',
     '31-page-introuvable']],
 ];
@@ -75,7 +75,6 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
     const e = document.querySelector('[data-salle3d]')?.dataset.salle3dEtat;
     return !e || ['prete', 'erreur', 'webgl', 'memoire', 'economie'].includes(e);
   }, null, { timeout: 240000 });
-  const camera = async (nom) => { await page.evaluate((n) => document.querySelector(`[data-camera="${n}"]`)?.click(), nom); await attendre(2500); };
   const aller = async (chemin) => { await page.goto(base + chemin, { waitUntil: 'networkidle' }); await page.evaluate(() => document.fonts.ready); };
   const trancher = async (max) => {
     for (let i = 0; i < max; i++) {
@@ -94,11 +93,14 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
 
   const ETAPES = {
     accueil: async () => {
-      await etat(); await aller('/'); await salle(); await ecran('01-accueil-nouveau-visiteur');
-      await etat(avecReponses); await aller('/'); await salle(); await ecran('02-accueil-avec-reponses');
-      if (garde('03') || garde('04')) {
-        await camera('tribune'); await ecran('03-accueil-cam2-tribune');
-        await camera('plan'); await ecran('04-accueil-cam4-plan');
+      await etat(); await aller('/'); await salle(); await ecran('01-tribune-premiere-visite');
+      await etat(avecReponses); await aller('/'); await salle(); await ecran('02-tribune-tableau-de-bord');
+      if (garde('03')) { await aller(`/salle/#vote=${uids[0]}`); await salle(); await attendre(1500); await ecran('03-la-salle-d-un-vote'); }
+      if (garde('04')) {
+        const dossier = await page.evaluate(() => document.querySelector('a[href^="/dossiers/"]')?.getAttribute('href') ?? '/dossiers/sante/');
+        await aller('/explorer/');
+        const lien = await page.evaluate(() => [...document.querySelectorAll('a[href^="/dossiers/"]')].map((a) => a.getAttribute('href'))[0]);
+        await aller(lien ?? dossier); await ecran('04-dossier-theme');
       }
     },
     quiz: async () => {
@@ -127,7 +129,7 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
       const decouvrir = await page.$('[data-decouvrir-bouton]:visible');
       if (decouvrir) { await decouvrir.click(); await attendre(3000); }
       await page.evaluate(() => scrollTo(0, 0)); await ecran('16-verdict-decouvert');
-      if (garde('17')) { await camera('plan'); await page.evaluate(() => scrollTo(0, 0)); await ecran('17-verdict-cam4-plan'); }
+      if (garde('17')) { await aller('/tes-reponses/'); await attendre(1000); await ecran('17-tes-reponses'); }
     },
     place: async () => {
       if (garde('18')) { await etat(); await aller('/ta-place/'); await salle(); await attendre(1500); await ecran('18-ta-place-fermee'); }
@@ -142,7 +144,7 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
         [...document.querySelectorAll('a')].map((a) => a.getAttribute('href')).find((h) => h && new RegExp(m).test(h)) ?? p, [motif, prefixe]);
       await aller('/explorer/');
       const vote = await premier('^/votes/\\d+/$', '/votes/8434/');
-      await ecran('22-explorer');
+      await ecran('22-la-galerie');
       if (garde('23')) { await aller(vote); await ecran('23-page-d-un-vote'); }
       if (garde('24')) { await aller('/deputes/'); await ecran('24-deputes-qui-te-represente'); }
       if (garde('25') || garde('26')) {

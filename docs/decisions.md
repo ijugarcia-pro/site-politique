@@ -423,3 +423,8 @@
 - Raison : « la salle est le menu » (VDEF § 3) ; un seul hémicycle par écran.
 - Conséquence : la liste des votes de `/tes-reponses/` est servie à part (`/donnees/votes.json`) pour ne pas alourdir la page ; aucune nouvelle clé dans le navigateur.
 
+
+## 2026-10-22 · La VDEF remplace « La Séance » dans le code
+- Décision (lot V10, t81) : tout le code de « La Séance » est retiré : l'ancien gabarit (`BaseSeance.astro`, `seance.css`, `fin-seance.css`), les composants de régie et de l'ancien hémicycle (`Seance`, `Salle3D`, `Salle`, `Hemicycle`, `EnteteSeance`, `LigneVote`, `JaugePrecision`, `SerieGelee`), leurs bibliothèques (`lib/seance.ts`, `lib/salle.ts`, `lib/jauge.ts`, `lib/gel.ts`, `lib/motion.ts`, `lib/couleurs.ts` et leurs tests), `motion.css`, les puces de thème rouges, l'ambiance « verdict » de la 3D (lustres) et la plaquette du jumeau, l'ancienne API du pilote (repère unique, puces de caméra), et les polices Barlow, Barlow Condensed et Literata. Le contrôle typographique change de règle : tout texte en Bricolage Grotesque ou en Figtree, jamais de `text-transform: uppercase` (bloquant). Un test de la souris s'ajoute (`npm run test:souris`).
+- Raison : VDEF § 2 (« jamais : capitales forcées, dorure, couleur de parti ») et § 6 (deux polices, aucune autre couleur) ; le prompt VDEF demande le ménage avant la PR.
+- Conséquence : `npm test` passe de 96 à 86 tests (les 10 retirés testaient les modules supprimés) ; les lumières et matières du jour de la salle ne changent pas ; les adresses restent valides, seule `/hemicycle/` est redirigée vers `/ta-place/`.

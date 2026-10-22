@@ -1,5 +1,7 @@
 # Refonte « La Séance » · consignes pour Claude Code
 
+> **Remplacé par docs/design-vdef/VDEF.md** (VDEF « La salle est le menu », décision du 22 oct. 2026). Ces consignes décrivent « La Séance » ; elles ne sont plus la référence de l'apparence ni du parcours.
+
 Projet : « Le 578e siège » (Astro 7 statique, Cloudflare Pages, zéro euro).
 Demande de Julien du 20 octobre 2026 : appliquer au vrai site la direction artistique « La Séance », **sans toucher à la mécanique** (données, calculs, stockage, pipeline). Décision : docs/decisions.md, 20 oct. Suivi : docs/PLANNING.md, tâches t56 à t62.
 

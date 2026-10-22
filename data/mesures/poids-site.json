@@ -1,240 +1,240 @@
 {
  "/": {
-  "js": 37221,
-  "js_gzip": 13628,
-  "css": 23697,
-  "css_gzip": 5054,
+  "js": 36973,
+  "js_gzip": 13528,
+  "css": 25069,
+  "css_gzip": 5513,
   "modules": 10
  },
  "/404/": {
-  "js": 4147,
-  "js_gzip": 1987,
-  "css": 21787,
-  "css_gzip": 4219,
-  "modules": 4
+  "js": 29813,
+  "js_gzip": 10879,
+  "css": 18318,
+  "css_gzip": 4465,
+  "modules": 7
  },
  "/calcul/": {
-  "js": 4590,
-  "js_gzip": 2138,
-  "css": 21787,
-  "css_gzip": 4219,
-  "modules": 4
+  "js": 30946,
+  "js_gzip": 11243,
+  "css": 18318,
+  "css_gzip": 4465,
+  "modules": 7
  },
  "/confidentialite/": {
-  "js": 4147,
-  "js_gzip": 1987,
-  "css": 21787,
-  "css_gzip": 4219,
-  "modules": 4
+  "js": 29813,
+  "js_gzip": 10879,
+  "css": 18318,
+  "css_gzip": 4465,
+  "modules": 7
  },
  "/deputes/": {
-  "js": 36825,
-  "js_gzip": 13524,
-  "css": 21162,
-  "css_gzip": 4649,
+  "js": 36792,
+  "js_gzip": 13506,
+  "css": 22534,
+  "css_gzip": 5108,
   "modules": 9
  },
  "/deputes/[uid]/": {
-  "js": 32150,
-  "js_gzip": 11655,
-  "css": 22548,
-  "css_gzip": 4797,
+  "js": 32117,
+  "js_gzip": 11637,
+  "css": 23920,
+  "css_gzip": 5258,
   "modules": 8
  },
  "/dossiers/droits/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/economie/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/education/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/energie/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/environnement/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/immigration/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/institutions/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/logement/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/numerique/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/sante/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/securite/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/dossiers/travail/": {
-  "js": 34216,
-  "js_gzip": 12443,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 33968,
+  "js_gzip": 12343,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 9
  },
  "/etat/": {
-  "js": 4147,
-  "js_gzip": 1987,
-  "css": 21787,
-  "css_gzip": 4219,
-  "modules": 4
+  "js": 29813,
+  "js_gzip": 10879,
+  "css": 18318,
+  "css_gzip": 4465,
+  "modules": 7
  },
  "/explorer/": {
-  "js": 32715,
-  "js_gzip": 11878,
-  "css": 21914,
-  "css_gzip": 4758,
+  "js": 32682,
+  "js_gzip": 11859,
+  "css": 23286,
+  "css_gzip": 5218,
   "modules": 9
  },
  "/lots/": {
-  "js": 41282,
-  "js_gzip": 14828,
-  "css": 22493,
-  "css_gzip": 4796,
+  "js": 41249,
+  "js_gzip": 14809,
+  "css": 23865,
+  "css_gzip": 5254,
   "modules": 11
  },
  "/mentions-legales/": {
-  "js": 4147,
-  "js_gzip": 1987,
-  "css": 21787,
-  "css_gzip": 4219,
-  "modules": 4
+  "js": 29813,
+  "js_gzip": 10879,
+  "css": 18318,
+  "css_gzip": 4465,
+  "modules": 7
  },
  "/parcours/": {
-  "js": 39524,
-  "js_gzip": 14203,
-  "css": 21532,
-  "css_gzip": 4664,
-  "modules": 10
+  "js": 42891,
+  "js_gzip": 15465,
+  "css": 24179,
+  "css_gzip": 5333,
+  "modules": 11
  },
  "/quiz/": {
-  "js": 45956,
-  "js_gzip": 16718,
-  "css": 22493,
-  "css_gzip": 4796,
+  "js": 45398,
+  "js_gzip": 16561,
+  "css": 23865,
+  "css_gzip": 5254,
   "modules": 13
  },
  "/salle/": {
-  "js": 45893,
-  "js_gzip": 16637,
-  "css": 22920,
-  "css_gzip": 4890,
+  "js": 45603,
+  "js_gzip": 16526,
+  "css": 24292,
+  "css_gzip": 5349,
   "modules": 12
  },
  "/seance/": {
-  "js": 41454,
-  "js_gzip": 14944,
-  "css": 22493,
-  "css_gzip": 4796,
+  "js": 41421,
+  "js_gzip": 14928,
+  "css": 23865,
+  "css_gzip": 5254,
   "modules": 11
  },
  "/ta-place/": {
-  "js": 44204,
-  "js_gzip": 16005,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 43956,
+  "js_gzip": 15913,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 12
  },
  "/tes-reponses/": {
-  "js": 43955,
-  "js_gzip": 15782,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 43707,
+  "js_gzip": 15699,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 11
  },
  "/vdef-composants/": {
-  "js": 30857,
-  "js_gzip": 11233,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 30824,
+  "js_gzip": 11215,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 7
  },
  "/vdef-composants/place/": {
-  "js": 30187,
-  "js_gzip": 10989,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 30154,
+  "js_gzip": 10973,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 8
  },
  "/vdef-composants/salle/": {
-  "js": 30243,
-  "js_gzip": 11014,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 30210,
+  "js_gzip": 10996,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 8
  },
  "/vdef-composants/tribune/": {
-  "js": 29846,
-  "js_gzip": 10895,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 29813,
+  "js_gzip": 10879,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 7
  },
  "/verdict/": {
-  "js": 43604,
-  "js_gzip": 15532,
-  "css": 16946,
-  "css_gzip": 4008,
+  "js": 43356,
+  "js_gzip": 15437,
+  "css": 18318,
+  "css_gzip": 4465,
   "modules": 11
  },
  "/votes/[numero]/": {
-  "js": 43807,
-  "js_gzip": 15700,
-  "css": 22475,
-  "css_gzip": 4843,
+  "js": 43559,
+  "js_gzip": 15605,
+  "css": 23847,
+  "css_gzip": 5300,
   "modules": 11
  }
 }

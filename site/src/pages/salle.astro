@@ -10,7 +10,7 @@ import Base from '../layouts/Base.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
 import { composition, scrutins } from '../lib/donnees.ts';
-import { NIVEAUX } from '../lib/profil.ts';
+import { INTENSITES, NIVEAUX } from '../lib/profil.ts';
 
 const compo = composition();
 const groupes = compo.groupes.filter((g) => g.membres > 0)
@@ -23,9 +23,6 @@ const donnees = JSON.stringify({
 }).replace(/</g, '\\u003c');
 const noms = [...new Set(compo.sieges.filter((s) => s.nom).map((s) => s.nom!))].sort((a, b) => a.localeCompare(b, 'fr'));
 const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
-// Les intensités de l'accord (palier 2) : de l'éteint au blanc chaud, la même échelle que les
-// voyants de la salle ; aucune couleur de parti.
-const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
 ---
 <Base titre="La salle" vue="salle" fond="salle" vueSalle="salle"
   description="La salle de l'Assemblée nationale en 3D : touche un siège pour voir son député, montre ton jumeau, ton opposé, ton député ou un groupe.">
@@ -100,13 +97,12 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
 
   <p class="consigne-salle">Glisse pour tourner · touche un siège</p>
   <script type="application/json" data-donnees-salle set:html={donnees}></script>
-  <script type="application/json" data-intensites set:html={JSON.stringify(INTENSITES)}></script>
 </Base>
 
 <script>
   import { deputeChoisi, lireJSON } from '../lib/navigateur.ts';
   import { palierAtteint, PALIERS, votesTranches } from '../lib/paliers.ts';
-  import { comparer, colonnes, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
+  import { comparer, colonnes, INTENSITES, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
   import { $, mesReps, pluriel, VOYANTS } from '../lib/trancher.ts';
   import { salle3D, type RepereSalle } from '../salle3d/pilote.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
@@ -118,7 +114,6 @@ const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
     if (!brut) return;
     const { sieges, groupes, horsMatrice } = JSON.parse(brut) as {
       sieges: ([string, string, string] | null)[]; groupes: Record<string, string>; horsMatrice: string[] };
-    const INTENSITES = JSON.parse($('[data-intensites]').textContent!) as string[];
     const racine = document.querySelector<HTMLElement>('[data-salle-vdef]');
     const salle = racine ? salle3D(racine) : null;
     const annonce = $('[data-annonce-salle]');

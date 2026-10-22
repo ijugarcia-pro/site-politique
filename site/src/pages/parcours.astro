@@ -6,7 +6,8 @@
 // JavaScript, la page dit les règles, tout verrouillé.
 import Base from '../layouts/Base.astro';
 import Bouton from '../components/vdef/Bouton.astro';
-import { cartesThemes, scrutins, semaine } from '../lib/donnees.ts';
+import { cartesThemes, composition, scrutins, semaine } from '../lib/donnees.ts';
+import { siegeDansFond } from '../salle3d/projection.ts';
 import { PALIERS, SEUIL_DOSSIER } from '../lib/paliers.ts';
 import { slugTheme, THEMES } from '../lib/themes.ts';
 
@@ -22,6 +23,12 @@ const donnees = JSON.stringify({
   vacances: [...sem.historique.filter((h) => h.vacances).map((h) => h.lundi), ...(sem.vacances ? [sem.lundi] : [])],
   vacancesEnCours: sem.vacances,
   horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
+  // Pour la story « Ton bilan » : le député de chaque siège et sa place dans l'image fixe.
+  sieges: composition().sieges.map((s) => s.depute ?? null),
+  reperes: composition().sieges.map((_, i) => {
+    const p = siegeDansFond(i);
+    return p ? [Math.round(p.x * 1e4) / 1e4, Math.round(p.y * 1e4) / 1e4] : null;
+  }),
 }).replace(/</g, '\\u003c');
 const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
 ---
@@ -51,6 +58,7 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
           <span class="etat" data-palier-etat>Verrouillé</span>
           <span class="barre" data-palier-barre hidden><span></span></span>
           <Bouton href="/lots/" large data-palier-action hidden>Trancher 3 votes passés</Bouton>
+          {p.id === 'bilan' && <Bouton large data-ouvrir-bilan hidden>Voir et partager ton bilan</Bouton>}
         </div>
       </li>
     ))}
@@ -88,6 +96,16 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
       <p class="t-texte">Pas de points, pas de classement entre utilisateurs, pas de badge lié à une opinion. Tes réponses ne quittent pas ton navigateur.</p>
     </div>
   </div>
+  <dialog class="partage" data-partage aria-labelledby="titre-bilan">
+    <div class="partage-tete">
+      <h2 id="titre-bilan" class="t-section">Ton bilan</h2>
+      <button type="button" class="fermer" data-fermer aria-label="Fermer">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    <p class="t-texte">Ton année à l’Assemblée en cinq images. Elles sont faites dans ton navigateur et ne partent que si tu les partages.</p>
+    <div class="stories" data-stories></div>
+  </dialog>
   <script type="application/json" data-donnees-parcours set:html={donnees}></script>
 </Base>
 
@@ -95,13 +113,15 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
   import { lireJSON, reponses } from '../lib/navigateur.ts';
   import { dossiers, PALIERS, prochainPalier, SEUIL_DOSSIER, votesTranches } from '../lib/paliers.ts';
   import { repriseApres, seancesFaites, serie, texteGel } from '../lib/seances.ts';
-  import { $, pluriel } from '../lib/trancher.ts';
+  import { $, mesReps, pluriel } from '../lib/trancher.ts';
+  import { profil, type Matrice } from '../lib/profil.ts';
+  import type { DonneesBilan } from '../lib/stories.ts';
 
   document.addEventListener('astro:page-load', () => {
     const brut = document.querySelector('[data-donnees-parcours]')?.textContent;
     if (!brut) return;
     const d = JSON.parse(brut) as { cartes: { uid: string; theme: string }[]; lundi: string; vacances: string[];
-      vacancesEnCours: boolean; horsMatrice: string[] };
+      vacancesEnCours: boolean; horsMatrice: string[]; sieges: (string | null)[]; reperes: ([number, number] | null)[] };
     const toutes = reponses();
     const hors = new Set(d.horsMatrice);
     const n = votesTranches(Object.fromEntries(Object.entries(toutes).filter(([uid]) => !hors.has(uid))));
@@ -143,6 +163,62 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
 
     // La série.
     const k = serie(seancesFaites(), new Set(d.vacances), d.lundi);
+
+    // Ton bilan (palier 3) : cinq images, faites ici au premier clic.
+    const ouvrir = document.querySelector<HTMLButtonElement>('[data-ouvrir-bilan]');
+    if (ouvrir && n >= PALIERS[PALIERS.length - 1].seuil) {
+      ouvrir.hidden = false;
+      const dialogue = $<HTMLDialogElement>('[data-partage]');
+      $('[data-fermer]').addEventListener('click', () => dialogue.close());
+      let fait = false;
+      ouvrir.addEventListener('click', async () => {
+        dialogue.showModal();
+        if (fait) return;
+        fait = true;
+        const [m, votes] = await Promise.all([
+          fetch('/donnees/matrice.json').then((r) => r.json()) as Promise<Matrice>,
+          fetch('/donnees/votes.json').then((r) => r.json()) as Promise<Record<string, [number, string, string, number, string]>>]);
+        const reps = Object.fromEntries(Object.entries(mesReps()).filter(([uid]) => !hors.has(uid)));
+        const p = profil(m, reps);
+        const juges = Object.entries(reps).filter(([uid]) => votes[uid]);
+        const ds = dossiers(toutes, d.cartes).filter((x) => x.tranches > 0).sort((a, b) => b.tranches - a.tranches);
+        const kj = p.jumeau ? d.sieges.indexOf(p.jumeau.ligne.u) : -1;
+        const rp = kj >= 0 ? d.reperes[kj] : null;
+        const bilan: DonneesBilan = {
+          votes: n,
+          contreCourant: { n: juges.filter(([uid, r]) => (r === 'pour') !== (votes[uid][3] === 1)).length, sur: juges.length },
+          jumeau: p.jumeau ? { nom: p.jumeau.ligne.n, identiques: p.jumeau.identiques, sur: p.reponses } : null,
+          theme: ds[0] ? { nom: ds[0].theme, n: ds[0].tranches } : null,
+          serie: k, repere: rp ? { x: rp[0], y: rp[1] } : null,
+        };
+        const { dessinerBilan, enImage } = await import('../lib/stories.ts');
+        const zone = $('[data-stories]');
+        for (const [i, c] of (await dessinerBilan(bilan)).entries()) {
+          const blob = await enImage(c);
+          const fig = document.createElement('figure');
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(blob);
+          img.alt = `Ton bilan, image ${i + 1} sur 5`;
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = 'Partager';
+          b.addEventListener('click', async () => {
+            const fichier = new File([blob], `578e-siege-bilan-${i + 1}.png`, { type: 'image/png' });
+            if (navigator.canShare?.({ files: [fichier] })) {
+              try { await navigator.share({ files: [fichier], title: 'Le 578e siège' }); return; } catch { /* annulé */ }
+            }
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = fichier.name;
+            a.click();
+          });
+          const cap = document.createElement('figcaption');
+          cap.append(b);
+          fig.append(img, cap);
+          zone.append(fig);
+        }
+      });
+    }
     if (k > 0) {
       $('[data-serie-chiffre]').textContent = `${k} semaine${k > 1 ? 's' : ''} d’affilée`;
       $('[data-serie-texte]').textContent = d.vacancesEnCours ? texteGel(k, repriseApres(d.lundi))
@@ -206,7 +282,25 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
   .serie-texte { font: 500 15px/1.5 var(--police-texte); color: var(--sur-encre-2); }
   .jamais { background: var(--surface); }
   .jamais .t-texte { font-size: 15px; }
+  .partage {
+    width: min(1100px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; padding: 28px;
+    border-radius: var(--rayon-feuille); background: var(--feuille); color: var(--encre); box-shadow: var(--ombre-feuille);
+  }
+  .partage::backdrop { background: rgba(18, 18, 18, 0.6); }
+  .partage-tete { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .fermer {
+    width: var(--cible); height: var(--cible); border: 0; border-radius: var(--pilule); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .stories { margin-top: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .stories :global(figure) { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .stories :global(img) { width: 100%; aspect-ratio: 9 / 16; border-radius: 14px; background: var(--surface); object-fit: cover; }
+  .stories :global(button) {
+    width: 100%; min-height: var(--cible); border-radius: var(--pilule); border: 1px solid var(--bord);
+    background: var(--feuille); color: var(--encre); font: 700 15px/1 var(--police-texte); cursor: pointer;
+  }
   @media (max-width: 900px) {
+    .stories { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .paliers, .bas-parcours { grid-template-columns: 1fr; }
     .palier { min-height: 0; }
     .grille-dossiers { grid-template-columns: repeat(2, 1fr); }

@@ -9,11 +9,17 @@ import Base from '../layouts/Base.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import Trancher from '../components/vdef/Trancher.astro';
 import { composition, lotsDuParcours, questionsQuiz, scrutins } from '../lib/donnees.ts';
+import { siegeDansFond } from '../salle3d/projection.ts';
 
 const cartes = questionsQuiz();
 const donnees = JSON.stringify({
   // Le député de chaque siège de la salle, dans l'ordre de la composition (salle 3D, stories).
   sieges: composition().sieges.map((s) => s.depute ?? null),
+  // Chaque siège dans l'image fixe de la salle, pour poser « Moi » sur la story (ou null).
+  reperes: composition().sieges.map((_, i) => {
+    const p = siegeDansFond(i);
+    return p ? [Math.round(p.x * 1e4) / 1e4, Math.round(p.y * 1e4) / 1e4] : null;
+  }),
   lots: lotsDuParcours(),
   horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
 }).replace(/</g, '\\u003c');
@@ -54,7 +60,7 @@ const donnees = JSON.stringify({
     </div>
     <p class="t-texte">Trois images prêtes pour une story. Elles ne contiennent que ce que tu vois ici, et ne partent que si tu les partages.</p>
     <div class="stories">
-      <figure><img alt="Story « J'ai pris le 578e siège »" data-story="place" /><figcaption><button type="button" data-envoyer="place">Partager</button></figcaption></figure>
+      <figure><img alt="Story « Je siège à la place de… »" data-story="place" /><figcaption><button type="button" data-envoyer="place">Partager</button></figcaption></figure>
       <figure><img alt="Story « Mon jumeau à l'Assemblée »" data-story="jumeau" /><figcaption><button type="button" data-envoyer="jumeau">Partager</button></figcaption></figure>
       <figure><img alt="Story « Mon vote le plus à contre-courant »" data-story="contre" /><figcaption><button type="button" data-envoyer="contre">Partager</button></figcaption></figure>
     </div>
@@ -67,7 +73,7 @@ const donnees = JSON.stringify({
   import { lireJSON, repondre } from '../lib/navigateur.ts';
   import { etatLots, prochainLot } from '../lib/lots.ts';
   import { palierAtteint, prochainPalier } from '../lib/paliers.ts';
-  import { initiales, partCommeToi, profil, teinte, VOTES_FIABLES, type Matrice, type Reponse } from '../lib/profil.ts';
+  import { partCommeToi, profil, VOTES_FIABLES, type Matrice, type Reponse } from '../lib/profil.ts';
   import { $, mesReps, pluriel, tranches, trancher } from '../lib/trancher.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
   // Les stories ne se chargent qu'au clic sur « Partager » : le quiz reste léger.
@@ -78,7 +84,8 @@ const donnees = JSON.stringify({
   document.addEventListener('astro:page-load', () => {
     const brut = document.querySelector('[data-donnees-quiz]')?.textContent;
     if (!brut) return;
-    const { sieges, lots: nLots, horsMatrice } = JSON.parse(brut) as { sieges: (string | null)[]; lots: number; horsMatrice: string[] };
+    const { sieges, reperes, lots: nLots, horsMatrice } = JSON.parse(brut) as { sieges: (string | null)[];
+      reperes: ([number, number] | null)[]; lots: number; horsMatrice: string[] };
     const hors = new Set(horsMatrice);
     const t = trancher({ mot: 'Question', libelleSuivant: (i) => (i + 1 < t.questions.length ? 'Question suivante' : 'Voir ma place') });
     const { questions } = t;
@@ -159,7 +166,6 @@ const donnees = JSON.stringify({
       }
       titre.focus();
       // Les stories, prêtes à partager.
-      const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.part]));
       let contre: DonneesStories['contre'] = null;
       for (const q of questions) {
         const r = reps[q.uid];
@@ -168,13 +174,11 @@ const donnees = JSON.stringify({
         const part = partCommeToi(m, kv, r);
         if (part !== null && (!contre || part < contre.part)) contre = { question: q.question, reponse: r, part };
       }
-      const g0 = top[0] ?? null;
+      const rp = assis ? reperes[k] : null;
       stories = {
-        groupe: g0 ? { sigle: g0.ligne.sigle, libelle: g0.ligne.libelle } : null,
-        jumeau: j ? { nom: j.ligne.n, initiales: initiales(j.ligne.n), identiques: j.identiques,
-          sur: p.reponses, groupe: groupe(j.ligne.g)?.sigle ?? 'non inscrit' } : null,
-        contre, sieges: sieges.map((u) => (u ? teinte(parDepute.get(u) ?? null) : '#FFFFFF')),
-        etoile: k, votes: p.reponses,
+        jumeau: j ? { nom: j.ligne.n, identiques: j.identiques, sur: p.reponses,
+          groupe: groupe(j.ligne.g)?.libelle ?? 'Non inscrit' } : null,
+        contre, repere: rp ? { x: rp[0], y: rp[1] } : null, votes: p.reponses,
       };
     };
 

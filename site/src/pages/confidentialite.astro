@@ -4,7 +4,7 @@
 // 12 octobre 2026. Chaque affirmation a été vérifiée dans le code (clés du stockage local,
 // aucun cookie, aucun script de mesure, seul appel à un tiers : le géocodage de l'IGN) ; pour
 // ce que font Cloudflare et l'IGN, la page renvoie à leurs pages officielles.
-import Base from '../layouts/BaseSeance.astro';
+import PageService from '../components/vdef/PageService.astro';
 
 const DEPOT = 'https://github.com/ijugarcia-pro/site-politique';
 const GARDE = [
@@ -24,27 +24,27 @@ const GARDE = [
     cle: '578e.personnage.v1', pourquoi: 'Le dessiner dans la salle 3D' },
 ];
 ---
-<Base titre="Confidentialité"
+<PageService titre="Confidentialité" actif="donnees"
   description="Tes réponses restent dans ton navigateur : ce que Le 578e siège garde, ce qui part vers un tiers, et comment tout effacer.">
-  <article class="texte">
-    <h1>Confidentialité</h1>
-    <p class="chapo"> Le 578<sup>e</sup> siège te permet de répondre à de vrais votes de l'Assemblée nationale et de comparer tes réponses à celles des députés. <strong>Tes réponses ne quittent pas ton navigateur</strong> : le site ne les envoie à aucun serveur, ni au sien ni à un tiers. Tous les calculs (groupe le plus proche, jumeau, précision) se font sur ton appareil. </p>
-
+  <p class="t-texte chapeau" slot="chapeau">Le 578<sup>e</sup> siège te permet de répondre à de vrais votes de l'Assemblée nationale et de comparer tes réponses à celles des députés. <strong>Tes réponses ne quittent pas ton navigateur</strong> : le site ne les envoie à aucun serveur, ni au sien ni à un tiers. Tous les calculs (groupe le plus proche, jumeau, précision) se font sur ton appareil.</p>
+  <section>
     <h2 id="responsable">Qui est responsable</h2>
     <p> Julien Garcia, éditeur du site (voir les <a href="/mentions-legales/">mentions légales</a>). Le site est un projet personnel, sans publicité et sans compte utilisateur. </p>
-
+  </section>
+  <section>
     <h2 id="garde">Ce que le site garde, et où</h2>
     <p> Tout ce qui suit est enregistré dans ton navigateur uniquement (son « stockage local »), jusqu'à ce que tu l'effaces. </p>
-    <table>
+    <div class="tableau-defile"><table>
       <thead><tr><th scope="col">Donnée</th><th scope="col">Pourquoi</th><th scope="col">Nom dans le navigateur</th></tr></thead>
       <tbody>
         {GARDE.map((g) => <tr><td>{g.donnee}</td><td>{g.pourquoi}</td><td><code>{g.cle}</code></td></tr>)}
       </tbody>
-    </table>
+    </table></div>
     <p> Ces informations peuvent révéler des <strong>opinions politiques</strong>, qui sont des données sensibles au sens de l'article 9 du RGPD. C'est pourquoi le site est conçu pour ne jamais les transmettre : il n'a aucune base de données qui pourrait les recevoir. </p>
     <p> Les images à partager (« stories ») sont dessinées dans ton navigateur ; elles ne partent que si tu les partages toi-même. </p>
-    <p> <strong>Tout effacer</strong> : la page « <a href="/calcul/#navigateur">Comment c'est calculé</a> » propose un bouton « Effacer toutes mes réponses de ce navigateur ». Effacer les données du site dans les réglages de ton navigateur a le même effet. Une réponse peut aussi être effacée sur la page du vote concerné. </p>
-
+    <p> <strong>Tout effacer</strong> : la section « <a href="/calcul/#tes-donnees">Tes données</a> » de la page « Comment c'est calculé » propose « Télécharger mes réponses » (un fichier fait dans ton navigateur, qui ne passe par aucun serveur) et « Tout effacer ». Effacer les données du site dans les réglages de ton navigateur a le même effet. Une réponse peut aussi être effacée sur la page du vote concerné. </p>
+  </section>
+  <section>
     <h2 id="envoye">Ce qui est envoyé, et à qui</h2>
     <ul>
       <li> <strong>L'hébergeur du site, Cloudflare</strong>, reçoit, comme tout hébergeur, les informations techniques de chaque visite : adresse IP, page demandée, type de navigateur. Il demande aussi à ton navigateur de lui signaler les erreurs de connexion au site. Cloudflare est une société américaine : ces informations peuvent être traitées hors de l'Union européenne. Ce que Cloudflare en fait, combien de temps il les garde et dans quel cadre il les transfère est décrit dans <a href="https://www.cloudflare.com/fr-fr/privacypolicy/">sa politique de confidentialité</a>. </li>
@@ -54,31 +54,17 @@ const GARDE = [
       <li> <strong>Polices de caractères</strong> : servies par le site lui-même ; aucun appel à Google. </li>
       <li> <strong>Cookies</strong> : le site ne dépose aucun cookie. </li>
     </ul>
-
+  </section>
+  <section>
     <h2 id="droits">Tes droits</h2>
     <p> Comme le site ne reçoit ni ne conserve tes réponses, il n'a rien à te communiquer, à rectifier ou à effacer de son côté : tout est dans ton navigateur, et tu peux tout effacer toi-même. Pour les informations techniques reçues par l'hébergeur, voir la politique de confidentialité de Cloudflare, citée plus haut. </p>
     <p> Pour toute question : le site n'a pas encore d'adresse électronique de contact ; tu peux ouvrir un ticket sur le <a href={`${DEPOT}/issues`}>dépôt GitHub du projet</a> (ces messages sont publics : n'y écris rien de personnel). Tu peux aussi adresser une réclamation à la <a href="https://www.cnil.fr/">CNIL</a>. </p>
-
+  </section>
+  <section>
     <h2 id="evolution">Si le site évolue</h2>
     <p> Des fonctions envisagées (comptes facultatifs, alertes, chiffres sur l'ensemble des utilisateurs du site) demanderaient d'envoyer des données à un serveur. Elles ne sont pas en service. Si elles arrivent, ton accord exprès te sera demandé avant tout envoi, et cette page sera mise à jour auparavant. </p>
-
-    <p class="maj">Dernière mise à jour : 12 octobre 2026.</p>
-  </article>
-</Base>
-
-<style>
-  .texte { max-width: 760px; }
-  /* Un titre de page court, en capitales de régie (DESIGN-FINAL.md, § 6). */
-  .texte h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
-  .chapo { font-size: 19px; color: var(--ivoire); }
-  /* Des intertitres longs : une phrase en Literata (DESIGN-FINAL.md, § 3), pas des capitales. */
-  .texte h2 { margin-top: 34px; font: 500 23px/1.3 var(--police-question); text-transform: none; }
-  .texte p, .texte li, .texte td { font-size: 17px; line-height: 1.6; color: var(--ivoire); }
-  .texte li { margin-bottom: 8px; }
-  table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; }
-  th, td { padding: 10px 12px; border-bottom: 1px solid var(--filet); text-align: left; vertical-align: top; }
-  th { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  td code { font-size: 14px; overflow-wrap: anywhere; }
-  @media (max-width: 640px) { table { display: block; overflow-x: auto; } }
-  .maj { margin-top: 34px; font-size: 15px; color: var(--ivoire-2); }
-</style>
+  </section>
+  <section>
+    <p class="maj">Dernière mise à jour : 22 octobre 2026.</p>
+  </section>
+</PageService>

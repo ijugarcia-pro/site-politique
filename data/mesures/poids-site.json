@@ -1,10 +1,10 @@
 {
  "/": {
-  "js": 22186,
-  "js_gzip": 8915,
-  "css": 38374,
-  "css_gzip": 6588,
-  "modules": 13
+  "js": 37050,
+  "js_gzip": 13570,
+  "css": 23682,
+  "css_gzip": 5056,
+  "modules": 11
  },
  "/404/": {
   "js": 4047,
@@ -56,18 +56,18 @@
   "modules": 6
  },
  "/hemicycle/": {
-  "js": 27564,
-  "js_gzip": 10753,
+  "js": 27487,
+  "js_gzip": 10725,
   "css": 47717,
   "css_gzip": 8112,
-  "modules": 13
+  "modules": 12
  },
  "/lots/": {
-  "js": 23830,
-  "js_gzip": 8962,
+  "js": 23719,
+  "js_gzip": 8923,
   "css": 51840,
   "css_gzip": 8996,
-  "modules": 11
+  "modules": 10
  },
  "/mentions-legales/": {
   "js": 4047,
@@ -77,53 +77,53 @@
   "modules": 4
  },
  "/quiz/": {
-  "js": 26807,
-  "js_gzip": 10168,
+  "js": 26696,
+  "js_gzip": 10123,
   "css": 53640,
   "css_gzip": 9211,
-  "modules": 12
+  "modules": 11
  },
  "/seance/": {
-  "js": 24753,
-  "js_gzip": 9174,
-  "css": 51840,
-  "css_gzip": 8996,
-  "modules": 12
+  "js": 24514,
+  "js_gzip": 9110,
+  "css": 56558,
+  "css_gzip": 9704,
+  "modules": 10
  },
  "/vdef-composants/": {
-  "js": 30388,
-  "js_gzip": 11028,
+  "js": 30686,
+  "js_gzip": 11153,
   "css": 16931,
   "css_gzip": 4030,
-  "modules": 7
+  "modules": 8
  },
  "/vdef-composants/place/": {
-  "js": 29718,
-  "js_gzip": 10784,
+  "js": 30016,
+  "js_gzip": 10913,
   "css": 16931,
   "css_gzip": 4030,
-  "modules": 8
+  "modules": 9
  },
  "/vdef-composants/salle/": {
-  "js": 29774,
-  "js_gzip": 10816,
+  "js": 30072,
+  "js_gzip": 10942,
+  "css": 16931,
+  "css_gzip": 4030,
+  "modules": 9
+ },
+ "/vdef-composants/tribune/": {
+  "js": 29675,
+  "js_gzip": 10821,
   "css": 16931,
   "css_gzip": 4030,
   "modules": 8
  },
- "/vdef-composants/tribune/": {
-  "js": 29377,
-  "js_gzip": 10694,
-  "css": 16931,
-  "css_gzip": 4030,
-  "modules": 7
- },
  "/verdict/": {
-  "js": 27016,
-  "js_gzip": 10523,
+  "js": 26905,
+  "js_gzip": 10490,
   "css": 46809,
   "css_gzip": 8144,
-  "modules": 12
+  "modules": 11
  },
  "/votes/[numero]/": {
   "js": 9421,

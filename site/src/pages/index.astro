@@ -1,555 +1,454 @@
 ---
-// Accueil « Cette semaine » (frame V5 « ⑤ Accueil »). En attendant la séance de la semaine
-// (t23-t24), le ticket propose ce qui existe : le quiz pour prendre sa place, puis le prochain
-// lot de 3 votes passés. Puis les derniers verdicts, avec ce que le visiteur avait répondu ; à
-// droite, son hémicycle et son député face à lui. Les fonctions reportées (loi suivie, duel,
-// série) n'apparaissent pas : la mise en page se resserre (règle 6 du cadrage). Tout ce qui
-// dépend du visiteur est calculé dans son navigateur.
-import Base from '../layouts/BaseSeance.astro';
-import MiniHemicycle from '../components/MiniHemicycle.astro';
-import Salle3D from '../components/Salle3D.astro';
-import SerieGelee from '../components/SerieGelee.astro';
-import { avancementSeance, composition, dateLisible, etat, lienVote, lotsDeVotes, lotsDuParcours, majuscule,
-  questionSeance, quandVote, scrutins, semaine } from '../lib/donnees.ts';
+// La tribune (VDEF, lot V4 ; maquettes 01, 05 et T1) : l'accueil et le tableau de bord. La salle
+// vue du sol, face au pupitre ; une feuille en bas. Deux états, choisis dans le navigateur selon
+// les votes tranchés (lib/paliers.ts) : la première visite (0 vote : la grande carte noire vers
+// le quiz, le dernier verdict, ton député, les paliers en cadenas, la galerie) et le tableau de
+// bord (cette semaine, le dernier verdict, ton député, tes réponses, la galerie, ton parcours).
+// Sans JavaScript, la première visite s'affiche. Tout ce qui dépend du visiteur est calculé dans
+// son navigateur.
+import Base from '../layouts/Base.astro';
+import BarreVote from '../components/vdef/BarreVote.astro';
+import Bouton from '../components/vdef/Bouton.astro';
+import Carte from '../components/vdef/Carte.astro';
+import Feuille from '../components/vdef/Feuille.astro';
+import Palier from '../components/vdef/Palier.astro';
+import Repere from '../components/vdef/Repere.astro';
+import { cartesThemes, composition, lienVote, lotsDeVotes, lotsDuParcours, majuscule, questionSeance,
+  questionsQuiz, scrutins, semaine } from '../lib/donnees.ts';
+import { quandCourt } from '../lib/seances.ts';
+import { THEMES } from '../lib/themes.ts';
 import { adopte, marge, verdict } from '../lib/votes.ts';
-import { puceTheme } from '../lib/themes.ts';
 
-const solennels = scrutins().filter((v) => v.solennel && !v.motion_censure);
+const tous = scrutins();
+const solennels = tous.filter((v) => v.solennel && !v.motion_censure);
 const dernier = solennels[0];
 if (!dernier) throw new Error('Aucun vote solennel exporté');
-const lots = lotsDeVotes();
-const cartes = new Map(lots.flat().map((c) => [c.uid, c]));
-// Les derniers verdicts : le titre court de la carte quand elle existe, sinon celui du dossier.
-const derniers = solennels.slice(0, 3).map((v) => {
-  const c = cartes.get(v.uid);
-  return {
-    uid: v.uid, lien: lienVote(v), date: dateLisible(v.date),
-    titre: c?.titre ?? v.dossier ?? majuscule(v.titre).replace(/\.$/, ''),
-    theme: c?.theme ?? null, verdict: verdict(v), gagnant: adopte(v) ? 'pour' : 'contre',
-    pour: v.decompte.pour, contre: v.decompte.contre, abstention: v.decompte.abstention, marge: marge(v),
-  };
-});
-const compo = composition();
-const rang = new Map(compo.groupes.map((g, i) => [g.uid, i]));
-const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
-  : ['#B9C0CE', '#D6DBE4'][(rang.get(s.groupe ?? '') ?? 0) % 2]);
-const occupes = compo.sieges.filter((s) => !s.vacant).length;
-const maj = etat();
-const [jour, mois] = dateLisible(dernier.date).split(' ');
-// La séance de la semaine (t23-t24) : le ticket la propose dès que le quiz est fait.
+// La question d'un vote : celle de sa carte quand elle existe (quiz, lots), sinon son titre court.
+const cartes = new Map([...questionsQuiz(), ...lotsDeVotes().flat()].map((c) => [c.uid, c]));
+const carteDernier = cartes.get(dernier.uid);
+const titreDernier = carteDernier?.question ?? dernier.dossier ?? majuscule(dernier.titre).replace(/\.$/, '');
+const titreCourtDernier = carteDernier?.titre ?? titreDernier;
+const occupes = composition().sieges.filter((s) => !s.vacant).length;
+
+// La séance de la semaine (t23-t24) : ses votes, sans ceux retirés de l'agenda.
 const sem = semaine();
 const seance = sem.vacances ? [] : sem.votes.filter((v) => v.statut !== 'retiré');
-const attendu = seance.find((v) => v.type === 'annonce' && v.statut === 'à venir') ?? null;
-// Séance tranchée en partie : le ticket dit « 1/3 » et mène aux verdicts déjà tombés.
-const etape = avancementSeance(sem);
-const JOURS_COURTS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
-const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.',
-  'oct.', 'nov.', 'déc.'];
-const rdv = attendu ? {
-  jour: `${JOURS_COURTS[new Date(`${attendu.date}T12:00:00Z`).getUTCDay()]} ${Number(attendu.date.slice(8, 10))} `
-    + MOIS_COURTS[Number(attendu.date.slice(5, 7)) - 1],
-  heure: attendu.debut ? `${Number(attendu.debut.slice(11, 13))} h` : '',
-} : null;
+const avenir = seance.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
+const prochain = avenir[0] ?? null;
+const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+const lendemain = (date: string) => JOURS[(new Date(`${date}T12:00:00Z`).getUTCDay() + 1) % 7];
+const dernierVote = avenir.length ? avenir.map((v) => v.date).sort().at(-1)! : null;
+const rendezVous = dernierVote ? `Verdict ${lendemain(dernierVote)} matin` : null;
+const lieu = prochain ? `La tribune · ${quandCourt(prochain.date, prochain.debut)}`
+  : 'La tribune · c’est ici que tout se vote';
+
 const donnees = JSON.stringify({
-  seance: { lundi: sem.lundi, attente: !!attendu, vacances: sem.vacances,
-    historique: sem.historique.map((h) => [h.lundi, h.vacances]),
-    votes: seance.map((v) => ({ cle: v.cle, theme: v.carte?.theme ?? 'Vote solennel',
-      puce: v.carte ? puceTheme(v.carte.theme) : '#B3132F:#FFFFFF', titre: questionSeance(v).titre })) },
-  lots: lots.map((l) => l.map((c) => ({ uid: c.uid, theme: c.theme, titre: c.titre,
-    puce: puceTheme(c.theme) }))),
+  seance: { lundi: sem.lundi, vacances: sem.vacances, avant: avenir.length > 0,
+    votes: seance.map((v) => ({ cle: v.cle, question: questionSeance(v).titre })) },
+  lots: lotsDeVotes().map((l) => l.map((c) => c.uid)),
   parcours: lotsDuParcours(),
-  derniers: derniers.map(({ uid, gagnant, pour, contre }) => ({ uid, gagnant, pour, contre })),
-  sieges: compo.sieges.map((s) => [s.depute ?? null, s.groupe ?? null]),
+  quiz: questionsQuiz().length,
+  // L'issue de chaque vote : « avec la majorité » quand ta réponse est celle qui l'a emporté.
+  issues: Object.fromEntries(tous.filter((v) => !v.motion_censure).map((v) => [v.uid, adopte(v) ? 'pour' : 'contre'])),
+  horsMatrice: tous.filter((v) => v.motion_censure).map((v) => v.uid),
+  dernier: { uid: dernier.uid, gagnant: adopte(dernier) ? 'pour' : 'contre' },
+  cartes: cartesThemes(),
 }).replace(/</g, '\\u003c');
+const decompte = dernier.decompte;
 ---
-<Base titre="Le 578e siège" onglet="semaine" theme="seance" scene
+<Base titre="Le 578e siège" vue="tribune" fond="tribune"
   description="Les votes de l'Assemblée nationale rendus accessibles : tranche de vrais votes, compare-toi aux 577 députés, retrouve ce qu'a voté le tien.">
-  <Salle3D slot="scene" pleinCadre fond="salle" hauteur="900px"
-    titre="La salle de l'Assemblée nationale, vue depuis le perchoir : 577 sièges sur 13 rangs, en 6 blocs séparés par 5 allées."
-    cameras={['salle', 'tribune']}>
-    <h1 class="visuellement-cache">Cette semaine à l'Assemblée</h1>
-    <section class="ticket" aria-labelledby="titre-seance">
-      <div class="ticket-haut">
-        <div class="bandeau">
-          <div class="bandeau-ligne">
-            <span class="bandeau-etiquette">Cette semaine</span>
-            <h2 id="titre-seance" class="bandeau-titre" data-ticket-titre>Prends ta place à l'Assemblée</h2>
-          </div>
-          <div class="bandeau-legende ticket-legende">
-            <p class="sur-titre" data-ticket-sur-titre>La séance de la semaine · bientôt</p>
-            <p class="ticket-texte" data-ticket-texte>
-              Chaque lundi, tu trancheras les votes solennels annoncés à l'agenda, avant les
-              députés. En attendant, réponds à 10 vrais votes : tu sauras quels députés votent
-              comme toi.
-            </p>
-            <span class="ticket-serie" data-ticket-serie hidden>
-              <svg width="16" height="18" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3 0-6 1-9z" fill="#F2C98A"></path></svg>
-              <span data-ticket-serie-texte></span>
-            </span>
-          </div>
-        </div>
-        <a class="ticket-bouton" href="/quiz/" data-ticket-bouton>Prendre ma place · 2 min</a>
+  <Repere libelle={lieu} forme="lieu" x={50} y={33} class="lieu-tribune" />
+
+  <Feuille position="bas" etiquette="La tribune" class="tribune" data-tribune data-etat="premiere">
+    <!-- 1. Première visite (maquette 01) : la grande carte noire, ou cette semaine (maquette 05). -->
+    <Carte variante="noire" class="entree" data-bloc-premiere>
+      <span class="t-etiquette sur-noir">Première visite · 2 minutes</span>
+      <h1 class="titre-entree">Prends le 578<sup>e</sup> siège de l’Assemblée</h1>
+      <p class="texte-entree">Réponds à {questionsQuiz().length} vrais votes déjà passés. Tu découvres comment les 577 députés ont voté, puis où tu siégerais et qui vote comme toi.</p>
+      <div class="pied-entree">
+        <Bouton href="/quiz/" variante="contour" data-bouton-quiz>Commencer</Bouton>
+        <span class="t-legende sur-noir">Sans compte. Tes réponses restent dans ton navigateur.</span>
       </div>
-      <ul class="items" data-ticket-items hidden></ul>
-    </section>
-  </Salle3D>
+    </Carte>
 
-  {sem.vacances && <SerieGelee />}
-
-  <section class="derniers" aria-labelledby="titre-verdicts">
-    <div class="titre-section">
-      <h2 id="titre-verdicts">Les derniers verdicts</h2>
-      <span class="maj">Données du {dateLisible(maj.genere_le)}</span>
-      <a href="/explorer/">Tout voir</a>
-    </div>
-    <ul class="verdicts">
-      {derniers.map((v) => (
-        <li>
-          <a href={v.lien} data-verdict={v.uid}>
-            <span class="v-puce">{v.theme ? `${v.theme} · ` : ''}Vote solennel · {v.date}</span>
-            <span class="v-titre">{v.titre}</span>
-            <span class="v-pastille"><span class="v-mot">{v.verdict}</span> <span class="v-score">{v.marge ?? `${v.pour}–${v.contre}`}</span></span>
-            <span class="v-barre" aria-hidden="true">
-              {v.pour > 0 && <span class="b-pour" style={`flex: ${v.pour}`}></span>}
-              {v.contre > 0 && <span class="b-contre" style={`flex: ${v.contre}`}></span>}
-              {v.abstention > 0 && <span class="b-abstention" style={`flex: ${v.abstention}`}></span>}
+    <Carte variante="bordee" class="semaine" data-bloc-semaine hidden>
+      <span class="t-etiquette" data-semaine-etiquette>Cette semaine · vote avant eux</span>
+      <h1 class="t-feuille titre-semaine" data-semaine-titre>{avenir.length ? `${seance.length} votes à trancher avant les députés` : `${seance.length} votes à trancher`}</h1>
+      <span class="segments" aria-hidden="true" data-semaine-segments>
+        {seance.map(() => <span></span>)}
+      </span>
+      <ol class="liste" data-semaine-liste>
+        {seance.map((v, k) => (
+          <li data-cle={v.cle}>
+            <span class="rang">{k + 1}</span>
+            <span class="question">
+              <span class="t-interface">{questionSeance(v).titre}</span>
+              <span class="t-legende">{v.carte?.theme ?? 'Vote solennel'}</span>
             </span>
-            <span class="visuellement-cache">{v.pour} pour, {v.contre} contre, {v.abstention} abstentions.</span>
-            <span class="v-ligne">
-              <span class="v-marque" data-marque aria-hidden="true">
-                <svg width="11" height="11" viewBox="0 0 14 14"><path data-marque-trait d="M3.5 7h7" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-              </span>
-              <span data-ligne>Vote solennel du {v.date} · tu ne l'as pas encore tranché</span>
-            </span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <div class="toi" role="group" aria-label="Le verdict, ton hémicycle, ton député">
-    {rdv && attendu ? (
-      <div class="ticket-droite">
-        <span class="petit">Le verdict</span>
-        <span class="jour">{rdv.jour}</span>
-        <span class="heure">{rdv.heure}</span>
-        <span class="pastille-ticket" data-compte-a-rebours
-          data-quand={attendu.debut ? `${attendu.debut.slice(0, 10)}T${attendu.debut.slice(11, 19)}${attendu.debut.slice(19)}:00` : ''}>
-          {quandVote(attendu).replace(/^le /, '')}</span>
-        <span class="note-ticket">Scrutins solennels : tous les députés votent</span>
-        {etape.etat === 'partiel' && (
-          <a class="deja-juge" href="/verdict/">Verdict {etape.fraction} · {etape.juges > 1 ? `${etape.juges} votes déjà jugés` : '1 vote déjà jugé'} →</a>
-        )}
+            <span class="etat t-legende" data-etat-vote>À trancher</span>
+          </li>
+        ))}
+      </ol>
+      <p class="t-texte" data-semaine-texte hidden></p>
+      <div class="actions">
+        <Bouton href="/seance/" data-semaine-bouton>Commencer</Bouton>
+        <span class="t-etiquette" data-semaine-rdv>{rendezVous}</span>
       </div>
-    ) : (
-      <a class="ticket-droite" href={lienVote(dernier)}>
-        <span class="petit">Le dernier verdict</span>
-        <span class="jour">{jour} {mois}</span>
-        <span class="tampon">{verdict(dernier)}</span>
-        <span class="score">{dernier.decompte.pour} – {dernier.decompte.contre}</span>
-        {marge(dernier) && <span class="pastille-ticket">{marge(dernier)}</span>}
-      </a>
-    )}
-    <a class="carte-lien" href="/hemicycle/">
-      <span class="carte-tete"><span class="carte-titre">Ton hémicycle</span><span class="discret" data-nb-reponses>0 vote</span></span>
-      <span class="mini">
-        <MiniHemicycle couleurs={couleurs} titre={`L'Assemblée aujourd'hui : ${occupes} députés en exercice`} />
-        <svg class="etoile-toi" data-etoile viewBox="0 0 34 34" aria-hidden="true" hidden>
-          <circle cx="17" cy="17" r="11" fill="none" stroke="#F2C98A" stroke-width="4"></circle>
-        </svg>
-      </span>
-      <span class="carte-texte" data-texte-hemicycle>L'Assemblée du jour : {occupes} députés, {compo.groupes.length}{' '}
-        groupes. Fais le quiz : tes réponses y dessineront ta place.</span>
-      <span class="precision" data-precision hidden>
-        <span class="precision-titre">Précision</span>
-        <span class="segments" data-segments>{Array.from({ length: 10 }, () => <span></span>)}</span>
-        <span class="precision-pct" data-precision-pct></span>
-      </span>
-      <span class="jumeau" data-jumeau hidden>
-        <span class="jumeau-ini" data-jumeau-ini></span>
-        <span class="jumeau-texte">
-          <span class="jumeau-sur">Ton jumeau</span>
-          <span class="jumeau-nom" data-jumeau-nom></span>
+    </Carte>
+
+    <!-- 2. Le dernier verdict, puis ton député. -->
+    <div class="colonne">
+      <Carte etiquette="Le dernier verdict" href={lienVote(dernier)} class="verdict">
+        <span class="t-carte-petit question-verdict ordi">{titreDernier}</span>
+        <span class="t-legende titre-court tel">{titreCourtDernier}</span>
+        <span class="issue"><span class="t-chiffre">{verdict(dernier)}</span>{marge(dernier) && <span class="t-etiquette">{marge(dernier)}</span>}</span>
+        <BarreVote pour={decompte.pour} contre={decompte.contre} abstention={decompte.abstention}
+          absents={decompte.absent} class="ordi" />
+        <span class="t-interface ordi" data-verdict-toi hidden></span>
+      </Carte>
+      <Carte etiquette="Ton député" href="/deputes/" class="depute" data-carte-depute hidden>
+        <span class="t-carte-petit nom-depute" data-nom-depute></span>
+        <span class="t-legende accord-depute" data-accord-depute></span>
+      </Carte>
+      <form class="carte-cp" action="/deputes/" method="get" data-cp-depute>
+        <span class="t-etiquette">Ton député</span>
+        <label for="cp-tribune" class="t-carte-petit">Qui te représente ?</label>
+        <span class="cp">
+          <input id="cp-tribune" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
+            placeholder="Code postal" autocomplete="postal-code" required />
+          <button type="submit">Trouver</button>
         </span>
-        <span class="jumeau-pct" data-jumeau-pct></span>
-      </span>
-    </a>
-    <a class="carte-lien" href="/deputes/" data-mon-depute hidden>
-      <span class="carte-tete"><span class="carte-titre">Ton député</span><span class="discret" data-circo-depute></span></span>
-      <span class="depute-choisi">
-        <span class="avatar-depute" aria-hidden="true" data-ini-depute></span>
-        <span><span class="nom-depute" data-nom-depute></span><span class="discret" data-groupe-depute></span></span>
-      </span>
-      <span class="semaine" data-semaine-depute></span>
-      <span class="carte-texte" data-texte-depute>Ses derniers votes solennels face aux tiens.</span>
-    </a>
-    <form class="carte" action="/deputes/" method="get" data-carte-depute>
-      <span class="carte-titre">Ton député</span>
-      <p class="carte-texte">Retrouve qui te représente, et ce qu'il a voté.</p>
-      <div class="cp">
-        <label for="cp-accueil" class="visuellement-cache">Code postal</label>
-        <input id="cp-accueil" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
-          placeholder="Code postal" autocomplete="postal-code" required />
-        <button type="submit">Trouver</button>
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
 
-  <script type="application/json" data-donnees-accueil set:html={donnees}></script>
+    <!-- 3. Ce que tu débloques (première visite) ou tes réponses ; puis la galerie. -->
+    <div class="colonne">
+      <div class="debloques" data-bloc-debloques>
+        <span class="t-etiquette">Ce que tu débloques en tranchant</span>
+        <ul>
+          <li><Palier etat="verrouille" libelle="Ta place" detail="À 10 votes : ton jumeau parmi les 577" /></li>
+          <li><Palier etat="verrouille" libelle="La salle éclairée" detail="À 25 votes : chaque siège selon toi" /></li>
+          <li><Palier etat="verrouille" libelle="Ton bilan" detail="À 40 votes : ton année à partager" /></li>
+        </ul>
+      </div>
+      <Carte etiquette="Tes réponses" href="/tes-reponses/" class="reponses" data-bloc-reponses hidden>
+        <span class="t-chiffre" data-nb-votes></span>
+        <span class="t-legende" data-phrase-reponses></span>
+      </Carte>
+      <Carte etiquette="La galerie du public" href="/explorer/" class="galerie">
+        <span class="t-carte-petit" data-galerie-titre>Tous les votes, sans rien trancher</span>
+        <span class="faux-champ ordi" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+          Une loi, un thème, un député…
+        </span>
+        <span class="t-legende">{tous.length} votes · {THEMES.length} thèmes · {occupes} députés</span>
+      </Carte>
+    </div>
+
+    <!-- 4. Ton parcours (tableau de bord) : les paliers et le prochain dossier. -->
+    <a class="parcours" href="/parcours/" data-bloc-parcours hidden>
+      <span class="titre-parcours">Ton parcours</span>
+      <span class="paliers">
+        <Palier etat="verrouille" libelle="Ta place" detail="À 10 votes" data-palier="place" />
+        <Palier etat="verrouille" libelle="La salle éclairée" detail="À 25 votes" data-palier="salle-eclairee" />
+        <Palier etat="verrouille" libelle="Ton bilan" detail="À 40 votes" data-palier="bilan" />
+        <Palier etat="verrouille" libelle="Dossiers" detail="À 3 votes sur un thème" data-palier="dossier" />
+      </span>
+      <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+    </a>
+
+    <p class="pied">
+      <span>Site indépendant, sans commentaire politique : seulement des votes réels, issus des <a href="https://data.assemblee-nationale.fr/">données ouvertes de l’Assemblée nationale</a>.</span>
+      <a href="/calcul/">Comment c’est calculé</a>
+    </p>
+  </Feuille>
+
+  <script type="application/json" data-donnees-tribune set:html={donnees}></script>
 </Base>
 
 <script>
   import { deputeChoisi, lireJSON, reponse, reponses } from '../lib/navigateur.ts';
-  import { libelleCirco } from '../lib/geo.ts';
-  import { ANCRE_AFFINER, etatLots, prochainLot } from '../lib/lots.ts';
-  import { etatSeance, seancesFaites, serie } from '../lib/seances.ts';
-  import { montrerGel } from '../lib/gel.ts';
-  import { initiales, niveau, profil, teinte, type Matrice } from '../lib/profil.ts';
-  import { places, point, R_INTERIEUR } from '../lib/hemicycle.ts';
-  import { salle3D } from '../salle3d/pilote.ts';
-  import { VOTES_POUR_SIEGER } from '../salle3d/apparence.ts';
+  import { etatLots, prochainLot } from '../lib/lots.ts';
+  import { dossiers, palierAtteint, PALIERS, prochainPalier, votesTranches } from '../lib/paliers.ts';
+  import { colonnes, comparer, type Matrice } from '../lib/profil.ts';
+  import { etatSeance } from '../lib/seances.ts';
 
-  interface Carte { uid: string; theme: string; titre: string; puce: string }
-  const { seance, lots, parcours, derniers, sieges } = JSON.parse(
-    document.querySelector('[data-donnees-accueil]')!.textContent!) as {
-    seance: { lundi: string; attente: boolean; vacances: boolean; historique: [string, boolean][];
-      votes: { cle: string; theme: string; puce: string; titre: string }[] };
-    lots: Carte[][]; parcours: number; derniers: { uid: string; gagnant: 'pour' | 'contre'; pour: number; contre: number }[];
-    sieges: [string | null, string | null][];
-  };
-  const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
-  const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
-  const n = Object.keys(reponses()).length;
-  $('[data-nb-reponses]').textContent = pluriel(n, 'vote');
-
-  // Trêve parlementaire : la série est gelée, elle attend la reprise (F3).
-  if (seance.vacances) {
-    const vac = new Set(seance.historique.filter(([, v]) => v).map(([l]) => l));
-    montrerGel(serie(seancesFaites(), vac, seance.lundi), seance.lundi);
+  interface Donnees {
+    seance: { lundi: string; vacances: boolean; avant: boolean; votes: { cle: string; question: string }[] };
+    lots: string[][]; parcours: number; quiz: number;
+    issues: Record<string, 'pour' | 'contre'>; horsMatrice: string[];
+    dernier: { uid: string; gagnant: 'pour' | 'contre' };
+    cartes: { uid: string; theme: string }[];
   }
 
-  // Le programme (maquette V6C-01) : 01, 02, 03 ; le thème et « ✓ voté » ou « ≈ 40 s » en puce,
-  // la question en Literata ; le premier vote pas encore tranché est « en cours ».
-  const remplirItems = (lignes: { theme: string; puce: string; titre: string; fait: boolean }[]) => {
-    const items = $('[data-ticket-items]');
-    const enCours = lignes.findIndex((c) => !c.fait);
-    items.replaceChildren(...lignes.map((c, k) => {
-      const li = document.createElement('li');
-      li.classList.toggle('en-cours', k === enCours);
-      const numero = document.createElement('span');
-      numero.className = 'item-numero';
-      numero.textContent = String(k + 1).padStart(2, '0');
-      numero.setAttribute('aria-hidden', 'true');
-      const corps = document.createElement('span');
-      corps.className = 'item-corps';
-      const meta = document.createElement('span');
-      meta.className = 'item-meta';
-      meta.textContent = `${c.theme} · ${c.fait ? '✓ voté' : '≈ 40 s'}`;
-      const titre = document.createElement('span');
-      titre.className = 'item-titre';
-      titre.textContent = c.titre;
-      corps.append(meta, titre);
-      li.append(numero, corps);
-      return li;
-    }));
-    items.hidden = false;
-    $('[data-ticket-texte]').hidden = true;
-  };
+  document.addEventListener('astro:page-load', () => {
+    const racine = document.querySelector<HTMLElement>('[data-tribune]');
+    const brut = document.querySelector('[data-donnees-tribune]')?.textContent;
+    if (!racine || !brut) return;
+    const d = JSON.parse(brut) as Donnees;
+    const $ = <T extends Element = HTMLElement>(s: string) => racine.querySelector<T>(s)!;
+    const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
 
-  // --- Le ticket (frame ⑤) : le quiz, puis la séance de la semaine, puis le prochain lot,
-  // puis Explorer ---
-  const quizFait = lireJSON<{ fini?: boolean }>('578e.quiz.v1', {}).fini;
-  const maSeance = etatSeance(seance.lundi);
-  if (quizFait && seance.votes.length && !maSeance.fini) {
-    $('[data-ticket-sur-titre]').textContent = 'La séance de la semaine';
-    $('[data-ticket-titre]').textContent = seance.attente
-      ? '3 vrais votes à trancher avant les députés' : '3 vrais votes à trancher';
-    remplirItems(seance.votes.map((v) => ({ ...v, fait: v.cle in maSeance.reponses })));
-    const bouton = $<HTMLAnchorElement>('[data-ticket-bouton]');
-    bouton.href = '/seance/';
-    bouton.textContent = maSeance.i > 0 ? 'Reprendre · 2 min' : 'Commencer · 2 min';
-    const vacances = new Set(seance.historique.filter(([, v]) => v).map(([l]) => l));
-    const n = serie(seancesFaites(), vacances, seance.lundi);
-    if (n > 0) {
-      $('[data-ticket-serie-texte]').textContent = `Ta série passe à ${n + 1} semaines`;
-      $('[data-ticket-serie]').hidden = false;
+    const hors = new Set(d.horsMatrice);
+    const toutes = Object.fromEntries(Object.entries(reponses())
+      .filter(([uid]) => !hors.has(uid)).map(([uid, r]) => [uid, r.v]));
+    const n = votesTranches(toutes);
+
+    // --- Le dernier verdict : ce que tu avais répondu ---
+    const toi = reponse(d.dernier.uid);
+    if (toi) {
+      const el = $('[data-verdict-toi]');
+      el.textContent = `Tu avais voté ${toi} : ${toi === d.dernier.gagnant ? 'avec la majorité' : 'à contre-courant'}.`;
+      el.hidden = false;
     }
-  } else if (quizFait) {
-    const etat = etatLots();
-    const k = etat.lot ?? prochainLot(etat.faits, lots.length);
-    const bouton = $<HTMLAnchorElement>('[data-ticket-bouton]');
-    const enCours = etat.lot !== null && etat.i > 0;
-    if (k === null) {
-      $('[data-ticket-titre]').textContent = `Tu as tranché les ${lots.length} lots de votes`;
-      $('[data-ticket-texte]').textContent = 'Chaque lundi, tu trancheras les votes solennels '
-        + 'annoncés à l\'agenda, avant les députés. En attendant, chaque vote passé que tu '
-        + 'tranches affine ta place.';
-      bouton.href = '/explorer/#a-trancher';
-      bouton.textContent = 'Trancher d\'autres votes';
-    } else if (k >= parcours) {
-      // Le parcours est fait : les lots facultatifs se proposent, sans s'imposer.
-      $('[data-ticket-sur-titre]').textContent =
-        `Votes passés · lot ${k + 1} sur ${lots.length} · facultatif`;
-      $('[data-ticket-titre]').textContent = '3 votes de plus pour affiner ta place';
-      remplirItems(lots[k].map((c) => ({ ...c, fait: !!reponse(c.uid) })));
-      bouton.href = enCours ? '/lots/' : `/lots/${ANCRE_AFFINER}`;
-      bouton.textContent = enCours ? 'Reprendre · 2 min' : 'Affiner encore · 2 min';
-    } else {
-      $('[data-ticket-sur-titre]').textContent =
-        `Votes passés · lot ${k + 1} sur ${parcours} · en attendant la séance`;
-      $('[data-ticket-titre]').textContent = '3 vrais votes à trancher';
-      remplirItems(lots[k].map((c) => ({ ...c, fait: !!reponse(c.uid) })));
+
+    // --- Première visite ou tableau de bord ---
+    const quiz = lireJSON<{ i?: number; fini?: boolean }>('578e.quiz.v1', {});
+    if (n === 0) {
+      if ((quiz.i ?? 0) > 0) $<HTMLAnchorElement>('[data-bouton-quiz]').textContent = 'Reprendre';
+      return;
+    }
+    racine.dataset.etat = 'tableau';
+    for (const s of ['[data-bloc-premiere]', '[data-bloc-debloques]']) $(s).hidden = true;
+    for (const s of ['[data-bloc-semaine]', '[data-bloc-reponses]', '[data-bloc-parcours]']) $(s).hidden = false;
+
+    // --- Cette semaine : le quiz à finir, la séance, ou les votes passés ---
+    const titre = $('[data-semaine-titre]');
+    const etiquette = $('[data-semaine-etiquette]');
+    const bouton = $<HTMLAnchorElement>('[data-semaine-bouton]');
+    const texte = $('[data-semaine-texte]');
+    const liste = $('[data-semaine-liste]');
+    const segments = [...racine.querySelectorAll<HTMLElement>('[data-semaine-segments] span')];
+    const sansListe = (t: string) => {
+      liste.hidden = true; $('[data-semaine-segments]').hidden = true;
+      texte.textContent = t; texte.hidden = false;
+    };
+    const lots = etatLots();
+    const lotSuivant = lots.lot ?? prochainLot(lots.faits, d.lots.length);
+    const versLots = () => {
       bouton.href = '/lots/';
-      bouton.textContent = enCours ? 'Reprendre · 2 min' : 'Commencer · 2 min';
+      bouton.textContent = lots.lot !== null && lots.i > 0 ? 'Reprendre les votes passés' : 'Trancher des votes passés';
+    };
+    if (!quiz.fini) {
+      etiquette.textContent = 'Ton quiz d’entrée';
+      const reste = Math.max(0, d.quiz - (quiz.i ?? 0));
+      titre.textContent = `Encore ${pluriel(reste, 'vote')} pour finir le quiz`;
+      sansListe('Après le quiz, tu découvres où tu siégerais et qui vote comme toi.');
+      bouton.href = '/quiz/';
+      bouton.textContent = 'Reprendre le quiz';
+      $('[data-semaine-rdv]').hidden = true;
+    } else if (d.seance.vacances || !d.seance.votes.length) {
+      etiquette.textContent = 'Cette semaine';
+      titre.textContent = 'Pas de séance cette semaine';
+      sansListe('L’Assemblée ne tient pas de séance publique : ce sont les vacances parlementaires. En attendant, tranche des votes passés.');
+      versLots();
+      $('[data-semaine-rdv]').hidden = true;
+    } else {
+      const ma = etatSeance(d.seance.lundi);
+      const faits = d.seance.votes.map((v) => v.cle in ma.reponses);
+      etiquette.textContent = d.seance.avant ? 'Cette semaine · vote avant eux' : 'Cette semaine · et toi, qu’aurais-tu voté ?';
+      for (const li of liste.querySelectorAll<HTMLElement>('li')) {
+        const k = d.seance.votes.findIndex((v) => v.cle === li.dataset.cle);
+        li.classList.toggle('fait', faits[k]);
+        const etat = li.querySelector<HTMLElement>('[data-etat-vote]')!;
+        etat.textContent = faits[k] ? 'Tranché' : 'À trancher';
+        etat.classList.toggle('tranche', faits[k]);
+      }
+      segments.forEach((s, k) => s.classList.toggle('plein', faits[k]));
+      const restants = faits.filter((f) => !f).length;
+      if (ma.fini || !restants) {
+        titre.textContent = 'A voté.';
+        if (lotSuivant === null) { bouton.href = '/explorer/#a-trancher'; bouton.textContent = 'Trancher d’autres votes'; } else versLots();
+      } else {
+        bouton.href = '/seance/';
+        bouton.textContent = faits.some(Boolean) ? `Reprendre · ${pluriel(restants, 'vote')}` : 'Commencer';
+      }
     }
-  }
 
-  // Le compte à rebours jusqu'au vote (frame ⑤ : « dans 1 j 6 h »).
-  const rebours = document.querySelector<HTMLElement>('[data-compte-a-rebours]');
-  const quand = rebours?.dataset.quand ? Date.parse(rebours.dataset.quand) : NaN;
-  if (rebours && !Number.isNaN(quand)) {
-    const reste = quand - Date.now();
-    const j = Math.floor(reste / 86400000);
-    const h = Math.floor((reste % 86400000) / 3600000);
-    const m = Math.floor((reste % 3600000) / 60000);
-    rebours.textContent = reste <= 0 ? 'vote en cours ou terminé'
-      : j > 0 ? `dans ${j} j ${h} h` : h > 0 ? `dans ${h} h ${m} min` : `dans ${m} min`;
-  }
+    // --- Tes réponses : le nombre et sa phrase ---
+    let avec = 0, contre = 0;
+    for (const [uid, r] of Object.entries(toutes)) {
+      const g = d.issues[uid];
+      if (!g || (r !== 'pour' && r !== 'contre')) continue;
+      if (r === g) avec += 1; else contre += 1;
+    }
+    $('[data-nb-votes]').textContent = pluriel(n, 'vote');
+    $('[data-phrase-reponses]').textContent = avec + contre
+      ? `${avec} fois avec la majorité, ${contre} fois à contre-courant.`
+      : 'Les verdicts de tes votes ne sont pas encore tombés.';
+    $('[data-galerie-titre]').textContent = 'Tous les votes de la législature';
 
-  // --- Les derniers verdicts : ce que tu avais répondu ---
-  const VU = 'M3 7.5l2.5 2.5L11 4.5';
-  const CROIX = 'M4 4l6 6M10 4l-6 6';
-  for (const v of derniers) {
-    const a = reponse(v.uid);
-    if (!a) continue;
-    const ligne = document.querySelector<HTMLElement>(`[data-verdict="${v.uid}"]`)!;
-    const avec = a === v.gagnant;
-    // Majorité ou minorité : la même pastille, seul le pictogramme change (neutralité).
-    ligne.querySelector<HTMLElement>('[data-marque]')!.style.background = '#3A3D45';
-    ligne.querySelector('[data-marque-trait]')!.setAttribute('d', avec ? VU : CROIX);
-    ligne.querySelector('[data-ligne]')!.textContent = `Tu avais voté ${a} · `
-      + `${avec ? 'du côté de la majorité' : 'dans la minorité'}, avec ${a === 'pour' ? v.pour : v.contre} députés`;
-  }
+    // --- Ton parcours : les paliers et le prochain dossier ---
+    const poser = (cle: string, etat: 'fait' | 'en-cours' | 'verrouille', detail: string, part = 0, libelle?: string) => {
+      const el = $(`[data-palier="${cle}"]`);
+      el.classList.remove('fait', 'en-cours', 'verrouille');
+      el.classList.add(etat);
+      el.style.setProperty('--angle', `${Math.round(360 * part)}deg`);
+      el.querySelector('[data-palier-detail]')!.textContent = detail;
+      el.querySelector('[data-palier-etat]')!.textContent = ` · ${{ fait: 'débloqué', 'en-cours': 'en cours', verrouille: 'verrouillé' }[etat]}`;
+      if (libelle) el.querySelector('.libelle')!.firstChild!.textContent = libelle;
+    };
+    const prochain = prochainPalier(n);
+    for (const p of PALIERS) {
+      if (n >= p.seuil) poser(p.id, 'fait', `${p.id === 'bilan' ? 'Débloqué' : 'Débloquée'} à ${p.seuil} votes`);
+      else if (prochain?.palier.id === p.id) poser(p.id, 'en-cours', `${n} / ${p.seuil} votes`, n / p.seuil);
+      else poser(p.id, 'verrouille', `À ${p.seuil} votes`);
+    }
+    const ds = dossiers(toutes, d.cartes).filter((x) => x.votes.length);
+    const ouverts = ds.filter((x) => x.ouvert);
+    const suivant = ds.filter((x) => !x.ouvert && x.votes.length >= 3)
+      .sort((a, b) => b.tranches - a.tranches)[0];
+    if (suivant) poser('dossier', suivant.tranches ? 'en-cours' : 'verrouille',
+      `Encore ${pluriel(suivant.reste, 'vote')}`, suivant.tranches / 3, `Dossier ${suivant.theme}`);
+    else if (ouverts.length) poser('dossier', 'fait', `${pluriel(ouverts.length, 'dossier')} ouvert${ouverts.length > 1 ? 's' : ''}`, 1, 'Tes dossiers');
+    else $('[data-palier="dossier"]').hidden = true;
+    // Sur téléphone, la bande ne montre que le palier en cours (maquette T1).
+    const atteint = palierAtteint(n);
+    racine.querySelector<HTMLElement>('[data-bloc-parcours]')!.dataset.enCours = prochain?.palier.id ?? atteint?.id ?? '';
 
-  // --- Ta place dans la salle : le siège de ton jumeau, ou le 578e fauteuil qui t'attend ---
-  const scene = document.querySelector<HTMLElement>('[data-salle3d]');
-  const s3 = scene ? salle3D(scene) : null;
-  s3?.repere(-1, 'Ta place t’attend');
-
-  // --- Ton hémicycle et ton député : calculés ici, avec la matrice des votes ---
-  const uidDepute = deputeChoisi();
-  const matrice: Promise<Matrice> | null = n > 0 || uidDepute
-    ? fetch('/donnees/matrice.json').then((r) => r.json()) : null;
-
-  if (n > 0 && matrice) {
-    matrice.then((m) => {
-      const p = profil(m, Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v])));
-      if (!p.reponses) return;
-      const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.part]));
-      const cercles = document.querySelectorAll<SVGCircleElement>('.mini-hemicycle circle');
-      sieges.forEach(([d], i) => {
-        if (d) cercles[i]?.setAttribute('fill', teinte(parDepute.get(d) ?? null));
-      });
-      const g = p.groupes.find((x) => x.ligne.sigle !== 'NI') ?? null;
-      const texte = $('[data-texte-hemicycle]');
-      if (g) {
-        const b = document.createElement('b');
-        b.textContent = `côté ${g.ligne.sigle}`;
-        b.title = g.ligne.libelle;
-        texte.replaceChildren('Tu siègerais ', b, '.');
-        // Ta place : une étoile au bord intérieur, face à ton groupe (frame ⑤).
-        const liste = places();
-        const angles = sieges.flatMap(([, gr], i) => (gr === g.ligne.u ? [liste[i].angle] : []));
-        if (angles.length) {
-          const angle = angles.reduce((s, x) => s + x, 0) / angles.length;
-          const { x, y } = point(angle, R_INTERIEUR - 34);
-          const etoile = $<SVGSVGElement>('[data-etoile]');
-          etoile.style.left = `${x / 10}%`;
-          etoile.style.top = `${(y / 510) * 100}%`;
-          etoile.removeAttribute('hidden');
-        }
-      }
-      $('[data-precision]').hidden = false;
-      $('[data-precision-pct]').textContent = `${Math.round(100 * p.precision)} %`;
-      document.querySelectorAll<HTMLElement>('[data-segments] span')
-        .forEach((s, k) => s.classList.toggle('plein', k < Math.round(p.precision * 10)));
-      const j = p.jumeau;
-      const k = j ? sieges.findIndex(([d]) => d === j.ligne.u) : -1;
-      if (k >= 0 && p.reponses >= VOTES_POUR_SIEGER) s3?.repere(k, 'Toi · le siège de ton jumeau');
-      if (j) {
-        const sigle = m.groupes.find((x) => x.u === j.ligne.g)?.sigle ?? 'non inscrit';
-        $('[data-jumeau-ini]').textContent = initiales(j.ligne.n);
-        $('[data-jumeau-nom]').textContent = `${j.ligne.n} · ${sigle}`;
-        $('[data-jumeau-pct]').textContent = `${j.taux} %`;
-        $('[data-jumeau]').classList.toggle('proche', niveau(j.part).haut);
-        $('[data-jumeau]').hidden = false;
-      }
-    }).catch(() => {});
-  }
-
-  // Le député choisi par le visiteur, lu dans la liste publique des députés ; ses votes sur les
-  // derniers verdicts, face aux tiens.
-  if (uidDepute) {
-    Promise.all([fetch('/donnees/deputes.json').then((r) => r.json()), matrice]).then(([liste, m]: [
-      { u: string; n: string; g: string | null; c: string; d: string }[], Matrice | null]) => {
-      const d = liste.find((x) => x.u === uidDepute);
-      if (!d) return;
-      const carte = $<HTMLAnchorElement>('[data-mon-depute]');
-      carte.href = `/deputes/${d.u}/`;
-      $('[data-ini-depute]').textContent = initiales(d.n);
-      $('[data-nom-depute]').textContent = d.n;
-      $('[data-groupe-depute]').textContent = d.g ?? '';
-      $('[data-circo-depute]').textContent = `${libelleCirco(d.c)} · ${d.d}`;
-      const ligne = m?.deputes.find((x) => x.u === d.u);
-      if (ligne && m) {
-        const MOTS: Record<string, string> = { P: 'Pour', C: 'Contre', A: 'Abst.' };
-        $('[data-semaine-depute]').replaceChildren(...derniers.map((v) => {
-          const k = m.votes.indexOf(v.uid);
-          const lettre = k >= 0 ? ligne.s[k] : '-';
-          const a = reponse(v.uid);
-          const span = document.createElement('span');
-          span.textContent = MOTS[lettre] ?? 'Absent';
-          if (a && MOTS[lettre]) {
-            const pareil = lettre === (a === 'pour' ? 'P' : 'C');
-            span.className = pareil ? 'pareil' : 'oppose';
-            span.textContent += pareil ? ' ✓' : ' ✗';
-          }
-          return span;
-        }));
-      }
+    // --- Ton député : ses votes comme les tiens ---
+    const uid = deputeChoisi();
+    if (!uid) return;
+    Promise.all([
+      fetch('/donnees/deputes.json').then((r) => r.json()) as Promise<{ u: string; n: string; g: string | null }[]>,
+      fetch('/donnees/matrice.json').then((r) => r.json()) as Promise<Matrice>,
+    ]).then(([liste, m]) => {
+      const dep = liste.find((x) => x.u === uid);
+      if (!dep) return;
+      const carte = $<HTMLAnchorElement>('[data-carte-depute]');
+      carte.href = `/deputes/${dep.u}/`;
+      $('[data-nom-depute]').textContent = dep.g ? `${dep.n} · ${dep.g}` : dep.n;
+      const ligne = m.deputes.find((x) => x.u === uid);
+      const mes = colonnes(m, toutes as Record<string, 'pour' | 'contre'>);
+      const c = ligne ? comparer(ligne.s, mes) : null;
+      const k = m.votes.indexOf(d.dernier.uid);
+      const MOTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention' };
+      const auDernier = ligne && k >= 0 ? MOTS[ligne.s[k]] : undefined;
+      $('[data-accord-depute]').textContent = (c ? `${pluriel(c.identiques, 'vote')} comme toi sur tes ${mes.length}.` : '')
+        + (auDernier ? ` Au dernier verdict : ${auDernier}.` : ' Absent au dernier verdict.');
       carte.hidden = false;
-      $('[data-carte-depute]').hidden = true;
+      $('[data-cp-depute]').hidden = true;
     }).catch(() => {});
-  }
+  });
 </script>
 
 <style>
-  /* Accueil, maquette V6C-01 (docs/design-final/DESIGN-FINAL.md, § 6). */
+  /* La feuille du bas (maquette 05) : trois colonnes, puis la bande du parcours. */
+  :global(.feuille.tribune) {
+    display: grid; grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: minmax(0, 1fr) auto auto;
+    height: var(--feuille-bas); gap: 12px;
+  }
+  :global(.tribune[data-etat='premiere']) { grid-template-rows: minmax(0, 1fr) auto; }
+  .colonne { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .colonne > :global(.verdict), .colonne > :global(.galerie) { flex: 1; }
+  :global(.tribune[data-etat='tableau']) .colonne > :global(.galerie) { flex: 1; }
 
-  /* --- Le pied de scène : bandeau, action principale, programme --- */
-  .ticket { display: flex; flex-direction: column; gap: 22px; }
-  .ticket-haut { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
-  .ticket .bandeau-etiquette { min-height: 54px; }
-  .ticket .bandeau-titre { margin: 0; font-size: 34px; line-height: 1.05; }
-  .ticket-legende { display: flex; flex-direction: column; gap: 4px; max-width: 760px; }
-  .ticket-legende p { margin: 0; }
-  .sur-titre { font: inherit; color: inherit; }
-  .ticket-texte { color: var(--ivoire-2); }
-  .ticket-serie { display: inline-flex; align-items: center; gap: 8px; color: var(--ivoire); }
-  .ticket-serie[hidden] { display: none; }
-  .ticket-bouton { margin-left: auto; display: inline-flex; align-items: center; min-height: 56px; padding: 0 26px;
-    background: var(--direct); color: var(--sur-direct); font: 600 18px/1 var(--police-titre); letter-spacing: 0.08em;
-    text-transform: uppercase; text-decoration: none; white-space: nowrap; }
-  .ticket-bouton:hover { color: var(--sur-direct); background: #9A0F27; }
+  /* La grande carte noire de la première visite. */
+  :global(.carte.entree) { padding: 28px; gap: 16px; }
+  .sur-noir { color: var(--sur-encre-2); }
+  .titre-entree { font: 700 46px/1.05 var(--police-titre); letter-spacing: -0.01em; color: var(--feuille); }
+  .titre-entree sup { font-size: 0.5em; line-height: 0; vertical-align: super; }
+  .texte-entree { font: 500 17px/1.5 var(--police-texte); max-width: 480px; }
+  .pied-entree { margin-top: auto; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 
-  /* Le programme : trois aplats juxtaposés, le vote en cours souligné du rouge de régie. */
-  .items { display: flex; flex-wrap: wrap; gap: 2px; margin: 0; padding: 0; list-style: none; }
-  .items[hidden] { display: none; }
-  .items :global(li) { flex: 1 1 280px; min-width: 0; display: flex; gap: 16px; padding: 18px 22px;
-    background: var(--panneau); border-top: 3px solid var(--filet); }
-  .items :global(li.en-cours) { background: var(--panneau-2); border-top-color: var(--direct); }
-  .items :global(.item-numero) { flex: none; font: 600 44px/0.9 var(--police-titre); color: var(--ivoire-2);
-    font-variant-numeric: tabular-nums; }
-  .items :global(.item-corps) { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-  .items :global(.item-meta) { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--ivoire-2); }
-  .items :global(.item-titre) { font: 500 18px/1.35 var(--police-question); }
+  /* Cette semaine. */
+  .titre-semaine { font-size: 30px; line-height: 1.08; }
+  .liste { list-style: none; margin: 0; padding: 0; }
+  .liste li { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--filet); }
+  .rang { flex: 0 0 30px; height: 30px; border-radius: var(--pilule); display: flex; align-items: center; justify-content: center; font: 700 14px/1 var(--police-texte); }
+  .liste li.fait .rang { background: var(--encre); color: var(--feuille); }
+  .question { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .etat { font-weight: 600; white-space: nowrap; }
+  .etat.tranche { color: var(--encre); font-weight: 700; }
+  .etat.tranche::before { content: '✓ '; }
+  .segments { display: none; gap: 4px; }
+  .segments span { flex: 1; height: 6px; border-radius: var(--pilule); background: var(--bord); }
+  .segments span.plein { background: var(--encre); }
+  .actions { margin-top: auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
-  /* --- Sous la scène : les derniers verdicts, en aplats --- */
-  .derniers { display: flex; flex-direction: column; gap: 18px; }
-  .titre-section { display: flex; align-items: baseline; gap: 8px 16px; flex-wrap: wrap; }
-  .titre-section h2 { font: 700 32px/1 var(--police-titre); }
-  .titre-section .maj, .titre-section a { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--ivoire-2); }
-  .titre-section a { margin-left: auto; color: var(--ivoire); text-decoration: none; }
-  .titre-section a:hover { text-decoration: underline; }
-  .verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 2px;
-    margin: 0; padding: 0; list-style: none; }
-  .verdicts li { display: flex; }
-  .verdicts a { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: var(--panneau);
-    color: inherit; text-decoration: none; }
-  .verdicts a:hover { background: var(--panneau-2); }
-  .verdicts a:hover .v-titre { text-decoration: underline; text-underline-offset: 3px; }
-  .v-puce { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .v-titre { font: 500 19px/1.35 var(--police-question); }
-  /* Le verdict, le même pour les deux issues : le mot en capitales, la marge en puce. */
-  .v-pastille { display: flex; align-items: baseline; gap: 12px; margin-top: auto; }
-  .v-mot { font: 700 38px/1 var(--police-titre); text-transform: uppercase; color: var(--ivoire); }
-  .v-score { font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ivoire-2);
-    font-variant-numeric: tabular-nums; }
-  .v-barre { display: flex; gap: 2px; height: 10px; }
-  .b-pour { background: var(--pour); }
-  .b-contre { background: var(--contre); }
-  .b-abstention { background: var(--abstention); }
-  .v-ligne { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.4; color: var(--ivoire-2); }
-  .v-marque { flex: none; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px;
-    border-radius: 50%; background: #3A3D45; }
-
-  /* --- Le verdict à venir, ton hémicycle, ton député : des aplats de la même grille --- */
-  .toi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 2px; }
-  .ticket-droite, .carte-lien, .carte { display: flex; flex-direction: column; gap: 12px; padding: 20px 22px;
-    background: var(--panneau); color: inherit; text-decoration: none; }
-  .carte-lien[hidden], .carte[hidden] { display: none; }
-  a.ticket-droite:hover, .carte-lien:hover { background: var(--panneau-2); color: inherit; }
-  .ticket-droite { align-items: flex-start; gap: 6px; }
-  .petit, .carte-titre { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .jour { font: 600 21px/1.1 var(--police-titre); text-transform: uppercase; }
-  .heure { font: 600 64px/0.9 var(--police-titre); text-transform: uppercase; font-variant-numeric: tabular-nums; }
-  .tampon { font: 700 38px/1 var(--police-titre); text-transform: uppercase; }
-  .score { font: 600 40px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
-  .pastille-ticket { margin-top: 6px; padding: 6px 10px; background: var(--panneau-2);
-    font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
-  .note-ticket { font-size: 13px; line-height: 1.4; color: var(--ivoire-2); }
-  .deja-juge { margin-top: 8px; padding: 10px 14px; border: 1px solid var(--ivoire-2); color: var(--ivoire);
-    font: 600 14px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
-  .deja-juge:hover { background: var(--panneau-2); color: var(--ivoire); }
-  .carte-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .discret { font-size: 13px; color: var(--ivoire-2); }
-  .carte-texte { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ivoire-2); }
-  .mini { position: relative; display: block; max-width: 360px; }
-  .etoile-toi { position: absolute; width: 24px; height: 24px; transform: translate(-50%, -50%); }
-  .etoile-toi[hidden] { display: none; }
-  .precision { display: flex; align-items: center; gap: 10px; }
-  .precision[hidden] { display: none; }
-  .precision-titre { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .segments { flex: 1; display: flex; gap: 3px; }
-  .segments span { flex: 1; height: 8px; background: var(--filet); }
-  .segments :global(span.plein) { background: var(--lumiere); }
-  .precision-pct { font: 600 15px/1 var(--police-titre); font-variant-numeric: tabular-nums; }
-  .jumeau { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--filet); }
-  .jumeau[hidden] { display: none; }
-  /* Pas de cercles à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
-  .jumeau-ini, .avatar-depute { display: none; }
-  .jumeau-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .jumeau-sur { font: 600 12px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .jumeau-nom, .nom-depute { font: 600 17px/1.3 var(--police-texte); }
-  .jumeau-pct { font: 600 21px/1 var(--police-titre); color: var(--ivoire); font-variant-numeric: tabular-nums; }
-  .depute-choisi > span:last-child { display: flex; flex-direction: column; }
-  .semaine { display: flex; gap: 2px; }
-  .semaine:empty { display: none; }
-  .semaine :global(span) { flex: 1; padding: 8px 6px; text-align: center; font: 600 12px/16px var(--police-titre);
-    letter-spacing: 0.12em; text-transform: uppercase; background: var(--panneau-2); color: var(--ivoire-2); }
-  /* Même vote que toi : en ivoire ; vote différent : éteint ; jamais de couleur de vote. */
-  .semaine :global(span.pareil) { color: var(--ivoire); }
+  /* Le dernier verdict, ton député. */
+  .issue { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .issue .t-chiffre { font-size: 28px; }
+  .carte-cp {
+    display: flex; flex-direction: column; gap: 10px; padding: 18px 20px;
+    border-radius: var(--rayon-carte); background: var(--surface);
+  }
   .cp { display: flex; gap: 8px; }
-  .cp input { flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border: 1px solid var(--filet); background: var(--panneau-2);
-    color: var(--ivoire); font: 500 17px/1 var(--police-texte); }
-  .cp input:focus { border-color: var(--ivoire); }
-  .cp button { min-height: 50px; padding: 0 18px; border: 0; background: var(--direct); color: #fff;
-    font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  .cp input {
+    flex: 1; min-width: 0; height: 46px; padding: 0 16px; border: 0; border-radius: var(--pilule);
+    background: var(--feuille); font: 500 15px/1 var(--police-texte);
+  }
+  .cp button {
+    height: 46px; padding: 0 18px; border: 0; border-radius: var(--pilule); cursor: pointer;
+    background: var(--encre); color: var(--feuille); font: 700 15px/1 var(--police-texte);
+  }
 
-  /* --- Téléphone : la salle en haut, le bandeau et le programme montent en feuille --- */
-  @media (max-width: 640px) {
-    .ticket { gap: 14px; }
-    .ticket-haut { flex-direction: column; align-items: stretch; gap: 14px; }
-    .ticket .bandeau-etiquette { min-height: 42px; }
-    .ticket .bandeau-titre { font-size: 24px; line-height: 1.1; }
-    .ticket-bouton { margin-left: 0; justify-content: center; }
-    .items :global(li) { flex-basis: 100%; padding: 14px 16px; }
-    .items :global(.item-numero) { font-size: 32px; }
-    .items :global(.item-titre) { font-size: 17px; }
-    .titre-section h2 { font-size: 26px; }
-    .titre-section .maj { display: none; }
-    .v-mot { font-size: 30px; }
+  /* Ce que tu débloques, tes réponses, la galerie. */
+  .debloques {
+    display: flex; flex-direction: column; gap: 6px; padding: 18px 20px;
+    border-radius: var(--rayon-carte); background: var(--surface);
+  }
+  .debloques ul { list-style: none; margin: 0; padding: 0; }
+  .debloques li { padding: 10px 0; border-top: 1px solid var(--filet); }
+  .debloques li:first-child { border-top-color: var(--bord); }
+  .debloques :global(.marque) { background: var(--feuille); }
+  .faux-champ {
+    display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px;
+    border-radius: var(--pilule); background: var(--feuille); color: var(--texte-2);
+    font: 500 15px/1 var(--police-texte);
+  }
+
+  /* Ton parcours. */
+  .parcours {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 16px 24px;
+    padding: 14px 18px; border: 1px solid var(--filet); border-radius: var(--rayon-carte);
+    color: var(--encre); text-decoration: none;
+  }
+  .parcours:hover { border-color: var(--encre); }
+  .titre-parcours { flex: 0 0 auto; font: 700 17px/1.2 var(--police-titre); }
+  .paliers { flex: 1; display: flex; flex-wrap: wrap; gap: 12px 20px; }
+  .paliers > :global(.palier) { flex: 1 1 180px; }
+  .chevron { flex: 0 0 auto; }
+  .pied {
+    grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: center;
+    font: 500 13px/1.4 var(--police-texte); color: var(--texte-2);
+  }
+  .pied a { color: var(--encre); font-weight: 600; }
+  .pied span a { color: inherit; font-weight: 500; }
+  .tel { display: none; }
+
+  /* Téléphone (maquette T1) : la feuille monte sous la salle, les cartes en deux colonnes. */
+  @media (max-width: 720px) {
+    :global(.lieu-tribune) { display: none; }
+    :global(.feuille.tribune) { display: flex; height: auto; }
+    :global(.feuille.tribune) { flex-direction: column; }
+    .colonne { display: contents; }
+    :global(.tribune[data-etat='tableau']) {
+      display: grid !important; grid-template-columns: 1fr 1fr; grid-template-rows: none; gap: 12px;
+    }
+    :global(.tribune[data-etat='tableau']) > :global(.poignee) { grid-column: 1 / -1; }
+    :global(.tribune[data-etat='tableau']) :global(.semaine),
+    :global(.tribune[data-etat='tableau']) .parcours,
+    :global(.tribune[data-etat='tableau']) .pied,
+    :global(.tribune[data-etat='tableau']) .carte-cp { grid-column: 1 / -1; }
+    :global(.tribune[data-etat='tableau'] .ordi) { display: none; }
+    :global(.tribune[data-etat='tableau'] .tel) { display: block; order: 3; color: var(--encre); }
+    :global(.tribune[data-etat='tableau']:has([data-cp-depute]:not([hidden]))) :global(.verdict) { grid-column: 1 / -1; }
+    :global(.tribune[data-etat='tableau']) :global(.carte) { padding: 14px; gap: 6px; }
+    :global(.tribune[data-etat='tableau']) .liste { display: none; }
+    :global(.tribune[data-etat='tableau']) .segments:not([hidden]) { display: flex; }
+    :global(.tribune[data-etat='tableau']) .titre-semaine { font-size: 22px; }
+    :global(.tribune[data-etat='tableau']) .actions :global(.bouton) { width: 100%; }
+    :global(.tribune[data-etat='tableau']) .issue .t-chiffre { font-size: 20px; }
+    :global(.tribune[data-etat='tableau']) .issue .t-etiquette { display: none; }
+    :global(.tribune[data-etat='tableau']) .t-chiffre { font-size: 20px; }
+    .titre-entree { font-size: 30px; }
+    :global(.carte.entree) { padding: 22px; }
+    .paliers > :global(.palier) { display: none; }
+    .parcours[data-en-cours='place'] :global([data-palier='place']),
+    .parcours[data-en-cours='salle-eclairee'] :global([data-palier='salle-eclairee']),
+    .parcours[data-en-cours='bilan'] :global([data-palier='bilan']) { display: flex; }
+    .titre-parcours { display: none; }
   }
 </style>

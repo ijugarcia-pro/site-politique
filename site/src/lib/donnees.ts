@@ -290,6 +290,26 @@ export interface Semaine {
 export const semaine = () =>
   lire<Semaine>('site/semaine.json', 'uv run python -m pipeline.semaine');
 
+/** Les votes qui ont une carte, avec son thème : quiz, lots, séances passées et séance en
+ *  cours (VDEF, dossiers par thème). Seuls ces votes ont un thème ; lib/paliers.ts ne garde que
+ *  les 12 thèmes de la liste fermée. */
+export function cartesThemes(): { uid: string; theme: string }[] {
+  const sortie = [...questionsQuiz(), ...lotsDeVotes().flat()].map((c) => ({ uid: c.uid, theme: c.theme }));
+  const sem = semaine();
+  for (const v of sem.votes) if (v.carte && v.scrutin) sortie.push({ uid: v.scrutin.uid, theme: v.carte.theme });
+  const dossier = resolve(process.cwd(), '..', 'data', 'seances');
+  for (const h of sem.historique) {
+    const fichier = resolve(dossier, `${h.lundi}.json`);
+    if (!h.tranches || !existsSync(fichier)) continue;
+    const { cartes } = JSON.parse(readFileSync(fichier, 'utf-8')) as { cartes?: Record<string, { theme?: string }> };
+    for (const [cle, uid] of Object.entries(h.tranches)) {
+      const theme = cartes?.[cle]?.theme;
+      if (theme) sortie.push({ uid, theme });
+    }
+  }
+  return sortie;
+}
+
 /** Le scrutin s'il a sa page exportée (un scrutin mis de côté par les contrôles n'en a pas). */
 export const scrutinPublie = (uid: string): Scrutin | null =>
   existsSync(resolve(EXPORT, `site/scrutins/${uid}.json`)) ? scrutin(uid) : null;

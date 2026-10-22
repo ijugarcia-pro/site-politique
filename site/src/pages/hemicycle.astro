@@ -108,7 +108,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
           <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
           <span class="score" data-score></span>
         </span>
-        <span class="phrase">Le député qui vote le plus souvent comme toi, parmi ceux en exercice.</span>
+        <span class="phrase">Le député qui a voté comme toi le plus souvent, parmi ceux en exercice ; une absence ne compte pas.</span>
       </a>
       <a class="personne oppose" data-personne="oppose">
         <span class="sur-titre">Ton opposé</span>
@@ -117,7 +117,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
           <span class="personne-texte"><span class="nom" data-nom></span><span class="detail" data-detail></span></span>
           <span class="score" data-score></span>
         </span>
-        <span class="phrase">Le député qui vote le moins souvent comme toi.</span>
+        <span class="phrase">Le député qui a voté le plus souvent autrement que toi.</span>
       </a>
       <a class="personne depute carte-relief" data-personne="depute" href="/deputes/">
         <span class="sur-titre" data-sur-titre-depute>Ton député</span>
@@ -158,7 +158,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
       <p class="visuellement-cache" aria-live="polite" data-info></p>
       <ul class="legende" data-legende hidden>
         {NIVEAUX.map((t) => <li><span style={`background: ${t.couleur}`}></span>{t.libelle}</li>)}
-        <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>Aucun vote en commun</li>
+        <li><span class="sans" style={`border-color: ${SANS_VOTE_COMMUN}`}></span>N’a voté sur aucun de tes votes</li>
       </ul>
       <p class="aide-survol">Survole un siège pour voir son député ; clique pour ouvrir sa fiche.</p>
     </section>
@@ -259,7 +259,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     $('[data-nom]', carte).textContent = c.ligne.n;
     const p = document.createElement('span');
     pastille(p, groupes[c.ligne.g ?? '']);
-    $('[data-detail]', carte).replaceChildren(p, `· ${pluriel(c.communs, 'vote')} en commun`);
+    $('[data-detail]', carte).replaceChildren(p, `· ${pluriel(c.identiques, 'vote')} comme toi sur ${c.identiques + c.contraires + c.absents}`);
     $('[data-score]', carte).textContent = c.taux !== null ? `${c.taux} %` : '';
     if (phrase) $('[data-phrase]', carte).textContent = phrase;
   };
@@ -277,8 +277,8 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
       const nom = noms.get(uid)?.n ?? uid;
       const x = parDepute.get(uid);
       const accord = !p.reponses ? 'Fais le quiz pour comparer ses votes aux tiens.'
-        : x ? `${pluriel(x.identiques, 'vote')} comme toi sur ${x.communs} · ${niveau(x.lisse).libelle.toLowerCase()}`
-        : 'Aucun vote en commun avec toi';
+        : x ? `${pluriel(x.identiques, 'vote')} comme toi sur ${p.reponses} · ${niveau(x.part).libelle.toLowerCase()}`
+        : 'N\'a voté sur aucun de tes votes';
       salle.carte(i, nom, accord);
       info.textContent = `${nom}, ${groupes[g]?.s ?? ''} : ${accord}`;
     }, (i) => { location.href = `/deputes/${salle.reglages.sieges[i][0]}/`; });
@@ -287,10 +287,10 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 
     salle.colorer((_, uid) => {
       const x = parDepute.get(uid);
-      return x ? { fond: niveau(x.lisse).couleur } : { sansCommun: true };
+      return x ? { fond: niveau(x.part).couleur } : { sansCommun: true };
     });
     $('[data-legende]').hidden = false;
-    const proches = p.deputes.filter((x) => niveau(x.lisse).haut).length;
+    const proches = p.deputes.filter((x) => niveau(x.part).haut).length;
     salle.centre(String(proches), `député${proches > 1 ? 's' : ''} d'accord avec toi la plupart du temps`);
     // La salle 3D : le voyant de chaque pupitre prend l'intensité de l'accord (de l'éteint au
     // blanc chaud d'une lampe, la même échelle d'ivoire que l'hémicycle ; la lumière dorée reste à
@@ -302,7 +302,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
       const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
       s3.voyants(salle.reglages.sieges.map(([u]) => {
         const x = parDepute.get(u);
-        return x ? INTENSITES[NIVEAUX.indexOf(niveau(x.lisse))] : null;
+        return x ? INTENSITES[NIVEAUX.indexOf(niveau(x.part))] : null;
       }));
       const k = p.jumeau ? salle.reglages.sieges.findIndex(([u]) => u === p.jumeau!.ligne.u) : -1;
       s3.jumeau(k >= 0 ? k : null);
@@ -331,7 +331,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
     if (groupe) {
       salle.toi(groupe.ligne.u);
       $('[data-place-titre]').textContent = `Tu siègerais côté ${groupe.ligne.sigle}`;
-      $('[data-place-texte]').textContent = `Calculé sur ${pluriel(p.reponses, 'vote')} tranché${p.reponses > 1 ? 's' : ''}, comparé${p.reponses > 1 ? 's' : ''} un par un aux 577 députés : le groupe ${groupe.ligne.libelle} a voté comme toi ${groupe.identiques} fois sur ${groupe.communs}. Aucun axe gauche-droite : seulement des votes réels.`;
+      $('[data-place-texte]').textContent = `Calculé sur ${pluriel(p.reponses, 'vote')} tranché${p.reponses > 1 ? 's' : ''}, comparé${p.reponses > 1 ? 's' : ''} un par un aux 577 députés : le groupe ${groupe.ligne.libelle} a voté comme toi ${groupe.identiques} fois sur ${p.reponses}. Aucun axe gauche-droite : seulement des votes réels.`;
       $('[data-cta-quiz]').hidden = true;
     }
     const prec = Math.round(100 * p.precision);
@@ -346,14 +346,17 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
 
     $('[data-trio]').hidden = false;
     remplir('jumeau', p.jumeau);
+    if (p.egalites) {
+      $('[data-personne="jumeau"] [data-detail]').append(` · et ${p.egalites} autre${p.egalites > 1 ? 's' : ''} à égalité`);
+    }
     remplir('oppose', p.oppose);
     const uid = deputeChoisi();
     const mien = uid ? noms.get(uid) : undefined;
     if (mien) {
       const c = comparer(mien.s, colonnes(m, reps));
       remplir('depute', { ligne: mien, ...c },
-        c.communs ? `D'accord avec toi sur ${c.identiques} vote${c.identiques > 1 ? 's' : ''} sur ${c.communs}.`
-          : 'Aucun vote en commun pour l\'instant.');
+        c.identiques ? `A voté comme toi sur ${c.identiques} de tes ${pluriel(p.reponses, 'vote')}.`
+          : 'N\'a encore voté comme toi sur aucun de tes votes.');
       const d = await fetch('/donnees/deputes.json').then((r) => r.json())
         .then((l: { u: string; c: string }[]) => l.find((x) => x.u === uid))
         .catch(() => null);
@@ -376,7 +379,7 @@ const donnees = JSON.stringify(titres).replace(/</g, '\\u003c');
       pct.textContent = `${x.taux} %`;
       const detail = document.createElement('span');
       detail.className = 'visuellement-cache';
-      detail.textContent = `${x.ligne.libelle} : ${x.identiques} sur ${x.communs}`;
+      detail.textContent = `${x.ligne.libelle} : ${x.identiques} sur ${p.reponses}`;
       li.append(s, jauge, pct, detail);
       return li;
     }));

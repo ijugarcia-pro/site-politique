@@ -130,7 +130,7 @@ const nLots = lotsDuParcours();
       b.textContent = `côté ${g.ligne.sigle}`;
       b.title = g.ligne.libelle;
       phrase.replaceChildren('Tu siègerais ', b, !j ? '.'
-        : niveau(j.lisse).haut ? '. Et parmi les 577, un député vote presque toujours comme toi :'
+        : niveau(j.part).haut ? '. Et parmi les 577, un député vote presque toujours comme toi :'
         : '. Et parmi les 577, le député qui vote le plus souvent comme toi :');
     }
     salle.jumeau(j?.ligne.u ?? null);
@@ -143,8 +143,8 @@ const nLots = lotsDuParcours();
       $('[data-jumeau-nom]').textContent = j.ligne.n;
       const pg = document.createElement('span');
       pastille(pg, groupes[j.ligne.g ?? '']);
-      $('[data-jumeau-detail]').replaceChildren(pg, ` · ${pluriel(j.communs, 'vote')} en commun`);
-      $('[data-jumeau-score]').textContent = `${j.identiques}/${j.communs}`;
+      $('[data-jumeau-detail]').replaceChildren(pg, ` · ${pluriel(j.identiques, 'vote')} comme toi sur ${p.reponses}`);
+      $('[data-jumeau-score]').textContent = `${j.identiques}/${p.reponses}`;
     } else {
       carte.hidden = true;
     }
@@ -183,7 +183,7 @@ const nLots = lotsDuParcours();
     }
     $('[data-titre-resultat]').focus();
     // Les stories, prêtes à partager.
-    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.lisse]));
+    const parDepute = new Map(p.deputes.map((x) => [x.ligne.u, x.part]));
     const couleurs = deputes.map((u) => (u ? teinte(parDepute.get(u) ?? null) : '#FFFFFF'));
     let contre: DonneesStories['contre'] = null;
     for (const q of questions) {
@@ -196,7 +196,7 @@ const nLots = lotsDuParcours();
     stories = {
       groupe: g ? { sigle: g.ligne.sigle, libelle: g.ligne.libelle } : null,
       jumeau: j ? { nom: j.ligne.n, initiales: initiales(j.ligne.n), identiques: j.identiques,
-        communs: j.communs, groupe: groupes[j.ligne.g ?? '']?.s ?? 'non inscrit' } : null,
+        sur: p.reponses, groupe: groupes[j.ligne.g ?? '']?.s ?? 'non inscrit' } : null,
       contre, sieges: couleurs, etoile: j ? deputes.indexOf(j.ligne.u) : -1, votes: p.reponses,
     };
   };

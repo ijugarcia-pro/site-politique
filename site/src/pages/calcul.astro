@@ -5,7 +5,7 @@
 // tel.
 import Base from '../layouts/Base.astro';
 import { dateLisible, lienVote, lotsDeVotes, lotsDuParcours, questionsQuiz, scrutins } from '../lib/donnees.ts';
-import { lisse, NIVEAUX, precision, VOTES_FIABLES } from '../lib/profil.ts';
+import { NIVEAUX, precision, VOTES_FIABLES } from '../lib/profil.ts';
 import { bascule } from '../lib/votes.ts';
 
 const exemple = scrutins().find((v) => v.solennel && !v.motion_censure && v.requis
@@ -47,14 +47,10 @@ const niveaux = NIVEAUX.map((t, k) => ({
     <p> « Ta voix de 578<sup>e</sup> » refait ce calcul en ajoutant ta voix à celles des députés : les suffrages exprimés augmentent d'un, et la majorité requise est recalculée (la moitié des suffrages exprimés, plus une voix). Exemple réel, le <a href="/votes/6124/">scrutin n° 6124</a> : avec 78 pour et 67 contre, 73 voix sont requises et le texte passe à 6 voix près ; si tu votes contre, cela fait 146 suffrages exprimés, 74 voix requises, et 5 députés suffiraient (73 contre 73 : rejeté). </p>
 
     <h2 id="accord">Ton accord avec un député ou un groupe</h2>
-    <p> Un vote compte « en commun » quand tu as répondu pour ou contre, et que le député (ou le groupe) a voté pour, contre ou s'est abstenu. Une abstention compte comme une réponse différente de la tienne. « Je ne sais pas », un absent ou un non-votant ne comptent pas. Avec <em>m</em> votes identiques sur <em>n</em> votes en commun : </p>
-    <ul>
-      <li>le <strong>taux d'accord</strong> affiché est <em>m</em> / <em>n</em> ;</li>
-      <li> le <strong>classement</strong> (ton jumeau, les groupes les plus proches, les couleurs de ton hémicycle) utilise l'accord lissé <strong>(m + 2) / (n + 4)</strong>, qui évite qu'un député avec un seul vote en commun passe devant tous les autres. </li>
-    </ul>
-    <p class="exemple"> <strong>Exemple de calcul</strong> (chiffres d'école) : 7 votes identiques sur 10 en commun donnent un taux de 70 % et un accord lissé de (7 + 2) / (10 + 4) = {lisse(7, 10).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ; 1 vote identique sur 1 donne 100 %, mais un accord lissé de seulement {lisse(1, 1).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}. </p>
-    <p> <strong>Ton jumeau</strong> est le député en exercice le mieux classé ; à égalité, celui qui a le plus de votes en commun avec toi. Il est montré dès un vote en commun, avec son nombre de votes en commun : la précision dit à quel point s'y fier. Le <strong>groupe le plus proche</strong> se calcule de la même façon, sur la position de chaque groupe. </p>
-    <p>Dans ton hémicycle, chaque siège prend une teinte selon l'accord lissé :</p>
+    <p> On part de tes <em>N</em> votes tranchés (pour ou contre ; « Je ne sais pas » ne compte pas). Sur chacun, le député (ou le groupe) a voté <strong>comme toi</strong>, <strong>autrement</strong> (le vote inverse, ou une abstention), ou <strong>n'a pas voté</strong> (absent, non-votant, ou pas encore élu). Une absence n'est jamais comptée comme un accord. Le site écrit donc « <em>X</em> votes comme toi sur <em>N</em> » ; un pourcentage, quand il en faut un, est <em>X</em> / <em>N</em>. </p>
+    <p> <strong>Ton jumeau</strong> est le député en exercice qui a voté comme toi le plus de fois. À égalité, celui qui a le moins voté autrement que toi ; puis l'ordre alphabétique. Il est montré dès un vote identique, avec le nombre de députés à égalité avec lui s'il y en a : la précision dit à quel point s'y fier. <strong>Ton opposé</strong> est celui qui a voté autrement que toi le plus de fois ; un député toujours absent ne l'est jamais. Les <strong>groupes les plus proches</strong> se classent de la même façon, sur la position de chaque groupe. </p>
+    <p class="exemple"> <strong>Exemple de calcul</strong> (chiffres d'école) : tu as tranché 20 votes. A a voté comme toi 15 fois, autrement 3 fois, et était absent 2 fois. B a voté comme toi 9 fois, autrement 1 fois, et était absent 10 fois. A est ton jumeau : 15 votes comme toi sur 20, contre 9 sur 20 pour B. Les 10 absences de B ne comptent pas comme des accords. </p>
+    <p>Dans ton hémicycle, chaque siège prend une teinte selon la part de tes votes où ce député a voté comme toi :</p>
     <ul class="niveaux">
       {niveaux.map((t) => <li><span style={`background: ${t.couleur}`}></span><strong>{t.libelle}</strong> : {t.borne}</li>)}
     </ul>

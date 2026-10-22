@@ -8,8 +8,9 @@ import { LARGEUR, places, RAYON_SIEGE } from './hemicycle.ts';
 
 export interface DonneesStories {
   groupe: { sigle: string; libelle: string } | null;
+  /** `sur` : tes votes tranchés (N) ; `identiques` : ceux où ton jumeau a voté comme toi. */
   jumeau: { nom: string; groupe: string; initiales: string; identiques: number;
-    communs: number } | null;
+    sur: number } | null;
   contre: { question: string; reponse: string; part: number } | null;
   /** Couleur de chaque siège (577), dans l'ordre de l'hémicycle. */
   sieges: string[];
@@ -194,7 +195,7 @@ export async function dessiner(type: TypeStory, d: DonneesStories): Promise<HTML
       ctx.fillText(d.jumeau.groupe, 360, yn + 10);
       ctx.fillStyle = IVOIRE;
       ctx.font = `600 220px ${CONDENSE}`;
-      const score = `${d.jumeau.identiques}/${d.jumeau.communs}`;
+      const score = `${d.jumeau.identiques}/${d.jumeau.sur}`;
       ctx.fillText(score, 96, y + 560);
       const ws = ctx.measureText(score).width;
       ctx.fillStyle = IVOIRE_2;

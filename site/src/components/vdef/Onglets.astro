@@ -1,0 +1,81 @@
+---
+// Les trois niveaux de lecture (VDEF § 2 et § 7) : L'essentiel · Comprendre · Fouiller, dans une
+// pilule grise, l'actif en noir. De vrais onglets : role="tablist", flèches du clavier, Début et
+// Fin ; l'onglet ouvert se reflète dans l'adresse (#comprendre) et s'ouvre depuis elle. Chaque
+// panneau est posé par la page : un élément id="panneau-{id}" role="tabpanel".
+interface Props {
+  onglets?: { id: string; libelle: string }[];
+  /** L'onglet ouvert sans fragment dans l'adresse (le premier par défaut). */
+  actif?: string;
+  etiquette?: string;
+}
+const {
+  onglets = [{ id: 'essentiel', libelle: 'L’essentiel' }, { id: 'comprendre', libelle: 'Comprendre' },
+    { id: 'fouiller', libelle: 'Fouiller' }],
+  etiquette = 'Niveau de lecture',
+} = Astro.props;
+const actif = Astro.props.actif ?? onglets[0].id;
+---
+<div class="onglets" role="tablist" aria-label={etiquette} data-onglets={actif}>
+  {onglets.map((o) => (
+    <button type="button" role="tab" id={`onglet-${o.id}`} aria-controls={`panneau-${o.id}`}
+      aria-selected={String(o.id === actif)} tabindex={o.id === actif ? 0 : -1} data-onglet={o.id}>
+      {o.libelle}
+    </button>
+  ))}
+</div>
+
+<script>
+  // Relancé à chaque page (transitions d'Astro) : chaque liste n'est liée qu'une fois.
+  document.addEventListener('astro:page-load', () => {
+  for (const liste of document.querySelectorAll<HTMLElement>('[data-onglets]:not([data-onglets-lie])')) {
+    liste.dataset.ongletsLie = '';
+    const onglets = [...liste.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const ids = onglets.map((o) => o.dataset.onglet!);
+    const ouvrir = (id: string, focus = false, adresse = false) => {
+      for (const o of onglets) {
+        const oui = o.dataset.onglet === id;
+        o.setAttribute('aria-selected', String(oui));
+        o.tabIndex = oui ? 0 : -1;
+        const panneau = document.getElementById(`panneau-${o.dataset.onglet}`);
+        if (panneau) panneau.hidden = !oui;
+        if (oui && focus) o.focus();
+      }
+      if (adresse) {
+        const fragment = id === liste.dataset.onglets ? '' : `#${id}`;
+        history.replaceState(null, '', `${location.pathname}${location.search}${fragment}`);
+      }
+    };
+    const depuisAdresse = () => {
+      const id = location.hash.slice(1);
+      ouvrir(ids.includes(id) ? id : liste.dataset.onglets!);
+    };
+    depuisAdresse();
+    window.addEventListener('hashchange', depuisAdresse);
+    liste.addEventListener('click', (ev) => {
+      const o = (ev.target as HTMLElement).closest<HTMLButtonElement>('[role="tab"]');
+      if (o) ouvrir(o.dataset.onglet!, false, true);
+    });
+    liste.addEventListener('keydown', (ev) => {
+      const k = onglets.indexOf(document.activeElement as HTMLButtonElement);
+      if (k < 0) return;
+      const cible = { ArrowRight: k + 1, ArrowLeft: k - 1, Home: 0, End: onglets.length - 1 }[ev.key];
+      if (cible === undefined) return;
+      ev.preventDefault();
+      ouvrir(ids[(cible + ids.length) % ids.length], true, true);
+    });
+  }
+  });
+</script>
+
+<style>
+  .onglets {
+    align-self: flex-start; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px;
+    background: var(--surface); border-radius: var(--pilule);
+  }
+  [role='tab'] {
+    min-height: 46px; padding: 0 20px; border: 0; border-radius: var(--pilule); cursor: pointer;
+    background: transparent; color: var(--encre); font: 700 15px/1 var(--police-texte);
+  }
+  [role='tab'][aria-selected='true'] { background: var(--encre); color: var(--feuille); }
+</style>

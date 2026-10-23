@@ -1,0 +1,81 @@
+---
+// Démonstration interne (lot V0) : la feuille du bas sur la tribune, aux mesures de la maquette
+// 05. Données illustratives ; le vrai tableau de bord arrive au lot V4 (t75).
+import Base from '../../layouts/Base.astro';
+import BarreVote from '../../components/vdef/BarreVote.astro';
+import Bouton from '../../components/vdef/Bouton.astro';
+import Carte from '../../components/vdef/Carte.astro';
+import Feuille from '../../components/vdef/Feuille.astro';
+import Palier from '../../components/vdef/Palier.astro';
+import Repere from '../../components/vdef/Repere.astro';
+---
+<Base titre="Composants de la VDEF · la tribune" description="Page interne : la feuille du bas, avec des données illustratives."
+  vue="tribune" fond="tribune" noindex>
+  <Repere libelle="La tribune · données illustratives" forme="lieu" x={50} y={33} />
+  <Feuille position="bas" titre="demo-semaine" class="tableau">
+    <Carte variante="bordee" class="semaine">
+      <span class="t-etiquette">Cette semaine · vote avant eux</span>
+      <h1 id="demo-semaine" class="t-feuille titre">3 votes à trancher avant les députés</h1>
+      <ol class="liste">
+        {['Question d’exemple numéro un ?', 'Question d’exemple numéro deux ?', 'Question d’exemple numéro trois ?'].map((q, k) => (
+          <li><span class:list={['rang', { fait: k === 0 }]}>{k + 1}</span><span class="q"><span class="t-interface">{q}</span><span class="t-legende">Thème</span></span><span class="t-legende">{k === 0 ? 'Tranché' : 'À trancher'}</span></li>
+        ))}
+      </ol>
+      <div class="actions"><Bouton href="#">Reprendre · 2 votes</Bouton><span class="t-etiquette">Verdict mercredi matin</span></div>
+    </Carte>
+    <div class="colonne">
+      <Carte etiquette="Le dernier verdict" href="#" class="etire">
+        <span class="t-carte-petit">Question d’exemple ?</span>
+        <span class="issue"><span class="t-chiffre">Rejeté</span><span class="t-etiquette">à 21 voix près</span></span>
+        <BarreVote pour={248} contre={289} abstention={23} absents={17} />
+      </Carte>
+      <Carte etiquette="Ton député" href="#">
+        <span class="t-interface">Nom d’exemple · groupe</span>
+        <span class="t-legende">7 votes comme toi sur tes 12.</span>
+      </Carte>
+    </div>
+    <div class="colonne">
+      <Carte etiquette="Tes réponses" href="#">
+        <span class="t-chiffre">12 votes</span>
+        <span class="t-legende">8 fois avec la majorité, 4 fois à contre-courant.</span>
+      </Carte>
+      <Carte etiquette="La galerie du public" href="#" class="etire">
+        <span class="t-carte-petit">Tous les votes de la législature</span>
+      </Carte>
+    </div>
+    <a class="parcours" href="#">
+      <span class="t-carte-petit parcours-titre">Ton parcours</span>
+      <Palier etat="fait" libelle="Ta place" detail="Débloquée à 10 votes" />
+      <Palier etat="en-cours" libelle="La salle éclairée" detail="12 / 25 votes" progression={12 / 25} />
+      <Palier etat="verrouille" libelle="Ton bilan" detail="À 40 votes" />
+    </a>
+  </Feuille>
+</Base>
+
+<style>
+  .tableau {
+    display: grid; grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: minmax(0, 1fr) auto;
+    height: var(--feuille-bas);
+  }
+  .titre { font-size: 30px; line-height: 1.08; }
+  .liste { list-style: none; margin: 0; padding: 0; }
+  .liste li { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--filet); }
+  .rang { flex: 0 0 30px; height: 30px; border-radius: var(--pilule); display: flex; align-items: center; justify-content: center; font: 700 14px/1 var(--police-texte); }
+  .rang.fait { background: var(--encre); color: var(--feuille); }
+  .q { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .actions { margin-top: auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .colonne { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  :global(.colonne > .etire) { flex: 1; }
+  .issue { display: flex; align-items: baseline; gap: 10px; }
+  .issue .t-chiffre { font-size: 28px; }
+  .parcours {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap;
+    padding: 14px 18px; border: 1px solid var(--filet); border-radius: var(--rayon-carte);
+    color: var(--encre); text-decoration: none;
+  }
+  :global(.parcours > .palier) { flex: 1 1 200px; }
+  .parcours-titre { font: 700 17px/1.2 var(--police-titre); }
+  @media (max-width: 720px) {
+    .tableau { display: flex; height: auto; }
+  }
+</style>

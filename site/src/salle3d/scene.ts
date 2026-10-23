@@ -13,45 +13,60 @@
 
 import { couleurExacte } from './gestion-couleurs.ts';
 import * as THREE from 'three';
-import { chemin, echelleFauteuil, FAUTEUIL_578, longueur, P, position, sieges3D, surChemin, type Siege3D } from './geometrie.ts';
+import { chemin, colonnes, echelleFauteuil, FAUTEUIL_578, longueur, P, position, sieges3D, surChemin, type Siege3D } from './geometrie.ts';
 import type { Apparence } from './apparence.ts';
-import { creerPersonnage, type Personnage } from './personnage3d.ts';
+import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
 
-export type NomVue = 'salle' | 'tribune' | 'travee' | 'plan';
-export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number;
-  haut?: [number, number, number] }
+/** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
+ *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. */
+export type NomVue = 'tribune' | 'salle' | 'place';
+export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number }
+/** Ce que les feuilles couvrent du canevas, en pixels : le cadrage se centre sur le reste. */
+export interface Cadre { gauche?: number; droite?: number; haut?: number; bas?: number }
 export interface OptionsScene { base?: string; telephone?: boolean; mouvementReduit?: boolean }
 
 const rad = (d: number) => (d * Math.PI) / 180;
 /** Lumières physiques de three récent : le prototype réglait ses intensités en mode « hérité ». */
 const PI = Math.PI;
 
-/** Les cadrages des caméras. CAM 1 · Salle depuis le perchoir ; CAM 2 · Tribune depuis le sol ;
- *  CAM 4 · Plan vu de dessus (pivoté d'un quart de tour en portrait). */
+/** Les cadrages fixes : la tribune depuis le sol, face au pupitre ; la salle depuis le perchoir
+ *  (l'ancienne CAM 1). « Ta place » dépend du siège : voir cadrer(). Le décalage dû aux feuilles
+ *  (Cadre) s'applique ensuite, sans déformer l'image (setViewOffset). */
 export function cadrage(nom: NomVue, aspect: number): Cadrage {
   const portrait = aspect < 0.9;
-  if (nom === 'tribune') return portrait ? { pos: [0, 1.7, 7.4], cible: [0, 2.6, -4], fov: 72 }
-    : { pos: [1.2, 1.7, 6.2], cible: [-0.4, 2.3, -4], fov: 52 };
-  if (nom === 'plan') {
-    const fov = portrait ? 50 : 40;
-    const tv = Math.tan(rad(fov / 2));
-    if (portrait) {
-      const d = Math.max(15.8 / (tv * aspect), 24.0 / tv) * 1.04;
-      return { pos: [0, d, 7.2], cible: [0, 0, 7.2], fov, haut: [1, 0, 0.001] };
-    }
-    const d = Math.max(23.2 / (tv * aspect), 14.6 / tv) * 1.08;
-    return { pos: [0, d, 6.2], cible: [0, 0, 7.0], fov };
-  }
+  // La tribune : l'ancienne CAM 2 remise face au pupitre ; avec la feuille du bas (moitié basse),
+  // le pupitre et le perchoir tombent dans le tiers haut, à l'échelle de la maquette 05.
+  if (nom === 'tribune') return portrait ? { pos: [0, 1.7, 7.0], cible: [0, 2.6, -4], fov: 64 }
+    : { pos: [0, 1.7, 6.2], cible: [0, 2.55, -4], fov: 50 };
   return portrait ? { pos: [0, 9.6, -6.2], cible: [0, 6.4, 10], fov: 80 } : { pos: [0, 7.0, -6.4], cible: [0, 5.5, 11], fov: 64 };
 }
 
+/** Les bornes du regard dans la vue « Ta place » : on tourne la tête sans bouger. */
+export const REGARD = { lacet: rad(80), tangageBas: rad(-30), tangageHaut: rad(20), champMin: 40, champMax: 70,
+  avance: 0.12, near: 0.05 } as const;
+
+/** Les yeux, posés au siège n° s (repère de la salle), avancés de REGARD.avance vers la
+ *  tribune : la caméra de la vue « Ta place ». */
+export function yeuxAuSiege(s: Pick<Siege3D, 'r' | 'th' | 'y'>): [number, number, number] {
+  const [x, y, z] = position(s);
+  const cap = Math.atan2(-x, -z);
+  const [, ey, ez] = yeuxAssis();
+  const avant = ez + REGARD.avance;
+  return [x + Math.sin(cap) * avant, y + ey, z + Math.cos(cap) * avant];
+}
+/** Où regarde la vue « Ta place » au départ : le pupitre de la tribune. */
+export const CENTRE_TRIBUNE: [number, number, number] = [0, 1.35, -0.85];
+
 export interface Salle3D {
   vue(nom: NomVue, opt?: { instant?: boolean }): Promise<void>;
+  /** Ce que les feuilles couvrent : la vue se centre sur le reste du canevas. */
+  cadre(c: Cadre): void;
+  /** Le siège sous un point du canevas (0 à 1 en largeur et en hauteur), ou null. */
+  siegeSous(x: number, y: number): number | null;
   terminer(): void;
   /** La couleur du voyant de chaque siège (index de la composition) ; null : éteint. */
   voyants(couleurs: (string | null)[]): void;
-  ambiance(nom: 'jour' | 'verdict'): void;
   redimensionner(): void;
   projeter(points: [number, number, number][]): { x: number; y: number; devant: boolean }[];
   /** La position d'un siège (index de la composition) ; -1 : le 578e fauteuil, au pied de la tribune. */
@@ -66,9 +81,8 @@ export interface Salle3D {
   surRendu: (() => void) | null;
   /** Les voyants s'allument en onde, du rang intérieur vers l'extérieur (R1). */
   voyantsEnOnde(couleurs: (string | null)[], duree?: number): Promise<void>;
-  /** Le siège du jumeau : sa plaquette s'éclaire ; null : aucun. */
-  jumeau(i: number | null): void;
-  /** La caméra libre, bornée (radians, facteur de recul) ; recentrer revient à la vue en cours. */
+  /** La caméra libre, bornée (radians ; dans « Ta place », la tête tourne sans bouger) ;
+   *  zoomer : recul, ou champ de vision dans « Ta place » ; recentrer revient à la vue en cours. */
   orbiter(dLacet: number, dTangage: number): void;
   zoomer(f: number): void;
   recentrer(): void;
@@ -235,7 +249,9 @@ function matieres(T: Textures, telephone: boolean) {
   M.p578 = new THREE.MeshStandardMaterial({ map: T.plaque, metalness: 0.85, roughness: 0.35, envMapIntensity: 1.2 });
   M.voyant = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
   const lueur = new THREE.CanvasTexture(lueurCanvas()); lueur.colorSpace = THREE.SRGBColorSpace;
-  M.lueur = new THREE.MeshBasicMaterial({ color: 0xffffff, map: lueur, transparent: true, opacity: 0.7, depthWrite: false, toneMapped: false, fog: false });
+  // La lueur d'un voyant allumé, posée sur le pupitre : assez large pour que la salle prenne les
+  // couleurs d'un vote vue du perchoir (VDEF, lot V5), sans changer les matières de la salle.
+  M.lueur = new THREE.MeshBasicMaterial({ color: 0xffffff, map: lueur, transparent: true, opacity: 0.95, depthWrite: false, toneMapped: false, fog: false });
   M.faisceau = new THREE.ShaderMaterial({
     uniforms: { uCouleur: { value: new THREE.Color(1.0, 0.86, 0.62) }, uForce: { value: 0.11 } },
     vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0); vV=-mv.xyz; vN=normalMatrix*normal; gl_Position=projectionMatrix*mv; }',
@@ -323,12 +339,32 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     [new THREE.BoxGeometry(0.5, 0.4, 0.42), mat4(0, 0.2, -0.02)],
   ]);
   const n = sieges.length;
-  I.velours = ombre(new THREE.InstancedMesh(velG, M.velours, n));
+  // La teinte d'un siège (VDEF, lot V5) : le velours de chaque fauteuil se mêle à la couleur de
+  // son voyant (un vote, un niveau d'accord), pour que la salle en prenne les couleurs vue du
+  // perchoir ; sans voyant, le velours reste tel quel. Les matières de la salle ne changent pas.
+  const velI = velG.clone();
+  const teintes = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4);
+  velI.setAttribute('teinte', teintes);
+  const veloursSieges = M.velours.clone() as THREE.MeshPhysicalMaterial;
+  veloursSieges.onBeforeCompile = (sh: { vertexShader: string; fragmentShader: string }) => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 teinte;\nvarying vec4 vTeinte;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTeinte = teinte;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec4 vTeinte;')
+      .replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vTeinte.rgb, vTeinte.a);');
+    (M.velours.onBeforeCompile as (x: typeof sh) => void)(sh);
+  };
+  veloursSieges.customProgramCacheKey = () => 'velours-teinte';
+  I.velours = ombre(new THREE.InstancedMesh(velI, veloursSieges, n));
+  /** La teinte d'un siège : la couleur de son voyant, ou rien. */
+  const POIDS_TEINTE = 0.82;
+  const teinter = (k: number, c: THREE.Color | null) => {
+    teintes.setXYZW(k, c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? POIDS_TEINTE : 0);
+  };
   I.bois = ombre(new THREE.InstancedMesh(boisG, M.noyer, n));
   I.plaque = new THREE.InstancedMesh(new THREE.BoxGeometry(0.15, 0.008, 0.045), M.laiton, n);
   I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 20), M.laiton, n);
   I.voyant = new THREE.InstancedMesh(new THREE.SphereGeometry(0.026, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.voyant, n);
-  I.lueur = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.6, 0.6), M.lueur, n);
+  I.lueur = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.62, 0.5), M.lueur, n);
   const o = new THREE.Object3D(), pente = Math.atan(0.14 / 0.47), noir = new THREE.Color(0x1d1714), zero = new THREE.Color(0, 0, 0);
   const mVoyant: { p: THREE.Vector3; q: THREE.Quaternion }[] = [];
   const mLueur: { p: THREE.Vector3; q: THREE.Quaternion }[] = [];
@@ -348,16 +384,15 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     o.position.set((s.rd - 0.015) * Math.cos(s.th), s.y + 0.862, (s.rd - 0.015) * Math.sin(s.th)); o.rotation.set(0, yaw, 0); o.updateMatrix();
     I.voyant.setMatrixAt(k, o.matrix); I.voyant.setColorAt(k, noir);
     mVoyant.push({ p: o.position.clone(), q: o.quaternion.clone() });
-    o.position.y += 0.01; o.rotation.set(-Math.PI / 2, yaw, 0, 'YXZ'); o.updateMatrix(); I.lueur.setMatrixAt(k, o.matrix); I.lueur.setColorAt(k, zero);
+    surPupitre(s.rd + 0.2, 0); o.position.y += 0.006; o.rotation.set(-Math.PI / 2 - pente, yaw, 0, 'YXZ');
+    o.scale.set(e, 1, 1); o.updateMatrix(); o.scale.setScalar(1); I.lueur.setMatrixAt(k, o.matrix); I.lueur.setColorAt(k, zero);
     mLueur.push({ p: o.position.clone(), q: o.quaternion.clone() });
   });
   for (const k of ['velours', 'bois', 'plaque', 'bague', 'voyant', 'lueur']) racine.add(I[k]);
 
   /* Colonnade et galeries */
   const fut = new THREE.CylinderGeometry(0.46, 0.5, 1, 32, 1, true);
-  const nCol = 15, colPos: [number, number, number, number][] = [];
-  for (let k = 0; k < nCol; k++) { const a = rad(P.TH0 + (k * (P.TH1 - P.TH0)) / (nCol - 1)); colPos.push([P.RCOL * Math.cos(a), P.RCOL * Math.sin(a), P.YTOP, P.YENT - P.YTOP]); }
-  for (const x of [-12.8, -5.4, 5.4, 12.8]) colPos.push([x, P.ZFOND + 0.75, 0, P.YENT]);
+  const nCol = 15, colPos = colonnes();
   I.fut = ombre(new THREE.InstancedMesh(fut, M.colonne, colPos.length));
   const baseG = fusion([[new THREE.BoxGeometry(1.25, 0.32, 1.25), mat4(0, 0.16, 0)], [new THREE.TorusGeometry(0.52, 0.09, 10, 32), mat4(0, 0.38, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.5, 0.06, 10, 32), mat4(0, 0.5, 0, Math.PI / 2)]]);
   const chapG = fusion([
@@ -479,28 +514,6 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   scene.background = new THREE.Color(0x1a0f09);
   const brouillard = new THREE.FogExp2(0x6b4a30, 0.0085); scene.fog = brouillard;
 
-  /* Ambiances : jour (pour voter), verdict (lumières allumées) */
-  const base0 = { soleil: soleil.intensity, soleilC: soleil.color.getHex(), hemi: hemi.intensity, app: appliques.map((l) => l.intensity),
-    expo: 1.05, fog: [brouillard.color.getHex(), brouillard.density] as [number, number], ver: M.verriere.emissiveIntensity, vit: M.vitrage.emissiveIntensity,
-    or: [M.or.envMapIntensity, M.or.roughness] as [number, number], cai: M.caisson.envMapIntensity };
-  let lustres: THREE.Group | null = null;
-  const faireLustres = () => {
-    if (lustres) return lustres;
-    const g = new THREE.Group(), nb = 150;
-    const b = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 12, 8), new THREE.MeshBasicMaterial({ color: 0xFFE6B8, toneMapped: false }), nb);
-    for (let i = 0; i < nb; i++) { const a = rad(-14 + i * (208 / (nb - 1))); o.position.set(20.22 * Math.cos(a), 12.5, 20.22 * Math.sin(a)); o.rotation.set(0, 0, 0); o.scale.setScalar(1); o.updateMatrix(); b.setMatrixAt(i, o.matrix); }
-    g.add(b);
-    for (const a of [-10, 15, 40, 65, 90, 115, 140, 165, 190]) { const l = new THREE.PointLight(0xffc98a, 1.25 * PI * 12, 30, 2), ar = rad(a); l.position.set(17.5 * Math.cos(ar), 11.6, 17.5 * Math.sin(ar)); g.add(l); }
-    for (const x of [-9, 0, 9]) { const l = new THREE.PointLight(0xffd29a, 0.9 * PI * 8, 16, 2); l.position.set(x, 9, -5.2); g.add(l); }
-    scene.add(g); lustres = g; return g;
-  };
-
-  /* Le jumeau : sa plaquette s'éclaire, une petite lumière chaude sur son pupitre (room.js). */
-  const jumPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.012, 0.052),
-    new THREE.MeshStandardMaterial({ color: 0xE9CB86, emissive: 0xFFD79A, emissiveIntensity: 0.9, metalness: 0.5, roughness: 0.3 }));
-  const jumLum = new THREE.PointLight(0xffd9a0, 0.9 * PI * 1.5, 3.4, 2);
-  const jum = new THREE.Group(); jum.add(jumPlaque, jumLum); jum.visible = false; scene.add(jum);
-
   /* Le personnage : sa place (null : le 578e fauteuil), sa marche en cours */
   let perso: Personnage | null = null;
   let place: number | null = null;
@@ -521,87 +534,76 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   };
 
   /* Caméra et rendu à la demande */
-  const cam = { pos: [0, 7, -6.4] as number[], cible: [0, 5.5, 11] as number[], fov: 64, haut: [0, 1, 0] as number[] };
+  const cam = { pos: [0, 7, -6.4] as number[], cible: [0, 5.5, 11] as number[], fov: 64 };
+  let cadre: Cadre = {};
   let vueCourante: NomVue = 'salle';
   let anim: Tween | null = null;
   let onde: { finir(): void } | null = null;
   let demande = false;
-  let echV = 1;
   let surRendu: (() => void) | null = null;
   // La caméra libre : un écart borné à la vue en cours (lacet, tangage, recul).
-  const libre = { lacet: 0, tangage: 0, zoom: 1 };
+  const libre = { lacet: 0, tangage: 0, zoom: 1, champ: 0 };
+  const enPlace = () => vueCourante === 'place' && place !== null;
   const allumes: boolean[] = new Array(n).fill(false);
   const appliquerCam = () => {
     camera.fov = cam.fov; camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
-    camera.up.set(cam.haut[0], cam.haut[1], cam.haut[2]).normalize();
-    camera.lookAt(cam.cible[0], cam.cible[1], cam.cible[2]); camera.updateProjectionMatrix();
+    camera.near = enPlace() ? REGARD.near : 0.1;
+    camera.lookAt(cam.cible[0], cam.cible[1], cam.cible[2]);
+    // Le centre de l'image passe au centre de ce que les feuilles laissent voir.
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (cadre.haut ?? 0)) / 2;
+    if (w && h && (dx || dy)) camera.setViewOffset(w, h, dx, dy, w, h); else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+    // Aux yeux du personnage, sa tête est cachée.
+    if (perso) perso.tete.visible = !enPlace();
   };
   const rendre = () => { renderer.render(scene, camera); surRendu?.(); };
   const demander = () => { if (demande) return; demande = true; requestAnimationFrame(() => { demande = false; rendre(); }); };
   const poserVoyants = () => {
     const m = new THREE.Matrix4(), s = new THREE.Vector3();
     for (let k = 0; k < n; k++) {
-      s.setScalar(echV); m.compose(mVoyant[k].p, mVoyant[k].q, s); I.voyant.setMatrixAt(k, m);
-      s.setScalar(allumes[k] && echV === 1 ? 1 : 0); m.compose(mLueur[k].p, mLueur[k].q, s); I.lueur.setMatrixAt(k, m);
+      s.setScalar(1); m.compose(mVoyant[k].p, mVoyant[k].q, s); I.voyant.setMatrixAt(k, m);
+      s.setScalar(allumes[k] ? 1 : 0); m.compose(mLueur[k].p, mLueur[k].q, s); I.lueur.setMatrixAt(k, m);
     }
     I.voyant.instanceMatrix.needsUpdate = true; I.lueur.instanceMatrix.needsUpdate = true;
   };
-  const finVue = (nom: NomVue) => {
-    const plan = nom === 'plan';
-    G.plafond.visible = !plan; G.faisceaux.visible = !plan && !lustres?.visible; brouillard.density = plan ? 0.0004 : base0.fog[1];
-    renderer.toneMappingExposure = plan ? 0.78 : (lustres?.visible ? 1.15 : base0.expo);
-    echV = plan ? 9 : 1; poserVoyants(); (M.sol as THREE.MeshPhysicalMaterial).color.setHex(plan ? 0x5e4f44 : 0xb9a596);
-    renderer.shadowMap.needsUpdate = true;
-  };
-  /** CAM 3 · Ta travée : par-dessus l'épaule du personnage, assis à sa place, face à la tribune.
-   *  Sans place, la salle depuis le perchoir. */
+  const finVue = () => { poserVoyants(); renderer.shadowMap.needsUpdate = true; };
+  /** Ta place : aux yeux du personnage assis au siège du jumeau, regard vers la tribune. Sans
+   *  place, la salle depuis le perchoir. */
   const cadrer = (nom: NomVue, aspect: number): Cadrage => {
-    if (nom !== 'travee' || place === null) return cadrage(nom === 'travee' ? 'salle' : nom, aspect);
-    const s = sieges[place];
-    const [x, y, z] = position(s);
-    const l = Math.hypot(x, z);
-    const dx = -x / l, dz = -z / l;
-    // Un peu en arrière et sur le côté, à hauteur d'épaule : son épaule et sa tête au premier plan.
-    const lx = -dz * 0.5, lz = dx * 0.5;
-    return { pos: [x - dx * 1.5 + lx, y + 1.7, z - dz * 1.5 + lz], cible: [0, 1.4, -1.2], fov: aspect < 0.9 ? 78 : 60 };
+    if (nom !== 'place' || place === null) return cadrage(nom === 'place' ? 'salle' : nom, aspect);
+    return { pos: yeuxAuSiege(sieges[place]), cible: CENTRE_TRIBUNE, fov: aspect < 0.9 ? 66 : 56 };
   };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
   const poserLibre = () => {
     const c = cadrer(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
-    if (vueCourante === 'travee' && place !== null) {
-      // Depuis son siège, on tourne la tête : lacet ±70°, tangage ±25°, sans bouger.
+    if (enPlace()) {
+      // Depuis son siège, on tourne la tête sans bouger ; le champ se règle entre 40° et 70°.
       const v = new THREE.Vector3(c.cible[0] - c.pos[0], c.cible[1] - c.pos[1], c.cible[2] - c.pos[2]);
       const r = v.length();
       const theta = Math.atan2(v.x, v.z) + libre.lacet;
       const phi = Math.asin(v.y / r) + libre.tangage;
       cam.pos = [...c.pos];
       cam.cible = [c.pos[0] + r * Math.cos(phi) * Math.sin(theta), c.pos[1] + r * Math.sin(phi), c.pos[2] + r * Math.cos(phi) * Math.cos(theta)];
-      cam.fov = c.fov; cam.haut = [0, 1, 0];
+      cam.fov = Math.min(REGARD.champMax, Math.max(REGARD.champMin, c.fov + libre.champ));
       appliquerCam(); demander();
       return;
     }
     const v = new THREE.Vector3(c.pos[0] - c.cible[0], c.pos[1] - c.cible[1], c.pos[2] - c.cible[2]);
     const r = v.length() * libre.zoom;
-    let pos: THREE.Vector3;
-    if (vueCourante === 'plan') {
-      v.applyAxisAngle(new THREE.Vector3(0, 1, 0), libre.lacet).setLength(r);
-      pos = v.add(new THREE.Vector3(...c.cible));
-      const h = new THREE.Vector3(...(c.haut ?? [0, 1, 0])).applyAxisAngle(new THREE.Vector3(0, 1, 0), libre.lacet);
-      cam.haut = [h.x, h.y, h.z];
-    } else {
-      const theta = Math.atan2(v.x, v.z) + libre.lacet;
-      const phi = Math.min(1.1, Math.max(-0.05, Math.asin(v.y / v.length()) + libre.tangage));
-      pos = new THREE.Vector3(r * Math.cos(phi) * Math.sin(theta), r * Math.sin(phi), r * Math.cos(phi) * Math.cos(theta))
-        .add(new THREE.Vector3(...c.cible));
-      cam.haut = [0, 1, 0];
-    }
+    const theta = Math.atan2(v.x, v.z) + libre.lacet;
+    const phi = Math.min(1.1, Math.max(-0.05, Math.asin(v.y / v.length()) + libre.tangage));
+    const pos = new THREE.Vector3(r * Math.cos(phi) * Math.sin(theta), r * Math.sin(phi), r * Math.cos(phi) * Math.cos(theta))
+      .add(new THREE.Vector3(...c.cible));
     // Jamais à travers les murs : en deçà de la colonnade (21 m), au-dessus du sol, sous la coupole.
     const rxz = Math.hypot(pos.x, pos.z);
     if (rxz > 18) { pos.x *= 18 / rxz; pos.z *= 18 / rxz; }
-    if (vueCourante !== 'plan') pos.y = Math.min(12, Math.max(0.9, pos.y));
+    pos.y = Math.min(12, Math.max(0.9, pos.y));
     cam.pos = [pos.x, pos.y, pos.z]; cam.cible = [...c.cible]; cam.fov = c.fov;
     appliquerCam(); demander();
   };
+  // Le siège sous le pointeur : un rayon sur les fauteuils instanciés (velours et bois).
+  const rayon = new THREE.Raycaster();
   const redimensionner = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75));
@@ -617,21 +619,29 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
       const c = cadrer(nom, aspect);
       vueCourante = nom;
-      libre.lacet = 0; libre.tangage = 0; libre.zoom = 1;
+      libre.lacet = 0; libre.tangage = 0; libre.zoom = 1; libre.champ = 0;
       anim?.finir();
-      const haut = c.haut ?? [0, 1, 0];
       if (o2.instant || opt.mouvementReduit) {
-        cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov; cam.haut = [...haut];
-        finVue(nom); appliquerCam(); demander(); return Promise.resolve();
+        cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov;
+        finVue(); appliquerCam(); demander(); return Promise.resolve();
       }
-      if (nom === 'plan') { G.plafond.visible = false; G.faisceaux.visible = false; renderer.shadowMap.needsUpdate = true; }
-      const de = { pos: [...cam.pos], cible: [...cam.cible], fov: cam.fov, haut: [...cam.haut] };
+      const de = { pos: [...cam.pos], cible: [...cam.cible], fov: cam.fov };
       const mix = (a: number[], b: number[], e: number) => a.map((v, i) => v + (b[i] - v) * e);
       anim = interpoler(1600, (e) => {
         cam.pos = mix(de.pos, c.pos, e); cam.cible = mix(de.cible, c.cible, e); cam.fov = de.fov + (c.fov - de.fov) * e;
-        cam.haut = mix(de.haut, haut, e); appliquerCam(); rendre();
+        appliquerCam(); rendre();
       });
-      return anim.fini.then(() => { anim = null; finVue(nom); demander(); });
+      return anim.fini.then(() => { anim = null; finVue(); demander(); });
+    },
+    cadre(c) {
+      cadre = { ...c };
+      if (anim) return;
+      appliquerCam(); demander();
+    },
+    siegeSous(x, y) {
+      rayon.setFromCamera(new THREE.Vector2(x * 2 - 1, 1 - y * 2), camera);
+      const [touche] = rayon.intersectObjects([I.velours, I.bois], false);
+      return touche?.instanceId ?? null;
     },
     terminer() { anim?.finir(); onde?.finir(); marche?.finir(); },
     voyants(couleurs) {
@@ -640,9 +650,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       for (let k = 0; k < n; k++) {
         const v = couleurs[k] ?? null;
         allumes[k] = !!v;
-        if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); }
+        if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); teinter(k, null); }
       }
-      I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); demander();
+      I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); demander();
     },
     voyantsEnOnde(couleurs, duree = 1000) {
       if (opt.mouvementReduit) { salle.voyants(couleurs); return Promise.resolve(); }
@@ -665,9 +675,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
           if (allume[k] || delais[k] * echelle > t) continue;
           allume[k] = true; change = true;
           const v = couleurs[k] ?? null; allumes[k] = !!v;
-          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); }
+          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); }
         }
-        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; poserVoyants(); rendre(); }
+        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); rendre(); }
       };
       const image = () => {
         if (fini) return;
@@ -690,7 +700,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       const cible = k;
       if (!perso || cible === null || !o3.marcher || opt.mouvementReduit) {
         place = cible; poserAssis();
-        if (vueCourante === 'travee') poserLibre(); else demander();
+        if (vueCourante === 'place') poserLibre(); else demander();
         return Promise.resolve();
       }
       // La marche : du 578e fauteuil au siège, par les allées, en 3,5 s ; un appui la termine.
@@ -704,7 +714,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       const terminer = () => {
         if (fini) return;
         fini = true; marche = null; place = cible; poserAssis();
-        if (vueCourante === 'travee') poserLibre(); else demander();
+        if (vueCourante === 'place') poserLibre(); else demander();
         resoudre();
       };
       const tw = interpoler(3500, (e) => {
@@ -719,45 +729,25 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       marche = { finir: () => { tw.arreter(); terminer(); } };
       return promesse;
     },
-    jumeau(k) {
-      jum.visible = k !== null;
-      if (k !== null) {
-        const m = new THREE.Matrix4(), sc = new THREE.Vector3();
-        I.plaque.getMatrixAt(k, m); m.decompose(jumPlaque.position, jumPlaque.quaternion, sc);
-        jumPlaque.position.y += 0.004;
-        jumLum.position.set(...position(sieges[k], 1.7));
-      }
-      renderer.shadowMap.needsUpdate = true; demander();
-    },
     orbiter(dLacet, dTangage) {
       if (anim) return;
-      const travee = vueCourante === 'travee' && place !== null;
-      const amplitude = travee ? rad(70) : vueCourante === 'plan' ? 1.0 : 0.6;
-      libre.lacet = borne(libre.lacet + dLacet, amplitude);
-      libre.tangage = vueCourante === 'plan' ? 0 : borne(libre.tangage + dTangage, travee ? rad(25) : 0.25);
+      if (enPlace()) {
+        libre.lacet = borne(libre.lacet + dLacet, REGARD.lacet);
+        libre.tangage = Math.min(REGARD.tangageHaut, Math.max(REGARD.tangageBas, libre.tangage + dTangage));
+      } else {
+        libre.lacet = borne(libre.lacet + dLacet, 0.6);
+        libre.tangage = borne(libre.tangage + dTangage, 0.25);
+      }
       poserLibre();
     },
     zoomer(f) {
-      if (anim || vueCourante === 'travee') return;
-      libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));
+      if (anim) return;
+      // Aux yeux du personnage, on ne recule pas : le champ de vision se resserre ou s'ouvre.
+      if (enPlace()) libre.champ = Math.max(REGARD.champMin - 70, Math.min(70 - REGARD.champMin, libre.champ + (f - 1) * 60));
+      else libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));
       poserLibre();
     },
     recentrer() { void salle.vue(vueCourante); },
-    ambiance(nom) {
-      soleil.intensity = base0.soleil; soleil.color.setHex(base0.soleilC); hemi.intensity = base0.hemi;
-      appliques.forEach((l, i) => { l.intensity = base0.app[i]; });
-      brouillard.color.setHex(base0.fog[0]); brouillard.density = base0.fog[1];
-      M.verriere.emissiveIntensity = base0.ver; M.vitrage.emissiveIntensity = base0.vit; M.or.envMapIntensity = base0.or[0]; M.or.roughness = base0.or[1]; M.caisson.envMapIntensity = base0.cai;
-      if (lustres) lustres.visible = false;
-      G.faisceaux.visible = vueCourante !== 'plan';
-      renderer.toneMappingExposure = base0.expo;
-      if (nom === 'verdict') {
-        soleil.intensity = 0.75 * PI; soleil.color.setHex(0xffcf9a); hemi.intensity = 0.22 * PI; appliques.forEach((l) => { l.intensity *= 2.6; });
-        faireLustres().visible = true; M.verriere.emissiveIntensity = 0.55; M.vitrage.emissiveIntensity = 0.55; M.or.envMapIntensity = 2.1; M.or.roughness = 0.55; M.caisson.envMapIntensity = 1.7;
-        renderer.toneMappingExposure = vueCourante === 'plan' ? 0.78 : 1.15; brouillard.color.setHex(0x3e2618); brouillard.density = vueCourante === 'plan' ? 0.0004 : 0.007; G.faisceaux.visible = false;
-      }
-      renderer.shadowMap.needsUpdate = true; demander();
-    },
     redimensionner,
     projeter(points) {
       return points.map((p) => { const v = new THREE.Vector3(...p).project(camera); return { x: (v.x + 1) / 2, y: (1 - v.y) / 2, devant: v.z < 1 }; });

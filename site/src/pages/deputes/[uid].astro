@@ -1,14 +1,19 @@
 ---
-// Fiche d'un député (frame V5 « Ma députée ») : identité, groupe, circonscription, place dans
-// l'hémicycle, participation, votes contre son groupe, et ses votes face aux réponses du
-// visiteur (calculées dans le navigateur). Pas de photo : des initiales, comme la maquette.
+// La fiche d'un député (VDEF, captures 17 et T5 ; lot V8) : son nom en titre, ses pastilles
+// (groupe, circonscription, depuis quand), « C'est mon député », un cadre de la salle avec son
+// siège (l'image fixe recadrée, le repère posé au build par salle3d/projection.ts) et « Voir dans
+// la salle », la carte noire « … a voté comme toi sur X de tes N votes » (règle du 22 oct. 2026,
+// calculée dans le navigateur), « Sur la législature » en phrases, puis ses votes face aux
+// tiens. Le genre des phrases suit la civilité publiée par l'Assemblée ; sans elle, des phrases
+// sans pronom.
 import Base from '../../layouts/Base.astro';
-import MiniHemicycle from '../../components/MiniHemicycle.astro';
-import { composition, dateLisible, deputes, ficheDepute, LIBELLES, lienVote, majuscule,
-  medianes, nomComplet, scrutins, type Position } from '../../lib/donnees.ts';
+import Bouton from '../../components/vdef/Bouton.astro';
+import Pastille from '../../components/vdef/Pastille.astro';
+import { cartesParVote, composition, dateLisible, deputes, ficheDepute, lienVote, majuscule,
+  medianes, nomComplet, scrutins } from '../../lib/donnees.ts';
 import { libelleCirco } from '../../lib/geo.ts';
-import { couleurGroupe } from '../../lib/couleurs.ts';
-import { FAMILLES, famille, verdict } from '../../lib/votes.ts';
+import { verdict } from '../../lib/votes.ts';
+import { siegeDansFond } from '../../salle3d/projection.ts';
 
 export function getStaticPaths() {
   return deputes().map((d) => ({ params: { uid: d.uid } }));
@@ -17,491 +22,280 @@ export function getStaticPaths() {
 const { uid } = Astro.params as { uid: string };
 const d = ficheDepute(uid);
 const elle = d.civilite === 'Mme';
+const il = d.civilite === 'M.';
 const e = elle ? 'e' : '';
+const titreFonction = elle ? 'Députée' : il ? 'Député' : 'Député ou députée';
 const nom = nomComplet(d);
-const PARTICULES = new Set(['de', 'du', 'des', 'la', 'le', "d'"]);
-const initiales = [d.prenom, d.nom.split(/[\s-]+/).find((m) => !PARTICULES.has(m.toLowerCase())) ?? d.nom]
-  .map((m) => m.charAt(0).toUpperCase()).join('');
 const index = new Map(scrutins().map((s) => [s.uid, s]));
+const cartes = cartesParVote();
 const votes = d.votes.filter((v) => index.has(v.uid)).map((v) => ({ ...v, s: index.get(v.uid)! }));
 const t = d.chiffres.tous;
-const pris = t.pour + t.contre + t.abstention;
-const pct = (a: number, b: number) => (b ? Math.round((100 * a) / b) : 0);
 const sol = d.chiffres.solennels;
 const prisSol = sol.pour + sol.contre + sol.abstention;
-const dissidences = votes.filter((v) => v.dissident).length;
+const pct = (a: number, b: number) => (b ? Math.round((100 * a) / b) : 0);
 const reperes = medianes();
-const compo = composition();
-const siege = compo.sieges.findIndex((s) => s.depute === uid);
-const couleur = couleurGroupe(compo.groupes.find((g) => g.uid === d.groupe)?.couleur);
-// Le groupe du député, à la couleur que l'Assemblée lui associe ; les autres sièges éteints.
-const couleurs = compo.sieges.map((s) => s.vacant ? '#FFFFFF'
-  : s.groupe === d.groupe ? couleur : '#D8D5CD');
-const membres = compo.sieges.filter((s) => s.groupe === d.groupe).length;
+const siege = composition().sieges.findIndex((s) => s.depute === uid);
+const point = siege >= 0 && d.en_exercice ? siegeDansFond(siege) : null;
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const debut = d.mandats[0]?.debut ?? d.debut;
+const depuis = `${MOIS[Number(debut.slice(5, 7)) - 1]} ${debut.slice(0, 4)}`;
+const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const dateCourte = (iso: string) => `${Number(iso.slice(8, 10))} ${MOIS_COURTS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+const MOTS: Record<string, string> = { pour: 'Pour', contre: 'Contre', abstention: 'Abstention', non_votant: 'Non-votant', absent: elle ? 'Absente' : 'Absent' };
+const POINTS: Record<string, string> = { pour: 'pour', contre: 'contre', abstention: 'abstention', non_votant: 'non-votant', absent: 'absent' };
+const pronom = elle ? 'Elle' : il ? 'Il' : 'Son vote';
 const censures = votes.filter((v) => v.s.motion_censure).map((v) => v.uid);
-const libelleVote = (vote: Position, censure: boolean) => censure
-  ? (vote === 'pour' ? 'pour la censure' : vote === 'absent' ? "ne l'a pas votée" : LIBELLES[vote])
-  : LIBELLES[vote];
-const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${d.sigle}) ` : ''}de la ${libelleCirco(d.circo)} ${d.departement === 'Français établis hors de France' ? 'des Français établis hors de France' : `(${d.departement})`} : ses votes, sa participation, ses votes contre son groupe.`;
+const departement = d.departement === 'Français établis hors de France' ? 'Français de l’étranger' : d.departement;
+const description = `${nom}, ${elle ? 'députée' : 'député'} ${d.sigle ? `(${d.sigle}) ` : ''}de la ${libelleCirco(d.circo)} (${departement}) : ses votes, sa participation, ses votes contre son groupe, comparés aux tiens.`;
+const donnees = JSON.stringify({ uid, elle, il, censures, votes: votes.map((v) => ({ uid: v.uid, vote: v.vote })) });
 ---
-<Base titre={nom} description={description} onglet="explorer" jsonld={{
+<Base titre={nom} description={description} gabarit="lecture" vue="salle" bas="salle" jsonld={{
   '@context': 'https://schema.org', '@type': 'Person', name: nom,
   jobTitle: elle ? 'Députée' : 'Député', url: new URL(Astro.url.pathname, Astro.site).href,
   ...(d.groupe_libelle ? { memberOf: { '@type': 'Organization', name: d.groupe_libelle } } : {}),
   worksFor: { '@type': 'GovernmentOrganization', name: 'Assemblée nationale' },
 }}>
-  <nav class="fil" aria-label="Fil d'Ariane">
-    <a href="/explorer/">Explorer</a> <span aria-hidden="true">›</span>
-    <a href="/deputes/">Députés</a> <span aria-hidden="true">›</span>
-    <span aria-current="page">{nom}</span>
-  </nav>
+  <a class="retour" href="/salle/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    La salle
+  </a>
+  <header class="entete">
+    <div class="entete-texte">
+      <span class="t-etiquette" data-etiquette-mien data-defaut={titreFonction}>{titreFonction}</span>
+      <h1 class="t-ecran">{nom}</h1>
+      <div class="pastilles">
+        {d.groupe_libelle && <Pastille>{d.groupe_libelle}</Pastille>}
+        <Pastille>{departement} · {libelleCirco(d.circo)}</Pastille>
+        <Pastille>{titreFonction} depuis {depuis}</Pastille>
+        {!d.en_exercice && d.fin && <Pastille noire>Mandat terminé le {dateLisible(d.fin)}</Pastille>}
+      </div>
+    </div>
+    {d.en_exercice && (
+      <button type="button" class="mon-depute" data-mon-depute aria-pressed="false">
+        <svg class="coche" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+        <span>C’est {elle ? 'ma députée' : 'mon député'}</span>
+      </button>
+    )}
+  </header>
 
-  <div class="bandeau-mien" data-bandeau hidden>
-    <span class="coche" aria-hidden="true">✓</span>
-    <span><strong>{elle ? 'Ta députée' : 'Ton député'}</strong> · {libelleCirco(d.circo)} · {d.departement}</span>
-    <a href="/deputes/">Changer</a>
+  {point && (
+    <div class="cadre-salle" style={`--x: ${point.x.toFixed(4)}; --y: ${point.y.toFixed(4)}`}>
+      <img src="/salle3d/fond-salle.webp" alt={`La salle de l’Assemblée vue du perchoir : le siège de ${nom} est marqué.`} loading="lazy" decoding="async" />
+      <span class="repere-siege" aria-hidden="true"><span class="repere-libelle">Son siège{d.place ? ` · ${d.place}` : ''}</span><span class="repere-point"></span></span>
+      <a class="voir-salle" href={`/salle/#depute=${uid}`}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 19a9 9 0 0 1 18 0"></path><path d="M7 19a5 5 0 0 1 10 0"></path></svg>
+        Voir dans la salle
+      </a>
+    </div>
+  )}
+
+  <div class="duo">
+    <div class="carte-noire" data-elle-et-toi>
+      <span class="etiquette-noire">{elle ? 'Elle et toi' : il ? 'Lui et toi' : 'Ses votes et les tiens'}</span>
+      <p class="phrase-noire" data-accord-phrase>Tranche des votes pour comparer ses votes aux tiens.</p>
+      <p class="detail-noir" data-accord-detail hidden></p>
+      <a class="lien-noir" href="/quiz/" data-accord-lien>Faire le quiz · 10 votes</a>
+    </div>
+    <div class="carte-grise">
+      <span class="t-etiquette">Sur la législature</span>
+      <p class="t-texte">
+        A pris part à {prisSol} des {sol.scrutins} votes solennels de son mandat.
+        A voté {t.contre_groupe} fois contre la position majoritaire de son groupe.
+      </p>
+      <details>
+        <summary>Comment lire ces chiffres</summary>
+        <p class="t-legende">Prendre part : voter pour, contre ou s’abstenir. Aux votes solennels, tous les députés sont appelés à voter ; sur l’ensemble des {t.scrutins.toLocaleString('fr-FR')} scrutins de son mandat, amendements compris, {pct(t.pour + t.contre + t.abstention, t.scrutins)} %. Médianes des députés : {reperes.solennels} % aux votes solennels, {reperes.participation} % sur l’ensemble, {reperes.contreGroupe} votes contre leur groupe. Une absence n’est pas forcément un désintérêt : un député peut siéger en commission au même moment. Un vote contre son groupe : opposé à la position majoritaire du groupe ; jamais pour les non-inscrits, et une abstention n’en est pas un.</p>
+      </details>
+    </div>
   </div>
 
-  <section class="identite" aria-labelledby="nom-depute">
-    <span class="avatar" aria-hidden="true">{initiales}</span>
-    <div class="identite-texte">
-      <h1 id="nom-depute">{nom}</h1>
-      <div class="puces">
-        {d.groupe_libelle && (
-          <span class="puce-groupe" style={`--c: ${couleur}`}>
-            {d.sigle && d.sigle !== d.groupe_libelle ? `${d.sigle} · ` : ''}{d.groupe_libelle}
-          </span>
-        )}
-        <span class="puce-gris">{libelleCirco(d.circo)} · {d.departement}</span>
-        {d.place && d.en_exercice && <span class="puce-gris">Siège n° {d.place}</span>}
-        {!d.en_exercice && d.fin && (
-          <span class="puce-fin">Mandat terminé le {dateLisible(d.fin)}{d.cause_fin ? ` (${d.cause_fin.toLowerCase()})` : ''}</span>
-        )}
-      </div>
-      <p class="depuis">
-        {elle ? 'Députée' : 'Député'} depuis le {dateLisible(d.mandats[0]?.debut ?? d.debut)}.
-      </p>
+  <section class="bloc" aria-labelledby="titre-votes">
+    <h2 id="titre-votes" class="t-section">Ses votes face aux tiens</h2>
+    <div class="filtres" role="group" aria-label="Filtrer ses votes">
+      <button type="button" class="filtre" data-filtre="" aria-pressed="true">Tous ses votes · {votes.length}</button>
+      <button type="button" class="filtre" data-filtre="repondu" aria-pressed="false">Ceux que j’ai tranchés · <span data-n-repondu>0</span></button>
+      {votes.some((v) => v.dissident) && <button type="button" class="filtre" data-filtre="dissident" aria-pressed="false">Contre son groupe · {votes.filter((v) => v.dissident).length}</button>}
     </div>
-    <div class="identite-cote">
-      <div class="anneau" data-anneau hidden>
-        <span class="anneau-interieur">
-          <span class="anneau-pct" data-anneau-pct></span>
-          <span class="anneau-legende">comme toi</span>
-        </span>
-      </div>
-      <p class="anneau-note" data-anneau-note hidden></p>
-      {d.en_exercice && (
-        <button type="button" class="mon-depute" data-mon-depute data-uid={uid} aria-pressed="false">
-          <span data-libelle-off>C'est {elle ? 'ma députée' : 'mon député'}</span>
-          <span data-libelle-on hidden>✓ {elle ? 'Ta députée' : 'Ton député'}</span>
-        </button>
-      )}
-    </div>
+    <ul class="votes" data-lignes>
+      {votes.map((v) => (
+        <li data-uid={v.uid} data-vote={v.vote} data-dissident={v.dissident ? '1' : undefined} data-censure={v.s.motion_censure ? '1' : undefined}>
+          <a href={lienVote(v.s)}>
+            <span class="v-texte">
+              <span class="v-titre">{cartes.get(v.uid)?.question.replace(/ ([?!:;])/g, ' $1') ?? majuscule(v.s.titre).replace(/\.$/, '')}</span>
+              <span class="t-legende">{dateCourte(v.s.date)} · {verdict(v.s)}{v.position_groupe && !v.s.motion_censure ? ` · groupe : ${v.position_groupe.replace('_', '-')}` : ''}{v.dissident ? ' · contre son groupe' : ''}</span>
+            </span>
+            <span class="v-sien"><span class={`point ${POINTS[v.vote]}`} aria-hidden="true"></span>{pronom} : {MOTS[v.vote].toLowerCase()}</span>
+            <span class="v-toi" data-toi>{v.s.motion_censure ? '' : <span class="trancher">Trancher</span>}</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="t-texte" data-vide hidden>Aucun vote ne correspond à ce filtre.</p>
+    <Bouton variante="contour" data-plus hidden>Afficher plus de votes</Bouton>
+    <p class="t-legende"><a href={d.lien}>Sa fiche sur le site de l’Assemblée nationale</a></p>
   </section>
-
-  <div class="stats">
-    <p class="stat-sombre">
-      <span class="sur-titre">Sur la législature</span>
-      <span>
-        A pris part à <strong>{pct(pris, t.scrutins)} %</strong> des {t.scrutins.toLocaleString('fr-FR')} scrutins
-        de son mandat, amendements compris : la plupart ne réunissent qu'une partie des
-        députés. Aux votes solennels, où tous sont appelés à voter : <strong>{pct(prisSol, sol.scrutins)} %</strong>.
-      </span>
-    </p>
-    <div class="stat violet">
-      <span class="stat-chiffre">{pct(pris, t.scrutins)}<span class="sur"> %</span></span>
-      <span class="stat-legende">de participation</span>
-      <span class="stat-repere">médiane des députés : {reperes.participation} %</span>
-    </div>
-    <div class="stat jaune">
-      <span class="stat-chiffre">{pct(prisSol, sol.scrutins)}<span class="sur"> %</span></span>
-      <span class="stat-legende">aux votes solennels ({prisSol} sur {sol.scrutins})</span>
-      <span class="stat-repere">médiane des députés : {reperes.solennels} %</span>
-    </div>
-    <div class="stat orange">
-      <span class="stat-chiffre">{t.contre_groupe}</span>
-      <span class="stat-legende">votes contre son groupe</span>
-      <span class="stat-repere">médiane des députés : {reperes.contreGroupe}</span>
-    </div>
-  </div>
-
-  <div class="mise-en-page">
-    <section class="ses-votes" aria-labelledby="titre-votes">
-      <div class="titre-section">
-        <h2 id="titre-votes">Ses votes face aux tiens</h2>
-        <span>{votes.length} votes de son mandat</span>
-      </div>
-      <p class="aide" data-aide>
-        Les votes qui ont une page sur le site : textes votés dans leur ensemble, budgets,
-        résolutions, motions de censure. Tranche-les pour te comparer.
-      </p>
-      <div class="filtres" role="group" aria-label="Filtrer ses votes">
-        <button type="button" data-filtre="" aria-pressed="true">Tous</button>
-        <button type="button" data-filtre="solennel" aria-pressed="false">Solennels</button>
-        {dissidences > 0 && <button type="button" data-filtre="dissident" aria-pressed="false">Contre son groupe ({dissidences})</button>}
-        <button type="button" data-filtre="repondu" aria-pressed="false">Ceux que j'ai tranchés</button>
-      </div>
-      <div class="entetes" aria-hidden="true">
-        <span>Vote</span><span>{elle ? 'Elle' : 'Lui'}</span><span>Son groupe</span><span>Toi</span>
-      </div>
-      <ul class="lignes" data-lignes>
-        {votes.map((v) => {
-          const f = famille(v.s);
-          return (
-            <li data-uid={v.uid} data-vote={v.vote} data-solennel={v.s.solennel ? '1' : undefined}
-              data-dissident={v.dissident ? '1' : undefined} data-censure={v.s.motion_censure ? '1' : undefined}>
-              <span class="vote-titre">
-                <span class="meta">
-                  <span class:list={['etiquette', { solennel: v.s.solennel && f !== 'censure', censure: f === 'censure' }]}>
-                    {v.s.solennel && f !== 'censure' ? 'Solennel' : FAMILLES[f]}
-                  </span>
-                  {dateLisible(v.s.date)} · {verdict(v.s)}
-                </span>
-                <a href={lienVote(v.s)}>{majuscule(v.s.titre).replace(/\.$/, '')}</a>
-              </span>
-              <span class="cellule" data-l={elle ? 'Elle' : 'Lui'}>
-                <span class:list={['pastille', `p-${v.vote}`]}>{libelleVote(v.vote, v.s.motion_censure)}</span>
-                {v.dissident && <span class="contre-groupe" title="Vote contraire à la majorité de son groupe">contre son groupe</span>}
-                {v.mise_au_point && <span class="mise-au-point">mise au point : {LIBELLES[v.mise_au_point as Position] ?? v.mise_au_point}</span>}
-              </span>
-              <span class="cellule" data-l="Son groupe">
-                <span class="groupe">{v.groupe ?? '—'}{v.position_groupe && !v.s.motion_censure ? ` : ${LIBELLES[v.position_groupe as Position] ?? v.position_groupe}` : ''}</span>
-              </span>
-              <span class="cellule" data-l="Toi">
-                <span class="toi" data-toi>
-                  {v.s.motion_censure ? '—' : <a href={`${lienVote(v.s)}#qui-a-vote`}>Trancher</a>}
-                </span>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-      <p class="vide" data-vide hidden>Aucun vote ne correspond à ce filtre.</p>
-      <button type="button" class="bouton" data-plus hidden>Afficher plus de votes</button>
-    </section>
-
-    <aside class="cote">
-      {siege >= 0 && (
-        <section class="encadre gris" aria-labelledby="titre-siege">
-          <h2 id="titre-siege">Où {elle ? 'elle' : 'il'} siège</h2>
-          <MiniHemicycle couleurs={couleurs} marque={siege}
-            titre={`Hémicycle : le siège de ${nom}, entouré, parmi les ${membres} membres de son groupe, à la couleur du groupe`} />
-          <p>
-            Entouré{e}, son siège ; à la couleur du groupe, les {membres} membres de son groupe
-            {d.sigle ? ` (${d.sigle})` : ''}. Sur les votes de cette page, {elle ? 'elle' : 'il'} a voté
-            contre la majorité de son groupe <strong>{dissidences} fois</strong>.
-          </p>
-        </section>
-      )}
-      <section class="encadre" aria-labelledby="titre-parcours">
-        <h2 id="titre-parcours">Son parcours</h2>
-        <ul class="parcours">
-          {d.groupes.map((g) => (
-            <li>
-              <strong>{g.libelle}</strong>
-              <span>{g.fin ? `du ${dateLisible(g.debut)} au ${dateLisible(g.fin)}` : `depuis le ${dateLisible(g.debut)}`}</span>
-            </li>
-          ))}
-        </ul>
-        {d.mandats.length > 1 && (
-          <p class="note">{d.mandats.length} mandats dans cette législature (par exemple après un passage au Gouvernement).</p>
-        )}
-      </section>
-      <section class="encadre" aria-labelledby="titre-lire">
-        <h2 id="titre-lire">Comment lire ces chiffres</h2>
-        <p>Participation : votes pour, contre ou abstention, rapportés à tous les scrutins de son
-        mandat, hors motions de censure.</p>
-        <p>Une absence n'est pas forcément un désintérêt : un député peut siéger en commission
-        au même moment.</p>
-        <p><a href={d.lien}>Sa fiche sur le site de l'Assemblée nationale</a></p>
-      </section>
-    </aside>
-  </div>
-  <script type="application/json" data-censures set:html={JSON.stringify(censures)}></script>
+  <script type="application/json" data-donnees-depute set:html={donnees}></script>
 </Base>
 
 <script>
   import { accord } from '../../lib/accord.ts';
   import { choisirDepute, deputeChoisi, reponses } from '../../lib/navigateur.ts';
 
-  const PAR_PAGE = 25;
-  const lignes = [...document.querySelectorAll<HTMLElement>('[data-lignes] > li')];
-  const mesReponses = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
-  const censures = new Set<string>(JSON.parse(
-    document.querySelector('[data-censures]')?.textContent ?? '[]'));
+  const PAR_PAGE = 20;
+  document.addEventListener('astro:page-load', () => {
+    const brut = document.querySelector('[data-donnees-depute]')?.textContent;
+    if (!brut) return;
+    const d = JSON.parse(brut) as { uid: string; elle: boolean; il: boolean; censures: string[]; votes: { uid: string; vote: string }[] };
+    const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s);
+    const mes = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
+    const lignes = [...document.querySelectorAll<HTMLElement>('[data-lignes] > li')];
 
-  // Colonne « Toi » et marque d'accord.
-  for (const l of lignes) {
-    const r = mesReponses[l.dataset.uid!];
-    if (!r || l.dataset.censure) continue;
-    l.dataset.repondu = '1';
-    const toi = l.querySelector<HTMLElement>('[data-toi]')!;
-    toi.textContent = '';
-    const p = document.createElement('span');
-    p.className = `pastille p-${r}`;
-    p.textContent = r;
-    toi.append(p);
-    const v = l.dataset.vote;
-    if (v === 'pour' || v === 'contre' || v === 'abstention') {
-      const m = document.createElement('span');
-      const pareil = v === r;
-      m.className = `marque ${pareil ? 'oui' : 'non'}`;
-      m.textContent = pareil ? '=' : '≠';
-      m.title = pareil ? 'Même vote que toi' : 'Vote différent du tien';
-      toi.append(m);
+    // La colonne « Toi ».
+    let repondus = 0;
+    for (const l of lignes) {
+      const r = mes[l.dataset.uid!];
+      if (!r || l.dataset.censure) continue;
+      repondus += 1;
+      l.dataset.repondu = '1';
+      const toi = l.querySelector<HTMLElement>('[data-toi]')!;
+      const p = document.createElement('span');
+      p.className = `point ${r}`;
+      p.setAttribute('aria-hidden', 'true');
+      const haut = document.createElement('span');
+      haut.className = 'toi-haut';
+      haut.append(p, `Toi : ${r}`);
+      const bas = document.createElement('span');
+      bas.className = 't-legende';
+      bas.textContent = l.dataset.vote === r ? 'Comme toi' : 'Pas comme toi';
+      toi.replaceChildren(haut, bas);
     }
-  }
+    $('[data-n-repondu]')!.textContent = String(repondus);
 
-  // Ses votes face aux tiens : X votes comme toi sur tes N (une absence n'est pas un accord).
-  const a = accord(lignes.map((l) => ({ uid: l.dataset.uid!, vote: l.dataset.vote! })),
-    mesReponses, censures);
-  if (a.taux !== null) {
-    const anneau = document.querySelector<HTMLElement>('[data-anneau]')!;
-    anneau.hidden = false;
-    anneau.style.setProperty('--pct', `${a.taux}%`);
-    document.querySelector('[data-anneau-pct]')!.textContent = `${a.taux} %`;
-    const note = document.querySelector<HTMLElement>('[data-anneau-note]')!;
-    note.hidden = false;
-    note.textContent = `${a.identiques} vote${a.identiques > 1 ? 's' : ''} comme toi sur ${a.n}`;
-    document.querySelector('[data-aide]')!.textContent =
-      `Sur tes ${a.n} réponse${a.n > 1 ? 's' : ''} : même vote ${a.identiques} fois, vote différent `
-      + `${a.contraires} fois, pas de vote ${a.absents} fois. Une abstention de sa part compte comme `
-      + 'un vote différent ; une absence ne compte jamais comme un accord.';
-  }
+    // Elle et toi : X votes comme toi sur tes N (une absence n'est jamais un accord).
+    const a = accord(d.votes, mes, new Set(d.censures));
+    if (a.n) {
+      const sujet = d.elle ? 'Elle a' : d.il ? 'Il a' : 'A';
+      $('[data-accord-phrase]')!.textContent = `${sujet} voté comme toi sur ${a.identiques} de tes ${a.n} vote${a.n > 1 ? 's' : ''}.`;
+      const detail = $('[data-accord-detail]')!;
+      detail.hidden = false;
+      detail.textContent = `${a.contraires} fois autrement, ${d.elle ? 'absente' : d.il ? 'absent' : 'sans vote'} ${a.absents} fois.`;
+      $('[data-accord-lien]')!.hidden = true;
+    }
 
-  // « C'est mon député ».
-  const bouton = document.querySelector<HTMLButtonElement>('[data-mon-depute]');
-  const bandeau = document.querySelector<HTMLElement>('[data-bandeau]')!;
-  const majBouton = () => {
-    const mien = deputeChoisi() === bouton?.dataset.uid;
-    bandeau.hidden = !mien;
-    if (!bouton) return;
-    bouton.setAttribute('aria-pressed', String(mien));
-    bouton.querySelector<HTMLElement>('[data-libelle-off]')!.hidden = mien;
-    bouton.querySelector<HTMLElement>('[data-libelle-on]')!.hidden = !mien;
-  };
-  bouton?.addEventListener('click', () => {
-    const mien = deputeChoisi() === bouton.dataset.uid;
-    choisirDepute(mien ? null : bouton.dataset.uid!);
-    majBouton();
-  });
-  majBouton();
-
-  // Filtres et pagination de la liste.
-  const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
-  const plus = document.querySelector<HTMLButtonElement>('[data-plus]')!;
-  const vide = document.querySelector<HTMLElement>('[data-vide]')!;
-  let filtre = '';
-  let limite = PAR_PAGE;
-  const appliquer = () => {
-    const retenues = lignes.filter((l) => !filtre || l.dataset[filtre] === '1');
-    for (const l of lignes) l.hidden = true;
-    retenues.slice(0, limite).forEach((l) => { l.hidden = false; });
-    vide.hidden = retenues.length > 0;
-    plus.hidden = retenues.length <= limite;
-    plus.textContent = `Afficher plus de votes (${retenues.length - limite} restants)`;
-  };
-  for (const b of boutons) {
-    b.addEventListener('click', () => {
-      filtre = b.dataset.filtre ?? '';
-      for (const autre of boutons) autre.setAttribute('aria-pressed', String(autre === b));
-      limite = PAR_PAGE;
-      appliquer();
+    // « C'est mon député ».
+    const bouton = $<HTMLButtonElement>('[data-mon-depute]');
+    const etiquette = $('[data-etiquette-mien]')!;
+    const maj = () => {
+      const mien = deputeChoisi() === d.uid;
+      etiquette.textContent = mien ? (d.elle ? 'Ta députée' : 'Ton député') : etiquette.dataset.defaut!;
+      if (!bouton) return;
+      bouton.setAttribute('aria-pressed', String(mien));
+    };
+    bouton?.addEventListener('click', () => {
+      choisirDepute(deputeChoisi() === d.uid ? null : d.uid);
+      maj();
     });
-  }
-  plus.addEventListener('click', () => { limite += PAR_PAGE; appliquer(); });
-  appliquer();
+    maj();
+
+    // Filtres et pagination.
+    const boutons = [...document.querySelectorAll<HTMLButtonElement>('[data-filtre]')];
+    const plus = $<HTMLButtonElement>('[data-plus]')!;
+    const vide = $('[data-vide]')!;
+    let filtre = '';
+    let limite = PAR_PAGE;
+    const appliquer = () => {
+      const retenues = lignes.filter((l) => !filtre || l.dataset[filtre] === '1');
+      for (const l of lignes) l.hidden = true;
+      retenues.slice(0, limite).forEach((l) => { l.hidden = false; });
+      vide.hidden = retenues.length > 0;
+      plus.hidden = retenues.length <= limite;
+      for (const b of boutons) b.setAttribute('aria-pressed', String((b.dataset.filtre ?? '') === filtre));
+    };
+    for (const b of boutons) b.addEventListener('click', () => { filtre = b.dataset.filtre ?? ''; limite = PAR_PAGE; appliquer(); });
+    plus.addEventListener('click', () => { limite += PAR_PAGE; appliquer(); });
+    appliquer();
+  });
 </script>
 
 <style>
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--ivoire-2); }
-  .fil a { text-decoration: none; font-weight: 700; }
-  .fil a:hover { text-decoration: underline; }
-
-  .bandeau-mien {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 14px;
-    padding: 14px 18px;
-    background: var(--panneau-2);
-    font-size: 16px;
-  }
-  .bandeau-mien a { margin-left: auto; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
-  .coche {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%; background: var(--ivoire); color: var(--nuit); font-weight: 700;
-  }
-
-  .identite {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 22px 32px;
-    padding: clamp(20px, 2.6vw, 28px);
-    background: var(--panneau);
-  }
-  /* Pas de cercle à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
-  .avatar { display: none; }
-  .identite-texte { flex: 1 1 340px; min-width: 0; }
-  /* Le nom du député, en Literata (DESIGN-FINAL.md, § 6). */
-  .identite h1 { font-size: clamp(30px, 3vw, 34px); overflow-wrap: anywhere; }
-  .puces { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .puces span {
-    padding: 6px 12px;
-    font: 600 13px/16px var(--police-titre);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-  .puce-groupe { display: inline-flex; align-items: center; gap: 8px; background: var(--panneau);
-    border: 1px solid var(--c); color: var(--ivoire); }
-  .puce-groupe::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-  .puce-gris { background: var(--panneau-2); color: var(--ivoire); }
-  .puce-fin { background: var(--panneau-2); color: var(--ivoire); border: 1px dashed var(--ivoire-2); }
-  .depuis { margin: 10px 0 0; font-size: 15px; color: var(--ivoire-2); }
-  .identite-cote { flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .anneau {
-    --pct: 0%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 116px;
-    height: 116px;
-    border-radius: 50%;
-    background: conic-gradient(var(--ivoire) 0 var(--pct), var(--filet) var(--pct) 100%);
-  }
-  .anneau-interieur {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 88px; height: 88px; border-radius: 50%; background: var(--panneau);
-  }
-  .anneau-pct { font-family: var(--police-titre); font-weight: 700; font-size: 26px; line-height: 1; }
-  .anneau-legende { font-size: 12px; color: var(--ivoire-2); }
-  .anneau-note { margin: 0; font-size: 13px; color: var(--ivoire-2); }
+  .entete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+  .entete-texte { display: flex; flex-direction: column; gap: 10px; }
+  .pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
   .mon-depute {
-    min-height: 50px;
-    padding: 0 20px;
-    border: 1px solid var(--ivoire-2);
-    background: var(--panneau);
-    font: 600 15px/1 var(--police-titre);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ivoire);
-    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px;
+    border: 1px solid var(--bord); border-radius: var(--pilule); background: var(--feuille); color: var(--encre);
+    font: 700 15px/1 var(--police-texte); cursor: pointer;
   }
-  .mon-depute[aria-pressed='true'] { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
-
-  .stats { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 2px; }
-  @media (max-width: 1080px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } .stat-sombre { grid-column: 1 / -1; } }
-  @media (max-width: 560px) { .stats { grid-template-columns: minmax(0, 1fr); } }
-  .stat-sombre {
-    display: flex; flex-direction: column; gap: 6px; margin: 0;
-    padding: 18px 22px; background: #16181D; color: #F2EEE6; font-size: 16px;
+  .mon-depute .coche { display: none; }
+  .mon-depute[aria-pressed='true'] { background: var(--encre); border-color: var(--encre); color: var(--feuille); }
+  .mon-depute[aria-pressed='true'] .coche { display: block; }
+  /* L'image fixe de la salle, recadrée autour du siège (largeur du cadre, image en 16:10). */
+  .cadre-salle {
+    position: relative; height: 340px; border-radius: 20px; overflow: hidden; background: var(--fond-salle);
+    container-type: inline-size;
   }
-  .stat-sombre .sur-titre {
-    font-family: var(--police-titre); font-weight: 600; font-size: 13px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: #ABA69C;
+  .cadre-salle img {
+    position: absolute; left: 0; width: 100%; height: auto;
+    top: clamp(calc(340px - 62.5cqw), calc(170px - var(--y) * 62.5cqw), 0px);
   }
-  .stat { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; }
-  .stat-chiffre { font-family: var(--police-titre); font-weight: 600; font-size: 48px; line-height: 0.95; font-variant-numeric: tabular-nums; }
-  .stat-chiffre .sur { font-size: 18px; opacity: 0.6; }
-  .stat-legende { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .stat-repere { margin-top: auto; font-size: 13px; opacity: 0.8; }
-  .violet, .jaune, .orange { background: var(--panneau); color: var(--ivoire); }
-
-  .mise-en-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
-  @media (max-width: 1080px) { .mise-en-page { grid-template-columns: minmax(0, 1fr); } }
-  .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
-  .titre-section h2 { font-size: clamp(22px, 2.4vw, 26px); }
-  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
-  .aide { margin: 6px 0 12px; font-size: 15px; color: var(--ivoire); }
-  .filtres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-  .filtres button {
-    min-height: 40px; padding: 0 14px; border: 1px solid var(--filet);
-    background: var(--panneau); font: 600 13px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--ivoire); cursor: pointer;
+  .repere-siege {
+    position: absolute; left: calc(var(--x) * 100%);
+    top: calc(clamp(calc(340px - 62.5cqw), calc(170px - var(--y) * 62.5cqw), 0px) + var(--y) * 62.5cqw);
+    width: 0; height: 0;
   }
-  .filtres button[aria-pressed='true'] { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
-  @media (max-width: 700px) {
-    .filtres { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-    .filtres button { flex: none; }
+  .repere-point {
+    position: absolute; left: -11px; top: -11px; width: 22px; height: 22px; border-radius: var(--pilule);
+    background: var(--feuille); border: 4px solid var(--encre); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   }
-  .entetes, .lignes li {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 150px 120px 110px;
-    gap: 12px;
-    align-items: center;
+  .repere-libelle {
+    position: absolute; left: 0; bottom: 20px; transform: translateX(-50%); padding: 9px 13px;
+    border-radius: var(--pilule); background: var(--feuille); color: var(--encre); font: 600 14px/1 var(--police-texte); white-space: nowrap;
   }
-  .entetes {
-    padding: 0 0 8px;
-    font-family: var(--police-titre);
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ivoire-2);
+  .voir-salle {
+    position: absolute; right: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 8px; min-height: var(--cible);
+    padding: 0 16px; border-radius: var(--pilule); background: var(--feuille); color: var(--encre); text-decoration: none;
+    font: 700 14px/1 var(--police-texte); box-shadow: var(--ombre-flottant);
   }
-  .lignes { margin: 0; padding: 0; list-style: none; }
-  .lignes li { min-height: 64px; padding: 10px 0; border-top: 1px solid var(--filet); }
-  .vote-titre { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .vote-titre a {
-    font: 500 16px/1.4 var(--police-question);
-    color: var(--ivoire); text-decoration: none;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  .duo { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; }
+  .carte-noire, .carte-grise { display: flex; flex-direction: column; gap: 10px; padding: 22px; border-radius: 20px; }
+  .carte-noire { background: var(--encre); color: var(--feuille); }
+  .etiquette-noire { font: 600 14px/1.35 var(--police-texte); color: var(--sur-encre-2); }
+  .phrase-noire { font: 700 28px/1.2 var(--police-titre); }
+  .detail-noir { font: 500 15px/1.4 var(--police-texte); color: var(--sur-encre-2); }
+  .lien-noir { color: var(--feuille); font: 700 15px/1 var(--police-texte); }
+  .carte-grise { background: var(--surface); }
+  .carte-grise .t-texte { font-size: 16px; }
+  .carte-grise summary { cursor: pointer; font: 600 14px/1.3 var(--police-texte); text-decoration: underline; min-height: var(--cible); display: flex; align-items: center; }
+  .bloc { display: flex; flex-direction: column; gap: 14px; }
+  .bloc > :global(.bouton) { align-self: flex-start; }
+  .bloc .t-legende a { color: var(--encre); }
+  .filtres { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filtre {
+    min-height: 44px; padding: 0 16px; border-radius: var(--pilule); border: 1px solid var(--bord);
+    background: var(--feuille); color: var(--encre); font: 600 14px/1 var(--police-texte); cursor: pointer;
   }
-  .vote-titre a:hover { color: var(--ivoire); text-decoration: underline; }
-  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--ivoire-2); }
-  .etiquette {
-    padding: 4px 7px; background: var(--panneau-2); color: var(--ivoire);
-    font-family: var(--police-titre); font-weight: 600; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  .filtre[aria-pressed='true'] { background: var(--encre); border-color: var(--encre); color: var(--feuille); }
+  .votes { list-style: none; margin: 0; padding: 0; }
+  .votes li { border-top: 1px solid var(--filet); }
+  .votes a {
+    display: grid; grid-template-columns: minmax(0, 1fr) 150px 150px 20px; align-items: center; gap: 16px;
+    padding: 14px 4px; color: var(--encre); text-decoration: none;
   }
-  .etiquette.solennel { background: var(--direct); color: var(--sur-direct); }
-  .etiquette.censure { background: var(--panneau-2); color: var(--ivoire); border: 1px solid var(--filet); }
-  .cellule { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
-  /* Un vote : une pastille de 10 px à la couleur du vote et le mot, sans capsule colorée. */
-  .pastille, .toi :global(.pastille) {
-    display: inline-flex; align-items: center; gap: 6px; font: 600 13px/16px var(--police-titre);
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); white-space: nowrap;
-  }
-  .pastille::before, .toi :global(.pastille)::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%;
-    background: var(--absent); box-shadow: inset 0 0 0 1px var(--ivoire-2); }
-  .p-pour::before, .toi :global(.p-pour)::before { background: var(--pour); box-shadow: none; }
-  .p-contre::before, .toi :global(.p-contre)::before { background: var(--contre); box-shadow: none; }
-  .p-abstention::before { background: var(--abstention); box-shadow: none; }
-  .p-non_votant::before { background: var(--non-votant); box-shadow: none; }
-  .contre-groupe { font-size: 12px; font-weight: 700; color: var(--ivoire); }
-  .mise-au-point { font-size: 12px; color: var(--ivoire-2); }
-  .groupe { font-size: 14px; color: var(--ivoire); }
-  .toi { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
-  .toi :global(.marque) {
-    display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
-    border-radius: 50%; font-weight: 700; font-size: 14px; color: #fff;
-  }
-  /* Même vote que toi : ivoire plein ; vote différent : le gris secondaire (jamais une couleur de vote). */
-  .toi :global(.oui) { background: var(--ivoire); color: var(--nuit); }
-  .toi :global(.non) { background: var(--ivoire-2); }
+  .votes a:hover { background: var(--surface); }
+  .v-texte { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .v-titre { font: 600 15px/1.35 var(--police-texte); }
+  .v-sien, .v-toi :global(.toi-haut) { display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1.3 var(--police-texte); }
+  .v-toi { display: flex; flex-direction: column; gap: 2px; }
+  .trancher { font: 700 14px/1 var(--police-texte); text-decoration: underline; }
   @media (max-width: 760px) {
-    .entetes { display: none; }
-    .lignes li { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 8px; padding: 14px 0; }
-    .vote-titre { grid-column: 1 / -1; }
-    .cellule { flex-direction: column; align-items: flex-start; }
-    .cellule::before {
-      content: attr(data-l); display: block; font-family: var(--police-titre); font-weight: 600;
-      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2);
-    }
+    .cadre-salle { height: 220px; }
+    .cadre-salle img { top: clamp(calc(220px - 62.5cqw), calc(110px - var(--y) * 62.5cqw), 0px); }
+    .repere-siege { top: calc(clamp(calc(220px - 62.5cqw), calc(110px - var(--y) * 62.5cqw), 0px) + var(--y) * 62.5cqw); }
+    .duo { grid-template-columns: 1fr; }
+    .phrase-noire { font-size: 22px; }
+    .votes a { grid-template-columns: minmax(0, 1fr) 20px; gap: 6px 12px; }
+    .v-texte, .v-sien, .v-toi { grid-column: 1; }
+    .chevron { grid-column: 2; grid-row: 1 / span 3; }
   }
-  .vide { padding: 16px; background: var(--panneau-2); color: var(--ivoire); }
-  [data-plus] { margin-top: 14px; }
-
-  .cote { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  @media (max-width: 1080px) {
-    .cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
-  }
-  .encadre { padding: 20px 22px; background: var(--panneau); }
-  .encadre.gris { background: var(--panneau-2); }
-  .encadre h2 { font-size: 22px; margin-bottom: 12px; }
-  .encadre p { margin: 10px 0 0; font-size: 15px; color: var(--ivoire); }
-  .parcours { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .parcours li { display: flex; flex-direction: column; font-size: 15px; }
-  .parcours span { font-size: 13px; color: var(--ivoire-2); }
-  .note { font-size: 13px !important; }
 </style>

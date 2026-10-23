@@ -1,59 +1,77 @@
 ---
-// Le verdict de la séance de la semaine (t25, frame V5 « ⑧ Verdict ») : adopté ou rejeté, à
-// combien de voix près, et ta place dans le résultat : ton vote, ton pronostic, ta voix de
-// 578e, ton député et ton jumeau. Formulation du délai : « le verdict du matin » (décision de
-// t10, en attendant la mesure du délai de publication) — le scrutin est récupéré la nuit, et
-// les soirs de vote solennel à chaque heure (soiree.yml). Pas de comparaison avec les
-// utilisateurs du site : il faudrait des agrégats (reportés). Tant que la séance n'est tranchée
-// qu'en partie, un bandeau le dit et chaque vote à venir garde une étape en pointillés (retour de
-// Julien du 12 octobre 2026) : la page ne laisse pas croire que la séance est finie.
+// Le verdict de la séance de la semaine (t25 ; VDEF, lot V5 ; maquette 08) : la salle vue du
+// perchoir, aux couleurs du vote (voyants et sièges), le repère « Toi » sur ta place ; la feuille
+// de droite : l'issue en grand, « il aurait suffi que N députés changent d'avis », la barre et
+// les pastilles, toi / ton jumeau / ton député, ton pronostic et ta voix de 578e, « Comprendre ce
+// vote » et « Verdict suivant ». La logique ne change pas : le verdict du matin (décision de t10),
+// le verdict partiel tant que la séance n'est tranchée qu'en partie (retour de Julien du 12 oct.
+// 2026), un verdict pas encore découvert qui attend le toucher (D1, `578e.verdicts-vus.v1`).
+// Pas de comparaison avec les utilisateurs du site : il faudrait des agrégats (reportés).
 import Base from '../layouts/Base.astro';
-import Salle from '../components/Salle.astro';
-import Salle3D from '../components/Salle3D.astro';
-import { avancementSeance, composition, dateLisible, lienVote, quandVote, questionSeance,
-  scrutinPublie, semaine, voteJuge } from '../lib/donnees.ts';
-import { marge, verdict } from '../lib/votes.ts';
-import { puceTheme } from '../lib/themes.ts';
+import Bouton from '../components/vdef/Bouton.astro';
+import Feuille from '../components/vdef/Feuille.astro';
+import MiniHemicycle from '../components/MiniHemicycle.astro';
+import { avancementSeance, composition, lienVote, quandVote, questionSeance, scrutinPublie, semaine,
+  voteJuge } from '../lib/donnees.ts';
+import { SIEGES } from '../lib/hemicycle.ts';
+import { verdict } from '../lib/votes.ts';
 
 const sem = semaine();
 const compo = composition();
-const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A',
-  non_votant: 'N', absent: '-' };
+const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A', non_votant: 'N', absent: '-' };
 const seance = sem.votes.filter((v) => v.statut !== 'retiré');
+const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const jourLong = (d: string) => `${JOURS[new Date(`${d}T12:00:00Z`).getUTCDay()]} ${Number(d.slice(8, 10))} ${MOIS[Number(d.slice(5, 7)) - 1]}`;
 const verdicts = seance.flatMap((v) => {
   const s = voteJuge(v) ? scrutinPublie(v.scrutin!.uid) : null;
   if (!s) return [];
   const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
   return [{
-    cle: v.cle, uid: s.uid, numero: s.numero, titre: questionSeance(v).titre,
-    theme: v.carte?.theme ?? 'Vote solennel',
-    puce: v.carte ? puceTheme(v.carte.theme) : '#B3132F:#FFFFFF',
-    quand: `${s.solennel ? 'Scrutin solennel' : 'Vote'} du ${dateLisible(s.date)}`,
-    verdict: verdict(s), adopte: s.sort === 'adopté', marge: marge(s), decompte: s.decompte,
-    requis: s.requis, lien: lienVote(s),
+    cle: v.cle, uid: s.uid, titre: questionSeance(v).titre, theme: v.carte?.theme ?? 'Vote solennel',
+    quand: jourLong(s.date), verdict: verdict(s), adopte: s.sort === 'adopté', inverser: s.voix_pour_inverser,
+    decompte: s.decompte, requis: s.requis, lien: lienVote(s),
     sieges: compo.sieges.map((c) => {
       if (c.vacant || !c.depute) return 'V';
       const x = votes.get(c.depute);
-      if (!x) return 'x';
-      const l = LETTRES[x.vote ?? 'absent'] ?? '-';
-      return x.dissident ? l.toLowerCase() : l;
+      return x ? LETTRES[x.vote ?? 'absent'] ?? '-' : 'x';
     }).join(''),
   }];
 });
 const attendus = sem.votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
 const etape = avancementSeance(sem);
-// Une étape par vote de la séance, dans son ordre : le verdict s'il est tombé (`k` : son rang
-// parmi les verdicts), sinon une étape en pointillés.
-const onglets = seance.map((v) => ({ titre: questionSeance(v).titre,
-  k: verdicts.findIndex((x) => x.cle === v.cle) }));
-const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\u003c');
+const donnees = JSON.stringify({
+  lundi: sem.lundi, verdicts, sieges: compo.sieges.map((s) => s.depute ?? null),
+}).replace(/</g, '\\u003c');
+const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
+const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
 ---
-<Base titre="Le verdict" onglet="semaine" theme="seance" scene={verdicts.length > 0}
-  description="Le verdict des votes de la semaine à l'Assemblée, face à tes réponses.">
-  {verdicts.length > 0 && (
-  <Salle3D slot="scene" pleinCadre disposition="pleine" fond="verdict" voile="verdict" hauteur="980px"
-    titre="La salle de l'Assemblée nationale : chaque voyant de pupitre s'allume à la couleur du vote du député (pour, contre, abstention) ; éteint, il n'a pas pris part au vote."
-    cameras={['salle', 'plan']}>
+{verdicts.length === 0 ? (
+  <Base titre="Le verdict" vue="tribune" fond="tribune"
+    description="Le verdict des votes de la semaine à l'Assemblée, face à tes réponses.">
+    <Feuille position="droite" titre="titre-attente">
+      <span class="t-etiquette">Le verdict</span>
+      <h1 id="titre-attente" class="t-feuille">Pas encore de verdict</h1>
+      {attendus.length > 0 ? (
+        <>
+          <p class="t-texte">Les députés n’ont pas encore voté. Le verdict s’affiche ici le lendemain matin, dès que l’Assemblée publie le scrutin.</p>
+          <ul class="lignes">
+            {attendus.map((v) => <li>{questionSeance(v).titre}<span>{quandVote(v)}</span></li>)}
+          </ul>
+          <Bouton href="/seance/" large>Trancher avant eux</Bouton>
+        </>
+      ) : (
+        <>
+          <p class="t-texte">Aucun vote de la séance de cette semaine n’a encore été tenu.</p>
+          <Bouton href="/explorer/" large>Les derniers votes</Bouton>
+        </>
+      )}
+    </Feuille>
+  </Base>
+) : (
+  <Base titre="Le verdict" fond="salle" vueSalle="salle"
+    focus={{ quitter: '/', total: seance.length, libelle: `Verdict 1 sur ${seance.length}` }}
+    description="Le verdict des votes de la semaine à l'Assemblée, face à tes réponses.">
     <script is:inline define:vars={{ uids: verdicts.map((v) => v.uid) }}>
       // Un verdict pas encore découvert : il reste caché jusqu'au toucher (D1).
       try {
@@ -61,501 +79,216 @@ const donnees = JSON.stringify({ lundi: sem.lundi, verdicts }).replace(/</g, '\\
         if (uids.some((u) => !vus.includes(u))) document.documentElement.classList.add('verdict-cache');
       } catch { document.documentElement.classList.add('verdict-cache'); }
     </script>
-    <div class="verdict">
-      <button type="button" class="b-passer-seq" data-passer-seq hidden>Passer</button>
-      {onglets.length > 1 && (
-        <nav class="etapes" aria-label="Les verdicts de ta séance">
-          <p class="etapes-texte" data-etape-texte>Verdict {onglets.findIndex((o) => o.k === 0) + 1} sur {onglets.length}</p>
-          <div class="segments">
-            {onglets.map((o, n) => (o.k >= 0 ? (
-              <button type="button" class="segment" data-onglet={o.k} data-rang={n + 1}
-                aria-current={o.k === 0 ? 'step' : undefined} aria-label={`Verdict ${n + 1} : ${o.titre}`}
-                title={o.titre}><span></span></button>
-            ) : (
-              <span class="segment a-venir" role="img" aria-label={`Vote ${n + 1} : ${o.titre}, verdict après le vote`}
-                title="Verdict après le vote"><span></span></span>
-            )))}
-          </div>
-        </nav>
-      )}
+    <Feuille position="droite" titre="titre-verdict-0" class="feuille-verdict" data-verdicts>
       {verdicts.map((v, k) => (
         <article class="un-verdict" data-verdict={k} hidden={k > 0}>
-          <div class="puces">
-            <span class="puce-theme" style={`background: ${v.puce.split(':')[0]}; color: ${v.puce.split(':')[1]}`}>{v.theme}</span>
-            <span class="puce-date">{v.quand}</span>
+          <div class="pastilles">
+            <span class="pastille-v">{v.theme}</span>
+            <span class="pastille-v">{v.quand}</span>
           </div>
-          <h1 tabindex="-1" data-titre-verdict>{v.titre}</h1>
+          <h1 id={`titre-verdict-${k}`} class="t-interface question" tabindex="-1" data-titre-verdict>{v.titre}</h1>
           <div class="decouvrir" data-decouvrir>
-            <button type="button" class="b-principal" data-decouvrir-bouton>Découvrir le verdict</button>
+            <p class="t-texte">Les députés ont voté. Découvre le verdict, et ta place dans le résultat.</p>
+            <Bouton large data-decouvrir-bouton>Découvrir le verdict</Bouton>
           </div>
-          <div class="boite">
-            <span class="tampon">{v.verdict}</span>
-            <div class="bandeau">
-              <div class="bandeau-ligne">
-                <span class="bandeau-etiquette">Verdict</span>
-                <span class="bandeau-titre">{v.verdict} <span class="marge" data-ecart>{v.marge ?? `${v.decompte.pour} – ${v.decompte.contre}`}</span></span>
-              </div>
-              <span class="bandeau-legende decompte">{v.decompte.pour} pour · {v.decompte.contre} contre · {v.decompte.abstention} abstention{v.decompte.abstention > 1 ? 's' : ''}{v.requis ? ` · majorité requise : ${v.requis}` : ''}{etape.bandeau ? ` · ${etape.bandeau}` : ''}</span>
+          <div class="resultat" data-resultat>
+            <p class="t-issue issue">{v.verdict}</p>
+            {v.inverser && v.inverser > 0 && (
+              <p class="t-texte suffi">Il aurait suffi que <strong>{pl(v.inverser, 'député')}</strong> change{v.inverser > 1 ? 'nt' : ''} d’avis.</p>
+            )}
+            <div class="barre" role="img" aria-label={`${v.decompte.pour} pour, ${v.decompte.contre} contre, ${pl(v.decompte.abstention, 'abstention')}, ${pl(v.decompte.absent, 'absent')}`}>
+              {([['pour', v.decompte.pour], ['contre', v.decompte.contre], ['abstention', v.decompte.abstention], ['absent', v.decompte.absent]] as const)
+                .filter(([, n]) => n > 0).map(([c, n]) => <span class={`point ${c}`} style={`flex: ${n}`}></span>)}
             </div>
-            <ul class="compteurs" aria-label="Le décompte">
-              {([['pour', 'Pour', v.decompte.pour], ['contre', 'Contre', v.decompte.contre],
-                ['abstention', v.decompte.abstention > 1 ? 'Abstentions' : 'Abstention', v.decompte.abstention],
-                ['absent', v.decompte.absent > 1 ? 'Absents' : 'Absent', v.decompte.absent]] as const).map(([cle, mot, n]) => (
-                <li class={`compteur c-${cle}`}>
-                  <span class="compteur-mot">{mot}</span>
-                  <span class="chiffre" style={`--from:0;--to:${n}`}><span class="chiffre-texte">{n}</span></span>
-                </li>
-              ))}
-            </ul>
-            {v.decompte.non_votant > 0 && <p class="non-votants">Non-votants : {v.decompte.non_votant} (présents, sans prendre part au vote)</p>}
+            <div class="pastilles">
+              <span class="pastille-v"><span class="point pour" aria-hidden="true"></span>{v.decompte.pour} pour</span>
+              <span class="pastille-v"><span class="point contre" aria-hidden="true"></span>{v.decompte.contre} contre</span>
+              <span class="pastille-v"><span class="point abstention" aria-hidden="true"></span>{pl(v.decompte.abstention, 'abstention')}</span>
+              <span class="pastille-v"><span class="point absent" aria-hidden="true"></span>{pl(v.decompte.absent, 'absent')}</span>
+              {v.decompte.non_votant > 0 && <span class="pastille-v"><span class="point non-votant" aria-hidden="true"></span>{pl(v.decompte.non_votant, 'non-votant')}</span>}
+            </div>
+            <ul class="lignes" data-lignes={k}></ul>
+            <p class="t-legende" data-voix={k}></p>
+            {etape.bandeau && <p class="t-legende partiel" role="status">{etape.bandeau}. Leur verdict s’affiche ici le lendemain matin.</p>}
+            <div class="repli-2d" data-repli-2d hidden>
+              <MiniHemicycle couleurs={eteints} titre="Comment l'Assemblée a voté, siège par siège" />
+            </div>
+            <div class="actions">
+              <Bouton href={v.lien} variante="contour">Comprendre ce vote</Bouton>
+              {k < verdicts.length - 1
+                ? <Bouton data-suivant={k + 1}>Verdict suivant</Bouton>
+                : <Bouton href="/">Retour à la tribune</Bouton>}
+            </div>
           </div>
         </article>
       ))}
-    </div>
-  </Salle3D>
-  )}
-  {verdicts.length === 0 ? (
-    <>
-    <p class="fil"><a href="/">Cette semaine</a> › Verdict</p>
-    <section class="attente">
-      <h1>Pas encore de verdict</h1>
-      {attendus.length > 0 ? (
-        <>
-          <p>Les députés n'ont pas encore voté :</p>
-          <ul>
-            {attendus.map((v) => <li><strong>{questionSeance(v).titre}</strong> · {quandVote(v)}</li>)}
-          </ul>
-          <p>Le verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</p>
-          <a class="b-principal" href="/seance/">Trancher avant eux · 2 min</a>
-        </>
-      ) : (
-        <>
-          <p>Aucun vote de la séance de cette semaine n'a encore été tenu.</p>
-          <a class="b-principal" href="/explorer/">Les derniers votes</a>
-        </>
-      )}
-    </section>
-    </>
-  ) : (
-    <>
-
-    {etape.bandeau && (
-      <p class="bandeau-etape" role="status">
-        <strong>{etape.bandeau}</strong>
-        <span>Leur verdict s'affiche ici le lendemain matin, dès que l'Assemblée publie le scrutin.</span>
-      </p>
-    )}
-    {verdicts.map((v, k) => (
-      <div class="verdict-bas" data-verdict-bas={k} hidden={k > 0}>
-        <ul class="lignes" data-lignes={k}></ul>
-        <div class="actions">
-          <span class="actions-titre">Et maintenant</span>
-          <div class="actions-boutons">
-            {k < verdicts.length - 1
-              ? <button type="button" class="b-principal" data-suivant={k + 1}>Verdict suivant →</button>
-              : <a class="b-principal" href="/hemicycle/">Mon hémicycle →</a>}
-            <a class="b-second" href={v.lien}>Tout le détail</a>
-          </div>
-        </div>
-      </div>
-    ))}
-    <section class="panneau">
-      <div class="panneau-tete">
-        <h2>Comment l'Assemblée a voté</h2>
-        <span data-signales>En couleur : pour, contre, abstention</span>
-      </div>
-      <div class="cadre-salle">
-        <Salle sieges={compo.sieges} groupes={compo.groupes} titre="L'Assemblée nationale"
-          chiffre="" legende="" />
-      </div>
-      <ul class="legende">
-        <li><span style="background: var(--pour)"></span>Pour</li>
-        <li><span style="background: var(--contre)"></span>Contre</li>
-        <li><span style="background: var(--abstention)"></span>Abstention</li>
-        <li><span style="background: var(--non-votant)"></span>Non-votant</li>
-        <li><span style="background: var(--absent)"></span>Absent</li>
-        <li><span class="anneau"></span>Contre son groupe</li>
-      </ul>
-    </section>
-    </>
-  )}
-  <script type="application/json" data-donnees-verdict set:html={donnees}></script>
-</Base>
+    </Feuille>
+    <script type="application/json" data-donnees-verdict set:html={donnees}></script>
+  </Base>
+)}
 
 <script>
-  import { deputeChoisi, reponses } from '../lib/navigateur.ts';
+  import { deputeChoisi, lireJSON, reponses } from '../lib/navigateur.ts';
+  import { palierAtteint, votesTranches } from '../lib/paliers.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
-  import { mouvementReduit, quandVisible, sequence } from '../lib/motion.ts';
-  import { lireJSON } from '../lib/navigateur.ts';
-  import { Salle } from '../lib/salle.ts';
   import { etatSeance } from '../lib/seances.ts';
+  import { VOYANTS } from '../lib/trancher.ts';
   import { voix578 } from '../lib/votes.ts';
   import { salle3D } from '../salle3d/pilote.ts';
 
   interface Verdict {
-    cle: string; uid: string; titre: string; verdict: string; adopte: boolean;
-    decompte: { pour: number; contre: number; abstention: number }; requis: number | null;
-    sieges: string;
+    cle: string; uid: string; titre: string; verdict: string; adopte: boolean; inverser: number | null;
+    decompte: { pour: number; contre: number; abstention: number }; requis: number | null; sieges: string;
   }
-  const { lundi, verdicts } = JSON.parse(
-    document.querySelector('[data-donnees-verdict]')!.textContent!) as { lundi: string; verdicts: Verdict[] };
-  const racine = document.querySelector<HTMLElement>('[data-salle]');
-  if (racine && verdicts.length) {
-    const salle = new Salle(racine);
-    // La salle 3D en tête de page : ses voyants prennent la couleur du vote de chaque député,
-    // une fois le verdict découvert (rien avant le toucher).
-    const scene = document.querySelector<HTMLElement>('[data-salle3d]');
-    const s3 = scene ? salle3D(scene) : null;
-    const VOYANTS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531' };
-    const voyantsDe = (v: Verdict) => [...v.sieges].map((l) => VOYANTS[l.toUpperCase()] ?? null);
-    // Absent et non-votant : les teintes « éteintes » du thème (styles/global.css).
-    const COULEURS: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', N: 'var(--non-votant)', '-': 'var(--absent)' };
-    const MOTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention' };
-    const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+  const REPLI: Record<string, string> = { P: '#2F7BFF', C: '#FF6A3D', A: '#FFC531', '-': '#8A8A8A', N: '#3A3A3A', x: '#E7E7E7', V: '#FFFFFF' };
+  const MOTS: Record<string, string> = { P: 'Pour', C: 'Contre', A: 'Abstention', N: 'Non-votant' };
+  const POINTS: Record<string, string> = { P: 'pour', C: 'contre', A: 'abstention', N: 'non-votant' };
+  const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+
+  document.addEventListener('astro:page-load', () => {
+    const brut = document.querySelector('[data-donnees-verdict]')?.textContent;
+    if (!brut) return;
+    const { lundi, verdicts, sieges } = JSON.parse(brut) as { lundi: string; verdicts: Verdict[]; sieges: (string | null)[] };
+    const racineSalle = document.querySelector<HTMLElement>('[data-salle-vdef]');
+    const salle = racineSalle ? salle3D(racineSalle) : null;
+    let sans3D = !salle;
+    salle?.prete.then((s) => { sans3D = !s; });
     const seance = etatSeance(lundi);
     const mes = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
     const monDepute = deputeChoisi();
     let matrice: Matrice | null = null;
-    const ICONES = {
-      // Majorité ou minorité : la même pastille neutre, seul le pictogramme change (neutralité) ;
-      // ta voix, en lumière.
-      ok: ['#3A3D45', 'M5 10.5l3.5 3.5L15 7'], non: ['#3A3D45', 'M6 6l8 8M14 6l-8 8'],
-      neutre: ['#3A3D45', 'M5 10h10'], prono: ['#3A3D45', 'M10 3l2 4.4 4.8.6-3.5 3.3.9 4.7L10 13.7 5.8 16l.9-4.7L3.2 8l4.8-.6z'],
-      voix: ['#8A5A12', 'M3 15a7 7 0 0 1 14 0M7 15a3 3 0 0 1 6 0'],
-    } as const;
-    const ligne = (icone: keyof typeof ICONES, titre: string, detail: string) => {
+    const html = document.documentElement;
+    let courant = 0;
+
+    /** La ligne « Toi », « Ton jumeau, … », « Ton député, … » : son vote, avec sa pastille. */
+    const ligne = (qui: string, lettre: string | null, suite = '', lien?: string) => {
       const li = document.createElement('li');
-      li.className = `l-${icone}`;
-      const ic = document.createElement('span');
-      ic.className = 'icone';
-      ic.style.background = ICONES[icone][0];
-      ic.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="${ICONES[icone][1]}" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
-      const t = document.createElement('span');
-      const b = document.createElement('span');
-      b.className = 'ligne-titre';
-      b.textContent = titre;
-      const d = document.createElement('span');
-      d.className = 'ligne-detail';
-      d.textContent = detail;
-      t.append(b, d);
-      li.append(ic, t);
+      const nom = document.createElement(lien ? 'a' : 'span');
+      nom.textContent = qui;
+      if (lien) (nom as HTMLAnchorElement).href = lien;
+      const vote = document.createElement('span');
+      const pt = document.createElement('span');
+      pt.className = `point ${lettre ? POINTS[lettre] ?? 'absent' : 'absent'}`;
+      pt.setAttribute('aria-hidden', 'true');
+      vote.append(pt, `${lettre ? MOTS[lettre] ?? 'Absent' : 'Absent'}${suite}`);
+      li.append(nom, vote);
       return li;
     };
 
-    /** L'onglet k, et l'hémicycle de son vote ; `anime` : en onde, chiffres comptés (D1). */
-    let onde: { passer(): void } | null = null;
-    const peindre = (k: number, anime = false) => {
+    /** Le verdict k : la feuille, la salle aux couleurs du vote, le repère « Toi ». */
+    const peindre = (k: number, onde = false) => {
+      courant = k;
       const v = verdicts[k];
       for (const a of document.querySelectorAll<HTMLElement>('[data-verdict]')) a.hidden = a.dataset.verdict !== String(k);
-      // Sous la salle : ta place dans le résultat et les actions du même verdict.
-      for (const b of document.querySelectorAll<HTMLElement>('[data-verdict-bas]')) b.hidden = b.dataset.verdictBas !== String(k);
-      for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
-        if (o.dataset.onglet === String(k)) {
-          o.setAttribute('aria-current', 'step');
-          const texte = document.querySelector('[data-etape-texte]');
-          if (texte) texte.textContent = texte.textContent!.replace(/\d+ sur/, `${o.dataset.rang} sur`);
-        } else o.removeAttribute('aria-current');
+      const libelle = document.querySelector('[data-focus-libelle]');
+      const total = document.querySelectorAll('[data-focus-segment]').length;
+      if (libelle) libelle.textContent = `Verdict ${k + 1} sur ${total}`;
+      document.querySelectorAll<HTMLElement>('[data-focus-segment]').forEach((s, i) => s.classList.toggle('plein', i <= k));
+      const cache = html.classList.contains('verdict-cache');
+      const couleurs = cache ? [] : [...v.sieges].map((l) => VOYANTS[l] ?? null);
+      if (onde) salle?.onde(couleurs, 1100); else salle?.voyants(couleurs);
+      const repli = document.querySelector<HTMLElement>(`[data-verdict="${k}"] [data-repli-2d]`);
+      if (repli) {
+        repli.hidden = !sans3D || cache;
+        repli.querySelectorAll<SVGCircleElement>('circle:not(.marque)').forEach((c, i) => c.setAttribute('fill', REPLI[v.sieges[i]] ?? '#E7E7E7'));
       }
-      onde?.passer();
-      const rendu = (i: number) => {
-        const brut = v.sieges[i];
-        if (brut === 'x') return { sansCommun: true };
-        const l = brut.toUpperCase();
-        return { fond: COULEURS[l] ?? 'var(--absent)', contreGroupe: brut !== l };
-      };
-      const legende = `${v.adopte ? 'Adopté' : 'Rejeté'} · pour – contre`;
-      if (anime) onde = salle.reveler(rendu, { pour: v.decompte.pour, contre: v.decompte.contre, legende, duree: 1000 });
-      else {
-        salle.colorer(rendu);
-        salle.centre(`${v.decompte.pour} – ${v.decompte.contre}`, legende);
-      }
-      salle.libre(false);
-      // La salle allumée (ambiance « verdict ») ; au toucher, les voyants s'allument en onde.
-      if (!document.documentElement.classList.contains('verdict-cache')) {
-        s3?.ambiance('verdict');
-        if (anime) s3?.onde(voyantsDe(v), 1000); else s3?.voyants(voyantsDe(v));
-      }
+      remplir(k);
     };
 
-    /** Les lignes de l'onglet k : ta place dans le résultat, ton pronostic, ta voix. */
+    /** Les lignes du verdict k : toi, ton jumeau, ton député ; ton pronostic ; ta voix de 578e. */
     const remplir = (k: number) => {
       const v = verdicts[k];
-      // Ta place dans le résultat.
       const a = mes[v.uid] ?? seance.reponses[v.cle] ?? null;
       const gagnant = v.adopte ? 'pour' : 'contre';
       const p = matrice ? profil(matrice, mes) : null;
-      const k2 = matrice ? matrice.votes.indexOf(v.uid) : -1;
+      const kv = matrice ? matrice.votes.indexOf(v.uid) : -1;
+      const lettre = (s: string | undefined) => (kv >= 0 && s && s[kv] !== '-' ? s[kv] : null);
       const jumeau = p?.jumeau ?? null;
-      const lettre = (s: string | undefined) => (k2 >= 0 && s ? s[k2] : '-');
       const depute = monDepute && matrice ? matrice.deputes.find((d) => d.u === monDepute) : null;
-      salle.jumeau(jumeau?.ligne.u ?? null);
-      // Dans la salle 3D : ta place est le siège de ton jumeau ; un repère dit vos deux votes.
-      const kJumeau = jumeau ? salle.reglages.sieges.findIndex(([u]) => u === jumeau.ligne.u) : -1;
-      s3?.jumeau(kJumeau >= 0 ? kJumeau : null);
-      // Rien du résultat avant le toucher (D1) : le repère et ses votes attendent la découverte.
-      const cache = document.documentElement.classList.contains('verdict-cache');
-      s3?.repere(kJumeau >= 0 && !cache ? kJumeau : null, kJumeau < 0 ? ''
-        : `${a ? `Toi : ${a} · ` : ''}Ton jumeau : ${MOTS[lettre(jumeau!.ligne.s)] ?? 'absent'}`);
-      const lignes = [];
-      if (a) {
-        const comme = a === 'pour' ? v.decompte.pour : v.decompte.contre;
-        const jum = jumeau ? (MOTS[lettre(jumeau.ligne.s)] === a ? ', dont ton jumeau' : ', mais pas ton jumeau') : '';
-        const dep = depute ? ` ; ton député, ${depute.n}, a voté ${MOTS[lettre(depute.s)] ?? 'absent'}` : '';
-        lignes.push(ligne(a === gagnant ? 'ok' : 'non',
-          `Tu avais voté ${a} : tu es ${a === gagnant ? 'du côté de la majorité' : 'dans la minorité'}`,
-          `Comme ${comme} députés${jum}${dep}.`));
-      } else {
-        lignes.push(ligne('neutre', 'Tu n’avais pas tranché ce vote',
-          depute ? `Ton député, ${depute.n}, a voté ${MOTS[lettre(depute.s)] ?? 'absent'}.` : 'Il ne compte pas dans ton hémicycle.'));
-      }
-      const pr = seance.pronostics[v.cle];
-      if (pr) {
-        const juste = (pr === 'adopte') === v.adopte;
-        lignes.push(ligne('prono', `Pronostic ${juste ? 'juste' : 'raté'} : tu avais dit « ${pr === 'adopte' ? 'adopté' : 'rejeté'} »`,
-          'Ton pronostic reste dans ton navigateur, comme tes réponses.'));
-      }
-      if (a) {
-        // Le décompte et la marge avec ta voix : la majorité requise est recalculée (lib/votes.ts).
-        const x = voix578(v.decompte, v.requis, a);
-        const avec = `Avec la tienne : ${v.decompte.pour + (a === 'pour' ? 1 : 0)} pour, ${v.decompte.contre + (a === 'contre' ? 1 : 0)} contre`;
-        lignes.push(ligne('voix', 'Ta voix de 578e', !x ? `${avec}.`
-          : x.adopte !== v.adopte
-            ? `${avec} : ta voix aurait changé le résultat, le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
-            : `${avec}. Il aurait alors suffi que ${pluriel(x.inverser, 'député')} change${x.inverser > 1 ? 'nt' : ''} d’avis pour que le texte soit ${x.adopte ? 'rejeté' : 'adopté'}.`));
-      }
+      const lignes = [ligne('Toi', a === 'pour' ? 'P' : a === 'contre' ? 'C' : null,
+        a ? ` · ${a === gagnant ? 'avec la majorité' : 'à contre-courant'}` : '')];
+      if (!a) lignes[0].lastChild!.textContent = 'Pas tranché';
+      if (jumeau) lignes.push(ligne(`Ton jumeau, ${jumeau.ligne.n}`, lettre(jumeau.ligne.s), '', `/deputes/${jumeau.ligne.u}/`));
+      if (depute) lignes.push(ligne(`Ton député, ${depute.n}`, lettre(depute.s), '', `/deputes/${depute.u}/`));
       document.querySelector(`[data-lignes="${k}"]`)!.replaceChildren(...lignes);
-      const sig = [jumeau ? 'ton jumeau signalé' : null].filter(Boolean);
-      document.querySelector('[data-signales]')!.textContent = sig.length ? 'En couleur : pour, contre ; ' + sig.join(', ') : 'En couleur : pour, contre, abstention';
+      // Ton pronostic et ta voix de 578e (lib/votes.ts) : la majorité requise est recalculée.
+      const textes: string[] = [];
+      const pr = seance.pronostics[v.cle];
+      if (pr) textes.push(`Ton pronostic était « ${pr === 'adopte' ? 'adopté' : 'rejeté'} » : ${(pr === 'adopte') === v.adopte ? 'juste' : 'raté'}.`);
+      if (a) {
+        const x = voix578(v.decompte, v.requis, a);
+        textes.push(`Ta voix de 578e : ${(a === 'pour' ? v.decompte.pour : v.decompte.contre) + 1} ${a}. `
+          + (x && x.adopte !== v.adopte ? `Ta voix aurait changé le résultat : le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
+            : 'Le résultat ne change pas.'));
+      }
+      document.querySelector(`[data-voix="${k}"]`)!.textContent = textes.join(' ');
+      // Le repère « Toi » sur ta place (le siège de ton jumeau, à partir du palier 1), avec ton vote.
+      const n = votesTranches(mes);
+      const place = jumeau && palierAtteint(n) ? sieges.indexOf(jumeau.ligne.u) : -1;
+      salle?.reperes(place >= 0 && !html.classList.contains('verdict-cache')
+        ? [{ i: place, libelle: a ? `Toi · ${a}` : 'Toi', toi: true }] : []);
     };
 
-    const html = document.documentElement;
-    /** Passer à un autre verdict : il s'affiche en haut de page, l'étape reste visible. */
-    const aller = (k: number, depuisSuivant: boolean) => {
-      if (html.classList.contains('verdict-cache')) return;
-      peindre(k);
-      remplir(k);
-      if (!depuisSuivant) return;
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      const article = document.querySelector<HTMLElement>(`[data-verdict="${k}"]`)!;
-      article.classList.remove('arrive');
-      void article.offsetWidth;
-      article.classList.add('arrive');
-      article.querySelector<HTMLElement>('[data-titre-verdict]')?.focus({ preventScroll: true });
-    };
-    for (const o of document.querySelectorAll<HTMLElement>('[data-onglet]')) {
-      o.addEventListener('click', () => aller(Number(o.dataset.onglet), false));
-    }
     for (const b of document.querySelectorAll<HTMLElement>('[data-suivant]')) {
-      b.addEventListener('click', () => aller(Number(b.dataset.suivant), true));
+      b.addEventListener('click', () => {
+        peindre(Number(b.dataset.suivant));
+        document.querySelector<HTMLElement>(`[data-verdict="${courant}"] [data-titre-verdict]`)?.focus();
+      });
     }
 
-    // D1 : un verdict pas encore découvert attend le toucher. Avant, l'hémicycle est gris et
-    // « respire », un « ? » au centre ; aucun compte à rebours, aucune attente imposée.
+    // D1 : un verdict pas encore découvert attend le toucher ; la salle reste éteinte.
     const VUS = '578e.verdicts-vus.v1';
     const vus = lireJSON<string[]>(VUS, []);
     const k0 = verdicts.findIndex((v) => !vus.includes(v.uid));
     if (k0 < 0) {
       html.classList.remove('verdict-cache');
       peindre(0);
-      remplir(0);
     } else {
       html.classList.add('verdict-cache');
       peindre(k0);
-      remplir(k0);
-      onde?.passer();
-      salle.colorer(() => ({ fond: 'var(--siege-repos)' }));
-      salle.centre('?', 'Le verdict est tombé');
-      const svg = racine.querySelector('[data-salle-svg]')!;
-      // La respiration attend, à l'arrêt, que l'hémicycle soit à l'écran (règle 6).
-      svg.classList.add('respire');
-      quandVisible(svg, () => svg.classList.add('a-l-ecran'));
       for (const b of document.querySelectorAll<HTMLButtonElement>('[data-decouvrir-bouton]')) {
-        b.addEventListener('click', () => decouvrir(k0, svg));
+        b.addEventListener('click', () => {
+          try { localStorage.setItem(VUS, JSON.stringify([...new Set([...vus, ...verdicts.map((v) => v.uid)])])); } catch { /* stockage indisponible */ }
+          html.classList.remove('verdict-cache');
+          peindre(courant, true);
+          document.querySelector<HTMLElement>(`[data-verdict="${courant}"] .issue`)?.focus?.();
+        });
       }
     }
-
-    /** D1 + D3 : l'hémicycle en ondes (1 s), puis la carte sombre et son tampon, le chiffre de
-     *  l'écart qui grossit une fois, et tes lignes avec « Ta voix de 578e ». ADOPTÉ et REJETÉ :
-     *  la même chose. « Passer » ou un appui sur l'écran donnent l'état final. */
-    const decouvrir = (k: number, svg: Element) => {
-      try { localStorage.setItem(VUS, JSON.stringify([...new Set([...vus, ...verdicts.map((v) => v.uid)])])); } catch { /* */ }
-      svg.classList.remove('respire');
-      html.classList.remove('verdict-cache');
-      remplir(k);
-      const article = document.querySelector<HTMLElement>(`[data-verdict="${k}"]`)!;
-      const bas = document.querySelector<HTMLElement>(`[data-verdict-bas="${k}"]`)!;
-      const conteneur = document.querySelector<HTMLElement>('.verdict')!;
-      const bouton = document.querySelector<HTMLElement>('[data-passer-seq]')!;
-      article.querySelector<HTMLElement>('[data-titre-verdict]')?.focus({ preventScroll: true });
-      const montrer = (sel: string) => (article.querySelector(sel) ?? bas.querySelector(sel))?.classList.add('apparait');
-      const finir = () => {
-        article.classList.remove('en-revelation');
-        bas.classList.remove('en-revelation');
-        bouton.hidden = true;
-        document.removeEventListener('click', appui);
-      };
-      const appui = () => { onde?.passer(); suite.passer(); };
-      if (mouvementReduit()) conteneur.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
-      else {
-        article.classList.add('en-revelation');
-        bas.classList.add('en-revelation');
-        bouton.hidden = false;
-        setTimeout(() => document.addEventListener('click', appui), 0);
-      }
-      const suite = sequence([
-        { a: 0, faire: () => peindre(k, true) },
-        { a: 1000, faire: () => montrer('.boite') },
-        { a: 1500, faire: () => { montrer('.lignes'); montrer('.actions'); } },
-        { a: 1550, faire: () => article.querySelector('[data-ecart]')?.classList.add('grossit') },
-        { a: 1950, faire: finir },
-      ], conteneur);
-    };
-
     if (Object.keys(mes).length || monDepute) {
       fetch('/donnees/matrice.json').then((r) => r.json()).then((m: Matrice) => {
         matrice = m;
-        const actif = document.querySelector<HTMLElement>('[data-onglet][aria-current="step"]');
-        remplir(Number(actif?.dataset.onglet ?? (k0 < 0 ? 0 : k0)));
+        remplir(courant);
       }).catch(() => {});
     }
-  }
+  });
 </script>
 
 <style>
-  /* Le verdict, maquette V6C-03 (docs/design-final/DESIGN-FINAL.md, § 6) : la salle allumée plein
-     cadre ; en haut, le scrutin, la question et l'issue en titre d'écran, la même pour les
-     deux issues ; en bas, « à N voix près » en bandeau et les compteurs pour, contre, abstentions,
-     absents, qui montent ensemble ; sous la salle, ta voix et les actions en aplats, puis
-     l'hémicycle détaillé. Sans « Suivre ce texte » ni comparaison avec les utilisateurs du site. */
-  .fil { margin: 0; font: 600 var(--taille-puce)/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--ivoire-2); }
-  .fil a { color: var(--ivoire-2); }
-  .attente { max-width: 680px; padding: 28px; background: var(--panneau); }
-  .attente h1 { margin: 0 0 12px; font: 700 clamp(36px, 4vw, 56px)/0.95 var(--police-titre); text-transform: uppercase; }
-  .attente p, .attente li { font-size: 17px; color: var(--ivoire-2); }
-  .attente .b-principal { margin-top: 8px; }
-
-  /* --- Dans la salle --- */
-  .verdict { position: relative; flex: 1; display: flex; flex-direction: column; }
-  .etapes { align-self: center; display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 14px; }
-  .etapes-texte { margin: 0; padding: 4px 10px; background: var(--voile); font: 600 var(--taille-puce)/16px var(--police-titre);
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); }
-  .segments { display: flex; gap: 4px; }
-  .segment { display: flex; align-items: center; width: 28px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
-  .segment > span { display: block; width: 100%; height: 4px; background: var(--filet); }
-  .segment[aria-current="step"] > span { background: var(--ivoire); }
-  .segment.a-venir { cursor: default; }
-  .segment.a-venir > span { height: 0; border-top: 2px dashed var(--filet); background: none; }
-  .un-verdict { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .un-verdict:global(.arrive) { animation: monte var(--dur-m) var(--ease-monte) both; }
+  :global(.feuille.feuille-verdict) { gap: 0; }
+  .un-verdict { flex: 1; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
   .un-verdict[hidden] { display: none; }
-  .puces { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; }
-  .puce-theme { display: inline-flex; align-items: center; padding: 6px 8px; background: var(--direct) !important;
-    color: var(--sur-direct) !important; font: 600 12px/1 var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
-  /* Un texte posé sur la salle allumée l'est toujours sur le voile (contraste AA). */
-  .puce-date { padding: 4px 10px; background: var(--voile); font: 600 var(--taille-puce)/16px var(--police-titre);
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); }
-  .un-verdict h1 { outline: none; max-width: 34ch; margin: 10px 0 0; padding: 8px 16px; background: var(--voile);
-    font: 500 22px/1.3 var(--police-question); text-wrap: balance; }
-  /* La boîte ne fait que regrouper : ses éléments se répartissent dans la hauteur de la salle. */
-  .boite { display: contents; }
-  .tampon { display: block; margin: 6px 0 0; font: 700 clamp(88px, 12vw, 176px)/0.82 var(--police-titre); text-transform: uppercase;
-    letter-spacing: -0.005em; text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
-  .bandeau { align-self: stretch; margin-top: auto; text-align: left; }
-  .bandeau .bandeau-etiquette { min-height: 50px; }
-  .bandeau .bandeau-titre { font-size: 30px; line-height: 1.05; }
-  .compteurs { align-self: stretch; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 24px;
-    margin: 24px 0 0; padding: 22px 26px; list-style: none; background: var(--voile); text-align: left; }
-  .compteur { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .compteur-mot { display: flex; align-items: center; gap: 8px; font: 600 var(--taille-puce)/16px var(--police-titre);
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .compteur-mot::before { content: ''; width: 12px; height: 12px; }
-  .c-pour .compteur-mot::before { background: var(--pour); }
-  .c-contre .compteur-mot::before { background: var(--contre); }
-  .c-abstention .compteur-mot::before { background: var(--abstention); }
-  .c-absent .compteur-mot::before { background: var(--absent); box-shadow: inset 0 0 0 1px rgba(242, 238, 230, 0.35); }
-  .chiffre { font: 600 84px/0.85 var(--police-titre); font-variant-numeric: tabular-nums; }
-  .non-votants { align-self: stretch; margin: 8px 0 0; font-size: 13px; color: var(--ivoire-2); text-align: left; }
-  .decouvrir { display: none; margin: auto 0; }
-  :global(html.verdict-cache) .decouvrir { display: block; }
-  :global(html.verdict-cache) .boite, :global(html.verdict-cache) .lignes,
-  :global(html.verdict-cache) .actions { display: none; }
-  :global(html.verdict-cache) .etapes { pointer-events: none; }
-  .b-passer-seq { position: absolute; top: -52px; right: 0; z-index: 2; min-height: 40px; padding: 0 16px;
-    border: 1px solid var(--ivoire-2); background: var(--panneau); color: var(--ivoire);
-    font: 600 14px/1 var(--police-titre); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
-
-  /* Le verdict au toucher (D1 + D3, docs/animations-lot-1.md § 8). */
-  .panneau :global(svg.respire) { animation: respire 2.4s ease-in-out infinite alternate paused; }
-  .panneau :global(svg.respire.a-l-ecran) { animation-play-state: running; }
-  @keyframes respire { from { opacity: .5; } to { opacity: 1; } }
-  .en-revelation .boite:not(:global(.apparait)) > *, .en-revelation .lignes:not(:global(.apparait)),
-  .en-revelation .actions:not(:global(.apparait)) { opacity: 0; }
-  .boite:global(.apparait) > *:not(.tampon), .verdict-bas :global(.apparait) { animation: monte var(--dur-m) var(--ease-monte) both; }
-  /* Le titre d'écran entre depuis le bas (600 ms), le même pour les deux issues ; les compteurs
-     montent ensemble de 0 à leur valeur en 1,2 s. */
-  .boite:global(.apparait) .tampon { animation: tampon-verdict 600ms var(--ease-bandeau) both; }
-  @keyframes tampon-verdict { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .boite:global(.apparait) .chiffre { counter-reset: n var(--num);
-    animation: compte var(--dur-compteur) cubic-bezier(.2,.7,.2,1) 200ms both; }
-  .boite:global(.apparait) .chiffre::after { content: counter(n); }
-  .boite:global(.apparait) .chiffre-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .marge:global(.grossit) { display: inline-block; animation: grossit 400ms ease both; }
-  @keyframes grossit { 45% { transform: scale(1.18); } }
-  .marge { display: inline-block; transform-origin: left center; }
-  @media (prefers-reduced-motion: reduce) {
-    .panneau :global(svg.respire) { animation: none; opacity: .6; }
-    .boite:global(.apparait) > *, .verdict-bas :global(.apparait), .boite:global(.apparait) .tampon, .marge:global(.grossit) { animation: none; }
-    .boite:global(.apparait) .chiffre { animation: none; }
-    .boite:global(.apparait) .chiffre::after { content: none; }
-    .boite:global(.apparait) .chiffre-texte { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
-    .un-verdict:global(.arrive) { animation: fondu var(--dur-xs) linear both; }
+  .pastilles { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pastille-v {
+    display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--pilule);
+    background: var(--surface); color: var(--encre); font: 600 13px/1 var(--police-texte); white-space: nowrap;
   }
-
-  /* --- Sous la salle : ta place dans le résultat et les actions, en aplats --- */
-  .bandeau-etape { margin: 0; font: 500 14px/20px var(--police-texte); color: var(--ivoire-2); }
-  .bandeau-etape strong { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire); }
-  .verdict-bas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 2px; }
-  .verdict-bas[hidden] { display: none; }
-  .lignes { display: contents; margin: 0; padding: 0; list-style: none; }
-  .lignes :global(li) { display: flex; flex-direction: column; gap: 10px; padding: 22px; background: var(--panneau); }
-  .lignes :global(.icone) { display: none; }
-  .lignes :global(.ligne-titre) { display: block; font: 700 26px/1.05 var(--police-titre); text-transform: uppercase; }
-  .lignes :global(.ligne-detail) { display: block; margin-top: 10px; font: 400 15px/1.5 var(--police-texte); color: var(--ivoire-2); }
-  /* « Ta voix de 578e » : le surtitre en lumière, il te désigne. */
-  .lignes :global(li.l-voix .ligne-titre) { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; color: var(--lumiere); }
-  .lignes :global(li.l-voix .ligne-detail) { font: 500 18px/1.4 var(--police-question); color: var(--ivoire); }
-  .actions { display: flex; flex-direction: column; gap: 14px; padding: 22px; background: var(--panneau); }
-  .actions-titre { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .actions-boutons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
-  .b-principal { display: inline-flex; align-items: center; min-height: 54px; padding: 0 24px; border: 0;
-    background: var(--direct); color: var(--sur-direct); font: 600 17px/1 var(--police-titre); letter-spacing: 0.08em;
-    text-transform: uppercase; text-decoration: none; cursor: pointer; }
-  .b-principal:hover { color: var(--sur-direct); background: #9A0F27; }
-  .b-second { display: inline-flex; align-items: center; min-height: 54px; padding: 0 20px; border: 1px solid var(--ivoire-2);
-    color: var(--ivoire); font: 600 15px/1 var(--police-titre); letter-spacing: 0.08em;
-    text-transform: uppercase; text-decoration: none; }
-  .b-second:hover { color: var(--ivoire); background: var(--panneau-2); }
-
-  /* --- L'hémicycle détaillé, accessible au clavier, avec son tableau de repli --- */
-  .panneau { padding: 22px 24px; background: var(--panneau); }
-  .panneau-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
-  .panneau h2 { font-size: 26px; }
-  .panneau-tete span { font-size: 14px; color: var(--ivoire-2); }
-  .cadre-salle { max-width: 900px; margin: 20px auto 0; }
-  .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 18px 0 0; padding: 0;
-    list-style: none; font-size: 14px; color: var(--ivoire-2); }
-  .legende li { display: inline-flex; align-items: center; gap: 7px; }
-  .legende span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .legende .anneau { background: var(--panneau); box-shadow: 0 0 0 2.5px var(--ivoire); }
-
-  @media (max-width: 640px) {
-    .un-verdict h1 { font-size: 19px; }
-    .tampon { font-size: 72px; margin-bottom: 18px; }
-    .bandeau .bandeau-titre { font-size: 22px; }
-    .compteurs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 16px; }
-    .chiffre { font-size: 56px; }
-    .lignes :global(.ligne-titre) { font-size: 22px; }
+  .question { font: 600 16px/1.35 var(--police-texte); }
+  .issue { font-size: 72px; }
+  .resultat, .decouvrir { display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  :global(.verdict-cache) .resultat { display: none; }
+  :global(html:not(.verdict-cache)) .decouvrir { display: none; }
+  .decouvrir :global(.bouton) { margin-top: auto; }
+  .barre { display: flex; height: 12px; gap: 2px; border-radius: var(--pilule); overflow: hidden; }
+  .barre .point { width: auto; height: auto; border-radius: 0; }
+  .lignes :global(li > span:last-child) { white-space: nowrap; }
+  .lignes :global(a) { text-decoration: none; }
+  .lignes :global(a:hover) { text-decoration: underline; }
+  .partiel { padding: 10px 14px; border-radius: 14px; background: var(--surface); }
+  .repli-2d { padding: 8px; border-radius: var(--rayon-carte); background: var(--surface); }
+  .repli-2d[hidden] { display: none; }
+  .actions { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 720px) {
+    .issue { font-size: 44px; }
   }
 </style>
-

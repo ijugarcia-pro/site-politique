@@ -1,15 +1,10 @@
-// Les 12 thèmes des cartes de vote (liste fermée, pipeline/cartes.py) et leur puce. Charte « La
-// Séance » (docs/refonte-la-seance.md, lot 6) : le thème est une étiquette de régie, la même pour
-// les 12 (rouge de régie, texte blanc, 6,9:1), comme dans les maquettes V6C ; aucun thème ne
-// prend une couleur qui pourrait le rapprocher d'un groupe ou d'un vote.
-const ETIQUETTE = { fond: '#B3132F', encre: '#FFFFFF' };
+// Les 12 thèmes des cartes de vote (liste fermée, pipeline/cartes.py). Dans la VDEF, un thème
+// est une pastille grise comme les autres (VDEF § 7) : aucun thème ne prend une couleur qui
+// pourrait le rapprocher d'un groupe ou d'un vote ; chacun a son dossier (/dossiers/{adresse}/).
 export const THEMES = ['Numérique', 'Droits', 'Travail', 'Économie', 'Immigration',
   'Environnement', 'Éducation', 'Institutions', 'Énergie', 'Sécurité', 'Logement', 'Santé'] as const;
-export const PUCES_THEMES: Record<string, { fond: string; encre: string }> = Object.fromEntries(
-  THEMES.map((t) => [t, ETIQUETTE]));
 
-/** La puce d'un thème, « fond:encre » ; un thème inconnu prend la même étiquette. */
-export const puceTheme = (theme: string): string => {
-  const p = PUCES_THEMES[theme] ?? ETIQUETTE;
-  return `${p.fond}:${p.encre}`;
-};
+/** L'adresse du dossier d'un thème : « Économie » → « economie » (/dossiers/economie/). */
+export const slugTheme = (theme: string): string =>
+  theme.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');

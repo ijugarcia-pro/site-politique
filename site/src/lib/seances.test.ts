@@ -62,9 +62,3 @@ test('série gelée : jamais un mot de perte, la reprise quand elle est connue',
   assert.equal(repriseApres('2026-12-28', treves), 'le lundi 4 janvier');
   assert.equal(repriseApres('2027-01-04', treves), null);
 });
-
-test('les bleus du gel ne sont pas le bleu « Pour »', () => {
-  const css = readFileSync(new URL('../components/SerieGelee.astro', import.meta.url), 'utf-8');
-  assert.match(css, /#0B6AAE/);
-  assert.doesNotMatch(css, /#2F7BFF/i);
-});

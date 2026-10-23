@@ -1,0 +1,38 @@
+---
+// Barre de vote (VDEF § 7) : pour, contre, abstention, absents, dans cet ordre, en pilule de 8 à
+// 14 px. Avec `pastilles`, les quatre nombres suivent en pastilles, chacun avec sa phrase.
+// Les non-votants ne sont pas dans la barre : la maquette compte « absents » (VDEF § 6).
+import Pastille from './Pastille.astro';
+
+interface Props {
+  pour: number;
+  contre: number;
+  abstention: number;
+  absents: number;
+  hauteur?: number;
+  pastilles?: boolean;
+  class?: string;
+}
+const { pour, contre, abstention, absents, hauteur = 10, pastilles = false, class: classe } = Astro.props;
+const pluriel = (n: number, mot: string) => `${n.toLocaleString('fr-FR')} ${mot}${n > 1 ? 's' : ''}`;
+const libelles = [`${pour.toLocaleString('fr-FR')} pour`, `${contre.toLocaleString('fr-FR')} contre`,
+  pluriel(abstention, 'abstention'), pluriel(absents, 'absent')];
+const parts = [['pour', pour], ['contre', contre], ['abstention', abstention], ['absent', absents]] as const;
+---
+<div class:list={['barre-vote', classe]}>
+  <div class="barre" role="img" aria-label={libelles.join(', ')} style={`height: ${hauteur}px`}>
+    {parts.filter(([, n]) => n > 0).map(([cle, n]) => <span class={`point ${cle}`} style={`flex: ${n}`}></span>)}
+  </div>
+  {pastilles && (
+    <div class="pastilles">
+      {parts.map(([cle], k) => <Pastille point={cle}>{libelles[k]}</Pastille>)}
+    </div>
+  )}
+</div>
+
+<style>
+  .barre-vote { display: flex; flex-direction: column; gap: 12px; }
+  .barre { display: flex; gap: 2px; border-radius: var(--pilule); overflow: hidden; }
+  .barre > .point { width: auto; height: auto; border-radius: 0; }
+  .pastilles { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>

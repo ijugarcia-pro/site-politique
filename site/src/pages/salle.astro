@@ -1,0 +1,396 @@
+---
+// La salle (VDEF, capture 09 ; lot V6) : l'Assemblée vue du perchoir. Des repères (toi, ton
+// jumeau, ton opposé, ton député), le panneau « Montrer dans la salle » (bascules, un groupe,
+// trouver un député) et la carte du député touché. Au palier 2 (25 votes tranchés), chaque
+// siège s'éclaire selon ses votes communs avec toi (intensités, lib/profil.ts) ; avant, un
+// encart dit ce qu'il manque. Tout est calculé dans le navigateur. Sans 3D, l'hémicycle 2D
+// prend le relais (un clic sur un siège donne sa carte) ; au clavier, « Trouver un député ».
+// L'adresse peut demander un vote (#vote=), un député (#depute=) ou un groupe (#groupe=).
+import Base from '../layouts/Base.astro';
+import Bouton from '../components/vdef/Bouton.astro';
+import MiniHemicycle from '../components/MiniHemicycle.astro';
+import { composition, scrutins } from '../lib/donnees.ts';
+import { INTENSITES, NIVEAUX } from '../lib/profil.ts';
+
+const compo = composition();
+const groupes = compo.groupes.filter((g) => g.membres > 0)
+  .sort((a, b) => b.membres - a.membres || a.libelle.localeCompare(b.libelle, 'fr'));
+const donnees = JSON.stringify({
+  // Le député de chaque siège, dans l'ordre de la salle 3D : [identifiant, nom, groupe].
+  sieges: compo.sieges.map((s) => (s.depute ? [s.depute, s.nom ?? '', s.groupe ?? ''] : null)),
+  groupes: Object.fromEntries(compo.groupes.map((g) => [g.uid, g.libelle])),
+  horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
+}).replace(/</g, '\\u003c');
+const noms = [...new Set(compo.sieges.filter((s) => s.nom).map((s) => s.nom!))].sort((a, b) => a.localeCompare(b, 'fr'));
+const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
+---
+<Base titre="La salle" vue="salle" fond="salle" vueSalle="salle"
+  description="La salle de l'Assemblée nationale en 3D : touche un siège pour voir son député, montre ton jumeau, ton opposé, ton député ou un groupe.">
+  <h1 class="visuellement-cache">La salle</h1>
+  <section class="panneau" aria-labelledby="titre-montrer" data-panneau-salle>
+    <h2 id="titre-montrer" class="titre-panneau">Montrer dans la salle</h2>
+    <div class="bascules" data-bascules>
+      <button type="button" class="bascule" aria-pressed="true" data-bascule="jumeau" hidden>Ton jumeau</button>
+      <button type="button" class="bascule" aria-pressed="true" data-bascule="oppose" hidden>Ton opposé</button>
+      <button type="button" class="bascule" aria-pressed="true" data-bascule="depute" hidden>Ton député</button>
+      <a class="bascule lien" href="/deputes/" data-choisir-depute>Choisir ton député</a>
+    </div>
+    <label class="champ-libelle" for="groupe-salle">Un groupe</label>
+    <select id="groupe-salle" class="champ" data-groupe>
+      <option value="">Aucun</option>
+      {groupes.map((g) => <option value={g.uid}>{g.libelle} · {g.membres}</option>)}
+    </select>
+    <form class="recherche" data-recherche role="search">
+      <label class="visuellement-cache" for="trouver-depute">Trouver un député</label>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input id="trouver-depute" class="champ" type="search" list="noms-deputes" placeholder="Trouver un député"
+        autocomplete="off" data-trouver />
+      <datalist id="noms-deputes">{noms.map((n) => <option value={n}></option>)}</datalist>
+    </form>
+    <p class="visuellement-cache" aria-live="polite" data-annonce-salle></p>
+    <div class="repli-2d" data-repli-2d hidden>
+      <MiniHemicycle couleurs={gris} titre="L'hémicycle : touche un siège pour voir son député." />
+    </div>
+  </section>
+
+  <section class="carte-depute" aria-labelledby="nom-touche" data-carte-depute hidden>
+    <div class="carte-haut">
+      <div class="carte-titres">
+        <h2 id="nom-touche" class="nom-touche" tabindex="-1" data-carte-nom></h2>
+        <span class="t-legende" data-carte-groupe></span>
+      </div>
+      <button type="button" class="fermer" aria-label="Fermer la carte" data-carte-fermer>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+    <p class="phrase" data-carte-phrase></p>
+    <span class="mini-barre" aria-hidden="true" data-carte-barre hidden><span class="identiques"></span><span class="contraires"></span><span class="absents"></span></span>
+    <Bouton href="/deputes/" large data-carte-fiche>Voir sa fiche</Bouton>
+  </section>
+
+  <aside class="encart-vote" aria-labelledby="titre-vote-salle" data-encart-vote hidden>
+    <p class="t-legende" id="titre-vote-salle" data-vote-salle-numero>Le vote dans la salle</p>
+    <p class="encart-titre" data-vote-salle-titre></p>
+    <ul class="legende-vote">
+      <li><span class="point pour"></span>Pour</li><li><span class="point contre"></span>Contre</li>
+      <li><span class="point abstention"></span>Abstention</li><li><span class="point absent"></span>Absent ou non-votant</li>
+    </ul>
+    <a class="retour-vote" href="/explorer/" data-vote-salle-lien>Revenir au vote</a>
+  </aside>
+
+  <aside class="encart-palier" aria-label="Palier 2 · La salle éclairée" data-encart-palier>
+    <div class="encart-attente" data-encart-attente>
+      <span class="anneau-encart" aria-hidden="true" data-encart-anneau></span>
+      <div>
+        <p class="encart-titre">Palier 2 · La salle éclairée</p>
+        <p class="t-legende encart-texte" data-encart-texte>À 25 votes, chaque siège s’éclaire selon ses votes communs avec toi.</p>
+      </div>
+    </div>
+    <div class="legende" data-encart-legende hidden>
+      <p class="encart-titre">Chaque siège s’éclaire selon ses votes comme toi</p>
+      <ul>
+        {NIVEAUX.map((t, k) => <li><span class="pastille-intensite" style={`background: ${INTENSITES[k]}`}></span>{t.libelle}</li>)}
+        <li><span class="pastille-intensite eteinte"></span>Aucun de tes votes</li>
+      </ul>
+    </div>
+  </aside>
+
+  <p class="consigne-salle">Glisse pour tourner · touche un siège</p>
+  <script type="application/json" data-donnees-salle set:html={donnees}></script>
+</Base>
+
+<script>
+  import { deputeChoisi, lireJSON } from '../lib/navigateur.ts';
+  import { palierAtteint, PALIERS, votesTranches } from '../lib/paliers.ts';
+  import { comparer, colonnes, INTENSITES, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
+  import { $, mesReps, pluriel, VOYANTS } from '../lib/trancher.ts';
+  import { salle3D, type RepereSalle } from '../salle3d/pilote.ts';
+  import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
+
+  const SEUIL_ECLAIREE = PALIERS.find((p) => p.id === 'salle-eclairee')!.seuil;
+
+  document.addEventListener('astro:page-load', async () => {
+    const brut = document.querySelector('[data-donnees-salle]')?.textContent;
+    if (!brut) return;
+    const { sieges, groupes, horsMatrice } = JSON.parse(brut) as {
+      sieges: ([string, string, string] | null)[]; groupes: Record<string, string>; horsMatrice: string[] };
+    const racine = document.querySelector<HTMLElement>('[data-salle-vdef]');
+    const salle = racine ? salle3D(racine) : null;
+    const annonce = $('[data-annonce-salle]');
+    const hors = new Set(horsMatrice);
+    const reps = Object.fromEntries(Object.entries(mesReps()).filter(([uid]) => !hors.has(uid)));
+    const n = votesTranches(reps);
+    const parUid = new Map(sieges.map((s, i) => [s?.[0] ?? '', i]));
+    parUid.delete('');
+
+    // Le repli 2D : l'hémicycle, un clic sur un siège donne sa carte.
+    const repli = $('[data-repli-2d]');
+    const cercles = [...repli.querySelectorAll<SVGCircleElement>('svg circle:not(.marque)')];
+    void salle?.prete.then((s) => {
+      document.body.classList.toggle('salle-sans-3d', !s);
+      repli.hidden = !!s;
+    });
+    if (!salle) { repli.hidden = false; document.body.classList.add('salle-sans-3d'); }
+
+    // Ton personnage : assis sur le siège de ton jumeau à partir du palier 1, sinon il attend
+    // au pied de la tribune.
+    salle?.personnage(lireApparence(lireJSON(CLE_PERSONNAGE, null)));
+    salle?.asseoir(null);
+
+    let matrice: Matrice | null = null;
+    let p: ReturnType<typeof profil> | null = null;
+    if (n > 0) {
+      try {
+        matrice = await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        p = profil(matrice, reps);
+      } catch { /* hors ligne : la salle reste publique, sans comparaison */ }
+    }
+    const mes = matrice ? colonnes(matrice, reps) : [];
+    const lignes = new Map(matrice?.deputes.map((d) => [d.u, d]) ?? []);
+
+    // --- Les repères ---
+    const jumeau = p?.jumeau ?? null;
+    const oppose = p?.oppose ?? null;
+    const monDepute = deputeChoisi();
+    const assis = !!(jumeau && palierAtteint(n) && parUid.has(jumeau.ligne.u));
+    if (assis) salle?.asseoir(parUid.get(jumeau!.ligne.u)!, { marcher: false });
+    const actifs = { jumeau: true, oppose: true, depute: true };
+    const nomDe = (uid: string) => sieges[parUid.get(uid) ?? -1]?.[1] ?? lignes.get(uid)?.n ?? '';
+    const poserReperes = () => {
+      const liste: RepereSalle[] = [];
+      if (jumeau && actifs.jumeau && parUid.has(jumeau.ligne.u)) {
+        liste.push(assis ? { i: parUid.get(jumeau.ligne.u)!, libelle: 'Toi et ton jumeau', toi: true }
+          : { i: parUid.get(jumeau.ligne.u)!, libelle: `Ton jumeau · ${nomDe(jumeau.ligne.u)}` });
+      }
+      if (oppose && actifs.oppose && parUid.has(oppose.ligne.u)) {
+        liste.push({ i: parUid.get(oppose.ligne.u)!, libelle: `Ton opposé · ${nomDe(oppose.ligne.u)}` });
+      }
+      if (monDepute && actifs.depute && parUid.has(monDepute)
+        && monDepute !== jumeau?.ligne.u && monDepute !== oppose?.ligne.u) {
+        liste.push({ i: parUid.get(monDepute)!, libelle: `Ton député · ${nomDe(monDepute)}` });
+      }
+      salle?.reperes(liste);
+    };
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-bascule]')) {
+      const cle = b.dataset.bascule as keyof typeof actifs;
+      b.hidden = cle === 'jumeau' ? !jumeau : cle === 'oppose' ? !oppose : !(monDepute && parUid.has(monDepute));
+      b.addEventListener('click', () => {
+        actifs[cle] = !actifs[cle];
+        b.setAttribute('aria-pressed', String(actifs[cle]));
+        poserReperes();
+      });
+    }
+    $('[data-choisir-depute]').hidden = !!(monDepute && parUid.has(monDepute));
+    poserReperes();
+
+    // --- Les voyants : l'accord au palier 2, ou un groupe choisi ---
+    const eclairee = n >= SEUIL_ECLAIREE && !!matrice;
+    const accord = (i: number) => {
+      const s = sieges[i];
+      const l = s ? lignes.get(s[0]) : undefined;
+      if (!l || !mes.length) return null;
+      const c = comparer(l.s, mes);
+      return c.identiques + c.contraires > 0 ? INTENSITES[NIVEAUX.indexOf(niveau(c.part))] : null;
+    };
+    const voyantsAccord = () => sieges.map((_, i) => (eclairee ? accord(i) : null));
+    const peindre = (couleurs: (string | null)[]) => {
+      salle?.voyants(couleurs);
+      cercles.forEach((c, i) => c.setAttribute('fill', couleurs[i] ?? (sieges[i] ? '#BDBDBD' : '#FFFFFF')));
+    };
+    peindre(voyantsAccord());
+    // « Voir le vote dans la salle » (page d'un vote) : /salle/#vote=VTANR… allume chaque siège
+    // à la couleur du vote de son député, lu dans la matrice.
+    const uidVote = /^#vote=(VTANR\w+)$/.exec(location.hash)?.[1] ?? null;
+    let voyantsVote: (string | null)[] | null = null;
+    if (uidVote) {
+      try {
+        const m = matrice ?? await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        const k = m.votes.indexOf(uidVote);
+        if (k >= 0) {
+          const lettres = new Map(m.deputes.map((x) => [x.u, x.s[k]]));
+          voyantsVote = sieges.map((s) => (s ? VOYANTS[lettres.get(s[0]) ?? 'x'] ?? null : null));
+          peindre(voyantsVote);
+          $('[data-encart-vote]').hidden = false;
+          $('[data-encart-palier]').hidden = true;
+          const votes = await (await fetch('/donnees/votes.json')).json() as Record<string, [number, string, string, number, string]>;
+          const v = votes[uidVote];
+          if (v) {
+            $('[data-vote-salle-numero]').textContent = `Le vote n° ${v[0].toLocaleString('fr-FR')} dans la salle`;
+            $('[data-vote-salle-titre]').textContent = v[1];
+            $<HTMLAnchorElement>('[data-vote-salle-lien]').href = `/votes/${v[0]}/`;
+          }
+          annonce.textContent = 'Chaque siège a la couleur du vote de son député.';
+        }
+      } catch { /* hors ligne : la salle sans le vote */ }
+    }
+    $<HTMLSelectElement>('[data-groupe]').addEventListener('change', (ev) => {
+      const g = (ev.target as HTMLSelectElement).value;
+      if (!g) { peindre(voyantsVote ?? voyantsAccord()); annonce.textContent = 'Aucun groupe montré.'; return; }
+      const couleurs = sieges.map((s) => (s && s[2] === g ? '#F4EDE2' : null));
+      peindre(couleurs);
+      const nb = couleurs.filter(Boolean).length;
+      annonce.textContent = `${groupes[g]} : ${pluriel(nb, 'siège')} allumé${nb > 1 ? 's' : ''}.`;
+    });
+
+    // L'encart du palier 2 : ce qu'il manque, puis la légende des intensités.
+    $('[data-encart-attente]').hidden = eclairee;
+    $('[data-encart-legende]').hidden = !eclairee;
+    $('[data-encart-palier]').setAttribute('aria-label', eclairee ? 'Légende : la salle éclairée' : 'Palier 2 · La salle éclairée');
+    $('[data-encart-anneau]').style.setProperty('--angle', `${Math.round((360 * Math.min(n, SEUIL_ECLAIREE)) / SEUIL_ECLAIREE)}deg`);
+    $('[data-encart-texte]').textContent = `À ${SEUIL_ECLAIREE} votes, chaque siège s’éclaire selon ses votes communs avec toi. ${n} / ${SEUIL_ECLAIREE}.`;
+
+    // --- La carte du député touché ---
+    const carte = $('[data-carte-depute]');
+    const montrer = (i: number, focus = false) => {
+      const s = sieges[i];
+      if (!s) return;
+      const [uid, nom, g] = s;
+      salle?.selection(i);
+      cercles.forEach((c, k) => c.classList.toggle('choisi', k === i));
+      carte.hidden = false;
+      $('[data-carte-nom]').textContent = nom;
+      $('[data-carte-groupe]').textContent = groupes[g] ?? 'Non inscrit';
+      $<HTMLAnchorElement>('[data-carte-fiche]').href = `/deputes/${uid}/`;
+      const l = lignes.get(uid);
+      const barre = $('[data-carte-barre]');
+      let phrase: string;
+      if (!mes.length) {
+        phrase = 'Tranche des votes pour comparer ses votes aux tiens.';
+        barre.hidden = true;
+      } else if (!l) {
+        phrase = 'Pas de vote enregistré à comparer aux tiens.';
+        barre.hidden = true;
+      } else {
+        const c = comparer(l.s, mes);
+        phrase = `A voté comme toi sur ${c.identiques} de tes ${pluriel(mes.length, 'vote')}`
+          + (c.absents ? `. Pas de vote de sa part sur ${c.absents}.` : '.');
+        barre.hidden = false;
+        barre.style.setProperty('--identiques', String(c.identiques));
+        barre.style.setProperty('--contraires', String(c.contraires));
+        barre.style.setProperty('--absents', String(c.absents));
+      }
+      $('[data-carte-phrase]').textContent = phrase;
+      annonce.textContent = `${nom}, ${groupes[g] ?? 'non inscrit'} : ${phrase}`;
+      if (focus) $('[data-carte-nom]').focus();
+    };
+    salle?.surSiege((i) => montrer(i));
+    cercles.forEach((c, i) => c.addEventListener('click', () => montrer(i)));
+    $('[data-carte-fermer]').addEventListener('click', () => {
+      carte.hidden = true;
+      salle?.selection(null);
+      cercles.forEach((c) => c.classList.remove('choisi'));
+      $('[data-trouver]').focus();
+    });
+    const trouver = $<HTMLInputElement>('[data-trouver]');
+    const chercher = () => {
+      const q = trouver.value.trim().toLocaleLowerCase('fr');
+      if (!q) return false;
+      const i = sieges.findIndex((s) => s && s[1].toLocaleLowerCase('fr') === q);
+      if (i >= 0) { montrer(i, true); return true; }
+      return false;
+    };
+    // Depuis une fiche (« Voir dans la salle ») ou la liste des groupes : #depute=PA… montre son
+    // siège et sa carte, #groupe=PO… allume les sièges du groupe.
+    const depuisAdresse = /^#(depute|groupe)=(\w+)$/.exec(location.hash);
+    if (depuisAdresse?.[1] === 'depute' && parUid.has(depuisAdresse[2])) {
+      montrer(parUid.get(depuisAdresse[2])!);
+    } else if (depuisAdresse?.[1] === 'groupe' && groupes[depuisAdresse[2]]) {
+      const choix = $<HTMLSelectElement>('[data-groupe]');
+      choix.value = depuisAdresse[2];
+      choix.dispatchEvent(new Event('change'));
+    }
+    trouver.addEventListener('change', chercher);
+    $<HTMLFormElement>('[data-recherche]').addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      if (!chercher()) annonce.textContent = 'Aucun député de ce nom dans la salle.';
+    });
+  });
+</script>
+
+<style>
+  .panneau, .carte-depute, .encart-palier {
+    position: absolute; z-index: 3; background: var(--feuille); color: var(--encre);
+    box-shadow: var(--ombre-feuille);
+  }
+  .panneau {
+    top: 88px; left: var(--marge); width: 330px; padding: 22px 18px 18px;
+    border-radius: var(--rayon-feuille); display: flex; flex-direction: column; gap: 10px;
+    max-height: calc(100% - 88px - var(--marge)); overflow: auto;
+  }
+  .titre-panneau { font: 700 19px/1.2 var(--police-titre); }
+  .bascules { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bascule {
+    display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px;
+    border: 0; border-radius: var(--pilule); background: var(--surface); color: var(--encre);
+    font: 600 14px/1 var(--police-texte); cursor: pointer; text-decoration: none;
+  }
+  .bascule[aria-pressed='true'] { background: var(--encre); color: var(--feuille); }
+  .bascule.lien { background: var(--feuille); box-shadow: inset 0 0 0 1px var(--bord); }
+  .champ-libelle { font: 600 14px/1.3 var(--police-texte); margin-top: 4px; }
+  .champ {
+    width: 100%; min-height: 44px; padding: 0 14px; border-radius: 12px;
+    border: 1px solid var(--bord); background: var(--feuille); color: var(--encre);
+    font: 500 15px/1 var(--police-texte);
+  }
+  .recherche { position: relative; display: flex; align-items: center; }
+  .recherche svg { position: absolute; left: 16px; color: var(--texte-2); pointer-events: none; }
+  .recherche .champ { padding-left: 40px; border: 0; border-radius: var(--pilule); background: var(--surface); }
+  .repli-2d { padding: 6px; border-radius: var(--rayon-carte); background: var(--surface); }
+  .repli-2d :global(circle) { cursor: pointer; }
+  .repli-2d :global(circle.choisi) { stroke: var(--encre); stroke-width: 5; }
+
+  .carte-depute {
+    left: 196px; bottom: 260px; width: 300px; padding: 18px; border-radius: 20px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .carte-haut { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .carte-titres { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .nom-touche { font: 700 19px/1.2 var(--police-titre); }
+  .nom-touche:focus { outline: none; }
+  .fermer {
+    flex: 0 0 auto; width: 36px; height: 36px; border: 0; border-radius: var(--pilule);
+    background: var(--surface); color: var(--encre); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .phrase { font: 500 15px/1.45 var(--police-texte); color: var(--texte); }
+  .mini-barre { display: flex; height: 8px; border-radius: var(--pilule); overflow: hidden; background: var(--surface); }
+  .mini-barre span { display: block; height: 100%; }
+  .mini-barre .identiques { flex: var(--identiques, 0) 0 0; background: var(--encre); }
+  .mini-barre .contraires { flex: var(--contraires, 0) 0 0; background: var(--inactif); }
+  .mini-barre .absents { flex: var(--absents, 0) 0 0; background: var(--bord); }
+
+  .encart-vote {
+    position: absolute; z-index: 3; right: var(--marge); bottom: var(--marge); width: 360px; padding: 18px 20px;
+    border-radius: 20px; background: var(--feuille); box-shadow: var(--ombre-feuille);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .legende-vote { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+  .legende-vote li { display: flex; align-items: center; gap: 8px; font: 500 13px/1.3 var(--police-texte); }
+  .retour-vote { color: var(--encre); font: 700 14px/1 var(--police-texte); min-height: var(--cible); display: inline-flex; align-items: center; }
+  .encart-palier { right: var(--marge); bottom: var(--marge); width: 360px; padding: 18px 20px; border-radius: 20px; }
+  .encart-attente { display: flex; align-items: center; gap: 16px; }
+  .anneau-encart {
+    flex: 0 0 auto; width: 44px; height: 44px; border-radius: var(--pilule);
+    background: conic-gradient(var(--encre) var(--angle, 0deg), var(--filet) 0);
+    -webkit-mask: radial-gradient(circle, transparent 16px, #000 16.5px);
+    mask: radial-gradient(circle, transparent 16px, #000 16.5px);
+  }
+  .encart-titre { font: 700 16px/1.3 var(--police-texte); }
+  .encart-texte { margin-top: 4px; }
+  .legende ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  .legende li { display: flex; align-items: center; gap: 8px; font: 500 13px/1.3 var(--police-texte); color: var(--texte); }
+  .pastille-intensite { flex: 0 0 auto; width: 14px; height: 14px; border-radius: var(--pilule); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2); }
+  .pastille-intensite.eteinte { background: var(--feuille); box-shadow: inset 0 0 0 2px var(--absent); }
+
+  @media (max-width: 720px) {
+    .panneau, .carte-depute, .encart-palier, .encart-vote {
+      position: relative; inset: auto; width: auto; max-height: none; box-shadow: none;
+    }
+    .panneau {
+      margin-top: -64px; border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
+      padding: 20px 16px 12px; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    }
+    .carte-depute { margin: 0 16px 12px; border: 1px solid var(--filet); }
+    .encart-palier, .encart-vote { margin: 0 16px 16px; background: var(--surface); box-shadow: none; }
+    :global(main:has([data-panneau-salle])) { background: var(--feuille); }
+  }
+</style>

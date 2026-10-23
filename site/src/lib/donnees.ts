@@ -290,6 +290,45 @@ export interface Semaine {
 export const semaine = () =>
   lire<Semaine>('site/semaine.json', 'uv run python -m pipeline.semaine');
 
+/** Les votes qui ont une carte, avec son thème et sa question : quiz, lots, séances passées et
+ *  séance en cours (VDEF, dossiers par thème, tes réponses). Seuls ces votes ont un thème ;
+ *  lib/paliers.ts ne garde que les 12 thèmes de la liste fermée. */
+export interface CarteDeVote { uid: string; theme: string; question: string; concretement: string }
+
+export function cartesQuestions(): CarteDeVote[] {
+  const sortie: CarteDeVote[] = [...questionsQuiz(), ...lotsDeVotes().flat()]
+    .map((c) => ({ uid: c.uid, theme: c.theme, question: c.question, concretement: c.concretement }));
+  const sem = semaine();
+  for (const v of sem.votes) {
+    if (v.carte && v.scrutin) {
+      sortie.push({ uid: v.scrutin.uid, theme: v.carte.theme, question: v.carte.question, concretement: v.carte.concretement });
+    }
+  }
+  const dossier = resolve(process.cwd(), '..', 'data', 'seances');
+  for (const h of sem.historique) {
+    const fichier = resolve(dossier, `${h.lundi}.json`);
+    if (!h.tranches || !existsSync(fichier)) continue;
+    const { cartes } = JSON.parse(readFileSync(fichier, 'utf-8')) as
+      { cartes?: Record<string, { theme?: string; question?: string; concretement?: string }> };
+    for (const [cle, uid] of Object.entries(h.tranches)) {
+      const carte = cartes?.[cle];
+      if (carte?.theme) sortie.push({ uid, theme: carte.theme, question: carte.question ?? '', concretement: carte.concretement ?? '' });
+    }
+  }
+  return sortie;
+}
+
+/** La carte de chaque vote qui en a une (la première trouvée : quiz, lots, puis séances). */
+export function cartesParVote(): Map<string, CarteDeVote> {
+  const m = new Map<string, CarteDeVote>();
+  for (const c of cartesQuestions()) if (!m.has(c.uid)) m.set(c.uid, c);
+  return m;
+}
+
+/** Les votes qui ont une carte, avec son thème (voir cartesQuestions). */
+export const cartesThemes = (): { uid: string; theme: string }[] =>
+  cartesQuestions().map(({ uid, theme }) => ({ uid, theme }));
+
 /** Le scrutin s'il a sa page exportée (un scrutin mis de côté par les contrôles n'en a pas). */
 export const scrutinPublie = (uid: string): Scrutin | null =>
   existsSync(resolve(EXPORT, `site/scrutins/${uid}.json`)) ? scrutin(uid) : null;

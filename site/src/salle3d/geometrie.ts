@@ -14,6 +14,22 @@ export const P = {
   RCOL: 21.0, YTOP: 13 * 0.36, YENT: 12.6, YCOR: 13.8, RDOME: 23.0, KDOME: 0.42, ZFOND: -6.5,
 } as const;
 
+/** Les colonnes [x, z, y du pied, hauteur] : 15 sur la colonnade, au-dessus des gradins, et 4
+ *  devant le mur du fond (room.js). La scène les dessine ; le test des lignes de vue les évite. */
+export function colonnes(): [number, number, number, number][] {
+  const n = 15;
+  const sortie: [number, number, number, number][] = [];
+  for (let k = 0; k < n; k++) {
+    const a = ((P.TH0 + (k * (P.TH1 - P.TH0)) / (n - 1)) * Math.PI) / 180;
+    sortie.push([P.RCOL * Math.cos(a), P.RCOL * Math.sin(a), P.YTOP, P.YENT - P.YTOP]);
+  }
+  for (const x of [-12.8, -5.4, 5.4, 12.8]) sortie.push([x, P.ZFOND + 0.75, 0, P.YENT]);
+  return sortie;
+}
+/** Le rayon des colonnes (fût, base comprise) et la balustrade de la galerie (rayon, bas, haut). */
+export const RAYON_COLONNE = 0.62;
+export const BALUSTRADE = { r: 21.62, y0: 8.3, y1: 9.25 } as const;
+
 /** Largeur d'un fauteuil, accoudoirs compris (room.js : bois ±0,31 + 0,035). */
 export const LARGEUR_FAUTEUIL = 0.69;
 

@@ -1,0 +1,3 @@
+# Redirections de Cloudflare Pages (VDEF, lot V6) : « Mon hémicycle » devient « Ta place ».
+/hemicycle/ /ta-place/ 301
+/hemicycle /ta-place/ 301

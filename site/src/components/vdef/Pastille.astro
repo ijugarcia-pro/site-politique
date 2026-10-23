@@ -1,0 +1,27 @@
+---
+// Pastille (chip, VDEF § 7) : fond gris, 13 px gras ; noire pour un état actif ou une échéance
+// (« Ils votent mardi à 16 h »). `point` ajoute la pastille de couleur d'un vote.
+interface Props {
+  noire?: boolean;
+  point?: 'pour' | 'contre' | 'abstention' | 'absent' | 'non-votant';
+  href?: string;
+  class?: string;
+  [attr: string]: unknown;
+}
+const { noire = false, point, href, class: classe, ...reste } = Astro.props;
+const Balise = href ? 'a' : 'span';
+---
+<Balise href={href} class:list={['pastille', { noire, lien: !!href }, classe]} {...reste}>
+  {point && <span class:list={['point', point]} aria-hidden="true"></span>}<slot />
+</Balise>
+
+<style>
+  .pastille {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: var(--pilule);
+    background: var(--surface); color: var(--encre);
+    font: 600 13px/1 var(--police-texte); white-space: nowrap; text-decoration: none;
+  }
+  .noire { background: var(--encre); color: var(--feuille); }
+  .lien { min-height: var(--cible); padding: 0 16px; font-size: 14px; }
+</style>

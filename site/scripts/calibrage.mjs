@@ -32,7 +32,7 @@ const PLEIN_ECRAN = `
 const VUES = [
   { nom: 'cam1-salle-jour', reference: 'fond-cam1-salle-jour.jpg', page: '/', camera: 'salle' },
   { nom: 'cam2-tribune', reference: 'fond-cam2-tribune.jpg', page: '/', camera: 'tribune' },
-  { nom: 'cam3-ta-travee', reference: 'fond-cam3-ta-travee.jpg', page: '/hemicycle/', camera: 'travee', reponses: true },
+  { nom: 'cam3-ta-travee', reference: 'fond-cam3-ta-travee.jpg', page: '/ta-place/', camera: 'place', reponses: true },
   { nom: 'verdict-lumieres', reference: 'fond-verdict-lumieres.jpg', page: '/verdict/', camera: 'salle', reponses: true, decouvrir: true },
 ];
 
@@ -45,7 +45,7 @@ page.on('pageerror', (e) => console.log(`  erreur de page : ${e.message}`));
 
 // Un visiteur qui a répondu aux 10 votes du quiz (illustratif), pour avoir une place (CAM 3).
 await page.goto(`${base}/quiz/`);
-const uids = await page.evaluate(() => JSON.parse(document.querySelector('[data-donnees-seance]').textContent).questions.map((q) => q.uid));
+const uids = await page.evaluate(() => JSON.parse(document.querySelector('[data-donnees-trancher]').textContent).questions.map((q) => q.uid));
 const reponses = Object.fromEntries(uids.map((u, i) => [u, { v: i % 3 ? 'pour' : 'contre', le: '2026-10-20T10:00:00Z' }]));
 
 for (const v of VUES) {

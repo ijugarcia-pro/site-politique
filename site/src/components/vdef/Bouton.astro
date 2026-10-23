@@ -1,0 +1,35 @@
+---
+// Bouton (VDEF § 7) : pilule noire pour l'action principale, pilule blanche bordée pour la
+// secondaire. Un lien si `href` est donné, sinon un vrai bouton. Les autres attributs
+// (data-*, aria-*, disabled…) passent tels quels.
+interface Props {
+  href?: string;
+  variante?: 'plein' | 'contour';
+  /** Toute la largeur de son conteneur (bouton du bas d'une feuille). */
+  large?: boolean;
+  type?: 'button' | 'submit';
+  class?: string;
+  [attr: string]: unknown;
+}
+const { href, variante = 'plein', large = false, type = 'button', class: classe, ...reste } = Astro.props;
+const classes = ['bouton', variante, { large }, classe];
+---
+{href
+  ? <a href={href} class:list={classes} {...reste}><slot /></a>
+  : <button type={type} class:list={classes} {...reste}><slot /></button>}
+
+<style>
+  .bouton {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 52px; padding: 0 24px; border-radius: var(--pilule);
+    font: 700 16px/1 var(--police-texte); text-decoration: none; cursor: pointer;
+    white-space: nowrap;
+  }
+  .plein { background: var(--encre); color: var(--feuille); border: 0; }
+  .contour { background: var(--feuille); color: var(--encre); border: 1px solid var(--bord); }
+  .contour:hover { border-color: var(--encre); }
+  .large { width: 100%; }
+  .bouton:disabled, .bouton[aria-disabled='true'] { cursor: default; color: var(--inactif); }
+  .plein:disabled, .plein[aria-disabled='true'] { background: var(--surface); }
+  .bouton :global(svg) { flex: 0 0 auto; }
+</style>

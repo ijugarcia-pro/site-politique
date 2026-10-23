@@ -1,104 +1,74 @@
 ---
-// Les députés : « Qui te représente ? » par code postal (puis commune, puis adresse si la
-// commune est partagée entre plusieurs circonscriptions), et l'annuaire, filtrable par nom.
-// Le code postal reste dans le navigateur (il passe par le fragment #cp=, jamais envoyé au
-// serveur) ; seule une adresse à préciser est envoyée au service public de géocodage de
-// l'IGN, au moment où le visiteur la demande.
+// Trouver ton député (VDEF, capture 16 ; lot V8) : le code postal mène à la circonscription ;
+// quand il en couvre plusieurs, le visiteur choisit la sienne (boutons radio), ou, s'il ne sait
+// pas laquelle, situe son adresse. « C'est ma circonscription » garde le député dans le
+// navigateur (578e.depute.v1). Puis la recherche par nom parmi les 577, et les groupes, qui
+// s'allument dans la salle. Le code postal reste dans le navigateur (fragment #cp=, jamais envoyé
+// au serveur) ; seule une adresse à préciser est envoyée au service public de géocodage de l'IGN,
+// au moment où le visiteur la demande.
 import Base from '../../layouts/Base.astro';
+import Bouton from '../../components/vdef/Bouton.astro';
+import Pastille from '../../components/vdef/Pastille.astro';
 import { composition, deputes, lienDepute, nomComplet } from '../../lib/donnees.ts';
-import { couleurGroupe } from '../../lib/couleurs.ts';
 import { libelleCirco } from '../../lib/geo.ts';
 import { normaliser } from '../../lib/votes.ts';
 
 const tous = deputes();
-const couleurs = new Map(composition().groupes.map((g) => [g.uid, couleurGroupe(g.couleur)]));
 const enExercice = tous.filter((d) => d.en_exercice);
-const PARTICULES = new Set(['de', 'du', 'des', 'la', 'le', "d'"]);
-const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
-  d.nom.split(/[\s-]+/).find((m) => !PARTICULES.has(m.toLowerCase())) ?? d.nom]
-  .map((m) => m.charAt(0).toUpperCase()).join('');
+const groupes = composition().groupes.filter((g) => g.membres > 0).sort((a, b) => b.membres - a.membres);
 ---
-<Base titre="Les députés" onglet="explorer"
+<Base titre="Trouver ton député" gabarit="lecture" vue="tribune" bas="galerie"
   description="Qui te représente à l'Assemblée nationale ? Retrouve ton député avec ton code postal, et les 577 députés de la 17e législature.">
-  <nav class="fil" aria-label="Fil d'Ariane">
-    <a href="/explorer/">Explorer</a> <span aria-hidden="true">›</span>
-    <span aria-current="page">Députés</span>
-  </nav>
+  <a class="retour" href="/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    La tribune
+  </a>
+  <header class="entete">
+    <span class="t-etiquette">Ton député</span>
+    <h1 class="t-ecran">Qui te représente ?</h1>
+    <p class="t-texte">Ton code postal suffit. Ton choix reste dans ton navigateur.</p>
+  </header>
 
-  <section class="accroche" aria-labelledby="titre-cp">
-    <div class="accroche-texte">
-      <h1 id="titre-cp">Qui te représente&#8239;?</h1>
-      <p class="sous-titre">
-        Ton code postal suffit. S'il couvre plusieurs circonscriptions, on te demandera ta rue.
-      </p>
-      <form class="cp" data-form-cp-local>
-        <label for="cp" class="visuellement-cache">Code postal</label>
-        <input id="cp" name="cp" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
-          placeholder="Code postal" autocomplete="postal-code" required />
-        <button type="submit">Trouver</button>
-      </form>
-      <p class="discret">Ton code postal reste dans ton navigateur.</p>
+  <form class="cp" data-form-cp-local>
+    <label for="cp" class="champ-libelle">Code postal</label>
+    <div class="cp-ligne">
+      <input id="cp" name="cp" class="champ" inputmode="numeric" pattern="[0-9]{5}" maxlength="5"
+        autocomplete="postal-code" required />
+      <Bouton type="submit">Trouver</Bouton>
     </div>
-    <div class="resultat" data-resultat aria-live="polite" hidden></div>
-  </section>
+  </form>
+  <div class="resultat" data-resultat aria-live="polite" hidden></div>
 
-  <template id="modele-depute">
-    <div class="trouve">
-      <span class="avatar" data-ini></span>
-      <span class="trouve-texte">
-        <span class="sur-titre" data-sur-titre></span>
-        <a class="trouve-nom" data-nom></a>
-        <span class="trouve-detail" data-detail></span>
-      </span>
-      <span class="trouve-actions">
-        <button type="button" class="choisir" data-choisir aria-pressed="false"></button>
-        <a class="voir" data-voir>Voir sa fiche</a>
-      </span>
+  <section class="annuaire-bloc" aria-labelledby="titre-annuaire">
+    <h2 id="titre-annuaire" class="t-section">Ou parcours les {enExercice.length}</h2>
+    <label class="recherche">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <span class="visuellement-cache">Chercher un député par son nom, son groupe ou son département</span>
+      <input type="search" data-recherche-depute placeholder="Le nom d’un député" autocomplete="off" />
+    </label>
+    <div class="groupes">
+      {groupes.map((g) => <Pastille href={`/salle/#groupe=${g.uid}`} class="pastille-groupe">{g.libelle} · {g.membres}</Pastille>)}
     </div>
-  </template>
-
-  <section aria-labelledby="titre-annuaire">
-    <div class="titre-section">
-      <h2 id="titre-annuaire">Les {enExercice.length} députés en exercice</h2>
-      <span data-compte-deputes>{enExercice.length} députés</span>
-    </div>
+    <p class="t-legende">Un groupe choisi s’allume dans la salle.</p>
     <div class="outils">
-      <label class="recherche">
-        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-          <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
-          <path d="M12.5 12.5l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
-        </svg>
-        <span class="visuellement-cache">Chercher un député par son nom, son groupe ou son département</span>
-        <input type="search" data-recherche-depute placeholder="Un nom, un groupe, un département…" autocomplete="off" />
-      </label>
-      <label class="anciens">
-        <input type="checkbox" data-anciens />
-        Afficher aussi les {tous.length - enExercice.length} anciens députés de la législature
-      </label>
+      <span class="t-legende" aria-live="polite" data-compte-deputes></span>
+      <label class="anciens t-legende"><input type="checkbox" data-anciens /> Aussi les {tous.length - enExercice.length} anciens députés de la législature</label>
+      <button type="button" class="tout-voir" data-tout-voir>Voir les {enExercice.length} députés</button>
     </div>
-    <ul class="annuaire" data-annuaire>
+    <ul class="annuaire" data-annuaire hidden>
       {tous.map((d) => (
         <li data-uid={d.uid} data-circo={d.circo} data-en-exercice={d.en_exercice ? '1' : undefined}
           data-recherche={normaliser(`${nomComplet(d)} ${d.sigle ?? ''} ${d.groupe_libelle ?? ''} ${d.departement} ${d.num_departement}`)}
-          data-nom={nomComplet(d)} data-sigle={d.sigle ?? ''} data-civ={d.civilite ?? ''}
-          data-libelle={`${libelleCirco(d.circo)} · ${d.departement}`}
-          hidden={!d.en_exercice}>
+          data-nom={nomComplet(d)} data-groupe={d.groupe_libelle ?? ''} data-civ={d.civilite ?? ''}
+          data-libelle={`${libelleCirco(d.circo)} · ${d.departement}`} hidden={!d.en_exercice}>
           <a href={lienDepute(d)}>
-            <span class="avatar petit" aria-hidden="true">{initiales(d)}</span>
-            <span class="annuaire-texte">
-              <span class="annuaire-nom">{nomComplet(d)}</span>
-              <span class="annuaire-detail">
-                {d.sigle
-                  ? <span class="pastille-groupe" style={`--c: ${couleurs.get(d.groupe ?? '') ?? couleurGroupe(null)}`}>{d.sigle}</span>
-                  : 'Sans groupe'} · {libelleCirco(d.circo)} · {d.departement}
-                {!d.en_exercice && ' · mandat terminé'}
-              </span>
-            </span>
+            <span class="a-nom">{nomComplet(d)}</span>
+            <span class="t-legende">{d.groupe_libelle ?? 'Sans groupe'} · {libelleCirco(d.circo)} · {d.departement}{!d.en_exercice && ' · mandat terminé'}</span>
           </a>
         </li>
       ))}
     </ul>
-    <p class="vide" data-vide-annuaire hidden>Aucun député ne correspond.</p>
+    <p class="t-texte" data-vide-annuaire hidden>Aucun député ne correspond.</p>
   </section>
 </Base>
 
@@ -109,333 +79,238 @@ const initiales = (d: { prenom: string; nom: string }) => [d.prenom,
   import { normaliser } from '../../lib/votes.ts';
 
   const GEOCODAGE = 'https://data.geopf.fr/geocodage/search';
-  const zone = document.querySelector<HTMLElement>('[data-resultat]')!;
-  const champ = document.querySelector<HTMLInputElement>('#cp')!;
-  const modele = document.querySelector<HTMLTemplateElement>('#modele-depute')!;
-  const fiches = [...document.querySelectorAll<HTMLElement>('[data-annuaire] > li')];
-  let cpCourant = '';
 
-  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, texte = '', classe = '') => {
-    const e = document.createElement(tag);
-    if (texte) e.textContent = texte;
-    if (classe) e.className = classe;
-    return e;
-  };
-  const afficher = (...enfants: Node[]) => {
-    zone.hidden = false;
-    zone.replaceChildren(...enfants);
-  };
-  const json = async <T,>(url: string): Promise<T | null> => {
-    try {
-      const r = await fetch(url);
-      return r.ok ? ((await r.json()) as T) : null;
-    } catch {
-      return null;
-    }
-  };
+  document.addEventListener('astro:page-load', () => {
+    const zone = document.querySelector<HTMLElement>('[data-resultat]');
+    const champ = document.querySelector<HTMLInputElement>('#cp');
+    if (!zone || !champ) return;
+    const fiches = [...document.querySelectorAll<HTMLElement>('[data-annuaire] > li')];
+    let cpCourant = '';
 
-  // La carte d'un député trouvé, avec « C'est mon député ».
-  const carte = (li: HTMLElement, surTitre: string) => {
-    const c = modele.content.firstElementChild!.cloneNode(true) as HTMLElement;
-    const elle = li.dataset.civ === 'Mme';
-    const lien = `/deputes/${li.dataset.uid}/`;
-    c.querySelector('[data-ini]')!.textContent = li.querySelector('.avatar')!.textContent;
-    c.querySelector('[data-sur-titre]')!.textContent = surTitre;
-    const nom = c.querySelector<HTMLAnchorElement>('[data-nom]')!;
-    nom.textContent = li.dataset.nom!;
-    nom.href = lien;
-    c.querySelector('[data-detail]')!.textContent = `${li.dataset.sigle || 'Sans groupe'} · ${li.dataset.libelle}`;
-    c.querySelector<HTMLAnchorElement>('[data-voir]')!.href = lien;
-    const bouton = c.querySelector<HTMLButtonElement>('[data-choisir]')!;
-    const maj = () => {
-      const mien = deputeChoisi() === li.dataset.uid;
-      bouton.setAttribute('aria-pressed', String(mien));
-      bouton.textContent = mien ? `✓ ${elle ? 'Ta députée' : 'Ton député'}`
-        : `C'est ${elle ? 'ma députée' : 'mon député'}`;
+    const el = <K extends keyof HTMLElementTagNameMap>(tag: K, texte = '', classe = '') => {
+      const e = document.createElement(tag);
+      if (texte) e.textContent = texte;
+      if (classe) e.className = classe;
+      return e;
     };
-    bouton.addEventListener('click', () => {
-      choisirDepute(deputeChoisi() === li.dataset.uid ? null : li.dataset.uid!);
-      maj();
-    });
-    maj();
-    return c;
-  };
+    const afficher = (...enfants: Node[]) => { zone.hidden = false; zone.replaceChildren(...enfants); };
+    const json = async <T,>(url: string): Promise<T | null> => {
+      try { const r = await fetch(url); return r.ok ? ((await r.json()) as T) : null; } catch { return null; }
+    };
+    const deputeDe = (circo: string) => fiches.find((f) => f.dataset.circo === circo && f.dataset.enExercice === '1');
+    const lieu = (circo: string) => `${libelleCirco(circo)}${circo.startsWith('099') ? ' des Français de l’étranger' : ''}`;
 
-  const deputeDe = (circo: string) =>
-    fiches.find((f) => f.dataset.circo === circo && f.dataset.enExercice === '1');
-
-  const montrerCirco = (circo: string, precision = '') => {
-    const li = deputeDe(circo);
-    const [dep] = circo.split('-');
-    const lieu = `${libelleCirco(circo)}${dep === '099' ? ' des Français de l\'étranger' : ''}`;
-    if (!li) {
-      afficher(el('p', `${lieu} : le siège est vacant en ce moment, la circonscription n'a pas de député.`, 'message'));
-      return;
-    }
-    const enfants: Node[] = [carte(li, `${li.dataset.civ === 'Mme' ? 'Ta députée' : 'Ton député'} · ${lieu}`)];
-    if (precision) enfants.push(el('p', precision, 'discret'));
-    afficher(...enfants);
-  };
-
-  // Plusieurs députés possibles : la liste, pour choisir soi-même.
-  const listeCandidats = (candidates: string[]) => {
-    const details = el('details', '', 'candidats');
-    details.append(el('summary', `Ou choisis parmi les ${candidates.length} circonscriptions possibles`));
-    const ul = el('ul');
-    for (const circo of candidates) {
+    /** La carte d'une circonscription (radio) : son député, son groupe. */
+    const carte = (circo: string, nom: string, coche: boolean) => {
       const li = deputeDe(circo);
-      const item = el('li');
-      if (li) {
-        const a = el('a', `${libelleCirco(circo)} : ${li.dataset.nom} (${li.dataset.sigle || 'sans groupe'})`);
+      const label = el('label', '', 'circo');
+      const radio = el('input');
+      radio.type = 'radio';
+      radio.name = 'circo';
+      radio.value = circo;
+      radio.checked = coche;
+      radio.className = 'visuellement-cache';
+      const texte = el('span', '', 'circo-texte');
+      texte.append(el('span', `${lieu(circo)}${nom ? ` · ${nom}` : ''}`, 'circo-lieu'),
+        el('span', li?.dataset.nom ?? 'Siège vacant', 'circo-nom'),
+        el('span', li ? li.dataset.groupe || 'Sans groupe' : 'La circonscription n’a pas de député en ce moment.', 'circo-groupe'));
+      label.append(radio, texte);
+      return label;
+    };
+    /** Le choix d'une circonscription parmi `candidates`, et « C'est ma circonscription ». */
+    const choisir = (candidates: string[], intro: string, commune: string) => {
+      const form = el('form', '', 'choix-circo');
+      const fieldset = el('fieldset');
+      const legende = el('legend', intro, 't-texte');
+      const grille = el('div', '', 'circos');
+      const mien = deputeChoisi();
+      const deja = candidates.find((c) => deputeDe(c)?.dataset.uid === mien) ?? candidates[0];
+      for (const c of candidates) grille.append(carte(c, '', c === deja));
+      fieldset.append(legende, grille);
+      const actions = el('div', '', 'actions');
+      const ok = el('button', candidates.length > 1 ? 'C’est ma circonscription' : 'C’est mon député', 'bouton-plein');
+      ok.type = 'submit';
+      actions.append(ok);
+      const sortie = el('p', '', 't-texte confirme');
+      if (candidates.length > 1) {
+        const nsp = el('button', 'Je ne sais pas laquelle', 'bouton-contour');
+        nsp.type = 'button';
+        nsp.addEventListener('click', () => demanderAdresse(candidates, commune));
+        actions.append(nsp);
+      }
+      form.append(fieldset, actions, sortie);
+      form.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        const circo = new FormData(form).get('circo') as string;
+        const li = deputeDe(circo);
+        if (!li) { sortie.textContent = 'Cette circonscription n’a pas de député en ce moment.'; return; }
+        choisirDepute(li.dataset.uid!);
+        const elle = li.dataset.civ === 'Mme';
+        const a = el('a', 'Voir sa fiche');
         a.setAttribute('href', `/deputes/${li.dataset.uid}/`);
-        item.append(a);
+        sortie.replaceChildren(`C’est noté : ${li.dataset.nom} est ${elle ? 'ta députée' : 'ton député'}. `, a);
+      });
+      afficher(form);
+    };
+
+    // Situer une adresse : géocodage public (IGN), puis contours des circonscriptions.
+    const demanderAdresse = (candidates: string[], commune: string) => {
+      const form = el('form', '', 'adresse');
+      const intro = el('p', `Indique ta rue à ${commune} pour trouver ta circonscription :`, 't-texte');
+      const ligne = el('div', '', 'cp-ligne');
+      const label = el('label', 'Numéro et rue', 'visuellement-cache');
+      label.setAttribute('for', 'adresse');
+      const input = el('input', '', 'champ');
+      input.id = 'adresse';
+      input.placeholder = 'Numéro et rue';
+      input.autocomplete = 'address-line1';
+      input.required = true;
+      const bouton = el('button', 'Situer', 'bouton-plein');
+      bouton.type = 'submit';
+      ligne.append(label, input, bouton);
+      const note = el('p', 'Ton adresse est envoyée au service public de géocodage de l’IGN pour la situer ; le site ne la garde pas.', 't-legende');
+      const sortie = el('div');
+      form.append(intro, ligne, note, sortie);
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        sortie.replaceChildren(el('p', 'Recherche de l’adresse…', 't-legende'));
+        const url = `${GEOCODAGE}?index=address&limit=1&q=${encodeURIComponent(input.value)}&postcode=${cpCourant}`;
+        const r = await json<{ features: { geometry: { coordinates: [number, number] }; properties: { label: string; score: number } }[] }>(url);
+        const f = r?.features?.[0];
+        if (!f || f.properties.score < 0.4) {
+          sortie.replaceChildren(el('p', r ? 'Adresse introuvable dans ce code postal : vérifie le numéro et la rue.' : 'Le service de géocodage ne répond pas. Réessaie, ou choisis toi-même.', 't-texte'));
+          return;
+        }
+        let trouvee: string | null = null;
+        for (const dep of [...new Set(candidates.map(departementDe))]) {
+          const contours = await json<Record<string, Geometrie>>(`/donnees/contours/${dep}.json`);
+          if (contours) trouvee = circoDuPoint(contours, f.geometry.coordinates, candidates) ?? circoDuPoint(contours, f.geometry.coordinates);
+          if (trouvee) break;
+        }
+        if (!trouvee) { sortie.replaceChildren(el('p', 'Impossible de situer cette adresse dans une circonscription. Choisis toi-même.', 't-texte')); return; }
+        choisir([trouvee], `Adresse retenue : ${f.properties.label}.`, commune);
+      });
+      afficher(form);
+      input.focus();
+    };
+
+    const suivre = (issue: Issue, commune = '') => {
+      if (issue.type === 'inconnu') {
+        afficher(el('p', 'Ce code postal n’existe pas dans la base de La Poste. Vérifie-le.', 't-texte'));
+      } else if (issue.type === 'trouve') {
+        choisir([issue.circo], `${cpCourant}${commune ? ` · ${commune}` : ''} : ta circonscription.`, commune);
+      } else if (issue.type === 'adresse') {
+        const n = issue.candidates.length;
+        if (n > 12) demanderAdresse(issue.candidates, commune || 'ta commune');
+        else choisir(issue.candidates, `${cpCourant}${commune ? ` · ${commune}` : ''} est partagé entre ${n} circonscriptions. Laquelle est la tienne ?`, commune || 'ta commune');
       } else {
-        item.textContent = `${libelleCirco(circo)} : siège vacant`;
+        const liste = el('div', '', 'communes');
+        for (const c of issue.communes) {
+          const b = el('button', c.n, 'bouton-contour');
+          b.type = 'button';
+          b.addEventListener('click', () => suivre(conclureCommune(c), c.n));
+          liste.append(b);
+        }
+        afficher(el('p', 'Ce code postal couvre plusieurs communes. Laquelle est la tienne ?', 't-texte'), liste);
+        liste.querySelector('button')?.focus();
       }
-      ul.append(item);
-    }
-    details.append(ul);
-    return details;
-  };
+    };
 
-  // Situer une adresse : géocodage public (IGN), puis contours des circonscriptions.
-  const demanderAdresse = (candidates: string[], commune: string) => {
-    const form = el('form', '', 'adresse');
-    const intro = el('p', `${commune} est partagée entre ${candidates.length} circonscriptions. Indique ta rue pour trouver la tienne :`);
-    if (candidates.length === 1) intro.textContent = `Indique ta rue pour confirmer ta circonscription à ${commune} :`;
-    const ligne = el('div', '', 'adresse-ligne');
-    const label = el('label', 'Numéro et rue', 'visuellement-cache');
-    label.setAttribute('for', 'adresse');
-    const input = el('input');
-    input.id = 'adresse';
-    input.placeholder = 'Numéro et rue';
-    input.autocomplete = 'address-line1';
-    input.required = true;
-    const bouton = el('button', 'Situer');
-    bouton.type = 'submit';
-    ligne.append(label, input, bouton);
-    const note = el('p', 'Ton adresse est envoyée au service public de géocodage de l\'IGN pour la situer ; le site ne la garde pas.', 'discret');
-    const sortie = el('div');
-    sortie.setAttribute('aria-live', 'polite');
-    form.append(intro, ligne, note, sortie);
-    form.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-      sortie.replaceChildren(el('p', 'Recherche de l\'adresse…', 'discret'));
-      const url = `${GEOCODAGE}?index=address&limit=1&q=${encodeURIComponent(input.value)}&postcode=${cpCourant}`;
-      const r = await json<{ features: { geometry: { coordinates: [number, number] }; properties: { label: string; score: number } }[] }>(url);
-      const f = r?.features?.[0];
-      if (!f || f.properties.score < 0.4) {
-        sortie.replaceChildren(el('p', r ? 'Adresse introuvable dans ce code postal : vérifie le numéro et la rue.' : 'Le service de géocodage ne répond pas. Réessaie, ou choisis dans la liste.', 'message'));
-        return;
-      }
-      const deps = [...new Set(candidates.map(departementDe))];
-      let trouvee: string | null = null;
-      for (const dep of deps) {
-        const contours = await json<Record<string, Geometrie>>(`/donnees/contours/${dep}.json`);
-        if (contours) trouvee = circoDuPoint(contours, f.geometry.coordinates, candidates)
-          ?? circoDuPoint(contours, f.geometry.coordinates);
-        if (trouvee) break;
-      }
-      if (!trouvee) {
-        sortie.replaceChildren(el('p', 'Impossible de situer cette adresse dans une circonscription. Choisis dans la liste.', 'message'));
-        return;
-      }
-      montrerCirco(trouvee, `Adresse retenue : ${f.properties.label}.`);
-    });
-    const enfants: Node[] = [form];
-    if (candidates.length > 1 && candidates.length <= 30) enfants.push(listeCandidats(candidates));
-    afficher(...enfants);
-    input.focus();
-  };
+    const chercher = async (cp: string) => {
+      if (!codePostalValide(cp)) { afficher(el('p', 'Un code postal compte 5 chiffres.', 't-texte')); return; }
+      cpCourant = cp;
+      history.replaceState(null, '', `#cp=${cp}`);
+      afficher(el('p', 'Recherche…', 't-legende'));
+      const fichier = await json<Record<string, Commune[]>>(`/donnees/cp/${prefixe(cp)}.json`);
+      if (!fichier) { afficher(el('p', 'La recherche par code postal est indisponible pour le moment. Cherche ton député par son nom ci-dessous.', 't-texte')); return; }
+      const communes = fichier[cp];
+      suivre(conclure(communes), communes?.[0]?.n);
+    };
+    document.querySelector('[data-form-cp-local]')!.addEventListener('submit', (ev) => { ev.preventDefault(); void chercher(champ.value.trim()); });
+    // Au chargement (#cp= ou ?cp=), et quand le fragment change.
+    const depuisAdresse = () => {
+      const cp = new URLSearchParams(location.hash.slice(1)).get('cp') ?? new URLSearchParams(location.search).get('cp');
+      if (!cp || cp === cpCourant) return;
+      champ.value = cp;
+      if (location.search) history.replaceState(null, '', `${location.pathname}#cp=${cp}`);
+      void chercher(cp);
+    };
+    window.addEventListener('hashchange', depuisAdresse);
+    depuisAdresse();
 
-  const suivre = (issue: Issue, commune = '') => {
-    if (issue.type === 'inconnu') {
-      afficher(el('p', 'Ce code postal n\'existe pas dans la base de La Poste. Vérifie-le.', 'message'));
-    } else if (issue.type === 'trouve') {
-      montrerCirco(issue.circo);
-    } else if (issue.type === 'adresse') {
-      demanderAdresse(issue.candidates, commune || 'Ta commune');
-    } else {
-      const p = el('p', 'Ce code postal couvre plusieurs communes. Laquelle est la tienne ?');
-      const liste = el('div', '', 'communes');
-      for (const c of issue.communes) {
-        const b = el('button', c.n);
-        b.type = 'button';
-        b.addEventListener('click', () => suivre(conclureCommune(c), c.n));
-        liste.append(b);
+    // L'annuaire : caché tant qu'on ne cherche pas ; recherche par nom, groupe ou département.
+    const annuaire = document.querySelector<HTMLElement>('[data-annuaire]')!;
+    const recherche = document.querySelector<HTMLInputElement>('[data-recherche-depute]')!;
+    const anciens = document.querySelector<HTMLInputElement>('[data-anciens]')!;
+    const compte = document.querySelector<HTMLElement>('[data-compte-deputes]')!;
+    const vide = document.querySelector<HTMLElement>('[data-vide-annuaire]')!;
+    const toutVoir = document.querySelector<HTMLButtonElement>('[data-tout-voir]')!;
+    let ouvert = false;
+    const filtrer = () => {
+      const mots = normaliser(recherche.value).split(' ').filter(Boolean);
+      annuaire.hidden = !ouvert && !mots.length;
+      let n = 0;
+      for (const f of fiches) {
+        const ok = (anciens.checked || f.dataset.enExercice === '1') && mots.every((m) => (f.dataset.recherche ?? '').includes(m));
+        f.hidden = !ok;
+        if (ok) n += 1;
       }
-      afficher(p, liste);
-      liste.querySelector('button')?.focus();
-    }
-  };
-
-  const chercher = async (cp: string) => {
-    if (!codePostalValide(cp)) {
-      afficher(el('p', 'Un code postal compte 5 chiffres.', 'message'));
-      return;
-    }
-    cpCourant = cp;
-    history.replaceState(null, '', `#cp=${cp}`);
-    afficher(el('p', 'Recherche…', 'discret'));
-    const fichier = await json<Record<string, Commune[]>>(`/donnees/cp/${prefixe(cp)}.json`);
-    if (!fichier) {
-      afficher(el('p', 'La recherche par code postal est indisponible pour le moment. Cherche ton député par son nom ci-dessous.', 'message'));
-      return;
-    }
-    const communes = fichier[cp];
-    suivre(conclure(communes), communes?.[0]?.n);
-  };
-
-  document.querySelector('[data-form-cp-local]')!.addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    chercher(champ.value.trim());
+      compte.textContent = annuaire.hidden ? '' : `${n} député${n > 1 ? 's' : ''}`;
+      vide.hidden = annuaire.hidden || n > 0;
+      toutVoir.hidden = ouvert;
+    };
+    recherche.addEventListener('input', filtrer);
+    anciens.addEventListener('change', () => { ouvert = true; filtrer(); });
+    toutVoir.addEventListener('click', () => { ouvert = true; filtrer(); annuaire.querySelector('a')?.focus(); });
+    filtrer();
   });
-  // Au chargement (#cp= ou ?cp=), et quand le fragment change (lien depuis une autre page
-  // déjà ouverte, retour arrière).
-  const depuisAdresse = () => {
-    const cp = new URLSearchParams(location.hash.slice(1)).get('cp')
-      ?? new URLSearchParams(location.search).get('cp');
-    if (!cp || cp === cpCourant) return;
-    champ.value = cp;
-    if (location.search) history.replaceState(null, '', `${location.pathname}#cp=${cp}`);
-    chercher(cp);
-  };
-  window.addEventListener('hashchange', depuisAdresse);
-  depuisAdresse();
-
-  // Annuaire : recherche par nom, groupe ou département ; anciens députés en option.
-  const recherche = document.querySelector<HTMLInputElement>('[data-recherche-depute]')!;
-  const anciens = document.querySelector<HTMLInputElement>('[data-anciens]')!;
-  const compte = document.querySelector<HTMLElement>('[data-compte-deputes]')!;
-  const videAnnuaire = document.querySelector<HTMLElement>('[data-vide-annuaire]')!;
-  const filtrer = () => {
-    const mots = normaliser(recherche.value).split(' ').filter(Boolean);
-    let n = 0;
-    for (const f of fiches) {
-      const ok = (anciens.checked || f.dataset.enExercice === '1')
-        && mots.every((m) => (f.dataset.recherche ?? '').includes(m));
-      f.hidden = !ok;
-      if (ok) n += 1;
-    }
-    compte.textContent = `${n} député${n > 1 ? 's' : ''}`;
-    videAnnuaire.hidden = n > 0;
-  };
-  recherche.addEventListener('input', filtrer);
-  anciens.addEventListener('change', filtrer);
 </script>
 
 <style>
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; color: var(--ivoire-2); }
-  .fil a { text-decoration: none; font-weight: 700; }
-  .accroche {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 22px 32px;
-    align-items: flex-start;
-    padding: clamp(20px, 3vw, 30px);
-    background: var(--panneau);
+  .entete { display: flex; flex-direction: column; gap: 8px; }
+  .champ-libelle { font: 600 14px/1.3 var(--police-texte); }
+  .cp { display: flex; flex-direction: column; gap: 8px; }
+  .cp-ligne, .resultat :global(.cp-ligne) { display: flex; gap: 8px; align-items: center; }
+  .champ, .resultat :global(.champ) {
+    flex: 1; min-width: 0; min-height: 60px; padding: 0 22px; border: 0; border-radius: var(--pilule);
+    background: var(--surface); color: var(--encre); font: 500 20px/1 var(--police-texte);
   }
-  .accroche-texte { flex: 1 1 380px; min-width: 0; }
-  .accroche h1 { font-size: clamp(30px, 3.4vw, 40px); }
-  .accroche .sous-titre { margin: 8px 0 18px; font-size: 17px; }
-  .cp { display: flex; gap: 8px; max-width: 420px; }
-  .cp input, .adresse input {
-    flex: 1;
-    min-width: 0;
-    min-height: 56px;
-    padding: 0 16px;
-    border: 1px solid var(--filet);
-    background: var(--panneau);
-    font: 500 17px/1 var(--police-texte);
-    color: var(--ivoire);
+  .champ:focus, .resultat :global(.champ:focus) { outline: 2px solid var(--encre); }
+  .resultat { display: flex; flex-direction: column; gap: 14px; }
+  .resultat :global(fieldset) { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .resultat :global(.circos) { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .resultat :global(.circo) { display: block; cursor: pointer; }
+  .resultat :global(.circo-texte) {
+    display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: 18px;
+    background: var(--surface); box-shadow: inset 0 0 0 2px transparent;
   }
-  .cp input:focus, .adresse input:focus { border-color: var(--ivoire); }
-  .cp button, .adresse button {
-    min-height: 56px;
-    padding: 0 20px;
-    border: 0;
-    background: var(--direct);
-    color: #fff;
-    font: 600 15px/1 var(--police-titre);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
+  .resultat :global(.circo input:checked + .circo-texte) { background: var(--feuille); box-shadow: inset 0 0 0 2px var(--encre); }
+  .resultat :global(.circo input:focus-visible + .circo-texte) { outline: 3px solid var(--encre); outline-offset: 2px; }
+  .resultat :global(.circo-lieu) { font: 500 13px/1.3 var(--police-texte); color: var(--texte-2); }
+  .resultat :global(.circo-nom) { font: 700 24px/1.15 var(--police-titre); }
+  .resultat :global(.circo-groupe) { font: 600 14px/1.3 var(--police-texte); }
+  .resultat :global(.actions), .resultat :global(.communes) { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .resultat :global(.bouton-plein), .resultat :global(.bouton-contour) {
+    min-height: 52px; padding: 0 24px; border-radius: var(--pilule); cursor: pointer; font: 700 16px/1 var(--police-texte);
   }
-  .discret { margin: 10px 0 0; font-size: 14px; color: var(--ivoire-2); }
-  .resultat {
-    flex: 1 1 420px;
-    min-width: 0;
-    padding: 20px;
-    background: var(--panneau);
-  }
-  .resultat :global(.message) { margin: 0; font-size: 16px; color: var(--ivoire); }
-  .resultat :global(p) { margin: 0 0 12px; }
-  .resultat :global(.communes) { display: flex; flex-wrap: wrap; gap: 8px; }
-  .resultat :global(.communes button) {
-    min-height: 44px; padding: 0 14px; border: 1px solid var(--filet);
-    background: var(--panneau); font: 600 14px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--ivoire); cursor: pointer;
-  }
-  .resultat :global(.communes button:hover) { border-color: var(--ivoire-2); }
-  .resultat :global(.adresse-ligne) { display: flex; gap: 8px; }
-  .resultat :global(.candidats) { margin-top: 14px; font-size: 15px; }
-  .resultat :global(.candidats summary) { cursor: pointer; font-weight: 600; color: var(--ivoire); min-height: 40px; display: flex; align-items: center; }
-  .resultat :global(.candidats ul) { margin: 6px 0 0; padding-left: 20px; }
-  .resultat :global(.candidats li) { margin-bottom: 6px; }
-  .resultat :global(.trouve) { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; }
-  .resultat :global(.trouve-texte) { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .resultat :global(.sur-titre) { font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivoire-2); }
-  .resultat :global(.trouve-nom) { font: 600 21px/1.25 var(--police-texte); color: var(--ivoire); text-decoration: none; }
-  .resultat :global(.trouve-nom:hover) { color: var(--ivoire); }
-  .resultat :global(.trouve-detail) { font-size: 15px; color: var(--ivoire-2); }
-  .resultat :global(.trouve-actions) { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
-  .resultat :global(.choisir) {
-    min-height: 46px; padding: 0 16px; border: 1px solid var(--filet);
-    background: var(--panneau); font: 600 14px/1 var(--police-titre); letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--ivoire); cursor: pointer;
-  }
-  .resultat :global(.choisir[aria-pressed='true']) { background: var(--ivoire); border-color: var(--ivoire); color: var(--nuit); }
-  .resultat :global(.voir) { text-align: center; font: 600 13px/16px var(--police-titre); letter-spacing: 0.12em; text-transform: uppercase; }
-  /* Pas de vignettes à initiales (DESIGN-FINAL.md, § 1, point 7) : le nom suffit. */
-  .avatar, .resultat :global(.avatar) { display: none; }
-
-  .titre-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 12px; }
-  .titre-section span { font-size: 14px; color: var(--ivoire-2); }
-  .outils { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 14px; }
+  .resultat :global(.bouton-plein) { border: 0; background: var(--encre); color: var(--feuille); }
+  .resultat :global(.bouton-contour) { border: 1px solid var(--bord); background: var(--feuille); color: var(--encre); }
+  .resultat :global(.confirme a) { color: var(--encre); font-weight: 700; }
+  .annuaire-bloc { display: flex; flex-direction: column; gap: 12px; padding-top: 24px; border-top: 1px solid var(--filet); }
   .recherche {
-    flex: 1 1 340px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 52px;
-    padding: 0 16px;
-    border: 1px solid var(--filet);
-    color: var(--ivoire-2);
+    display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 20px;
+    border-radius: var(--pilule); background: var(--surface); color: var(--texte-2);
   }
-  .recherche:focus-within { border-color: var(--ivoire); }
-  .recherche input { flex: 1; min-width: 0; border: 0; outline: none; font: inherit; font-size: 17px; color: var(--ivoire); background: transparent; }
-  .anciens { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; color: var(--ivoire); cursor: pointer; }
-  .anciens input { width: 20px; height: 20px; accent-color: var(--ivoire); }
-  .annuaire {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 8px 16px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .annuaire a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    color: inherit;
-    text-decoration: none;
-  }
-  .annuaire a:hover { background: var(--panneau-2); }
-  .annuaire a:hover .annuaire-nom { color: var(--ivoire); }
-  .annuaire-texte { display: flex; flex-direction: column; min-width: 0; }
-  .annuaire-nom { font: 600 16px/1.3 var(--police-texte); }
-  .annuaire-detail { font-size: 13px; color: var(--ivoire-2); }
-  .vide { padding: 16px; background: var(--panneau-2); }
+  .recherche:focus-within { box-shadow: inset 0 0 0 2px var(--encre); }
+  .recherche input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font: 500 17px/1 var(--police-texte); color: var(--encre); }
+  .groupes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .groupes :global(.pastille-groupe) { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .outils { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+  .anciens { display: inline-flex; align-items: center; gap: 8px; min-height: var(--cible); }
+  .tout-voir { border: 0; background: none; color: var(--encre); font: 600 14px/1 var(--police-texte); text-decoration: underline; cursor: pointer; min-height: var(--cible); }
+  .annuaire { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0 20px; }
+  .annuaire li { border-top: 1px solid var(--filet); }
+  .annuaire a { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; color: var(--encre); text-decoration: none; }
+  .annuaire a:hover .a-nom { text-decoration: underline; }
+  .a-nom { font: 600 15px/1.3 var(--police-texte); }
 </style>

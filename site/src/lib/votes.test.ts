@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { barre, bascule, famille, ligneGroupe, marge, nature, normaliser, partExprimes, verdict,
+import { avecSonGroupe, barre, bascule, famille, ligneGroupe, marge, nature, normaliser, partExprimes,
+  phraseGroupes, positionGroupe, verdict,
   voix578, type Chiffres } from './votes.ts';
 
 const decompte = { pour: 351, contre: 179, abstention: 7, non_votant: 2, absent: 38 };
@@ -99,4 +100,26 @@ test('ta voix de 578e : seuil fixe gardé, rien sans suffrages requis', () => {
   assert.deepEqual(voix578({ pour: 271, contre: 0 }, 289, 'pour'), { pour: 272, contre: 0, adopte: false, inverser: 17 });
   assert.equal(voix578({ pour: 78, contre: 67 }, null, 'pour'), null);
   assert.equal(voix578({ pour: 78, contre: 67 }, 0, 'pour'), null);
+});
+
+test('position majoritaire d’un groupe et « avec son groupe ? »', () => {
+  assert.equal(positionGroupe({ pour: 70, contre: 52, abstention: 4 }), 'pour');
+  assert.equal(positionGroupe({ pour: 5, contre: 145, abstention: 0 }), 'contre');
+  assert.equal(positionGroupe({ pour: 10, contre: 10, abstention: 2 }), null);
+  assert.equal(positionGroupe({ pour: 0, contre: 0, abstention: 0 }), null);
+  assert.equal(avecSonGroupe('pour', false, 'pour', false), 'Oui');
+  assert.equal(avecSonGroupe('contre', true, 'pour', false), 'Non');
+  // Une abstention n'est jamais une dissidence ; un non-inscrit n'a pas de groupe à suivre.
+  assert.equal(avecSonGroupe('abstention', false, 'pour', false), '—');
+  assert.equal(avecSonGroupe('contre', true, 'pour', true), '—');
+  assert.equal(avecSonGroupe('absent', false, 'pour', false), '—');
+});
+
+test('la phrase des groupes ne cite que des positions, jamais de jugement', () => {
+  assert.equal(phraseGroupes([
+    { sigle: 'A', decompte: { pour: 78, contre: 2, abstention: 1 } },
+    { sigle: 'B', decompte: { pour: 96, contre: 4, abstention: 2 } },
+    { sigle: 'E', decompte: { pour: 5, contre: 145, abstention: 0 } },
+    { sigle: 'NI', non_inscrits: true, decompte: { pour: 3, contre: 1, abstention: 0 } },
+  ]), 'En majorité pour : A et B. En majorité contre : E.');
 });

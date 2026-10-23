@@ -1,12 +1,11 @@
-// Contrôle de la typographie (docs/design-final/DESIGN-FINAL.md, § 2 et § 9) : sur les 31 écrans
-// de scripts/ecrans.mjs, à 1 440 et 390 px, aucun texte visible ne doit être en Barlow Condensed
-// sans capitales (`text-transform: uppercase`). Sont tolérés les textes sans aucune minuscule
-// (chiffres, sigles déjà en capitales, signes), qui se lisent de la même façon.
-// Il signale aussi, sans échouer, deux aides à la liste de contrôle du § 9 : les coins arrondis
-// (rayon ni nul ni en pilule) et les éléments en couleur « lumière » (réservée à toi).
+// Contrôle de la typographie (VDEF, docs/design-vdef/VDEF.md, § 2 et § 6 ; lot V10) : sur les 31
+// écrans de scripts/ecrans.mjs, à 1 440 et 390 px, tout texte visible est en Bricolage Grotesque
+// ou en Figtree (les deux seules polices du site), et aucun n'est mis en capitales par
+// `text-transform: uppercase` (« jamais de capitales forcées »). Les champs (valeur et indication)
+// sont contrôlés aussi.
 //
-// Le contrôle échoue (code 1) s'il reste une faute. Vert depuis le lot D1, il est bloquant depuis
-// le lot D6 : `npm run test:inventaire` le lance après l'inventaire. Il lit le build (site/dist).
+// Le contrôle échoue (code 1) s'il reste une faute. Il est bloquant : `npm run test:inventaire` le
+// lance après l'inventaire. Il lit le build (site/dist).
 //
 // Usage (depuis site/) :
 //   npm run test:typo
@@ -30,9 +29,9 @@ const serveur = await servir(resolve(libres[0] ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
 const navigateur = opts.gpu ? await lancer({ gpu: true }) : await chromium.launch({ args: ['--disable-3d-apis'] });
 
-/** Dans la page : les fautes de typographie, les coins arrondis et la lumière. */
+/** Dans la page : les textes hors des deux polices, et les capitales forcées. */
 function examiner() {
-  const LUMIERE = ['rgb(242, 201, 138)', 'rgb(138, 90, 18)'];
+  const POLICES = /^["']?(Bricolage Grotesque|Figtree)/i;
   const visible = (el) => {
     const r = el.getBoundingClientRect();
     if (r.width <= 1 || r.height <= 1) return false;
@@ -43,44 +42,25 @@ function examiner() {
     const classe = typeof el.className === 'string' ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 2).join('.') : '';
     return el.tagName.toLowerCase() + (classe ? `.${classe}` : '');
   };
-  const condense = (s) => /^["']?Barlow Condensed/i.test(s.fontFamily);
-  const minuscules = (t) => /\p{Ll}/u.test(t);
   const fautes = [];
-  const arrondis = new Map();
-  const lumiere = new Map();
-  const noter = (carte, cle) => carte.set(cle, (carte.get(cle) ?? 0) + 1);
-
+  const juger = (el, s, texte, ou = '') => {
+    if (!texte || !/\p{L}/u.test(texte)) return;
+    if (!POLICES.test(s.fontFamily)) fautes.push({ element: decrire(el) + ou, texte: texte.slice(0, 80), regle: `police ${s.fontFamily.split(',')[0]}` });
+    if (s.textTransform === 'uppercase') fautes.push({ element: decrire(el) + ou, texte: texte.slice(0, 80), regle: 'capitales forcées' });
+  };
   for (const el of document.body.querySelectorAll('*')) {
     if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'].includes(el.tagName)) continue;
     if (!visible(el)) continue;
     const s = getComputedStyle(el);
-    // Le texte propre de l'élément (ses nœuds texte directs), et, pour un champ, sa valeur et son indication.
-    let texte = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ').replace(/\s+/g, ' ').trim();
-    if (['INPUT', 'TEXTAREA'].includes(el.tagName)) {
-      texte = el.value || '';
-      const p = getComputedStyle(el, '::placeholder');
-      if (!el.value && el.placeholder && condense(p) && p.textTransform !== 'uppercase' && minuscules(el.placeholder)) {
-        fautes.push({ element: `${decrire(el)}::placeholder`, texte: el.placeholder.slice(0, 80) });
-      }
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) {
+      juger(el, s, el.tagName === 'SELECT' ? el.selectedOptions[0]?.textContent ?? '' : el.value);
+      if (!el.value && el.placeholder) juger(el, getComputedStyle(el, '::placeholder'), el.placeholder, '::placeholder');
+      continue;
     }
-    if (texte && condense(s) && s.textTransform !== 'uppercase' && minuscules(texte)) {
-      fautes.push({ element: decrire(el), texte: texte.slice(0, 80) });
-    }
-    const r = el.getBoundingClientRect();
-    const rayon = parseFloat(s.borderTopLeftRadius) || 0;
-    const pilule = rayon >= Math.min(r.width, r.height) / 2 - 1 || s.borderTopLeftRadius.endsWith('%');
-    if (rayon > 0 && !pilule && (s.backgroundColor !== 'rgba(0, 0, 0, 0)' || s.borderTopWidth !== '0px' || s.boxShadow !== 'none')) {
-      noter(arrondis, `${decrire(el)} (${s.borderTopLeftRadius})`);
-    }
-    for (const prop of ['color', 'backgroundColor', 'borderTopColor', 'borderLeftColor', 'fill', 'stroke']) {
-      const v = s[prop];
-      if (!LUMIERE.includes(v)) continue;
-      if (prop === 'color' && !texte) continue;
-      if (prop.startsWith('border') && s[prop.replace('Color', 'Width')] === '0px') continue;
-      noter(lumiere, `${decrire(el)} [${prop}]`);
-    }
+    // Le texte propre de l'élément (ses nœuds texte directs).
+    juger(el, s, [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ').replace(/\s+/g, ' ').trim());
   }
-  return { fautes, arrondis: [...arrondis].sort((a, b) => b[1] - a[1]), lumiere: [...lumiere].sort((a, b) => b[1] - a[1]) };
+  return { fautes };
 }
 
 const resultats = [];
@@ -90,15 +70,9 @@ for (const [appareil, largeur, hauteur] of APPAREILS.filter(([a]) => opts.appare
   await parcourir({ page, base, ecrans: opts.ecrans, surEcran: async (nom) => {
     const r = await page.evaluate(examiner);
     resultats.push({ appareil, ecran: nom, ...r });
-    const resume = `${appareil} · ${nom} : ${r.fautes.length} faute(s), ${r.arrondis.reduce((t, [, n]) => t + n, 0)} coin(s) arrondi(s), `
-      + `${r.lumiere.reduce((t, [, n]) => t + n, 0)} élément(s) en lumière`;
-    console.log(resume);
-    for (const f of r.fautes.slice(0, details ? Infinity : 5)) console.log(`    ✗ ${f.element} « ${f.texte} »`);
+    console.log(`${appareil} · ${nom} : ${r.fautes.length} faute(s)`);
+    for (const f of r.fautes.slice(0, details ? Infinity : 5)) console.log(`    ✗ ${f.element} « ${f.texte} » (${f.regle})`);
     if (!details && r.fautes.length > 5) console.log(`    … et ${r.fautes.length - 5} autre(s) (--details)`);
-    if (details) {
-      for (const [cle, n] of r.arrondis) console.log(`    ◜ ${cle} ×${n}`);
-      for (const [cle, n] of r.lumiere) console.log(`    ☀ ${cle} ×${n}`);
-    }
   } });
   await contexte.close();
 }
@@ -107,5 +81,5 @@ serveur.close();
 
 const total = resultats.reduce((t, r) => t + r.fautes.length, 0);
 if (rapport) writeFileSync(rapport, `${JSON.stringify(resultats, null, 1)}\n`);
-console.log(`\nBarlow Condensed sans capitales : ${total} faute(s) sur ${resultats.length} écran(s).`);
+console.log(`\nBricolage Grotesque et Figtree seulement, sans capitales forcées : ${total} faute(s) sur ${resultats.length} écran(s).`);
 process.exit(total > 0 ? 1 : 0);

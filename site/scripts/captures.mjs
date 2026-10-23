@@ -32,7 +32,7 @@ export function servir(dist) {
 /** Les pages à photographier : les pages fixes, plus un vote et un député pris dans le build. */
 export function pagesParDefaut(dist) {
   const premier = (dossier, motif) => readdirSync(join(dist, dossier)).filter((n) => motif.test(n)).sort()[0];
-  return ['/', '/quiz/', '/lots/', '/seance/', '/verdict/', '/hemicycle/', '/explorer/',
+  return ['/', '/quiz/', '/lots/', '/seance/', '/verdict/', '/salle/', '/ta-place/', '/tes-reponses/', '/parcours/', '/explorer/',
     `/votes/${premier('votes', /^\d+$/)}/`, '/deputes/', `/deputes/${premier('deputes', /^PA\d+$/)}/`,
     '/calcul/', '/etat/', '/confidentialite/', '/mentions-legales/', '/404.html'];
 }
@@ -43,7 +43,7 @@ const nomDe = (chemin) => (chemin === '/' ? 'accueil' : chemin.replace(/^\/|\/$|
 async function avecReponses(page, base) {
   await page.goto(`${base}/quiz/`);
   await page.evaluate(() => {
-    const { questions } = JSON.parse(document.querySelector('[data-donnees-seance]')?.textContent ?? '{"questions":[]}');
+    const { questions } = JSON.parse(document.querySelector('[data-donnees-trancher]')?.textContent ?? '{"questions":[]}');
     const rep = Object.fromEntries(questions.map((q, i) =>
       [q.uid, { v: i % 3 ? 'pour' : 'contre', le: '2026-10-20T10:00:00.000Z' }]));
     localStorage.setItem('578e.reponses.v1', JSON.stringify(rep));

@@ -1,62 +1,67 @@
-// Les trois stories du résultat, dessinées dans le navigateur sur un canevas 1080 × 1920, sans
-// aucun service extérieur : « J'ai pris le 578e siège », « Mon jumeau à l'Assemblée », « Mon vote
-// le plus à contre-courant ». Seul ce que le visiteur choisit de partager quitte sa machine, sous
-// forme d'image. Charte « La Séance » (docs/refonte-la-seance.md, lot 6) : fond nuit, bandeau de
-// régie rouge, capitales condensées, chiffres de compteur, ta place en lumière ; les trois stories
-// ont le même habillage, quelle que soit la réponse (aucune couleur de vote en fond).
-import { LARGEUR, places, RAYON_SIEGE } from './hemicycle.ts';
+// Les stories, dessinées dans le navigateur sur un canevas 1080 × 1920, sans aucun service
+// extérieur ; seul ce que le visiteur choisit de partager quitte sa machine, sous forme d'image.
+// Charte VDEF (capture T6, lot V9) : la salle en fond (l'image fixe, recadrée autour de ta place),
+// une carte blanche, le repère « Moi », l'adresse du site en pilule. Les stories ont le même
+// habillage quelle que soit la réponse : aucune couleur de vote en fond, aucune couleur de parti.
+// - « Ta place », « Mon jumeau », « Mon vote le plus à contre-courant » (après le quiz) ;
+// - « Ton bilan » (palier 3, 40 votes) : ton année en cinq images.
 
 export interface DonneesStories {
-  groupe: { sigle: string; libelle: string } | null;
   /** `sur` : tes votes tranchés (N) ; `identiques` : ceux où ton jumeau a voté comme toi. */
-  jumeau: { nom: string; groupe: string; initiales: string; identiques: number;
-    sur: number } | null;
+  jumeau: { nom: string; groupe: string; identiques: number; sur: number } | null;
   contre: { question: string; reponse: string; part: number } | null;
-  /** Couleur de chaque siège (577), dans l'ordre de l'hémicycle. */
-  sieges: string[];
-  /** Indice du siège où poser ta place (celui du jumeau), ou -1. */
-  etoile: number;
+  /** Ta place (le siège de ton jumeau) dans l'image fixe de la salle, x et y entre 0 et 1. */
+  repere: { x: number; y: number } | null;
   votes: number;
 }
 
 export type TypeStory = 'place' | 'jumeau' | 'contre';
 
+export interface DonneesBilan {
+  votes: number;
+  /** Tes votes à contre-courant de l'issue, sur ceux dont le verdict est tombé. */
+  contreCourant: { n: number; sur: number };
+  jumeau: { nom: string; identiques: number; sur: number } | null;
+  theme: { nom: string; n: number } | null;
+  serie: number;
+  repere: { x: number; y: number } | null;
+}
+
 const L = 1080;
 const H = 1920;
-const CONDENSE = '"Barlow Condensed", "Arial Narrow", sans-serif';
-const TEXTE = '"Barlow", "Segoe UI", system-ui, sans-serif';
-const QUESTION = '"Literata Variable", "Literata", Georgia, serif';
+const TITRE = '"Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif';
+const TEXTE = '"Figtree Variable", "Figtree", system-ui, sans-serif';
 const SITE = 'le578esiege.pages.dev';
-// Les jetons du thème « Séance ».
-const NUIT = '#0C0D10', PANNEAU = '#16181D', PANNEAU_2 = '#1F2229', FILET = '#2E313A';
-const IVOIRE = '#F2EEE6', IVOIRE_2 = '#ABA69C', DIRECT = '#B3132F', LUMIERE = '#F2C98A';
-/** Les teintes de l'hémicycle personnel (lib/profil.ts) deviennent des intensités d'ivoire, comme
- *  sur le site (décision du 20 oct. 2026) : la lumière ne désigne que toi (l'anneau de ta place). */
-const TEINTES: Record<string, string> = {
-  '#DFE3EB': '#3A3D45', '#D9CCFF': '#6E6B66', '#A98BFF': '#A9A49B', '#6A3DF0': IVOIRE, '#FFFFFF': '#2A2D33',
+const ENCRE = '#121212', FEUILLE = '#FFFFFF', TEXTE_2 = '#5E5E5E';
+const FOND = '/salle3d/fond-salle.webp';
+
+let image: Promise<HTMLImageElement> | null = null;
+const chargerFond = () => {
+  image ??= new Promise((ok, ko) => {
+    const img = new Image();
+    img.onload = () => ok(img);
+    img.onerror = () => ko(new Error('image de la salle'));
+    img.src = FOND;
+  });
+  return image;
 };
 
 function lignes(ctx: CanvasRenderingContext2D, texte: string, largeur: number): string[] {
-  // Seules les espaces ordinaires coupent une ligne : l'espace fine avant « ? » reste
-  // insécable.
-  const mots = texte.split(/ +/);
+  // Seules les espaces ordinaires coupent une ligne : l'espace fine avant « ? » reste insécable.
   const sortie: string[] = [];
   let courante = '';
-  for (const mot of mots) {
+  for (const mot of texte.split(/ +/)) {
     const essai = courante ? `${courante} ${mot}` : mot;
     if (ctx.measureText(essai).width > largeur && courante) {
       sortie.push(courante);
       courante = mot;
-    } else {
-      courante = essai;
-    }
+    } else courante = essai;
   }
   if (courante) sortie.push(courante);
   return sortie;
 }
 
-function paragraphe(ctx: CanvasRenderingContext2D, texte: string, x: number, y: number,
-  largeur: number, hauteur: number): number {
+function paragraphe(ctx: CanvasRenderingContext2D, texte: string, x: number, y: number, largeur: number, hauteur: number): number {
   for (const l of lignes(ctx, texte, largeur)) {
     ctx.fillText(l, x, y);
     y += hauteur;
@@ -64,179 +69,180 @@ function paragraphe(ctx: CanvasRenderingContext2D, texte: string, x: number, y: 
   return y;
 }
 
-/** Ta place : un anneau de lumière, jamais une couleur de vote. */
-function place(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+function pilule(ctx: CanvasRenderingContext2D, x: number, y: number, l: number, h: number, r: number) {
   ctx.beginPath();
-  ctx.arc(cx, cy, r + 10, 0, 2 * Math.PI);
-  ctx.fillStyle = 'rgba(242, 201, 138, 0.25)';
+  ctx.roundRect(x, y, l, h, r);
+}
+
+/** La salle en fond, recadrée (en largeur) autour de ta place ; un voile en bas pour le pied. */
+function fond(ctx: CanvasRenderingContext2D, img: HTMLImageElement, repere: { x: number } | null) {
+  const echelle = H / img.height;
+  const largeur = img.width * echelle;
+  const cx = (repere?.x ?? 0.5) * largeur;
+  const x0 = Math.min(0, Math.max(L - largeur, L / 2 - cx));
+  ctx.drawImage(img, x0, 0, largeur, H);
+  const voile = ctx.createLinearGradient(0, H - 420, 0, H);
+  voile.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  voile.addColorStop(1, 'rgba(0, 0, 0, 0.55)');
+  ctx.fillStyle = voile;
+  ctx.fillRect(0, H - 420, L, 420);
+  return { x0, largeur };
+}
+
+/** Le repère (VDEF § 7) : un point noir à anneau blanc et son étiquette noire. */
+function repere(ctx: CanvasRenderingContext2D, x: number, y: number, libelle: string) {
+  ctx.beginPath();
+  ctx.arc(x, y, 30, 0, 2 * Math.PI);
+  ctx.fillStyle = FEUILLE;
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-  ctx.lineWidth = 6;
-  ctx.strokeStyle = LUMIERE;
+  ctx.arc(x, y, 19, 0, 2 * Math.PI);
+  ctx.fillStyle = ENCRE;
+  ctx.fill();
+  ctx.font = `700 40px ${TEXTE}`;
+  const l = ctx.measureText(libelle).width + 56;
+  pilule(ctx, x - l / 2, y - 130, l, 76, 38);
+  ctx.fillStyle = ENCRE;
+  ctx.fill();
+  ctx.fillStyle = FEUILLE;
+  ctx.fillText(libelle, x - l / 2 + 28, y - 79);
+}
+
+/** La carte blanche du haut : la marque, un titre, un texte. Rend le bas de la carte. */
+function carte(ctx: CanvasRenderingContext2D, etiquette: string, titre: string, texte: string, tailleTitre = 92): number {
+  const x = 40, l = L - 80, marge = 56;
+  // Mesurer d'abord, pour la hauteur.
+  ctx.font = `800 ${tailleTitre}px ${TITRE}`;
+  const lt = lignes(ctx, titre, l - 2 * marge);
+  ctx.font = `500 44px ${TEXTE}`;
+  const lx = texte ? lignes(ctx, texte, l - 2 * marge) : [];
+  const h = 150 + lt.length * tailleTitre * 1.08 + (lx.length ? 24 + lx.length * 60 : 0) + 48;
+  pilule(ctx, x, 110, l, h, 48);
+  ctx.fillStyle = FEUILLE;
+  ctx.fill();
+  // La marque : l'arc de l'hémicycle, un point, le nom ; puis l'étiquette.
+  ctx.strokeStyle = ENCRE;
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.arc(x + marge + 30, 110 + 96, 26, Math.PI, 2 * Math.PI);
   ctx.stroke();
-}
-
-function hemicycle(ctx: CanvasRenderingContext2D, sieges: string[], y: number, largeur: number,
-  indicePlace = -1) {
-  const echelle = largeur / LARGEUR;
-  const x0 = (L - largeur) / 2;
-  const liste = places();
-  liste.forEach((p, i) => {
-    ctx.beginPath();
-    ctx.arc(x0 + p.x * echelle, y + p.y * echelle, RAYON_SIEGE * echelle, 0, 2 * Math.PI);
-    const c = (sieges[i] ?? '#DFE3EB').toUpperCase();
-    ctx.fillStyle = TEINTES[c] ?? c;
-    ctx.fill();
-  });
-  if (indicePlace >= 0) {
-    const p = liste[indicePlace];
-    place(ctx, x0 + p.x * echelle, y + p.y * echelle, 18);
+  ctx.beginPath();
+  ctx.arc(x + marge + 22, 110 + 84, 7, 0, 2 * Math.PI);
+  ctx.fillStyle = ENCRE;
+  ctx.fill();
+  ctx.font = `800 40px ${TITRE}`;
+  ctx.fillText('Le 578e siège', x + marge + 76, 110 + 96);
+  ctx.font = `600 34px ${TEXTE}`;
+  ctx.fillStyle = TEXTE_2;
+  const we = ctx.measureText(etiquette).width;
+  ctx.fillText(etiquette, x + l - marge - we, 110 + 96);
+  let y = 110 + 150 + tailleTitre * 0.85;
+  ctx.fillStyle = ENCRE;
+  ctx.font = `800 ${tailleTitre}px ${TITRE}`;
+  for (const t of lt) { ctx.fillText(t, x + marge, y); y += tailleTitre * 1.08; }
+  if (lx.length) {
+    y += 24 - tailleTitre * 0.08;
+    ctx.font = `500 44px ${TEXTE}`;
+    ctx.fillStyle = '#3A3A3A';
+    for (const t of lx) { ctx.fillText(t, x + marge, y); y += 60; }
   }
+  return 110 + h;
 }
 
-/** La marque en haut : le nom du site, en capitales condensées, sur un filet rouge. */
-function entete(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = DIRECT;
-  ctx.fillRect(96, 104, 64, 8);
-  ctx.fillStyle = IVOIRE;
-  ctx.font = `700 44px ${CONDENSE}`;
-  ctx.fillText('LE 578e SIÈGE', 180, 124);
+/** Le pied : l'adresse du site en pilule blanche, et la promesse du site. */
+function pied(ctx: CanvasRenderingContext2D) {
+  ctx.font = `700 40px ${TEXTE}`;
+  const l = ctx.measureText(SITE).width + 72;
+  pilule(ctx, (L - l) / 2, H - 230, l, 88, 44);
+  ctx.fillStyle = FEUILLE;
+  ctx.fill();
+  ctx.fillStyle = ENCRE;
+  ctx.fillText(SITE, (L - l) / 2 + 36, H - 172);
+  ctx.font = `500 30px ${TEXTE}`;
+  ctx.fillStyle = FEUILLE;
+  const t = 'Vrais votes de l’Assemblée nationale · sans commentaire politique';
+  ctx.fillText(t, (L - ctx.measureText(t).width) / 2, H - 92);
 }
 
-/** Un bandeau de régie : une étiquette rouge et un titre en capitales sur un panneau. */
-function bandeau(ctx: CanvasRenderingContext2D, etiquette: string, titre: string, y: number): number {
-  ctx.font = `600 34px ${CONDENSE}`;
-  const we = ctx.measureText(etiquette.toUpperCase()).width;
-  ctx.fillStyle = DIRECT;
-  ctx.fillRect(96, y, we + 56, 96);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText(etiquette.toUpperCase(), 124, y + 60);
-  ctx.font = `600 60px ${CONDENSE}`;
-  const lt = lignes(ctx, titre.toUpperCase(), L - 192 - we - 56 - 56);
-  const h = Math.max(96, 28 + lt.length * 66);
-  ctx.fillStyle = PANNEAU;
-  ctx.fillRect(96 + we + 56, y, L - 192 - we - 56, h);
-  ctx.fillStyle = IVOIRE;
-  lt.forEach((l, k) => ctx.fillText(l, 96 + we + 56 + 28, y + 70 + k * 66));
-  return y + h;
-}
-
-function pied(ctx: CanvasRenderingContext2D, question: string) {
-  ctx.fillStyle = PANNEAU_2;
-  ctx.fillRect(72, H - 230, L - 144, 150);
-  ctx.font = `600 30px ${CONDENSE}`;
-  const w = ctx.measureText(SITE.toUpperCase()).width;
-  // La question garde sa place à gauche du badge : sa police diminue si elle est longue.
-  let taille = 42;
-  ctx.font = `500 ${taille}px ${QUESTION}`;
-  while (taille > 28 && ctx.measureText(question).width > L - 112 - w - 40 - 112 - 24) {
-    taille -= 2;
-    ctx.font = `500 ${taille}px ${QUESTION}`;
-  }
-  ctx.fillStyle = IVOIRE;
-  ctx.fillText(question, 112, H - 140);
-  ctx.font = `600 30px ${CONDENSE}`;
-  ctx.fillStyle = DIRECT;
-  ctx.fillRect(L - 112 - w - 40, H - 204, w + 40, 96);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText(SITE.toUpperCase(), L - 112 - w - 20, H - 145);
-}
-
-export async function dessiner(type: TypeStory, d: DonneesStories): Promise<HTMLCanvasElement> {
-  await Promise.all([document.fonts.load(`700 60px ${CONDENSE}`), document.fonts.load(`600 60px ${CONDENSE}`),
-    document.fonts.load(`400 30px ${TEXTE}`), document.fonts.load(`500 42px ${QUESTION}`)]);
+async function nouveau(): Promise<{ canevas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; img: HTMLImageElement }> {
+  await Promise.all([document.fonts.load(`800 92px ${TITRE}`), document.fonts.load(`500 44px ${TEXTE}`),
+    document.fonts.load(`700 40px ${TEXTE}`)]);
   const canevas = document.createElement('canvas');
   canevas.width = L;
   canevas.height = H;
   const ctx = canevas.getContext('2d')!;
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = NUIT;
+  ctx.fillStyle = '#2A211B';
   ctx.fillRect(0, 0, L, H);
-  entete(ctx);
+  return { canevas, ctx, img: await chargerFond() };
+}
 
+const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+
+export async function dessiner(type: TypeStory, d: DonneesStories): Promise<HTMLCanvasElement> {
+  const { canevas, ctx, img } = await nouveau();
+  const cadre = fond(ctx, img, type === 'contre' ? null : d.repere);
+  const poser = (libelle: string) => {
+    if (d.repere) repere(ctx, cadre.x0 + d.repere.x * cadre.largeur, d.repere.y * H, libelle);
+  };
   if (type === 'place') {
-    ctx.fillStyle = IVOIRE;
-    ctx.font = `700 120px ${CONDENSE}`;
-    let y = paragraphe(ctx, "J'AI PRIS LE 578e SIÈGE DE L'ASSEMBLÉE.", 96, 330, L - 192, 112);
-    ctx.font = `400 44px ${TEXTE}`;
-    ctx.fillStyle = IVOIRE_2;
-    if (d.groupe) {
-      y = paragraphe(ctx, `Après ${d.votes} vrais votes, le groupe qui vote le plus comme moi : `
-        + `${d.groupe.libelle} (${d.groupe.sigle}).`, 96, y + 40, L - 192, 60);
-    }
-    hemicycle(ctx, d.sieges, 1020, L - 120, d.etoile);
-    ctx.fillStyle = PANNEAU;
-    ctx.fillRect(72, 1560, L - 144, 110);
-    ctx.fillStyle = IVOIRE_2;
-    ctx.font = `600 34px ${CONDENSE}`;
-    ctx.fillText('PLUS UN SIÈGE EST LUMINEUX, PLUS CE DÉPUTÉ VOTE COMME MOI.', 108, 1628);
-    pied(ctx, 'Et toi, tu siègerais où ?');
+    const j = d.jumeau;
+    carte(ctx, 'Ma place', j ? `Je siège à la place de ${j.nom}.` : 'J’ai pris le 578e siège.',
+      j ? `${j.nom} a voté comme moi sur ${j.identiques} de mes ${pluriel(j.sur, 'vote')}. Et toi, tu siégerais où ?`
+        : `Après ${pluriel(d.votes, 'vrai vote')} de l’Assemblée. Et toi, tu siégerais où ?`);
+    poser('Moi');
   } else if (type === 'jumeau') {
-    let y = bandeau(ctx, 'Mon jumeau', "à l'Assemblée", 240);
-    ctx.font = `400 42px ${TEXTE}`;
-    ctx.fillStyle = IVOIRE_2;
-    y = paragraphe(ctx, 'Parmi les 577 députés, celui qui vote le plus souvent comme moi :', 96,
-      y + 90, L - 192, 56);
-    if (d.jumeau) {
-      ctx.beginPath();
-      ctx.arc(96 + 110, y + 150, 104, 0, 2 * Math.PI);
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = IVOIRE;
-      ctx.stroke();
-      ctx.fillStyle = IVOIRE;
-      ctx.font = `600 96px ${CONDENSE}`;
-      const wi = ctx.measureText(d.jumeau.initiales).width;
-      ctx.fillText(d.jumeau.initiales, 96 + 110 - wi / 2, y + 185);
-      ctx.font = `700 70px ${CONDENSE}`;
-      const yn = paragraphe(ctx, d.jumeau.nom.toUpperCase(), 360, y + 130, L - 456, 72);
-      ctx.fillStyle = IVOIRE_2;
-      ctx.font = `400 38px ${TEXTE}`;
-      ctx.fillText(d.jumeau.groupe, 360, yn + 10);
-      ctx.fillStyle = IVOIRE;
-      ctx.font = `600 220px ${CONDENSE}`;
-      const score = `${d.jumeau.identiques}/${d.jumeau.sur}`;
-      ctx.fillText(score, 96, y + 560);
-      const ws = ctx.measureText(score).width;
-      ctx.fillStyle = IVOIRE_2;
-      ctx.font = `600 44px ${CONDENSE}`;
-      paragraphe(ctx, 'VOTES PAREILS QUE MOI', 96 + ws + 36, y + 470, L - 192 - ws - 36, 54);
-    }
-    hemicycle(ctx, d.sieges, 1180, L - 160, d.etoile);
-    pied(ctx, "Et toi, c'est qui ton jumeau ?");
+    const j = d.jumeau;
+    carte(ctx, 'Mon jumeau', j ? j.nom : 'Pas encore de jumeau',
+      j ? `${j.groupe}. Parmi les 577 députés, celui qui a voté comme moi sur le plus de mes votes : ${j.identiques} sur ${j.sur}. Et toi, c’est qui ton jumeau ?`
+        : 'Et toi, c’est qui ton jumeau ?', 84);
+    poser('Son siège');
   } else {
-    let y = bandeau(ctx, 'Mon vote', 'le plus à contre-courant', 240);
-    if (d.contre) {
-      ctx.fillStyle = IVOIRE;
-      ctx.font = `500 70px ${QUESTION}`;
-      y = paragraphe(ctx, d.contre.question, 96, y + 140, L - 192, 86);
-      ctx.font = `600 48px ${CONDENSE}`;
-      const etiquette = `J'ai voté ${d.contre.reponse}`.toUpperCase();
-      const we = ctx.measureText(etiquette).width;
-      ctx.fillStyle = PANNEAU_2;
-      ctx.fillRect(96, y + 30, we + 80, 110);
-      ctx.strokeStyle = IVOIRE;
-      ctx.lineWidth = 4;
-      ctx.strokeRect(96, y + 30, we + 80, 110);
-      ctx.fillStyle = IVOIRE;
-      ctx.fillText(etiquette, 136, y + 102);
-      y += 420;
-      ctx.fillStyle = IVOIRE;
-      ctx.font = `600 260px ${CONDENSE}`;
-      ctx.fillText(`${d.contre.part} %`, 96, y);
-      ctx.font = `400 44px ${TEXTE}`;
-      ctx.fillStyle = IVOIRE_2;
-      paragraphe(ctx, 'des députés qui se sont exprimés ont voté comme moi.', 96, y + 90,
-        L - 192, 56);
-      ctx.fillStyle = FILET;
-      ctx.fillRect(96, y + 200, L - 192, 2);
+    const c = d.contre;
+    const bas = carte(ctx, 'À contre-courant', c ? c.question : 'Mon vote le plus à contre-courant',
+      c ? `J’ai voté ${c.reponse}.` : '', 64);
+    if (c) {
+      pilule(ctx, 40, bas + 40, L - 80, 380, 48);
+      ctx.fillStyle = FEUILLE;
+      ctx.fill();
+      ctx.fillStyle = ENCRE;
+      ctx.font = `800 170px ${TITRE}`;
+      ctx.fillText(`${c.part} %`, 96, bas + 230);
+      ctx.font = `500 42px ${TEXTE}`;
+      ctx.fillStyle = '#3A3A3A';
+      paragraphe(ctx, 'des députés qui se sont exprimés ont voté comme moi.', 96, bas + 310, L - 192, 56);
     }
-    pied(ctx, 'Et toi, tu siègerais où ?');
   }
+  pied(ctx);
   return canevas;
 }
 
+/** « Ton bilan » (palier 3) : cinq images, une idée chacune. */
+export async function dessinerBilan(d: DonneesBilan): Promise<HTMLCanvasElement[]> {
+  const pages: [string, string, string][] = [
+    [`${pluriel(d.votes, 'vote')} tranché${d.votes > 1 ? 's' : ''}`,
+      'De vrais votes de l’Assemblée nationale, tranchés avant ou après les députés.', 'Moi'],
+    [d.contreCourant.sur ? `${d.contreCourant.n} sur ${d.contreCourant.sur}` : 'Aucun verdict',
+      d.contreCourant.sur ? 'fois à contre-courant : j’ai voté l’inverse de ce que l’Assemblée a décidé.' : 'Pas encore de vote dont le verdict est tombé.', 'Moi'],
+    [d.jumeau ? d.jumeau.nom : 'Pas encore de jumeau',
+      d.jumeau ? `Mon jumeau à l’Assemblée : ${d.jumeau.identiques} votes comme moi sur mes ${d.jumeau.sur}.` : 'Le député qui vote le plus comme moi.', 'Moi'],
+    [d.theme ? d.theme.nom : 'Tous les thèmes',
+      d.theme ? `Mon thème le plus tranché : ${pluriel(d.theme.n, 'vote')}.` : 'Pas encore de thème plus tranché que les autres.', 'Moi'],
+    [d.serie ? `${pluriel(d.serie, 'semaine')} d’affilée` : 'Pas encore de série',
+      'À trancher la séance de la semaine avant les députés. Et toi, tu siégerais où ?', 'Moi'],
+  ];
+  const sortie: HTMLCanvasElement[] = [];
+  for (const [k, [titre, texte, libelle]] of pages.entries()) {
+    const { canevas, ctx, img } = await nouveau();
+    const cadre = fond(ctx, img, d.repere);
+    carte(ctx, `Mon bilan · ${k + 1} / ${pages.length}`, titre, texte, 104);
+    if (d.repere) repere(ctx, cadre.x0 + d.repere.x * cadre.largeur, d.repere.y * H, libelle);
+    pied(ctx);
+    sortie.push(canevas);
+  }
+  return sortie;
+}
+
 export function enImage(canevas: HTMLCanvasElement): Promise<Blob> {
-  return new Promise((ok, ko) => canevas.toBlob((b) => (b ? ok(b) : ko(new Error('image'))),
-    'image/png'));
+  return new Promise((ok, ko) => canevas.toBlob((b) => (b ? ok(b) : ko(new Error('image'))), 'image/png'));
 }

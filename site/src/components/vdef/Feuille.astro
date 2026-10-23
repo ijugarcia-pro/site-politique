@@ -1,0 +1,65 @@
+---
+// Feuille (VDEF § 7) : le contenu posé sur la salle. À droite (vote, verdict, révélation), à
+// gauche (Ta place), en bas (la tribune), ou en lecture : pleine page sur la salle floutée
+// (le flou est posé par Base.astro, gabarit « lecture »). Sur téléphone (≤ 720 px), toutes
+// montent depuis le bas sous l'image de la salle (maquettes T1 à T5), coins arrondis en haut.
+interface Props {
+  position: 'droite' | 'gauche' | 'bas' | 'lecture';
+  /** L'identifiant du titre de la feuille, pour la nommer (aria-labelledby). */
+  titre?: string;
+  etiquette?: string;
+  balise?: 'section' | 'div' | 'article';
+  class?: string;
+  [attr: string]: unknown;
+}
+const { position, titre, etiquette, balise: Balise = 'section', class: classe, ...reste } = Astro.props;
+---
+<Balise class:list={['feuille', position, classe]} aria-labelledby={titre} aria-label={titre ? undefined : etiquette}
+  {...reste}>
+  <span class="poignee" aria-hidden="true"></span>
+  <slot />
+</Balise>
+
+<style>
+  .feuille {
+    background: var(--feuille); color: var(--encre);
+    border-radius: var(--rayon-feuille); box-shadow: var(--ombre-feuille);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .poignee { display: none; }
+
+  /* Posées sur la salle, sous la barre du haut (20 + 48 + 20 px). */
+  .droite, .gauche {
+    position: absolute; z-index: 3; bottom: var(--marge);
+    overflow: auto; overscroll-behavior: contain;
+    max-width: calc(100% - 2 * var(--marge));
+  }
+  /* Sous la barre du haut ; en mode focus, la barre n'a rien à droite : la feuille monte. */
+  .droite { top: 88px; right: var(--marge); width: var(--feuille-droite); padding: 28px; }
+  :global(body.focus) .droite { top: var(--haut-barre); }
+  .gauche { top: 88px; left: var(--marge); width: var(--feuille-gauche); padding: 24px; gap: 14px; }
+  .bas {
+    position: absolute; z-index: 3; left: var(--marge); right: var(--marge); bottom: var(--marge);
+    min-height: var(--feuille-bas); padding: 22px; gap: 12px;
+  }
+  .lecture {
+    position: relative; z-index: 3; width: 100%; max-width: var(--feuille-lecture);
+    margin: 0 auto; padding: 36px 48px 64px; gap: 28px;
+    border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0; box-shadow: none;
+    min-height: calc(100vh - 92px);
+  }
+
+  @media (max-width: 720px) {
+    .droite, .gauche, .bas {
+      position: relative; inset: auto; width: auto; max-width: none; min-height: 0;
+      margin-top: -64px; padding: 10px 16px 24px; gap: 12px;
+      border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); overflow: visible;
+    }
+    .poignee {
+      display: block; align-self: center; flex: 0 0 auto;
+      width: 40px; height: 5px; border-radius: var(--pilule); background: var(--bord);
+    }
+    .lecture { padding: 24px 16px 40px; gap: 22px; min-height: calc(100vh - 72px); }
+  }
+</style>

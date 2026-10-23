@@ -76,3 +76,10 @@ test('un dossier s\'ouvre au 3e vote tranché du thème', () => {
   assert.ok(!tous.some((d) => d.theme === 'Fin de vie'));
   assert.deepEqual(tous.find((d) => d.theme === 'Logement')?.votes, ['L1']);
 });
+
+test('chaque thème a une adresse de dossier distincte', async () => {
+  const { THEMES, slugTheme } = await import('./themes.ts');
+  assert.equal(slugTheme('Économie'), 'economie');
+  assert.equal(slugTheme('Santé'), 'sante');
+  assert.equal(new Set(THEMES.map(slugTheme)).size, THEMES.length);
+});

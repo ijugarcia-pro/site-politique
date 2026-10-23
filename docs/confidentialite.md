@@ -28,7 +28,7 @@ Ces informations peuvent révéler des **opinions politiques**, qui sont des don
 
 Les images à partager (« stories ») sont dessinées dans ton navigateur ; elles ne partent que si tu les partages toi-même.
 
-**Tout effacer** : la page « Comment c'est calculé » propose un bouton « Effacer toutes mes réponses de ce navigateur ». Effacer les données du site dans les réglages de ton navigateur a le même effet. Une réponse peut aussi être effacée sur la page du vote concerné.
+**Tout effacer** : la section « Tes données » de la page « Comment c'est calculé » propose « Télécharger mes réponses » (un fichier fait dans ton navigateur, qui ne passe par aucun serveur) et « Tout effacer ». Effacer les données du site dans les réglages de ton navigateur a le même effet. Une réponse peut aussi être effacée sur la page du vote concerné.
 
 ## Ce qui est envoyé, et à qui
 
@@ -49,7 +49,7 @@ Pour toute question : le site n'a pas encore d'adresse électronique de contact 
 
 Des fonctions envisagées (comptes facultatifs, alertes, chiffres sur l'ensemble des utilisateurs du site) demanderaient d'envoyer des données à un serveur. Elles ne sont pas en service. Si elles arrivent, ton accord exprès te sera demandé avant tout envoi, et cette page sera mise à jour auparavant.
 
-*Dernière mise à jour : 12 octobre 2026.*
+*Dernière mise à jour : 22 octobre 2026 (VDEF : bouton « Tout effacer » et téléchargement de tes réponses).*
 
 ---
 

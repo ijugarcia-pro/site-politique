@@ -1,0 +1,211 @@
+---
+// Trancher des votes (VDEF, lot V5 ; maquettes 02, 02b, 03, 06, 06b) : la feuille de droite,
+// posée sur la tribune. La question, « Concrètement », Pour / Contre / Je ne sais pas ; puis
+// l'encart de suite (« Voir la salle », ou, pour un vote pas encore tenu, « Noté » et un
+// pronostic facultatif) ; « Comprendre ce texte » se déplie en bas. La révélation passe à la vue
+// « La salle », voyants aux couleurs du vote : l'issue, la barre, les pastilles, l'encart noir et
+// « Ta voix de 578e », la progression vers le prochain palier. Commun au quiz, aux lots et à la
+// séance ; le déroulé est dans lib/trancher.ts, l'écran de fin vient de la page (slot « fin »).
+// Sans WebGL, la révélation montre l'hémicycle 2D (le repli).
+import Bouton from './Bouton.astro';
+import Feuille from './Feuille.astro';
+import Pastille from './Pastille.astro';
+import Repere from './Repere.astro';
+import MiniHemicycle from '../MiniHemicycle.astro';
+import { composition, dateLisible, lienVote, majuscule, scrutinPublie } from '../../lib/donnees.ts';
+import { SIEGES } from '../../lib/hemicycle.ts';
+import { verdict } from '../../lib/votes.ts';
+
+interface Props {
+  /** `uid` vide : un vote annoncé, pas encore tenu (séance de la semaine) ; `quand` dit alors
+   *  quand les députés votent (« le mardi 13 octobre à 15 h »), `quandCourt` sa pastille. */
+  cartes: { uid: string; numero: number; theme: string; question: string; concretement: string;
+    titre?: string; quand?: string; quandCourt?: string; changes?: string[] }[];
+  /** Proposer un pronostic facultatif après un vote pas encore tenu. */
+  pronostic?: boolean;
+}
+
+const { cartes, pronostic = false } = Astro.props;
+const compo = composition();
+// Le vote de chaque député d'aujourd'hui, siège par siège : P, C, A (abstention), N
+// (non-votant), - (absent), x s'il n'était pas député à la date du vote, V pour un siège vacant.
+const LETTRES: Record<string, string> = { pour: 'P', contre: 'C', abstention: 'A', non_votant: 'N', absent: '-' };
+const questions = cartes.map((q) => {
+  const s = q.uid ? scrutinPublie(q.uid) : null;
+  const base = {
+    uid: q.uid, numero: q.numero, theme: q.theme, concretement: q.concretement,
+    question: q.question.replace(/ ([?!:;])/g, ' $1'), titre: q.titre ?? q.question,
+    changes: q.changes ?? [],
+  };
+  if (!s) {
+    return { ...base, attente: true, quand: q.quand ?? '', date: q.quandCourt ? `Ils votent ${q.quandCourt}` : '',
+      intitule: '', lien: '', verdict: '', adopte: false, decompte: { pour: 0, contre: 0, abstention: 0, absent: 0 },
+      dissidents: 0, marge: null, requis: null, sieges: '' };
+  }
+  const votes = new Map(s.sieges.filter((x) => x.depute).map((x) => [x.depute!, x]));
+  return {
+    ...base, attente: false, quand: '', date: `Voté le ${dateLisible(s.date)}`,
+    intitule: majuscule(s.titre), lien: lienVote(s), verdict: verdict(s), adopte: s.sort === 'adopté',
+    decompte: { pour: s.decompte.pour, contre: s.decompte.contre, abstention: s.decompte.abstention, absent: s.decompte.absent },
+    dissidents: s.dissidents, marge: s.voix_pour_inverser, requis: s.requis,
+    sieges: compo.sieges.map((c) => {
+      if (c.vacant || !c.depute) return 'V';
+      const x = votes.get(c.depute);
+      return x ? LETTRES[x.vote ?? 'absent'] ?? '-' : 'x';
+    }).join(''),
+  };
+});
+const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
+const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
+---
+<Repere libelle="La tribune" forme="lieu" x={46} y={55} class="lieu-trancher" data-lieu />
+
+<Feuille position="droite" titre="question-titre" class="trancher" data-trancher>
+  <!-- La question (maquettes 02, 02b, 06, 06b). -->
+  <div class="ecran" data-ecran="question">
+    <div class="pastilles">
+      <Pastille data-theme></Pastille>
+      <Pastille data-date></Pastille>
+    </div>
+    <span class="t-etiquette" data-mode></span>
+    <h1 id="question-titre" class="t-feuille titre-question" data-question tabindex="-1"></h1>
+    <p class="t-texte" data-concretement></p>
+    <div class="reponses" role="group" aria-label="Ta réponse">
+      <button type="button" data-reponse="pour"><span class="pt pour" aria-hidden="true"></span>Pour<span class="ton-vote">Ton vote</span></button>
+      <button type="button" data-reponse="contre"><span class="pt contre" aria-hidden="true"></span>Contre<span class="ton-vote">Ton vote</span></button>
+      <button type="button" data-reponse=""><span class="pt nsp" aria-hidden="true"></span>Je ne sais pas<span class="ton-vote">Ton choix</span></button>
+    </div>
+    <span class="visuellement-cache" aria-live="polite" data-annonce-vote></span>
+    <div class="suite" data-suite hidden>
+      <p class="t-interface" data-suite-texte></p>
+      {pronostic && (
+        <div class="pronostic" data-pronostic hidden>
+          <span class="t-legende" data-prono-question></span>
+          <span class="prono-choix">
+            <button type="button" data-prono="adopte" aria-pressed="false">Adopté</button>
+            <button type="button" data-prono="rejete" aria-pressed="false">Rejeté</button>
+          </span>
+        </div>
+      )}
+      <Bouton large data-continuer>Voir la salle</Bouton>
+    </div>
+    <details class="comprendre" data-comprendre>
+      <summary><span>Comprendre ce texte</span><span class="plus" aria-hidden="true">+</span></summary>
+      <div class="comprendre-corps" data-comprendre-corps></div>
+    </details>
+  </div>
+
+  <!-- La révélation (maquette 03). -->
+  <div class="ecran" data-ecran="revelation" hidden>
+    <span class="annonce-palier" data-annonce-palier hidden></span>
+    <div class="pastilles">
+      <Pastille data-rv-theme></Pastille>
+      <Pastille data-rv-date></Pastille>
+    </div>
+    <p class="t-interface" data-rv-question></p>
+    <p class="issue"><span class="t-issue" data-rv-issue tabindex="-1"></span><span class="t-etiquette" data-rv-marge></span></p>
+    <div class="barre" role="img" data-rv-barre></div>
+    <div class="pastilles" data-rv-pastilles></div>
+    <div class="encart" data-rv-encart>
+      <p class="encart-titre" data-rv-titre></p>
+      <p class="encart-texte" data-rv-voix></p>
+    </div>
+    <div class="repli-2d" data-repli-2d hidden>
+      <MiniHemicycle couleurs={eteints} titre="Comment l'Assemblée a voté, siège par siège" />
+    </div>
+    <p class="t-legende"><a data-rv-lien href="/explorer/">Tout savoir sur ce vote</a></p>
+    <div class="progression" data-progression hidden>
+      <span class="progression-ligne"><span class="t-interface" data-progression-libelle></span><span class="t-legende" data-progression-chiffre></span></span>
+      <span class="progression-barre"><span data-progression-plein></span></span>
+    </div>
+    <Bouton large data-suivant>Question suivante</Bouton>
+  </div>
+
+  <slot name="fin" />
+</Feuille>
+
+<script type="application/json" data-donnees-trancher set:html={donnees}></script>
+
+<style>
+  :global(.feuille.trancher) { gap: 16px; }
+  .ecran { display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .ecran[hidden] { display: none; }
+  .pastilles { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pastilles :global(.pastille:empty) { display: none; }
+  .titre-question { font-size: 34px; }
+  .titre-question.longue { font-size: 28px; }
+
+  /* Les trois réponses : des lignes de 58 px, le choix en noir, les autres grisés. */
+  .reponses { display: flex; flex-direction: column; gap: 8px; }
+  .reponses button {
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 0 18px;
+    border-radius: 16px; border: 1px solid var(--bord); background: var(--feuille); color: var(--encre);
+    font: 600 17px/1 var(--police-texte); cursor: pointer; text-align: left;
+  }
+  .reponses button:hover:not(:disabled) { border-color: var(--encre); }
+  .reponses button:disabled { cursor: default; }
+  .reponses button.estompe { color: var(--inactif); }
+  .reponses button.choisi { background: var(--encre); color: var(--feuille); border: 2px solid var(--encre); }
+  .pt { flex: 0 0 auto; width: 14px; height: 14px; border-radius: var(--pilule); }
+  .pt.pour { background: var(--pour); }
+  .pt.contre { background: var(--contre); }
+  .pt.nsp { border: 2px solid var(--absent); }
+  .choisi .pt { box-shadow: 0 0 0 2px var(--feuille); }
+  .ton-vote { display: none; margin-left: auto; font: 600 13px/1 var(--police-texte); }
+  .choisi .ton-vote { display: inline; }
+
+  /* L'encart de suite, sous les réponses. */
+  .suite { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--rayon-carte); background: var(--surface); }
+  .suite[hidden] { display: none; }
+  .pronostic { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .pronostic[hidden] { display: none; }
+  .prono-choix { display: flex; gap: 8px; }
+  .prono-choix button {
+    min-height: var(--cible); padding: 0 16px; border-radius: var(--pilule); border: 1px solid var(--bord);
+    background: var(--feuille); color: var(--encre); font: 600 14px/1 var(--police-texte); cursor: pointer;
+  }
+  .prono-choix button[aria-pressed='true'] { background: var(--encre); color: var(--feuille); border-color: var(--encre); }
+
+  /* « Comprendre ce texte », en bas de la feuille. */
+  .comprendre { margin-top: auto; border-top: 1px solid var(--filet); }
+  .comprendre summary {
+    display: flex; justify-content: space-between; align-items: center; min-height: 52px;
+    font: 700 15px/1 var(--police-texte);
+  }
+  .comprendre[open] .plus { transform: rotate(45deg); }
+  .comprendre-corps { display: flex; flex-direction: column; gap: 10px; padding-bottom: 8px; font: 500 15px/1.5 var(--police-texte); color: var(--texte); }
+  .comprendre-corps :global(ol) { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .comprendre-corps :global(li) { padding: 12px 14px; border-radius: 14px; background: var(--surface); }
+
+  /* La révélation. */
+  .annonce-palier {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+    border-radius: var(--pilule); background: var(--encre); color: var(--feuille); font: 700 13px/1 var(--police-texte);
+  }
+  .annonce-palier[hidden] { display: none; }
+  .issue { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .issue .t-issue { outline-offset: 4px; }
+  .barre { display: flex; height: 10px; gap: 2px; border-radius: var(--pilule); overflow: hidden; }
+  .barre :global(span) { min-width: 2px; }
+  .pastilles :global(.pastille-rv) {
+    display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--pilule);
+    background: var(--surface); color: var(--encre); font: 600 13px/1 var(--police-texte); white-space: nowrap;
+  }
+  .encart { display: flex; flex-direction: column; gap: 8px; padding: 18px 20px; border-radius: var(--rayon-carte); background: var(--encre); color: var(--feuille); }
+  .encart-titre { font: 700 19px/1.3 var(--police-titre); }
+  .encart-texte { font: 500 15px/1.45 var(--police-texte); color: var(--sur-encre-2); }
+  .repli-2d { padding: 8px; border-radius: var(--rayon-carte); background: var(--surface); }
+  .repli-2d[hidden] { display: none; }
+  .progression { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+  .progression[hidden] { display: none; }
+  .progression-ligne { display: flex; justify-content: space-between; }
+  .progression-barre { height: 8px; border-radius: var(--pilule); background: var(--surface); overflow: hidden; }
+  .progression-barre span { display: block; height: 100%; width: 0; background: var(--encre); border-radius: var(--pilule); }
+  :global(.lieu-trancher[hidden]) { display: none; }
+
+  @media (max-width: 720px) {
+    .titre-question { font-size: 26px; }
+    .titre-question.longue { font-size: 23px; }
+    :global(.lieu-trancher) { display: none; }
+  }
+</style>

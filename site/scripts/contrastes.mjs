@@ -1,4 +1,4 @@
-// Audit des contrastes (docs/design-final/DESIGN-FINAL.md, § 9) : sur les 31 écrans de
+// Audit des contrastes (VDEF, lot V10 ; d’abord docs/design-final/DESIGN-FINAL.md, § 9) : sur les 31 écrans de
 // scripts/ecrans.mjs, à 1 440 et 390 px, chaque texte visible est mesuré contre son fond réel
 // (couleurs des ancêtres composées, transparences comprises). Seuils WCAG AA : 4,5:1, ou 3:1 pour
 // un grand texte (24 px, ou 18,66 px en gras).

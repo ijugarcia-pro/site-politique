@@ -1,0 +1,309 @@
+---
+// Ton parcours (VDEF, capture 12 ; lot V6) : ce que chaque vote tranché ouvre. Les 3 paliers
+// (fait, en cours avec sa barre, verrouillé), les dossiers par thème (les 12 thèmes, x / 3), ta
+// série de semaines et ce qu'on ne fera jamais. Tout dépend du nombre de votes tranchés, jamais
+// du contenu d'une réponse (lib/paliers.ts) ; tout est calculé dans le navigateur. Sans
+// JavaScript, la page dit les règles, tout verrouillé.
+import Base from '../layouts/Base.astro';
+import Bouton from '../components/vdef/Bouton.astro';
+import { cartesThemes, composition, scrutins, semaine } from '../lib/donnees.ts';
+import { siegeDansFond } from '../salle3d/projection.ts';
+import { PALIERS, SEUIL_DOSSIER } from '../lib/paliers.ts';
+import { slugTheme, THEMES } from '../lib/themes.ts';
+
+const sem = semaine();
+const TEXTES: Record<string, string> = {
+  place: 'Ton personnage s’assoit sur le siège de ton jumeau. La vue « Ta place » s’ouvre.',
+  'salle-eclairee': 'Chaque siège s’éclaire selon ses votes communs avec toi. Ta place devient fiable.',
+  bilan: 'Ton année à l’Assemblée en cinq images : tes votes, tes surprises, ton jumeau. À partager si tu veux.',
+};
+const donnees = JSON.stringify({
+  cartes: cartesThemes(),
+  lundi: sem.lundi,
+  vacances: [...sem.historique.filter((h) => h.vacances).map((h) => h.lundi), ...(sem.vacances ? [sem.lundi] : [])],
+  vacancesEnCours: sem.vacances,
+  horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
+  // Pour la story « Ton bilan » : le député de chaque siège et sa place dans l'image fixe.
+  sieges: composition().sieges.map((s) => s.depute ?? null),
+  reperes: composition().sieges.map((_, i) => {
+    const p = siegeDansFond(i);
+    return p ? [Math.round(p.x * 1e4) / 1e4, Math.round(p.y * 1e4) / 1e4] : null;
+  }),
+}).replace(/</g, '\\u003c');
+const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
+---
+<Base titre="Ton parcours" gabarit="lecture" vue="tribune"
+  description="Ce que chaque vote tranché ouvre : ta place, la salle éclairée, ton bilan et les dossiers par thème. Jamais de points ni de classement.">
+  <a class="retour" href="/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    La tribune
+  </a>
+  <header class="entete">
+    <span class="t-etiquette" data-parcours-sous-titre>Ton parcours</span>
+    <h1 class="t-ecran">Chaque vote tranché ouvre quelque chose</h1>
+    <p class="t-texte chapeau">Ce qui se débloque dépend du nombre de votes que tu tranches, jamais de ce que tu réponds. Tout ce qui est public, les votes, les verdicts et les députés, reste ouvert dès le départ.</p>
+  </header>
+
+  <ol class="paliers">
+    {PALIERS.map((p) => (
+      <li class="palier verrouille" data-palier-carte={p.id} style="--angle: 0deg">
+        <span class="marque" aria-hidden="true">
+          <svg class="coche" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+          <svg class="cadenas" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d={cadenas}></path></svg>
+        </span>
+        <span class="t-legende rang">Palier {p.rang} · {p.seuil} votes</span>
+        <h2 class="nom-palier">{p.libelle}</h2>
+        <p class="texte-palier">{TEXTES[p.id]}</p>
+        <div class="pied-palier">
+          <span class="etat" data-palier-etat>Verrouillé</span>
+          <span class="barre" data-palier-barre hidden><span></span></span>
+          <Bouton href="/lots/" large data-palier-action hidden>Trancher 3 votes passés</Bouton>
+          {p.id === 'bilan' && <Bouton large data-ouvrir-bilan hidden>Voir et partager ton bilan</Bouton>}
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  <section class="dossiers" aria-labelledby="titre-dossiers">
+    <div class="titre-ligne">
+      <h2 id="titre-dossiers" class="t-section">Les dossiers par thème</h2>
+      <span class="t-legende">{SEUIL_DOSSIER} votes sur un thème ouvrent son dossier</span>
+    </div>
+    <p class="t-texte">Un dossier raconte tout ce que l’Assemblée a voté sur ce thème depuis le début de la législature, et où tu te situes vote après vote.</p>
+    <ul class="grille-dossiers">
+      {THEMES.map((t) => (
+        <li><a class="dossier" href={`/dossiers/${slugTheme(t)}/`} data-dossier={t}>
+          <span class="dossier-haut">
+            <span class="dossier-nom">{t}</span>
+            <svg class="cadenas" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d={cadenas}></path></svg>
+            <svg class="coche" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+          </span>
+          <span class="barre" aria-hidden="true"><span data-dossier-plein></span></span>
+          <span class="t-legende" data-dossier-texte>0 / {SEUIL_DOSSIER} votes</span>
+        </a></li>
+      ))}
+    </ul>
+  </section>
+
+  <div class="bas-parcours">
+    <div class="serie" data-serie>
+      <span class="etiquette-noire">Ta série</span>
+      <p class="serie-chiffre" data-serie-chiffre>Pas encore de série</p>
+      <p class="serie-texte" data-serie-texte>Une séance par semaine suffit : 3 votes avant les députés. Une semaine sans séance à l’Assemblée ne casse pas la série.</p>
+    </div>
+    <div class="jamais">
+      <span class="t-etiquette">Ce qu’on ne fera jamais</span>
+      <p class="t-texte">Pas de points, pas de classement entre utilisateurs, pas de badge lié à une opinion. Tes réponses ne quittent pas ton navigateur.</p>
+    </div>
+  </div>
+  <dialog class="partage" data-partage aria-labelledby="titre-bilan">
+    <div class="partage-tete">
+      <h2 id="titre-bilan" class="t-section">Ton bilan</h2>
+      <button type="button" class="fermer" data-fermer aria-label="Fermer">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    <p class="t-texte">Ton année à l’Assemblée en cinq images. Elles sont faites dans ton navigateur et ne partent que si tu les partages.</p>
+    <div class="stories" data-stories></div>
+  </dialog>
+  <script type="application/json" data-donnees-parcours set:html={donnees}></script>
+</Base>
+
+<script>
+  import { lireJSON, reponses } from '../lib/navigateur.ts';
+  import { dossiers, PALIERS, prochainPalier, SEUIL_DOSSIER, votesTranches } from '../lib/paliers.ts';
+  import { repriseApres, seancesFaites, serie, texteGel } from '../lib/seances.ts';
+  import { $, mesReps, pluriel } from '../lib/trancher.ts';
+  import { profil, type Matrice } from '../lib/profil.ts';
+  import type { DonneesBilan } from '../lib/stories.ts';
+
+  document.addEventListener('astro:page-load', () => {
+    const brut = document.querySelector('[data-donnees-parcours]')?.textContent;
+    if (!brut) return;
+    const d = JSON.parse(brut) as { cartes: { uid: string; theme: string }[]; lundi: string; vacances: string[];
+      vacancesEnCours: boolean; horsMatrice: string[]; sieges: (string | null)[]; reperes: ([number, number] | null)[] };
+    const toutes = reponses();
+    const hors = new Set(d.horsMatrice);
+    const n = votesTranches(Object.fromEntries(Object.entries(toutes).filter(([uid]) => !hors.has(uid))));
+    $('[data-parcours-sous-titre]').textContent = n ? `Ton parcours · ${pluriel(n, 'vote')} tranché${n > 1 ? 's' : ''}` : 'Ton parcours';
+
+    // Les paliers.
+    const prochain = prochainPalier(n);
+    const quizFini = lireJSON<{ fini?: boolean }>('578e.quiz.v1', {}).fini === true;
+    for (const p of PALIERS) {
+      const carte = $(`[data-palier-carte="${p.id}"]`);
+      const etat = n >= p.seuil ? 'fait' : prochain?.palier.id === p.id ? 'en-cours' : 'verrouille';
+      carte.classList.remove('fait', 'en-cours', 'verrouille');
+      carte.classList.add(etat);
+      const texte = carte.querySelector<HTMLElement>('[data-palier-etat]')!;
+      const barre = carte.querySelector<HTMLElement>('[data-palier-barre]')!;
+      const action = carte.querySelector<HTMLAnchorElement>('[data-palier-action]')!;
+      texte.textContent = etat === 'fait' ? 'Débloqué' : etat === 'en-cours' ? `En cours · ${n} / ${p.seuil}` : 'Verrouillé';
+      barre.hidden = etat !== 'en-cours';
+      action.hidden = etat !== 'en-cours';
+      if (etat === 'en-cours') {
+        carte.style.setProperty('--angle', `${Math.round((360 * n) / p.seuil)}deg`);
+        barre.querySelector('span')!.style.width = `${(100 * n) / p.seuil}%`;
+        if (!quizFini) { action.href = '/quiz/'; action.textContent = n ? 'Finir le quiz' : 'Faire le quiz'; }
+      }
+    }
+
+    // Les dossiers par thème.
+    for (const dos of dossiers(toutes, d.cartes)) {
+      const li = document.querySelector<HTMLElement>(`[data-dossier="${dos.theme}"]`);
+      if (!li) continue;
+      li.classList.toggle('ouvert', dos.ouvert);
+      li.querySelector<HTMLElement>('[data-dossier-plein]')!.style.width = `${(100 * Math.min(dos.tranches, SEUIL_DOSSIER)) / SEUIL_DOSSIER}%`;
+      li.querySelector('[data-dossier-texte]')!.textContent = dos.ouvert
+        ? `Ouvert · ${pluriel(dos.tranches, 'vote')}`
+        : dos.votes.length < SEUIL_DOSSIER
+          ? `${dos.tranches} / ${SEUIL_DOSSIER} votes · ${pluriel(dos.votes.length, 'vote')} sur ce thème pour l’instant`
+          : `${dos.tranches} / ${SEUIL_DOSSIER} votes${dos.tranches ? ` · encore ${dos.reste}` : ''}`;
+    }
+
+    // La série.
+    const k = serie(seancesFaites(), new Set(d.vacances), d.lundi);
+
+    // Ton bilan (palier 3) : cinq images, faites ici au premier clic.
+    const ouvrir = document.querySelector<HTMLButtonElement>('[data-ouvrir-bilan]');
+    if (ouvrir && n >= PALIERS[PALIERS.length - 1].seuil) {
+      ouvrir.hidden = false;
+      const dialogue = $<HTMLDialogElement>('[data-partage]');
+      $('[data-fermer]').addEventListener('click', () => dialogue.close());
+      let fait = false;
+      ouvrir.addEventListener('click', async () => {
+        dialogue.showModal();
+        if (fait) return;
+        fait = true;
+        const [m, votes] = await Promise.all([
+          fetch('/donnees/matrice.json').then((r) => r.json()) as Promise<Matrice>,
+          fetch('/donnees/votes.json').then((r) => r.json()) as Promise<Record<string, [number, string, string, number, string]>>]);
+        const reps = Object.fromEntries(Object.entries(mesReps()).filter(([uid]) => !hors.has(uid)));
+        const p = profil(m, reps);
+        const juges = Object.entries(reps).filter(([uid]) => votes[uid]);
+        const ds = dossiers(toutes, d.cartes).filter((x) => x.tranches > 0).sort((a, b) => b.tranches - a.tranches);
+        const kj = p.jumeau ? d.sieges.indexOf(p.jumeau.ligne.u) : -1;
+        const rp = kj >= 0 ? d.reperes[kj] : null;
+        const bilan: DonneesBilan = {
+          votes: n,
+          contreCourant: { n: juges.filter(([uid, r]) => (r === 'pour') !== (votes[uid][3] === 1)).length, sur: juges.length },
+          jumeau: p.jumeau ? { nom: p.jumeau.ligne.n, identiques: p.jumeau.identiques, sur: p.reponses } : null,
+          theme: ds[0] ? { nom: ds[0].theme, n: ds[0].tranches } : null,
+          serie: k, repere: rp ? { x: rp[0], y: rp[1] } : null,
+        };
+        const { dessinerBilan, enImage } = await import('../lib/stories.ts');
+        const zone = $('[data-stories]');
+        for (const [i, c] of (await dessinerBilan(bilan)).entries()) {
+          const blob = await enImage(c);
+          const fig = document.createElement('figure');
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(blob);
+          img.alt = `Ton bilan, image ${i + 1} sur 5`;
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = 'Partager';
+          b.addEventListener('click', async () => {
+            const fichier = new File([blob], `578e-siege-bilan-${i + 1}.png`, { type: 'image/png' });
+            if (navigator.canShare?.({ files: [fichier] })) {
+              try { await navigator.share({ files: [fichier], title: 'Le 578e siège' }); return; } catch { /* annulé */ }
+            }
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = fichier.name;
+            a.click();
+          });
+          const cap = document.createElement('figcaption');
+          cap.append(b);
+          fig.append(img, cap);
+          zone.append(fig);
+        }
+      });
+    }
+    if (k > 0) {
+      $('[data-serie-chiffre]').textContent = `${k} semaine${k > 1 ? 's' : ''} d’affilée`;
+      $('[data-serie-texte]').textContent = d.vacancesEnCours ? texteGel(k, repriseApres(d.lundi))
+        : 'Une séance par semaine suffit. Une semaine sans séance à l’Assemblée ne casse pas la série.';
+    }
+  });
+</script>
+
+<style>
+  .entete { display: flex; flex-direction: column; gap: 10px; }
+  .chapeau { max-width: 760px; }
+  .paliers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .palier {
+    display: flex; flex-direction: column; gap: 6px; padding: 20px; border-radius: 20px;
+    background: var(--surface); min-height: 300px;
+  }
+  .palier.en-cours { background: var(--feuille); box-shadow: inset 0 0 0 2px var(--encre); }
+  .palier.verrouille { background: var(--feuille); border: 1px dashed var(--pointille); }
+  .marque {
+    width: 40px; height: 40px; border-radius: var(--pilule); margin-bottom: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .marque svg { display: none; }
+  .fait .marque { background: var(--encre); color: var(--feuille); }
+  .fait .coche { display: block; }
+  .en-cours .marque {
+    background: conic-gradient(var(--encre) var(--angle), var(--bord) 0);
+    -webkit-mask: radial-gradient(circle, transparent 14px, #000 14.5px);
+    mask: radial-gradient(circle, transparent 14px, #000 14.5px);
+  }
+  .verrouille .marque { border: 1.5px dashed var(--pointille); color: var(--inactif); }
+  .verrouille .cadenas { display: block; }
+  .rang { font-weight: 600; }
+  .nom-palier { font: 700 22px/1.2 var(--police-titre); }
+  .texte-palier { font: 500 15px/1.45 var(--police-texte); color: var(--texte); }
+  .pied-palier { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 12px; }
+  .etat { font: 700 14px/1.3 var(--police-texte); }
+  .barre { display: block; height: 8px; border-radius: var(--pilule); background: var(--surface); overflow: hidden; }
+  .palier.en-cours .barre { background: var(--filet); }
+  .barre > span { display: block; height: 100%; width: 0; background: var(--encre); border-radius: var(--pilule); }
+  .barre[hidden] { display: none; }
+
+  .dossiers { display: flex; flex-direction: column; gap: 12px; }
+  .titre-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .grille-dossiers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .dossier { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: var(--surface); color: var(--encre); text-decoration: none; }
+  .dossier:hover { box-shadow: inset 0 0 0 2px var(--encre); }
+  .dossier .barre { background: var(--feuille); }
+  .dossier-haut { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .dossier-nom { font: 700 16px/1.2 var(--police-texte); }
+  .dossier .coche { display: none; }
+  .dossier .cadenas { color: var(--inactif); }
+  .dossier.ouvert .coche { display: block; }
+  .dossier.ouvert .cadenas { display: none; }
+
+  .bas-parcours { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .serie, .jamais { display: flex; flex-direction: column; gap: 8px; padding: 24px; border-radius: 20px; }
+  .serie { background: var(--encre); color: var(--feuille); }
+  .etiquette-noire { font: 600 14px/1.35 var(--police-texte); color: var(--sur-encre-2); }
+  .serie-chiffre { font: 800 38px/1.1 var(--police-titre); }
+  .serie-texte { font: 500 15px/1.5 var(--police-texte); color: var(--sur-encre-2); }
+  .jamais { background: var(--surface); }
+  .jamais .t-texte { font-size: 15px; }
+  .partage {
+    width: min(1100px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; padding: 28px;
+    border-radius: var(--rayon-feuille); background: var(--feuille); color: var(--encre); box-shadow: var(--ombre-feuille);
+  }
+  .partage::backdrop { background: rgba(18, 18, 18, 0.6); }
+  .partage-tete { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .fermer {
+    width: var(--cible); height: var(--cible); border: 0; border-radius: var(--pilule); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .stories { margin-top: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .stories :global(figure) { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .stories :global(img) { width: 100%; aspect-ratio: 9 / 16; border-radius: 14px; background: var(--surface); object-fit: cover; }
+  .stories :global(button) {
+    width: 100%; min-height: var(--cible); border-radius: var(--pilule); border: 1px solid var(--bord);
+    background: var(--feuille); color: var(--encre); font: 700 15px/1 var(--police-texte); cursor: pointer;
+  }
+  @media (max-width: 900px) {
+    .stories { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .paliers, .bas-parcours { grid-template-columns: 1fr; }
+    .palier { min-height: 0; }
+    .grille-dossiers { grid-template-columns: repeat(2, 1fr); }
+    .serie-chiffre { font-size: 30px; }
+  }
+</style>

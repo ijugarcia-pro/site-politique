@@ -28,8 +28,11 @@ async function trancher(page, max) {
     if (!r) break;
     await r.click();
     await page.waitForTimeout(400);
-    const suite = await page.$('[data-suivant]:visible, [data-continuer]:visible');
-    if (suite) { await suite.click(); await page.waitForTimeout(500); }
+    // VDEF : « Voir la salle » (ou « Vote suivant »), puis « Question suivante ».
+    for (const sel of ['[data-continuer]:visible', '[data-suivant]:visible']) {
+      const suite = await page.$(sel);
+      if (suite) { await suite.click(); await page.waitForTimeout(500); }
+    }
   }
   await page.waitForTimeout(2600);
 }

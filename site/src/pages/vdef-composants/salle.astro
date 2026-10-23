@@ -1,0 +1,32 @@
+---
+// Démonstration interne (lot V3) : la vue « La salle », des repères et les sièges qu'on touche.
+// Données illustratives : les numéros de siège ne désignent aucun député ici ; la vraie vue
+// « La salle » arrive au lot V6 (t77).
+import Base from '../../layouts/Base.astro';
+import Carte from '../../components/vdef/Carte.astro';
+import Feuille from '../../components/vdef/Feuille.astro';
+---
+<Base titre="Composants de la VDEF · la salle" description="Page interne : la vue de la salle, avec des données illustratives."
+  vue="salle" fond="salle" noindex>
+  <Feuille position="droite" titre="demo-salle" class="demo-salle">
+    <span class="t-etiquette">Données illustratives</span>
+    <h1 id="demo-salle" class="t-feuille">Touche un siège</h1>
+    <p class="t-texte">Glisse pour tourner, double-clic ou Échap pour revenir. Un clic sur un siège donne son numéro ; un anneau blanc marque le siège survolé ou touché.</p>
+    <p class="t-texte"><a href="/vdef-composants/tribune/" data-demo-vers-tribune>Aller à la tribune</a> · <a href="/vdef-composants/place/?siege=286">Depuis le siège 286</a></p>
+    <Carte etiquette="Le siège touché" data-demo-siege>
+      <span class="t-carte" data-demo-numero>Aucun</span>
+    </Carte>
+  </Feuille>
+</Base>
+
+<script>
+  import { salle3D } from '../../salle3d/pilote.ts';
+  document.addEventListener('astro:page-load', () => {
+    const racine = document.querySelector<HTMLElement>('[data-salle-vdef]');
+    if (!racine || !document.querySelector('#demo-salle')) return;
+    const pilote = salle3D(racine);
+    const numero = document.querySelector<HTMLElement>('[data-demo-numero]')!;
+    pilote.reperes([{ i: 120, libelle: 'Toi', toi: true }, { i: 400, libelle: 'Repère d’exemple' }]);
+    pilote.surSiege((i) => { numero.textContent = `Siège n° ${i}`; pilote.selection(i); });
+  });
+</script>

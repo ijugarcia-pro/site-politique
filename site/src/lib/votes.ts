@@ -154,3 +154,43 @@ export function normaliser(texte: string): string {
   return texte.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ').trim();
 }
+
+export type PositionGroupe = 'pour' | 'contre' | 'abstention';
+
+/** La position majoritaire d'un groupe : celle qui réunit le plus de ses votes exprimés (pour,
+ *  contre, abstention) ; null s'il n'a pas voté ou en cas d'égalité en tête. */
+export function positionGroupe(d: Pick<Chiffres['decompte'], 'pour' | 'contre' | 'abstention'>): PositionGroupe | null {
+  const rangs = (['pour', 'contre', 'abstention'] as const).map((p) => [p, d[p]] as const)
+    .sort((a, b) => b[1] - a[1]);
+  if (!rangs[0][1] || rangs[0][1] === rangs[1][1]) return null;
+  return rangs[0][0];
+}
+
+/** « Avec son groupe ? » pour le tableau des 577 votes : « Non » pour un vote contre son groupe
+ *  (la règle du projet : jamais pour les non-inscrits, jamais pour une abstention), « Oui » quand
+ *  le vote est la position majoritaire du groupe, « — » sinon (absent, non-votant, non-inscrit,
+ *  groupe sans position nette). */
+export function avecSonGroupe(vote: string | undefined, dissident: boolean | undefined,
+  position: PositionGroupe | null, nonInscrit: boolean): 'Oui' | 'Non' | '—' {
+  if (nonInscrit || !vote) return '—';
+  if (dissident) return 'Non';
+  return position && vote === position ? 'Oui' : '—';
+}
+
+/** Une phrase qui dit comment les groupes ont voté, sans juger : les groupes rangés par leur
+ *  position majoritaire (hors non-inscrits). */
+export function phraseGroupes(groupes: { sigle: string; non_inscrits?: boolean;
+  decompte?: Pick<Chiffres['decompte'], 'pour' | 'contre' | 'abstention'> }[]): string {
+  const par: Record<PositionGroupe, string[]> = { pour: [], contre: [], abstention: [] };
+  for (const g of groupes) {
+    if (g.non_inscrits || !g.decompte) continue;
+    const p = positionGroupe(g.decompte);
+    if (p) par[p].push(g.sigle);
+  }
+  const morceaux: string[] = [];
+  const liste = (x: string[]) => (x.length > 1 ? `${x.slice(0, -1).join(', ')} et ${x.at(-1)}` : x[0]);
+  if (par.pour.length) morceaux.push(`En majorité pour : ${liste(par.pour)}.`);
+  if (par.contre.length) morceaux.push(`En majorité contre : ${liste(par.contre)}.`);
+  if (par.abstention.length) morceaux.push(`En majorité abstention : ${liste(par.abstention)}.`);
+  return morceaux.join(' ');
+}

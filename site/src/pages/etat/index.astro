@@ -1,21 +1,16 @@
 ---
-// Page « État des données » (t14) : ce que le site sait, d'où ça vient, ce qui a été mis de côté.
-import Base from '../../layouts/Base.astro';
+// Page « État des données » (t14 ; VDEF, gabarit des pages de service, lot V9) : ce que le site
+// sait, d'où ça vient, ce qui a été mis de côté.
+import PageService from '../../components/vdef/PageService.astro';
 import { dateLisible, etat } from '../../lib/donnees.ts';
 
 const e = etat();
 const d = e.dernier_scrutin;
 const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 ---
-<Base titre="État des données"
-  description="Ce que le site sait, d'où viennent les données, et ce qui a été mis de côté.">
-  <div>
-    <h1>État des données</h1>
-    <p class="sous-titre">
-      Mis à jour le {dateLisible(e.genere_le)}, à partir de l'open data de l'Assemblée nationale.
-    </p>
-  </div>
-
+<PageService titre="État des données" actif="etat"
+  description="Ce que le site sait, d'où viennent les données, et ce qui a été mis de côté."
+  chapeau={`Mis à jour le ${dateLisible(e.genere_le)}, à partir des données ouvertes de l’Assemblée nationale.`}>
   <div class="cartes">
     <div class="carte"><strong>{e.scrutins.publies}</strong><small>scrutins publiés sur {e.scrutins.total}</small></div>
     <div class="carte"><strong>n° {d.numero}</strong><small>dernier scrutin intégré, du {dateLisible(d.date)}</small></div>
@@ -31,7 +26,7 @@ const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
   <section>
     <h2>Scrutins mis de côté</h2>
     <p>Un scrutin dont le décompte ne tombe pas juste n'est pas publié ; les autres le sont.</p>
-    <div class="tableau"><table>
+    <div class="tableau-defile"><table>
       <thead><tr><th scope="col">N°</th><th scope="col">Raison</th></tr></thead>
       <tbody>
         {e.scrutins_mis_de_cote.length === 0
@@ -43,7 +38,7 @@ const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
   <section>
     <h2>Contrôles du dernier build</h2>
-    <div class="tableau"><table>
+    <div class="tableau-defile"><table>
       <thead><tr><th scope="col">N°</th><th scope="col">Contrôle</th><th scope="col">Résultat</th><th scope="col">Détail</th></tr></thead>
       <tbody>
         {e.controles.map((c) => (
@@ -61,7 +56,7 @@ const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
   <section>
     <h2>Sources</h2>
-    <div class="tableau"><table>
+    <div class="tableau-defile"><table>
       <thead><tr><th scope="col">Source</th><th scope="col">Version utilisée</th><th scope="col">Récupération</th></tr></thead>
       <tbody>
         {e.sources.map((s) => (
@@ -76,17 +71,17 @@ const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
     </table></div>
   </section>
 
-  <p>Les mêmes informations, en JSON : <a href="/etat/etat.json">etat.json</a>.</p>
-</Base>
+  <section>
+    <p>Les mêmes informations, en JSON : <a href="/etat/etat.json">etat.json</a>.</p>
+  </section>
+</PageService>
 
 <style>
-  /* Un titre de page court, en capitales de régie (DESIGN-FINAL.md, § 6). */
-  h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
-  section { display: flex; flex-direction: column; gap: 12px; }
-  .cartes > :global(*) { padding: 20px 22px; background: var(--panneau); }
-  section p { margin: 0; }
-  .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2px; }
-  .cartes strong { display: block; font: 600 32px/1.1 var(--police-titre); text-transform: uppercase; }
-  .cartes small { color: var(--ivoire-2); font-size: 15px; }
-  td small { color: var(--ivoire-2); }
+  .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding-bottom: 28px; }
+  .cartes > .carte { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; border-radius: 20px; background: var(--surface); }
+  .cartes strong { font: 800 30px/1.1 var(--police-titre); }
+  .cartes small { font: 500 15px/1.4 var(--police-texte); color: var(--texte-2); }
+  td small { color: var(--texte-2); }
+  .ok { font-weight: 700; color: var(--encre); }
+  .alerte { font-weight: 700; color: var(--encre); text-decoration: underline; }
 </style>

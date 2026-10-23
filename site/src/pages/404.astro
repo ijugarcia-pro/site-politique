@@ -1,29 +1,19 @@
 ---
-import Base from '../layouts/Base.astro';
+// La page introuvable (VDEF, gabarit des pages de service, lot V9) : un siège vide, et où aller.
+import PageService from '../components/vdef/PageService.astro';
+import Bouton from '../components/vdef/Bouton.astro';
 ---
-<Base titre="Page introuvable" description="Cette page n'existe pas.">
-  <section class="vide">
-    <svg width="120" height="72" viewBox="0 0 40 24" aria-hidden="true">
-      <circle cx="5" cy="20" r="3.2" fill="#C9C6BF"></circle>
-      <circle cx="9" cy="11" r="3.2" fill="#C9C6BF"></circle>
-      <circle cx="17" cy="5" r="3.2" fill="#C9C6BF"></circle>
-      <circle cx="26" cy="5" r="3.2" fill="#C9C6BF"></circle>
-      <circle cx="33" cy="11" r="3.2" fill="#C9C6BF"></circle>
-      <circle cx="36" cy="20" r="3.6" fill="none" stroke="#8A5A12" stroke-width="1.2" stroke-dasharray="1.6 1.2"></circle>
-    </svg>
-    <h1>Ce siège est vide</h1>
-    <p>La page demandée n'existe pas, ou plus. Le vote ou le député que tu cherches est peut-être ailleurs :</p>
+<PageService titre="Ce siège est vide" description="Cette page n'existe pas." noindex
+  chapeau="La page demandée n’existe pas, ou plus. Le vote ou le député que tu cherches est peut-être ailleurs.">
+  <section>
     <div class="liens">
-      <a class="bouton" href="/explorer/">Tous les votes</a>
-      <a class="bouton" href="/deputes/">Trouver mon député</a>
-      <a class="bouton" href="/">Accueil</a>
+      <Bouton href="/explorer/">La galerie : tous les votes</Bouton>
+      <Bouton href="/deputes/" variante="contour">Trouver ton député</Bouton>
+      <Bouton href="/" variante="contour">La tribune</Bouton>
     </div>
   </section>
-</Base>
+</PageService>
 
 <style>
-  .vide { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px 0; text-align: center; }
-  .vide h1 { font: 700 clamp(32px, 3.4vw, 44px)/1 var(--police-titre); text-transform: uppercase; }
-  .vide p { margin: 0; max-width: 520px; color: var(--ivoire); }
-  .liens { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
+  .liens { display: flex; flex-wrap: wrap; gap: 10px; }
 </style>

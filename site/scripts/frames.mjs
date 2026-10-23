@@ -1,12 +1,12 @@
 // Toutes les « frames » du site : les 31 écrans de scripts/ecrans.mjs, à 1 440 px (ordinateur) et
-// à 390 px (téléphone), pleine page, aux mêmes noms que captures-la-seance/ (captures du 20 oct.).
+// à 390 px (téléphone), pleine page (captures de la VDEF : captures-vdef/, non versionnées).
 // Avec --gpu, la salle 3D est rendue par la vraie carte graphique (couleurs justes, rapide) ;
 // sans, en WebGL logiciel (comptez plusieurs minutes). Les pages très longues (annuaire des
 // députés) sont coupées à 4 000 px, les autres à 8 000.
 //
 // Usage (depuis site/) :
 //   node scripts/frames.mjs <sortie> [build] [--gpu | --sans-webgl] [--ecrans=01,16,19] [--appareils=ordinateur]
-//   ex. node scripts/frames.mjs ../captures-d0 --gpu --ecrans=01,02
+//   ex. node scripts/frames.mjs ../captures-vdef --gpu
 
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';

@@ -151,6 +151,9 @@ export const NIVEAUX = [
   { jusqua: 0.67, couleur: '#A98BFF', libelle: 'Souvent', haut: false },
   { jusqua: Infinity, couleur: '#6A3DF0', libelle: 'Presque toujours', haut: true },
 ];
+/** Les mêmes niveaux dans la salle éclairée (palier 2) : de l'éteint au blanc chaud d'une lampe,
+ *  sans couleur de parti (VDEF § 6). */
+export const INTENSITES = ['#3A3D45', '#6E6B66', '#A9A49B', '#F4EDE2'];
 /** Aucun vote exprimé sur tes votes : un siège blanc, cerclé de gris. */
 export const SANS_VOTE_COMMUN = '#DFE3EB';
 

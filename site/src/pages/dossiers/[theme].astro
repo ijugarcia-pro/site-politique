@@ -1,0 +1,209 @@
+---
+// Le dossier d'un thème (VDEF, capture 15 ; lot V7) : une page par thème des cartes (les 12 de
+// lib/themes.ts). Le fil des votes du thème (date, question, issue, ta réponse ou « Trancher »)
+// et trois chiffres en phrases sont publics. La synthèse personnelle (ta part avec la majorité,
+// ton jumeau sur le thème) s'ouvre à 3 votes tranchés sur le thème (lib/paliers.ts) ; avant, une
+// carte dit ce qu'il manque. Tout ce qui est personnel est calculé dans le navigateur. Un vote n'a
+// de thème que s'il a une carte (quiz, lots, séances) : le classement de tous les votes par
+// thème est la tâche t28.
+import Base from '../../layouts/Base.astro';
+import Bouton from '../../components/vdef/Bouton.astro';
+import { cartesParVote, dateLisible, lienVote, scrutins } from '../../lib/donnees.ts';
+import { SEUIL_DOSSIER } from '../../lib/paliers.ts';
+import { slugTheme, THEMES } from '../../lib/themes.ts';
+import { verdict } from '../../lib/votes.ts';
+
+export function getStaticPaths() {
+  return THEMES.map((theme) => ({ params: { theme: slugTheme(theme) }, props: { theme } }));
+}
+
+const { theme } = Astro.props;
+const ARTICLES: Record<string, [string, string]> = {
+  Numérique: ['Le numérique', 'le numérique'], Droits: ['Les droits', 'les droits'], Travail: ['Le travail', 'le travail'],
+  Économie: ['L’économie', 'l’économie'], Immigration: ['L’immigration', 'l’immigration'],
+  Environnement: ['L’environnement', 'l’environnement'], Éducation: ['L’éducation', 'l’éducation'],
+  Institutions: ['Les institutions', 'les institutions'], Énergie: ['L’énergie', 'l’énergie'],
+  Sécurité: ['La sécurité', 'la sécurité'], Logement: ['Le logement', 'le logement'], Santé: ['La santé', 'la santé'],
+};
+const [nom, sur] = ARTICLES[theme] ?? [theme, theme.toLowerCase()];
+const cartes = cartesParVote();
+const parUid = new Map(scrutins().map((s) => [s.uid, s]));
+const votes = [...cartes.values()].filter((c) => c.theme === theme && parUid.has(c.uid))
+  .map((c) => ({ carte: c, s: parUid.get(c.uid)! }))
+  .sort((a, b) => b.s.date.localeCompare(a.s.date) || b.s.numero - a.s.numero);
+const adoptes = votes.filter((v) => verdict(v.s).startsWith('Adopt')).length;
+const solennels = votes.filter((v) => v.s.solennel).length;
+const VISIBLES = 6;
+const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+const donnees = JSON.stringify({ theme, sur, votes: votes.map((v) => ({ uid: v.s.uid, adopte: verdict(v.s).startsWith('Adopt'), lien: lienVote(v.s) })) })
+  .replace(/</g, '\\u003c');
+---
+<Base titre={`${nom} à l’Assemblée`} gabarit="lecture" vue="tribune" bas="galerie"
+  description={`Les votes de l'Assemblée nationale sur ${sur} depuis le début de la législature, et où tu te situes, vote après vote.`}>
+  <a class="retour" href="/parcours/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    Ton parcours
+  </a>
+  <header class="entete">
+    <span class="etat-dossier" data-dossier-etat>Dossier · s’ouvre à {SEUIL_DOSSIER} votes tranchés sur {sur}</span>
+    <h1 class="t-ecran">{nom} à l’Assemblée</h1>
+    <p class="t-texte chapeau">
+      {votes.length
+        ? `${pluriel(votes.length, 'vote')} sur ${sur} depuis le début de la législature. Ce que les députés ont décidé, et où tu te situes, vote après vote.`
+        : `Aucun vote sur ${sur} n'a encore de carte sur le site. Les votes de la législature restent tous dans la galerie.`}
+    </p>
+  </header>
+
+  {votes.length > 0 && (
+    <>
+      <div class="chiffres">
+        <div class="chiffre"><span class="t-chiffre">{votes.length}</span><span class="t-texte">{votes.length > 1 ? 'votes' : 'vote'} sur {sur}{solennels ? `, dont ${solennels} solennel${solennels > 1 ? 's' : ''}` : ''}</span></div>
+        <div class="chiffre"><span class="t-chiffre">{adoptes} · {votes.length - adoptes}</span><span class="t-texte">adopté{adoptes > 1 ? 's' : ''} · rejeté{votes.length - adoptes > 1 ? 's' : ''}</span></div>
+        <div class="chiffre" data-chiffre-toi><span class="t-chiffre" data-toi-chiffre>0 / {SEUIL_DOSSIER}</span><span class="t-texte" data-toi-texte>votes tranchés sur {sur} : la synthèse s’ouvre à {SEUIL_DOSSIER}</span></div>
+      </div>
+
+      <section class="bloc" aria-labelledby="titre-fil">
+        <div class="titre-ligne">
+          <h2 id="titre-fil" class="t-section">Le fil des votes</h2>
+          <span class="t-legende">Point plein : tu l’as tranché</span>
+        </div>
+        <ul class="fil">
+          {votes.map((v, k) => (
+            <li data-uid={v.s.uid} hidden={k >= VISIBLES}>
+              <span class="f-date t-legende">{dateLisible(v.s.date)}</span>
+              <span class="marque" aria-hidden="true" data-marque></span>
+              <a class="f-question" href={lienVote(v.s)}>{v.carte.question.replace(/ ([?!:;])/g, ' $1')}</a>
+              <span class="f-issue">{verdict(v.s)}</span>
+              <span class="f-toi" data-toi><a class="trancher" href={lienVote(v.s)}>Trancher</a></span>
+            </li>
+          ))}
+        </ul>
+        {votes.length > VISIBLES && <Bouton variante="contour" data-tout-voir>Voir les {votes.length - VISIBLES} autres votes</Bouton>}
+      </section>
+
+      <div class="duo">
+        <div class="carte-synthese" data-synthese>
+          <span class="t-etiquette" data-synthese-etiquette>Ta synthèse sur {sur}</span>
+          <p class="synthese-titre" data-synthese-titre>Encore {SEUIL_DOSSIER} votes sur ce thème</p>
+          <p class="t-texte" data-synthese-texte>À {SEUIL_DOSSIER} votes tranchés sur {sur}, ce dossier te dit qui vote le plus comme toi sur ce thème. Les votes et leurs résultats restent publics avant.</p>
+        </div>
+        <div class="carte-synthese">
+          <span class="t-etiquette">Pour aller plus loin</span>
+          <p class="synthese-titre" data-loin-titre>{pluriel(votes.length, 'vote')} sur {sur}</p>
+          <p class="t-texte" data-loin-texte>Chaque vote tranché précise ta place sur ce thème, et compte pour la salle éclairée.</p>
+          <Bouton href={lienVote(votes[0].s)} data-loin-bouton>Trancher le premier</Bouton>
+        </div>
+      </div>
+    </>
+  )}
+  <script type="application/json" data-donnees-dossier set:html={donnees}></script>
+</Base>
+
+<script>
+  import { reponses } from '../../lib/navigateur.ts';
+  import { SEUIL_DOSSIER } from '../../lib/paliers.ts';
+  import { profil, type Matrice, type Reponse } from '../../lib/profil.ts';
+
+  document.addEventListener('astro:page-load', async () => {
+    const brut = document.querySelector('[data-donnees-dossier]')?.textContent;
+    if (!brut) return;
+    const d = JSON.parse(brut) as { theme: string; sur: string; votes: { uid: string; adopte: boolean; lien: string }[] };
+    if (!d.votes.length) return;
+    const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+    const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+    const mes = reponses();
+    const surTheme: Record<string, Reponse> = {};
+    for (const v of d.votes) {
+      const r = mes[v.uid]?.v;
+      if (!r) continue;
+      surTheme[v.uid] = r;
+      const li = document.querySelector<HTMLElement>(`.fil li[data-uid="${v.uid}"]`)!;
+      li.querySelector('[data-marque]')!.classList.add('plein');
+      const toi = li.querySelector<HTMLElement>('[data-toi]')!;
+      const p = document.createElement('span');
+      p.className = `point ${r}`;
+      p.setAttribute('aria-hidden', 'true');
+      toi.replaceChildren(p, `Toi : ${r}`);
+    }
+    $('[data-tout-voir]')?.addEventListener('click', (ev) => {
+      for (const li of document.querySelectorAll<HTMLElement>('.fil li')) li.hidden = false;
+      (ev.currentTarget as HTMLElement).hidden = true;
+    });
+    const n = Object.keys(surTheme).length;
+    const reste = d.votes.filter((v) => !surTheme[v.uid]);
+    $('[data-loin-titre]').textContent = reste.length ? `${pluriel(reste.length, 'vote')} à trancher sur ${d.sur}` : `Tous les votes sur ${d.sur} sont tranchés`;
+    const bouton = document.querySelector<HTMLAnchorElement>('[data-loin-bouton]');
+    if (bouton) {
+      bouton.hidden = !reste.length;
+      if (reste.length) { bouton.href = reste[0].lien; bouton.textContent = 'Trancher le suivant'; }
+    }
+    if (n < SEUIL_DOSSIER) {
+      $('[data-toi-chiffre]').textContent = `${n} / ${SEUIL_DOSSIER}`;
+      if (n) $('[data-synthese-titre]').textContent = `Encore ${pluriel(SEUIL_DOSSIER - n, 'vote')} sur ce thème`;
+      return;
+    }
+    // Le dossier est ouvert : ta part avec la majorité, ton jumeau sur le thème.
+    $('[data-dossier-etat]').textContent = `Dossier ouvert · ${pluriel(n, 'vote')} tranchés sur ${d.sur}`;
+    $('[data-dossier-etat]').classList.add('ouvert');
+    const avec = d.votes.filter((v) => surTheme[v.uid] && (surTheme[v.uid] === 'pour') === v.adopte).length;
+    $('[data-toi-chiffre]').textContent = `${avec} sur ${n}`;
+    $('[data-toi-texte]').textContent = `fois, tu as voté comme la majorité sur ${d.sur}`;
+    try {
+      const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+      const p = profil(m, surTheme);
+      const general = profil(m, Object.fromEntries(Object.entries(mes).map(([k, r]) => [k, r.v]))).jumeau;
+      const j = p.jumeau;
+      $('[data-synthese-etiquette]').textContent = `Ton jumeau sur ${d.sur}`;
+      if (!j) {
+        $('[data-synthese-titre]').textContent = 'Pas encore de jumeau sur ce thème';
+        $('[data-synthese-texte]').textContent = 'Aucun député n’a voté comme toi sur ces votes.';
+        return;
+      }
+      const g = m.groupes.find((x) => x.u === j.ligne.g);
+      $('[data-synthese-titre]').textContent = `${j.ligne.n} · ${g?.sigle ?? 'non inscrit'}`;
+      $('[data-synthese-texte]').textContent = `A voté comme toi sur ${j.identiques} de tes ${pluriel(p.reponses, 'vote')} du thème`
+        + (p.egalites ? ` (et ${pluriel(p.egalites, 'autre député')} à égalité)` : '')
+        + (general && general.ligne.u === j.ligne.u ? '. C’est aussi ton jumeau sur l’ensemble de tes votes.' : '. Ce n’est pas ton jumeau sur l’ensemble de tes votes.');
+    } catch { /* hors ligne : pas de jumeau */ }
+  });
+</script>
+
+<style>
+  .entete { display: flex; flex-direction: column; gap: 12px; }
+  .etat-dossier {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+    border-radius: var(--pilule); background: var(--surface); font: 700 13px/1 var(--police-texte);
+  }
+  .etat-dossier.ouvert { background: var(--encre); color: var(--feuille); }
+  .chapeau { max-width: 760px; }
+  .chiffres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .chiffre { display: flex; flex-direction: column; gap: 10px; padding: 22px 20px; border-radius: 20px; background: var(--surface); }
+  .chiffre .t-texte { font-size: 15px; line-height: 1.4; }
+  .bloc { display: flex; flex-direction: column; gap: 12px; }
+  .bloc > :global(.bouton) { align-self: flex-start; }
+  .titre-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .fil { list-style: none; margin: 0; padding: 0; }
+  .fil li { display: grid; grid-template-columns: 110px 20px minmax(0, 1fr) 110px 170px; align-items: center; gap: 14px; padding: 12px 0; }
+  .marque { width: 14px; height: 14px; border-radius: var(--pilule); border: 2px solid var(--encre); }
+  .marque.plein { background: var(--encre); }
+  .f-question { font: 600 15px/1.35 var(--police-texte); color: var(--encre); text-decoration: none; }
+  .f-question:hover { text-decoration: underline; }
+  .f-issue { font: 800 17px/1 var(--police-titre); }
+  .f-toi { display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 var(--police-texte); }
+  .trancher {
+    display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: var(--pilule);
+    border: 1px solid var(--bord); color: var(--encre); text-decoration: none; font: 700 14px/1 var(--police-texte);
+  }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .carte-synthese { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 22px; border-radius: 20px; background: var(--surface); }
+  .synthese-titre { font: 700 22px/1.2 var(--police-titre); }
+  @media (max-width: 900px) {
+    .chiffres, .duo { grid-template-columns: 1fr; }
+    .fil li { grid-template-columns: 20px minmax(0, 1fr) auto; grid-template-areas: 'm q q' '. date issue' '. toi toi'; gap: 6px 10px; }
+    .marque { grid-area: m; }
+    .f-question { grid-area: q; }
+    .f-date { grid-area: date; }
+    .f-issue { grid-area: issue; }
+    .f-toi { grid-area: toi; }
+  }
+</style>

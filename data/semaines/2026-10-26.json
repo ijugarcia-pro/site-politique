@@ -1,0 +1,42 @@
+{
+ "lundi": "2026-10-26",
+ "vacances": false,
+ "votes": [
+  {
+   "cle": "scrutin:VTANR5L17V1330",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V1330",
+   "numero": 1330,
+   "date": "2025-04-09",
+   "objet": "l'ensemble de la proposition de loi visant à réformer le mode d'élection des membres du Conseil de Paris et des conseils municipaux de Lyon et Marseille (première lecture).",
+   "dossier_uid": "DLR5L17N50692",
+   "dossier": "Réformer le mode d'élection des membres du Conseil de Paris et des conseils municipaux de Lyon et Marseille",
+   "reserve": false,
+   "lot": 9
+  },
+  {
+   "cle": "scrutin:VTANR5L17V5358",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V5358",
+   "numero": 5358,
+   "date": "2026-02-12",
+   "objet": "l'ensemble de la proposition de loi améliorant la protection des personnes ciblées par les réseaux de criminalité organisée (première lecture).",
+   "dossier_uid": "DLR5L17N53427",
+   "dossier": "Améliorer la protection des personnes ciblées par les réseaux de criminalité organisée",
+   "reserve": false,
+   "lot": 8
+  },
+  {
+   "cle": "scrutin:VTANR5L17V2272",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V2272",
+   "numero": 2272,
+   "date": "2025-06-05",
+   "objet": "l'ensemble de la proposition de loi visant à accorder le versement des allocations familiales dès le premier enfant (première lecture).",
+   "dossier_uid": "DLR5L17N51979",
+   "dossier": "Accorder le versement des allocations familiales dès le premier enfant",
+   "reserve": false,
+   "lot": 8
+  }
+ ]
+}

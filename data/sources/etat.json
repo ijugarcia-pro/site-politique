@@ -1,20 +1,20 @@
 {
  "agenda": {
-  "derniere_modification": "Sun, 25 Oct 2026 11:40:47 GMT",
+  "derniere_modification": "Mon, 26 Oct 2026 11:40:45 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Agenda.json.zip",
-  "recupere_le": "2026-10-25T12:05:33+00:00",
-  "sha256": "7f1d2d1e575b5c3098ab9532ad999d59c2824c8a6742cbc3413d7cbcb4b589a6",
-  "taille": 8526298,
+  "recupere_le": "2026-10-26T12:56:32+00:00",
+  "sha256": "be1e101bb8cb1eca5cfd19cfe87aaf78f0118827812722c89c4cd7a832d11bb9",
+  "taille": 8526692,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
-  "derniere_modification": "Sun, 25 Oct 2026 09:21:01 GMT",
+  "derniere_modification": "Mon, 26 Oct 2026 09:23:06 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Amendements.json.zip",
-  "recupere_le": "2026-10-25T11:24:27+00:00",
-  "sha256": "74e75275227a2251cddb100efb14273d53018e624fc95dbfe9da287405c18cd2",
-  "taille": 346820121,
+  "recupere_le": "2026-10-26T12:56:51+00:00",
+  "sha256": "5c6b2f3ce5e05d068c47fe0eecd2cf774baa96f2c9e095af55ddbe1768a5f7af",
+  "taille": 346829503,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip"
  },
  "codes_postaux": {
@@ -27,7 +27,7 @@
   "url": "https://data.laposte.fr/data-fair/api/v1/datasets/laposte-hexasmal/raw"
  },
  "communes_circonscriptions": {
-  "derniere_modification": "Fri, 16 Oct 2026 11:21:58 GMT",
+  "derniere_modification": "Mon, 19 Oct 2026 21:00:50 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Table_de_correspondance_circo_legislatives2017-1.xlsx",
   "recupere_le": "2026-10-07T14:49:28+00:00",
@@ -36,7 +36,7 @@
   "url": "https://static.data.gouv.fr/resources/circonscriptions-legislatives-table-de-correspondance-des-communes-et-des-cantons-pour-les-elections-legislatives-de-2012-et-sa-mise-a-jour-pour-les-elections-legislatives-2017/20170411-141128/Table_de_correspondance_circo_legislatives2017-1.xlsx"
  },
  "contours_circonscriptions": {
-  "derniere_modification": "Fri, 16 Oct 2026 11:27:18 GMT",
+  "derniere_modification": "Mon, 19 Oct 2026 22:44:03 GMT",
   "echecs_consecutifs": 0,
   "fichier": "circonscriptions-legislatives-p10.geojson",
   "recupere_le": "2026-10-07T14:49:29+00:00",
@@ -45,39 +45,39 @@
   "url": "https://static.data.gouv.fr/resources/contours-geographiques-des-circonscriptions-legislatives/20240613-191520/circonscriptions-legislatives-p10.geojson"
  },
  "deputes_actifs": {
-  "derniere_modification": "Sun, 25 Oct 2026 02:50:38 GMT",
+  "derniere_modification": "Mon, 26 Oct 2026 02:50:40 GMT",
   "echecs_consecutifs": 0,
   "fichier": "AMO10_deputes_actifs_mandats_actifs_organes.json.zip",
-  "recupere_le": "2026-10-25T11:20:32+00:00",
-  "sha256": "3328e6c5c933b9d188a812c475b5842e189c3817147a62ac2019fffb8855a78d",
+  "recupere_le": "2026-10-26T12:56:04+00:00",
+  "sha256": "c7dec6ea0b904eb310163bc355d3d5a2cb8be49994da22d94c8a2da2574b67e6",
   "taille": 4884054,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
  },
  "dossiers_legislatifs": {
-  "derniere_modification": "Sun, 25 Oct 2026 11:16:27 GMT",
+  "derniere_modification": "Mon, 26 Oct 2026 11:16:25 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-10-25T12:05:44+00:00",
-  "sha256": "f4efba228a9213f30d53ba9f01fe1b2fc2f51edabfecf9cae6655f0896023ae5",
-  "taille": 11020978,
+  "recupere_le": "2026-10-26T12:56:46+00:00",
+  "sha256": "a5c0d65f2d8d4cf62f49dfa10c5961e9cf11e8cfab0ed3018100b0c57d5717db",
+  "taille": 11021411,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
  },
  "historique_mandats": {
-  "derniere_modification": "Sun, 25 Oct 2026 00:34:26 GMT",
+  "derniere_modification": "Mon, 26 Oct 2026 01:33:56 GMT",
   "echecs_consecutifs": 0,
   "fichier": "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
-  "recupere_le": "2026-10-25T11:20:32+00:00",
-  "sha256": "b66ef3130d95cac84ce167b0f75a686633e05ec7b930bae98ea8a39a38e18ca4",
+  "recupere_le": "2026-10-26T12:56:04+00:00",
+  "sha256": "17e7d1bb825c61453e255b0a96ab7b529b95fc2d84709f5be5c34bad39291187",
   "taille": 13716205,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "derniere_modification": "Sun, 25 Oct 2026 11:25:49 GMT",
+  "derniere_modification": "Mon, 26 Oct 2026 11:25:59 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Scrutins.json.zip",
-  "recupere_le": "2026-10-25T12:05:27+00:00",
-  "sha256": "e24b1590246e8f1cd45d94c5f1ed191b3d657079fcb5d3633c58a0f7761a5067",
-  "taille": 28199162,
+  "recupere_le": "2026-10-26T12:55:45+00:00",
+  "sha256": "0acf28c90c4e4c3a0034ff17e5df9352da4a240b30bd2c592e114be55634d2c3",
+  "taille": 28199155,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip"
  }
 }

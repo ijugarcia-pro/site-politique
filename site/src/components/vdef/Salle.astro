@@ -2,11 +2,13 @@
 // La salle 3D de la VDEF (docs/design-vdef/VDEF.md, § 3 ; lot V3), en fond de chaque page :
 // posée par Base.astro sur l'image fixe de la vue, qui reste le repli (pas de WebGL, économie de
 // données, appareil faible, ou pendant le chargement). Elle est gardée d'une page à l'autre
-// (transitions d'Astro, transition:persist) : changer de vue fait glisser la caméra, sans
-// recharger la 3D. À chaque page, elle lit la vue demandée (data-vue-salle sur <main>) et ce que
-// couvrent les feuilles, pour centrer le cadrage sur ce qui reste visible ; les repères et les
-// sièges cliquables sont remis à zéro, la page les repose (salle3d/pilote.ts). Dans le gabarit
-// « lecture », elle est cachée : la 3D ne s'y charge pas.
+// (transitions d'Astro, transition:persist), sans recharger la 3D. Changer de page coupe la
+// caméra sur la nouvelle vue, avec un fondu ; seule la glisse entre « La salle » et « Ta place »
+// reste, 600 ms au palier 0 (lot 1 du cadrage MVP, docs/rapport-perf-30-oct.md). À chaque page,
+// elle lit la vue demandée (data-vue-salle sur <main>) et ce que couvrent les feuilles, pour
+// centrer le cadrage sur ce qui reste visible ; les repères et les sièges cliquables sont remis à
+// zéro, la page les repose (salle3d/pilote.ts). Dans le gabarit « lecture », elle est cachée et
+// à l'arrêt : la 3D ne s'y charge pas et ne rend rien.
 ---
 <div class="salle-vdef" data-salle3d data-salle-vdef transition:persist="salle-vdef">
   <div class="ecran" tabindex="0" role="group"
@@ -41,10 +43,16 @@
     };
     let premiere = true;
     const appliquer = () => {
+      // Page « lecture » : la salle est cachée, elle s'arrête (aucun rendu, aucune glisse).
+      const lecture = document.body.classList.contains('gabarit-lecture');
+      pilote.actif(!lecture);
+      if (lecture) return;
       const demandee = document.querySelector<HTMLElement>('[data-vue-salle]')?.dataset.vueSalle as NomVue | undefined;
       const vue = demandee && VUES.includes(demandee) ? demandee : 'salle';
       pilote.cadre(cadre());
-      pilote.vue(vue, { instant: premiere });
+      // Changer de page coupe la caméra, avec un fondu (salle3d/scene.ts, vue) ; seule la glisse
+      // entre « La salle » et « Ta place » reste.
+      pilote.vue(vue, { instant: premiere, navigation: true });
       premiere = false;
     };
     document.addEventListener('astro:page-load', appliquer);
@@ -64,15 +72,15 @@
 
 <style>
   .salle-vdef { position: absolute; inset: 0; }
-  :global(.gabarit-lecture) .salle-vdef { display: none; }
+  /* Cachée sans display: none, pour que le canevas garde sa taille (pas de réallocation au retour). */
+  :global(.gabarit-lecture) .salle-vdef { visibility: hidden; }
   .ecran { position: absolute; inset: 0; }
   .ecran:focus-visible { outline: 3px solid var(--feuille); outline-offset: -6px; }
   canvas {
     position: absolute; inset: 0; width: 100%; height: 100%; display: block;
     opacity: 0; transition: opacity 600ms ease; touch-action: pan-y;
   }
-  .salle-vdef[data-salle3d-etat='prete'] canvas { opacity: 1; cursor: grab; }
-  .salle-vdef.saisie canvas { cursor: grabbing; }
+  .salle-vdef[data-salle3d-etat='prete'] canvas { opacity: 1; cursor: grab; }  .salle-vdef.saisie canvas { cursor: grabbing; }
   .salle-vdef.sieges-actifs.sur-siege:not(.saisie) canvas { cursor: pointer; }
   @media (prefers-reduced-motion: reduce) { canvas { transition: none; } }
 

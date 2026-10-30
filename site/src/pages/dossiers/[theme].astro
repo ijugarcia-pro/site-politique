@@ -103,6 +103,7 @@ const donnees = JSON.stringify({ theme, sur, votes: votes.map((v) => ({ uid: v.s
   import { reponses } from '../../lib/navigateur.ts';
   import { SEUIL_DOSSIER } from '../../lib/paliers.ts';
   import { profil, type Matrice, type Reponse } from '../../lib/profil.ts';
+  import { donnee } from '../../lib/matrice-cache.ts';
 
   document.addEventListener('astro:page-load', async () => {
     const brut = document.querySelector('[data-donnees-dossier]')?.textContent;
@@ -149,7 +150,7 @@ const donnees = JSON.stringify({ theme, sur, votes: votes.map((v) => ({ uid: v.s
     $('[data-toi-chiffre]').textContent = `${avec} sur ${n}`;
     $('[data-toi-texte]').textContent = `fois, tu as voté comme la majorité sur ${d.sur}`;
     try {
-      const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+      const m: Matrice = await donnee('matrice.json');
       const p = profil(m, surTheme);
       const general = profil(m, Object.fromEntries(Object.entries(mes).map(([k, r]) => [k, r.v]))).jumeau;
       const j = p.jumeau;

@@ -214,6 +214,7 @@ const description = censure
 <script>
   import { deputeChoisi, repondre, reponse, type Reponse } from '../../lib/navigateur.ts';
   import { profil, type Matrice } from '../../lib/profil.ts';
+  import { donnee } from '../../lib/matrice-cache.ts';
   import { mesReps } from '../../lib/trancher.ts';
 
   type Ligne = [string, string, string, string, string];
@@ -307,7 +308,7 @@ const description = censure
     const reps = mesReps();
     if (Object.keys(reps).length) {
       try {
-        const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+        const m: Matrice = await donnee('matrice.json');
         const j = profil(m, reps).jumeau;
         if (j) {
           const l = parDepute.get(j.ligne.u);

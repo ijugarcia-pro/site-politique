@@ -69,7 +69,10 @@ export interface Pilote {
   voyants(couleurs: (string | null)[]): void;
   /** Les voyants en onde (verdict) ; en mouvement réduit, d'un coup. */
   onde(couleurs: (string | null)[], duree?: number): void;
-  vue(nom: NomVue, opt?: { instant?: boolean }): void;
+  /** `navigation` : un changement de page (scene.ts, vue). */
+  vue(nom: NomVue, opt?: { instant?: boolean; navigation?: boolean }): void;
+  /** Faux sur une page « lecture » : la salle, cachée, ne se charge pas et ne rend rien. */
+  actif(on: boolean): void;
   /** Ce que les feuilles couvrent : la vue se centre sur le reste. */
   cadre(c: Cadre): void;
   /** Les repères de la VDEF, plusieurs à la fois ; cachés quand ils sortent du cadre. */
@@ -147,18 +150,31 @@ function creerPilote(racine: HTMLElement): Pilote {
     el.classList.toggle('a-droite', p.x > 0.85);
   };
 
+  // Sur une page « lecture », la salle est cachée : elle ne se charge pas, ne rend rien.
+  let actif = true;
+  let charger: (() => void) | null = null;
   const prete = new Promise<Salle3D | null>((resoudre) => {
     const raison = peutOuvrir();
     racine.dataset.salle3dEtat = raison === 'ok' ? 'attente' : raison;
     if (raison !== 'ok') { resoudre(null); return; }
-    // Seulement quand la salle est à l'écran (règle « rien hors écran »).
-    const io = new IntersectionObserver(async (entrees) => {
-      if (!entrees.some((e) => e.isIntersecting)) return;
-      io.disconnect();
+    let vu = false;
+    charger = async () => {
+      if (!vu || !actif) return;
+      charger = null;
       racine.dataset.salle3dEtat = 'chargement';
       try {
         const { creer } = await import('./scene.ts');
-        salle = await creer(canvas, { mouvementReduit: reduit });
+        const s = await creer(canvas, { mouvementReduit: reduit });
+        // Le gouverneur de qualité (ou `?qualite=`) : trop lent, le repli reste.
+        if ((await s.gouverner()) === 2) {
+          s.detruire();
+          racine.dataset.salle3dEtat = 'qualite';
+          attente.length = 0;
+          resoudre(null);
+          return;
+        }
+        s.actif(actif);
+        salle = s;
         salle.surRendu = placerReperes;
         for (const f of attente.splice(0)) f(salle);
         racine.dataset.salle3dEtat = 'prete';
@@ -169,6 +185,13 @@ function creerPilote(racine: HTMLElement): Pilote {
         racine.dataset.salle3dEtat = 'erreur';
         resoudre(null);
       }
+    };
+    // Seulement quand la salle est à l'écran (règle « rien hors écran »).
+    const io = new IntersectionObserver((entrees) => {
+      if (!entrees.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      vu = true;
+      void charger?.();
     }, { threshold: 0.1 });
     io.observe(racine);
   });
@@ -326,6 +349,11 @@ function creerPilote(racine: HTMLElement): Pilote {
       racine.dataset.vue = nom;
       arreter();
       faire((s) => { void s.vue(nom, opt); });
+    },
+    actif: (on) => {
+      actif = on;
+      if (on) void charger?.();
+      if (salle) salle.actif(on);
     },
     cadre: (c) => faire((s) => s.cadre(c)),
     personnage: (a) => faire((s) => s.personnage(a)),

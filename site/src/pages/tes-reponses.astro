@@ -73,6 +73,7 @@ const FILTRES = [
   import { reponses } from '../lib/navigateur.ts';
   import { palierAtteint, prochainPalier, votesTranches } from '../lib/paliers.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { etatSeance } from '../lib/seances.ts';
   import { $, mesReps, pluriel } from '../lib/trancher.ts';
 
@@ -106,7 +107,7 @@ const FILTRES = [
     }
     if (!Object.keys(mes).length && !aSeance && !nspPasses.length) return;
 
-    const votes: Record<string, InfoVote> = await (await fetch('/donnees/votes.json')).json();
+    const votes: Record<string, InfoVote> = await donnee('votes.json');
     const issue = (adopte: boolean, r: 'pour' | 'contre' | null) => (adopte ? 'Adopté' : 'Rejeté')
       + (r ? ` · tu étais ${(r === 'pour') === adopte ? 'avec la majorité' : 'à contre-courant'}` : '');
     const lignes: Ligne[] = [];
@@ -154,7 +155,7 @@ const FILTRES = [
     $('[data-rep-majorite]').textContent = `${avec} sur ${juges.length}`;
     const carteJumeau = $<HTMLAnchorElement>('[data-rep-jumeau]');
     if (palierAtteint(n)) {
-      const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+      const m: Matrice = await donnee('matrice.json');
       const j = profil(m, reps).jumeau;
       $('[data-rep-jumeau-n]').textContent = String(j?.identiques ?? 0);
       $('[data-rep-jumeau-texte]').textContent = j ? `fois comme ton jumeau, ${j.ligne.n}` : 'fois comme ton jumeau';

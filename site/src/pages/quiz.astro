@@ -74,6 +74,7 @@ const donnees = JSON.stringify({
   import { etatLots, prochainLot } from '../lib/lots.ts';
   import { palierAtteint, prochainPalier } from '../lib/paliers.ts';
   import { partCommeToi, profil, VOTES_FIABLES, type Matrice, type Reponse } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, tranches, trancher } from '../lib/trancher.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
   // Les stories ne se chargent qu'au clic sur « Partager » : le quiz reste léger.
@@ -91,7 +92,7 @@ const donnees = JSON.stringify({
     const { questions } = t;
     const etat = lireJSON<{ i: number; fini: boolean }>(CLE, { i: 0, fini: false });
     const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch { /* stockage indisponible */ } };
-    const matrice: Promise<Matrice> = fetch('/donnees/matrice.json').then((r) => r.json());
+    const matrice: Promise<Matrice> = donnee('matrice.json');
     let stories: DonneesStories | null = null;
     let reponse: Reponse | null = null;
 

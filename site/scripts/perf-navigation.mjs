@@ -28,11 +28,15 @@ const VARIANTES = opt('variantes', 'normal,instant,leger,sans-webgl').split(',')
 const CPU = Number(opt('cpu', '4'));
 const DPR = Number(opt('dpr', '1.5'));
 const LOGICIEL = args.includes('--logiciel');
+const trace = args.includes('--trace') ? (...m) => console.error(new Date().toISOString().slice(11, 19), ...m) : () => {};
 // Le parcours principal du cadrage (§ R2), plus un retour vers /salle/ : /tes-reponses/ est en
 // gabarit « lecture », où la salle est cachée (display: none), ce qui teste H3.
 const PARCOURS = ['/', '/quiz/', '/salle/', '/ta-place/', '/verdict/', '/tes-reponses/', '/salle/'];
 /** Ce qu'une variante met dans l'adresse de la première page (salle3d/scene.ts, modePerf). */
-const PERF = { normal: 'perf=1', instant: 'perf=instant', leger: 'perf=leger', 'instant-leger': 'perf=instant&perf=leger', 'sans-webgl': 'perf=1' };
+// Depuis le lot 1, « normal » laisse le gouverneur de qualité choisir le palier ; q0 et q1 le
+// forcent (salle3d/pilote.ts, qualiteForcee), pour comparer à rendu égal.
+const PERF = { normal: 'perf=1', instant: 'perf=instant', leger: 'perf=leger', 'instant-leger': 'perf=instant&perf=leger',
+  'sans-webgl': 'perf=1', q0: 'perf=1&qualite=0', q1: 'perf=1&qualite=1' };
 
 const serveur = await servir(resolve(dossier ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
@@ -164,6 +168,7 @@ async function variante(nom) {
   sortie.premiereOuverture = Date.now() - t00;
   await page.waitForTimeout(2500);
   for (const chemin of PARCOURS.slice(1)) {
+    trace(nom, "vers", chemin);
     const t0 = await cliquerVers(page, chemin);
     await page.waitForFunction(([c, debut]) => window.__perf.evenements.some(([t, tt, p]) => t === 'astro:page-load' && p === c && tt > debut),
       [chemin, t0], { timeout: 60000 }).catch(() => {});
@@ -178,6 +183,7 @@ async function variante(nom) {
     await attendreSalle(page);
     await page.waitForTimeout(3000);
     for (let k = 0; k < 3; k++) {
+      trace(nom, "vote", k + 1);
       const r = await page.$('[data-reponse="pour"]:not([disabled])');
       if (!r) break;
       await r.click();
@@ -194,6 +200,7 @@ async function variante(nom) {
       sortie.quiz.push({ geste: `question suivante ${k + 1}`, ...(await tranche(page, t0, await maintenant(page))) });
     }
 
+    trace(nom, "survol");
     // 3. Le survol sur /salle/ : 60 positions de souris sur la salle.
     await page.evaluate(preparer, votes);
     await page.goto(`${base}/salle/?${PERF[nom]}`, { waitUntil: 'load' });

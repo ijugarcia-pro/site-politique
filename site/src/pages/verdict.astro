@@ -131,6 +131,7 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   import { deputeChoisi, lireJSON, reponses } from '../lib/navigateur.ts';
   import { palierAtteint, votesTranches } from '../lib/paliers.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { etatSeance } from '../lib/seances.ts';
   import { VOYANTS } from '../lib/trancher.ts';
   import { voix578 } from '../lib/votes.ts';
@@ -256,7 +257,7 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       }
     }
     if (Object.keys(mes).length || monDepute) {
-      fetch('/donnees/matrice.json').then((r) => r.json()).then((m: Matrice) => {
+      donnee('matrice.json').then((m: Matrice) => {
         matrice = m;
         remplir(courant);
       }).catch(() => {});

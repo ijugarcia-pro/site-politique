@@ -14,7 +14,7 @@
 import { couleurExacte } from './gestion-couleurs.ts';
 import * as THREE from 'three';
 import { chemin, colonnes, echelleFauteuil, FAUTEUIL_578, longueur, P, position, sieges3D, surChemin, type Siege3D } from './geometrie.ts';
-import type { Apparence } from './apparence.ts';
+import { APPARENCE_DEFAUT, type Apparence } from './apparence.ts';
 import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
 
@@ -34,6 +34,26 @@ export function modePerf(recherche: string): { marques: boolean; instant: boolea
   const v = new URLSearchParams(recherche).getAll('perf');
   return { marques: v.length > 0, instant: v.includes('instant'), leger: v.includes('leger') };
 }
+
+/** Le gouverneur de qualité (lot 1 du cadrage MVP) : la médiane des 20 premières images décide du
+ *  palier. 0 : rendu complet ; 1 : léger (pixel ratio 1) au-delà de 24 ms par image ; 2 : pas de
+ *  3D (le repli reste) au-delà de 40 ms. */
+/** `?qualite=0|1|2` dans l'adresse de la première page force le palier de rendu (pour tester),
+ *  sans rien garder dans le navigateur ; null : le gouverneur décide (gouverner). */
+export function qualiteForcee(recherche: string): 0 | 1 | 2 | null {
+  const q = /[?&]qualite=([012])(&|$)/.exec(recherche);
+  return q ? (+q[1] as 0 | 1 | 2) : null;
+}
+
+export const GOUVERNEUR = { images: 20, leger: 24, statique: 40 } as const;
+export const palierDe = (medianeMs: number): 0 | 1 | 2 =>
+  (medianeMs > GOUVERNEUR.statique ? 2 : medianeMs > GOUVERNEUR.leger ? 1 : 0);
+
+/** La glisse de caméra qui reste quand on change de page : seulement entre « La salle » et
+ *  « Ta place », 600 ms, au palier 0 ; partout ailleurs, une coupure et un fondu de 200 ms. */
+export const GLISSE_NAVIGATION = 600;
+export const glisseEntre = (de: NomVue, vers: NomVue) =>
+  (de === 'salle' && vers === 'place') || (de === 'place' && vers === 'salle');
 
 const rad = (d: number) => (d * Math.PI) / 180;
 /** Lumières physiques de three récent : le prototype réglait ses intensités en mode « hérité ». */
@@ -68,7 +88,18 @@ export function yeuxAuSiege(s: Pick<Siege3D, 'r' | 'th' | 'y'>): [number, number
 export const CENTRE_TRIBUNE: [number, number, number] = [0, 1.35, -0.85];
 
 export interface Salle3D {
-  vue(nom: NomVue, opt?: { instant?: boolean }): Promise<void>;
+  /** `duree` : la glisse de caméra, en ms (1 600 par défaut) ; `instant` : une coupure ;
+   *  `navigation` : un changement de page (GLISSE_NAVIGATION). Redemander la vue en cours la
+   *  recale sans glisse longue. */
+  vue(nom: NomVue, opt?: { instant?: boolean; duree?: number; navigation?: boolean }): Promise<void>;
+  /** Faux sur une page « lecture » (salle cachée) : plus aucun rendu ni redimensionnement. */
+  actif(on: boolean): void;
+  /** Le palier de rendu (lot 1 du cadrage MVP) : 0 complet, 1 léger (pixel ratio 1). */
+  qualite(palier: 0 | 1): void;
+  readonly palier: 0 | 1;
+  /** Le gouverneur de qualité : rend 20 images d'affilée, passe au palier qu'elles indiquent
+   *  (palierDe) et le rend ; 2 : la page garde le repli. */
+  gouverner(): Promise<0 | 1 | 2>;
   /** Ce que les feuilles couvrent : la vue se centre sur le reste du canevas. */
   cadre(c: Cadre): void;
   /** Le siège sous un point du canevas (0 à 1 en largeur et en hauteur), ou null. */
@@ -276,13 +307,15 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const base = opt.base ?? '/salle3d/';
   const telephone = opt.telephone ?? canvas.clientWidth < 520;
   const perf = modePerf(location.search);
+  // `?qualite=1` crée la salle sans antialiasing (impossible à couper ensuite).
+  const forcee = qualiteForcee(location.search);
   const mesurer = <R>(nom: string, f: () => R): R => {
     if (!perf.marques) return f();
     const t0 = performance.now(); const r = f();
     performance.measure(nom, { start: t0, end: performance.now() });
     return r;
   };
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !telephone && !perf.leger, powerPreference: 'high-performance' });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !telephone && !perf.leger && forcee !== 1, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = !perf.leger; renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.autoUpdate = false;
@@ -532,6 +565,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
 
   /* Le personnage : sa place (null : le 578e fauteuil), sa marche en cours */
   let perso: Personnage | null = null;
+  let clePerso = '';
   let place: number | null = null;
   let marche: { finir(): void } | null = null;
   const fauteuil578 = new THREE.Object3D();
@@ -570,10 +604,16 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (cadre.haut ?? 0)) / 2;
     if (w && h && (dx || dy)) camera.setViewOffset(w, h, dx, dy, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
-    // Aux yeux du personnage, sa tête est cachée.
-    if (perso) perso.tete.visible = !enPlace();
+    // Aux yeux du personnage, sa tête est cachée : son ombre change, seul cas où la caméra touche
+    // aux ombres (calculées une fois, puis figées).
+    if (perso && perso.tete.visible === enPlace()) { perso.tete.visible = !enPlace(); renderer.shadowMap.needsUpdate = true; }
   };
-  const rendre = () => { mesurer('salle:rendre', () => renderer.render(scene, camera)); surRendu?.(); };
+  // Rien n'est rendu quand la salle est cachée (page « lecture ») ou l'onglet en arrière-plan.
+  let enService = true;
+  const rendre = () => {
+    if (!enService || document.hidden) return;
+    mesurer('salle:rendre', () => renderer.render(scene, camera)); surRendu?.();
+  };
   const demander = () => { if (demande) return; demande = true; requestAnimationFrame(() => { demande = false; rendre(); }); };
   const poserVoyants = () => {
     const m = new THREE.Matrix4(), s = new THREE.Vector3();
@@ -583,7 +623,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     }
     I.voyant.instanceMatrix.needsUpdate = true; I.lueur.instanceMatrix.needsUpdate = true;
   };
-  const finVue = () => { poserVoyants(); renderer.shadowMap.needsUpdate = true; };
+  // La lumière du jour ne suit pas la caméra : changer de vue ne recalcule pas les ombres.
+  const finVue = () => { poserVoyants(); };
   /** Ta place : aux yeux du personnage assis au siège du jumeau, regard vers la tribune. Sans
    *  place, la salle depuis le perchoir. */
   const cadrer = (nom: NomVue, aspect: number): Cadrage => {
@@ -620,26 +661,73 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   };
   // Le siège sous le pointeur : un rayon sur les fauteuils instanciés (velours et bois).
   const rayon = new THREE.Raycaster();
+  let palier: 0 | 1 = forcee === 1 ? 1 : 0;
+  let taille = '';
   const redimensionner = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (perf.marques) performance.mark('salle:redimensionner', { detail: { w, h } });
-    if (!w || !h) return;
-    renderer.setPixelRatio(perf.leger ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75));
-    renderer.setSize(w, h, false); camera.aspect = w / h;
+    if (!w || !h || !enService) return;
+    const ratio = perf.leger || palier === 1 ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75);
+    // Le tampon d'image n'est réalloué que si la taille change vraiment.
+    if (taille !== `${w}×${h}×${ratio}`) {
+      taille = `${w}×${h}×${ratio}`;
+      renderer.setPixelRatio(ratio);
+      renderer.setSize(w, h, false); camera.aspect = w / h;
+    }
     if (!anim) poserLibre(); else { appliquerCam(); demander(); }
   };
   const borne = (x: number, a: number) => Math.max(-a, Math.min(a, x));
 
   const salle: Salle3D = {
     get vueCourante() { return vueCourante; },
+    get palier() { return palier; },
+    actif(on) {
+      if (on === enService) return;
+      enService = on;
+      if (!on) { anim?.finir(); onde?.finir(); return; }
+      redimensionner(); demander();
+    },
+    qualite(p) { if (p === palier) return; palier = p; redimensionner(); demander(); },
+    gouverner() {
+      if (forcee !== null) return Promise.resolve(forcee);
+      return new Promise((ok) => {
+        const t: number[] = [];
+        const image = (ts: number) => {
+          t.push(ts);
+          if (t.length > GOUVERNEUR.images) {
+            const e = t.slice(1).map((x, k) => x - t[k]).sort((a, b) => a - b);
+            const p = palierDe(e[e.length >> 1]);
+            if (p === 1) salle.qualite(1);
+            ok(p);
+            return;
+          }
+          if (enService && !document.hidden) renderer.render(scene, camera);
+          requestAnimationFrame(image);
+        };
+        requestAnimationFrame(image);
+      });
+    },
     set surRendu(f: (() => void) | null) { surRendu = f; },
     vue(nom, o2 = {}) {
+      const avant = vueCourante;
+      if (o2.navigation && !o2.instant) {
+        // Un changement de page : la glisse courte entre « La salle » et « Ta place » au
+        // palier 0 ; sinon une coupure, et la salle revient en fondu.
+        if (palier === 0 && glisseEntre(avant, nom)) o2 = { duree: GLISSE_NAVIGATION };
+        else {
+          o2 = { instant: true };
+          if (avant !== nom && !opt.mouvementReduit) canvas.animate?.([{ opacity: 0 }, { opacity: 1 }], 200);
+        }
+      } else if (nom === avant && !o2.instant && !o2.duree) {
+        // La page redemande la vue où l'on est (son siège vient de changer) : pas de glisse longue.
+        o2 = anim ? { duree: GLISSE_NAVIGATION } : { instant: true };
+      }
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
       const c = cadrer(nom, aspect);
       vueCourante = nom;
       libre.lacet = 0; libre.tangage = 0; libre.zoom = 1; libre.champ = 0;
       anim?.finir();
-      if (o2.instant || opt.mouvementReduit || perf.instant) {
+      if (o2.instant || opt.mouvementReduit || perf.instant || !enService) {
         cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov;
         finVue(); appliquerCam(); demander();
         if (perf.marques) performance.mark('salle:vue', { detail: { nom, instant: true } });
@@ -648,11 +736,14 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       const de = { pos: [...cam.pos], cible: [...cam.cible], fov: cam.fov };
       const mix = (a: number[], b: number[], e: number) => a.map((v, i) => v + (b[i] - v) * e);
       const t0 = performance.now();
-      anim = interpoler(1600, (e) => {
+      const a = interpoler(o2.duree ?? 1600, (e) => {
         cam.pos = mix(de.pos, c.pos, e); cam.cible = mix(de.cible, c.cible, e); cam.fov = de.fov + (c.fov - de.fov) * e;
         appliquerCam(); rendre();
       });
-      return anim.fini.then(() => {
+      anim = a;
+      return a.fini.then(() => {
+        // Une glisse interrompue par une autre ne libère pas la caméra de la suivante.
+        if (anim !== a) return;
         anim = null; finVue(); demander();
         if (perf.marques) performance.measure('salle:vue', { start: t0, end: performance.now(), detail: { nom, instant: false } });
       });
@@ -718,6 +809,10 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       return promesse;
     },
     personnage(a) {
+      // Chaque page le redemande : le même personnage n'est pas reconstruit.
+      const cle = a ? JSON.stringify(a) : '';
+      if (cle === clePerso) return;
+      clePerso = cle;
       if (perso) { scene.remove(perso.groupe); perso = null; }
       if (a) { perso = creerPersonnage(a); scene.add(perso.groupe); poserAssis(); }
       renderer.shadowMap.needsUpdate = true; demander();
@@ -785,6 +880,14 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
 
   const c0 = cadrer('salle', canvas.clientWidth / Math.max(1, canvas.clientHeight));
   cam.pos = c0.pos; cam.cible = c0.cible; cam.fov = c0.fov;
+  // Toutes les matières compilées dès le chargement, personnage compris : sinon la première image
+  // d'une vue nouvelle (ou du personnage) les compile et fige la page (docs/rapport-perf-30-oct.md).
+  const essai = creerPersonnage(APPARENCE_DEFAUT);
+  scene.add(essai.groupe); appliquerCam();
+  renderer.compile(scene, camera);
+  scene.remove(essai.groupe);
   redimensionner(); renderer.shadowMap.needsUpdate = true; rendre();
+  // L'onglet revient au premier plan : une image pour rattraper ce qui a changé.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) demander(); });
   return salle;
 }

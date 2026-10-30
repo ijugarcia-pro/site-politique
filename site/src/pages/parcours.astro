@@ -115,6 +115,7 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
   import { repriseApres, seancesFaites, serie, texteGel } from '../lib/seances.ts';
   import { $, mesReps, pluriel } from '../lib/trancher.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import type { DonneesBilan } from '../lib/stories.ts';
 
   document.addEventListener('astro:page-load', () => {
@@ -176,8 +177,8 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
         if (fait) return;
         fait = true;
         const [m, votes] = await Promise.all([
-          fetch('/donnees/matrice.json').then((r) => r.json()) as Promise<Matrice>,
-          fetch('/donnees/votes.json').then((r) => r.json()) as Promise<Record<string, [number, string, string, number, string]>>]);
+          donnee('matrice.json') as Promise<Matrice>,
+          donnee('votes.json') as Promise<Record<string, [number, string, string, number, string]>>]);
         const reps = Object.fromEntries(Object.entries(mesReps()).filter(([uid]) => !hors.has(uid)));
         const p = profil(m, reps);
         const juges = Object.entries(reps).filter(([uid]) => votes[uid]);

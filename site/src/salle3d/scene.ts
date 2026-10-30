@@ -26,6 +26,15 @@ export interface Cadrage { pos: [number, number, number]; cible: [number, number
 export interface Cadre { gauche?: number; droite?: number; haut?: number; bas?: number }
 export interface OptionsScene { base?: string; telephone?: boolean; mouvementReduit?: boolean }
 
+/** Les mesures du lot 0 (docs/rapport-perf-30-oct.md, scripts/perf-navigation.mjs), lues une
+ *  fois dans l'adresse de la première page : `?perf=1` pose des marques (performance.mark /
+ *  measure) ; `?perf=instant` coupe aussi les glisses de caméra (H1) ; `?perf=leger` rend à
+ *  pixel ratio 1, sans antialiasing ni ombres (H4). Sans `perf`, rien ne change. */
+export function modePerf(recherche: string): { marques: boolean; instant: boolean; leger: boolean } {
+  const v = new URLSearchParams(recherche).getAll('perf');
+  return { marques: v.length > 0, instant: v.includes('instant'), leger: v.includes('leger') };
+}
+
 const rad = (d: number) => (d * Math.PI) / 180;
 /** Lumières physiques de three récent : le prototype réglait ses intensités en mode « hérité ». */
 const PI = Math.PI;
@@ -266,10 +275,17 @@ function matieres(T: Textures, telephone: boolean) {
 export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): Promise<Salle3D> {
   const base = opt.base ?? '/salle3d/';
   const telephone = opt.telephone ?? canvas.clientWidth < 520;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !telephone, powerPreference: 'high-performance' });
+  const perf = modePerf(location.search);
+  const mesurer = <R>(nom: string, f: () => R): R => {
+    if (!perf.marques) return f();
+    const t0 = performance.now(); const r = f();
+    performance.measure(nom, { start: t0, end: performance.now() });
+    return r;
+  };
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !telephone && !perf.leger, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.enabled = !perf.leger; renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.autoUpdate = false;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
   const T = await charger(base);
@@ -557,7 +573,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     // Aux yeux du personnage, sa tête est cachée.
     if (perso) perso.tete.visible = !enPlace();
   };
-  const rendre = () => { renderer.render(scene, camera); surRendu?.(); };
+  const rendre = () => { mesurer('salle:rendre', () => renderer.render(scene, camera)); surRendu?.(); };
   const demander = () => { if (demande) return; demande = true; requestAnimationFrame(() => { demande = false; rendre(); }); };
   const poserVoyants = () => {
     const m = new THREE.Matrix4(), s = new THREE.Vector3();
@@ -605,8 +621,10 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   // Le siège sous le pointeur : un rayon sur les fauteuils instanciés (velours et bois).
   const rayon = new THREE.Raycaster();
   const redimensionner = () => {
-    const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75));
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (perf.marques) performance.mark('salle:redimensionner', { detail: { w, h } });
+    if (!w || !h) return;
+    renderer.setPixelRatio(perf.leger ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75));
     renderer.setSize(w, h, false); camera.aspect = w / h;
     if (!anim) poserLibre(); else { appliquerCam(); demander(); }
   };
@@ -621,17 +639,23 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       vueCourante = nom;
       libre.lacet = 0; libre.tangage = 0; libre.zoom = 1; libre.champ = 0;
       anim?.finir();
-      if (o2.instant || opt.mouvementReduit) {
+      if (o2.instant || opt.mouvementReduit || perf.instant) {
         cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov;
-        finVue(); appliquerCam(); demander(); return Promise.resolve();
+        finVue(); appliquerCam(); demander();
+        if (perf.marques) performance.mark('salle:vue', { detail: { nom, instant: true } });
+        return Promise.resolve();
       }
       const de = { pos: [...cam.pos], cible: [...cam.cible], fov: cam.fov };
       const mix = (a: number[], b: number[], e: number) => a.map((v, i) => v + (b[i] - v) * e);
+      const t0 = performance.now();
       anim = interpoler(1600, (e) => {
         cam.pos = mix(de.pos, c.pos, e); cam.cible = mix(de.cible, c.cible, e); cam.fov = de.fov + (c.fov - de.fov) * e;
         appliquerCam(); rendre();
       });
-      return anim.fini.then(() => { anim = null; finVue(); demander(); });
+      return anim.fini.then(() => {
+        anim = null; finVue(); demander();
+        if (perf.marques) performance.measure('salle:vue', { start: t0, end: performance.now(), detail: { nom, instant: false } });
+      });
     },
     cadre(c) {
       cadre = { ...c };
@@ -639,9 +663,11 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       appliquerCam(); demander();
     },
     siegeSous(x, y) {
-      rayon.setFromCamera(new THREE.Vector2(x * 2 - 1, 1 - y * 2), camera);
-      const [touche] = rayon.intersectObjects([I.velours, I.bois], false);
-      return touche?.instanceId ?? null;
+      return mesurer('salle:siegeSous', () => {
+        rayon.setFromCamera(new THREE.Vector2(x * 2 - 1, 1 - y * 2), camera);
+        const [touche] = rayon.intersectObjects([I.velours, I.bois], false);
+        return touche?.instanceId ?? null;
+      });
     },
     terminer() { anim?.finir(); onde?.finir(); marche?.finir(); },
     voyants(couleurs) {
@@ -668,7 +694,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       const debut = performance.now();
       let fini = false;
       let resoudre: () => void = () => {};
-      const promesse = new Promise<void>((r) => { resoudre = r; });
+      const promesse = new Promise<void>((r) => { resoudre = r; })
+        .then(() => { if (perf.marques) performance.measure('salle:onde', { start: debut, end: performance.now() }); });
       const pas = (t: number) => {
         let change = false;
         for (let k = 0; k < n; k++) {

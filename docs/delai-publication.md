@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-10-30T14:26:28+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-10-30T23:54:48+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,18 +12,18 @@ Généré le 2026-10-30T14:26:28+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 81
+- Versions observées après la référence : 82
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 12,0 h
-- Heure (UTC) des versions : 04 h : 16 · 05 h : 6 · 10 h : 13 · 11 h : 6 · 16 h : 17 · 17 h : 5 · 22 h : 16 · 23 h : 2
+- Heure (UTC) des versions : 04 h : 16 · 05 h : 6 · 10 h : 13 · 11 h : 6 · 16 h : 17 · 17 h : 6 · 22 h : 16 · 23 h : 2
 
 ## Délais
 
-**Tous les scrutins** : 797 scrutins
+**Tous les scrutins** : 842 scrutins
 
 - Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 6,4 h · 90 % ≤ 6,4 h · max 10,4 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,4 h · 90 % ≤ 9,4 h · max 15,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 797 sur 797
-- Répartition depuis la fin prévue : moins de 1 h : 27 · 3 à 6 h : 102 · 6 à 12 h : 140
+- Publiés au plus tard le lendemain du vote à 8 h : 842 sur 842
+- Répartition depuis la fin prévue : moins de 1 h : 27 · 3 à 6 h : 106 · 6 à 12 h : 140
 
 **Scrutins solennels** : 2 scrutins
 
@@ -118,3 +118,4 @@ Généré le 2026-10-30T14:26:28+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-10-29T17:26:09+00:00 | 2026-10-29T21:15:35+00:00 | 9241 | 9241 | 39 |
 | 2026-10-30T05:25:49+00:00 | 2026-10-30T07:18:18+00:00 | 9335 | 9335 | 94 |
 | 2026-10-30T11:26:06+00:00 | 2026-10-30T14:21:52+00:00 | 9357 | 9357 | 22 |
+| 2026-10-30T17:25:51+00:00 | 2026-10-30T23:54:43+00:00 | 9402 | 9402 | 45 |

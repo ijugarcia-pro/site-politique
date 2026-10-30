@@ -9,12 +9,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
-  "derniere_modification": "Fri, 30 Oct 2026 13:21:36 GMT",
+  "derniere_modification": "Fri, 30 Oct 2026 15:21:24 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Amendements.json.zip",
-  "recupere_le": "2026-10-30T15:08:28+00:00",
-  "sha256": "3f1f4883847383d37df8e20de68788acd27e7c78ca77ae0d8383ed43b0a763ec",
-  "taille": 348259944,
+  "recupere_le": "2026-10-30T17:53:24+00:00",
+  "sha256": "7e2888e280b293e204faecf220bd82f4100801f4ed14083d6977ecf510f73c3f",
+  "taille": 348262355,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip"
  },
  "codes_postaux": {

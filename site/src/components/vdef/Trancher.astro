@@ -15,6 +15,7 @@ import MiniHemicycle from '../MiniHemicycle.astro';
 import { composition, dateLisible, lienVote, majuscule, scrutinPublie } from '../../lib/donnees.ts';
 import { SIEGES } from '../../lib/hemicycle.ts';
 import { verdict } from '../../lib/votes.ts';
+import { siegesHaut } from '../../salle3d/cadrage-haut.ts';
 
 interface Props {
   /** `uid` vide : un vote annoncé, pas encore tenu (séance de la semaine) ; `quand` dit alors
@@ -23,9 +24,12 @@ interface Props {
     titre?: string; quand?: string; quandCourt?: string; changes?: string[] }[];
   /** Proposer un pronostic facultatif après un vote pas encore tenu. */
   pronostic?: boolean;
+  /** Les prototypes du dévoilement léger (lot 2 du cadrage MVP, lib/revelation.ts) : les sièges
+   *  posés sur l'image fixe de la vue haute (proportions 1,2 et 1,3, comme scripts/images-fixes.mjs). */
+  revelationHaute?: boolean;
 }
 
-const { cartes, pronostic = false } = Astro.props;
+const { cartes, pronostic = false, revelationHaute = false } = Astro.props;
 const compo = composition();
 // Le vote de chaque député d'aujourd'hui, siège par siège : P, C, A (abstention), N
 // (non-votant), - (absent), x s'il n'était pas député à la date du vote, V pour un siège vacant.
@@ -55,7 +59,11 @@ const questions = cartes.map((q) => {
     }).join(''),
   };
 });
-const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
+// L'onde : du rang intérieur vers l'extérieur, avec un aléa tiré du numéro du siège (comme la 3D).
+const poser = (aspect: number) => siegesHaut(aspect).map((s, k) => [+s.x.toFixed(4), +s.y.toFixed(4), +s.r.toFixed(4),
+  s.rang * 55 + (((k + 1) * 2654435761) >>> 0) % 71]);
+const revelation = revelationHaute ? { ordinateur: poser(1.2), telephone: poser(1.3) } : undefined;
+const donnees = JSON.stringify({ questions, revelation }).replace(/</g, '\\u003c');
 const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
 ---
 <Repere libelle="La tribune" forme="lieu" x={46} y={55} class="lieu-trancher" data-lieu />

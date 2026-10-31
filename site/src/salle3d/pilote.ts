@@ -150,15 +150,16 @@ function creerPilote(racine: HTMLElement): Pilote {
     el.classList.toggle('a-droite', p.x > 0.85);
   };
 
-  // Sur une page « lecture », la salle est cachée : elle ne se charge pas, ne rend rien.
-  let actif = true;
+  // Sur une page « lecture », la salle est cachée : elle ne se charge pas, ne rend rien. À l'arrêt
+  // jusqu'à ce que la page dise le contraire (Salle.astro, à chaque page ; puis la page elle-même).
+  let actif = false;
   let charger: (() => void) | null = null;
   const prete = new Promise<Salle3D | null>((resoudre) => {
     const raison = peutOuvrir();
     racine.dataset.salle3dEtat = raison === 'ok' ? 'attente' : raison;
     if (raison !== 'ok') { resoudre(null); return; }
     let vu = false;
-    charger = async () => {
+    const chargement = async () => {
       if (!vu || !actif) return;
       charger = null;
       racine.dataset.salle3dEtat = 'chargement';
@@ -169,7 +170,6 @@ function creerPilote(racine: HTMLElement): Pilote {
         if ((await s.gouverner()) === 2) {
           s.detruire();
           racine.dataset.salle3dEtat = 'qualite';
-          attente.length = 0;
           resoudre(null);
           return;
         }
@@ -186,6 +186,7 @@ function creerPilote(racine: HTMLElement): Pilote {
         resoudre(null);
       }
     };
+    charger = chargement;
     // Seulement quand la salle est à l'écran (règle « rien hors écran »).
     const io = new IntersectionObserver((entrees) => {
       if (!entrees.some((e) => e.isIntersecting)) return;
@@ -352,7 +353,9 @@ function creerPilote(racine: HTMLElement): Pilote {
     },
     actif: (on) => {
       actif = on;
-      if (on) void charger?.();
+      // Un tour de boucle : la page peut encore mettre la salle à l'arrêt (une question posée sur
+      // l'image fixe) avant que three ne se télécharge.
+      if (on) setTimeout(() => void charger?.());
       if (salle) salle.actif(on);
     },
     cadre: (c) => faire((s) => s.cadre(c)),

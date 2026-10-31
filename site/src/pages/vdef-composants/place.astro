@@ -45,9 +45,19 @@ const GROUPES = [['Groupe A', 9], ['Groupe B', 8], ['Groupe C', 6]] as const;
   import { salle3D } from '../../salle3d/pilote.ts';
   document.addEventListener('astro:page-load', () => {
     const racine = document.querySelector<HTMLElement>('[data-salle-vdef]');
-    const n = Number(new URLSearchParams(location.search).get('siege'));
-    if (!racine || !document.querySelector('#demo-place') || !Number.isInteger(n) || n < 0 || n > 576) return;
+    const p = new URLSearchParams(location.search);
+    if (!racine || !document.querySelector('#demo-place')) return;
     const pilote = salle3D(racine);
+    // ?vue=haute&neutre (scripts/images-fixes.mjs) : une vue posée sans mouvement ; neutre : des
+    // sièges clairs, sans voyants (l'image fixe du dévoilement, lot 2 du cadrage MVP).
+    const vue = p.get('vue');
+    if (vue === 'haute' || vue === 'salle' || vue === 'tribune') {
+      pilote.vue(vue, { instant: true });
+      if (p.has('neutre')) void pilote.prete.then((s) => s?.velours(new Array(577).fill('#F2F2F2')));
+      return;
+    }
+    const n = Number(p.get('siege'));
+    if (!Number.isInteger(n) || n < 0 || n > 576) return;
     pilote.asseoir(n);
     pilote.vue('place', { instant: true });
   });

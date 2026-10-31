@@ -17,10 +17,13 @@ import { chemin, colonnes, echelleFauteuil, FAUTEUIL_578, longueur, P, position,
 import { APPARENCE_DEFAUT, type Apparence } from './apparence.ts';
 import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
+import { cadrageHaut } from './cadrage-haut.ts';
 
 /** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
- *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. */
-export type NomVue = 'tribune' | 'salle' | 'place';
+ *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus, pour le
+ *  dévoilement d'un vote (lot 2 du cadrage MVP, prototype B), la vue haute : les 577 sièges vus
+ *  d'au-dessus de la tribune, plafond masqué (cadrage-haut.ts) ; ce n'est pas une vue de navigation. */
+export type NomVue = 'tribune' | 'salle' | 'place' | 'haute';
 export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number }
 /** Ce que les feuilles couvrent du canevas, en pixels : le cadrage se centre sur le reste. */
 export interface Cadre { gauche?: number; droite?: number; haut?: number; bas?: number }
@@ -63,6 +66,7 @@ const PI = Math.PI;
  *  (l'ancienne CAM 1). « Ta place » dépend du siège : voir cadrer(). Le décalage dû aux feuilles
  *  (Cadre) s'applique ensuite, sans déformer l'image (setViewOffset). */
 export function cadrage(nom: NomVue, aspect: number): Cadrage {
+  if (nom === 'haute') return cadrageHaut(aspect);
   const portrait = aspect < 0.9;
   // La tribune : l'ancienne CAM 2 remise face au pupitre ; avec la feuille du bas (moitié basse),
   // le pupitre et le perchoir tombent dans le tiers haut, à l'échelle de la maquette 05.
@@ -108,6 +112,8 @@ export interface Salle3D {
   /** La couleur du voyant de chaque siège (index de la composition) ; null : éteint. */
   voyants(couleurs: (string | null)[]): void;
   redimensionner(): void;
+  /** Le velours seul, sans voyants (l'image fixe du dévoilement : des sièges clairs, neutres). */
+  velours(couleurs: (string | null)[]): void;
   projeter(points: [number, number, number][]): { x: number; y: number; devant: boolean }[];
   /** La position d'un siège (index de la composition) ; -1 : le 578e fauteuil, au pied de la tribune. */
   positionSiege(i: number, dy?: number): [number, number, number];
@@ -548,6 +554,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const tailleOmbre = telephone ? 1024 : 2048;
   soleil.shadow.mapSize.set(tailleOmbre, tailleOmbre); soleil.shadow.bias = -0.0004; soleil.shadow.normalBias = 0.03;
   scene.add(soleil, soleil.target);
+  // Le plafond sur un calque à part : la vue haute le masque à la caméra, sans toucher aux ombres.
+  G.plafond.traverse((o: THREE.Object3D) => o.layers.set(1));
+  camera.layers.enable(1); soleil.shadow.camera.layers.enable(1);
   const hemi = new THREE.HemisphereLight(0xffe2b8, 0x3a170f, 0.42 * PI); scene.add(hemi);
   const appliques: THREE.PointLight[] = [];
   for (const a of [20, 60, 90, 120, 160]) {
@@ -599,6 +608,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     camera.fov = cam.fov; camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
     camera.near = enPlace() ? REGARD.near : 0.1;
     camera.lookAt(cam.cible[0], cam.cible[1], cam.cible[2]);
+    if (vueCourante === 'haute') camera.layers.disable(1); else camera.layers.enable(1);
     // Le centre de l'image passe au centre de ce que les feuilles laissent voir.
     const w = canvas.clientWidth, h = canvas.clientHeight;
     const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (cadre.haut ?? 0)) / 2;
@@ -628,12 +638,21 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   /** Ta place : aux yeux du personnage assis au siège du jumeau, regard vers la tribune. Sans
    *  place, la salle depuis le perchoir. */
   const cadrer = (nom: NomVue, aspect: number): Cadrage => {
+    // La vue haute tient dans ce que les feuilles laissent voir.
+    if (nom === 'haute') {
+      // Le champ se calcule sur la zone visible, puis se rapporte à toute la hauteur du canevas.
+      const h = Math.max(1, canvas.clientHeight), hz = Math.max(1, h - (cadre.haut ?? 0) - (cadre.bas ?? 0));
+      const c = cadrage('haute', Math.max(1, canvas.clientWidth - (cadre.gauche ?? 0) - (cadre.droite ?? 0)) / hz);
+      return { ...c, fov: (2 * Math.atan(Math.tan((c.fov * Math.PI) / 360) * (h / hz)) * 180) / Math.PI };
+    }
     if (nom !== 'place' || place === null) return cadrage(nom === 'place' ? 'salle' : nom, aspect);
     return { pos: yeuxAuSiege(sieges[place]), cible: CENTRE_TRIBUNE, fov: aspect < 0.9 ? 66 : 56 };
   };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
   const poserLibre = () => {
     const c = cadrer(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    // La vue haute est fixe : ni caméra libre, ni bornes de la salle (elle est au-dessus).
+    if (vueCourante === 'haute') { cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov; appliquerCam(); demander(); return; }
     if (enPlace()) {
       // Depuis son siège, on tourne la tête sans bouger ; le champ se règle entre 40° et 70°.
       const v = new THREE.Vector3(c.cible[0] - c.pos[0], c.cible[1] - c.pos[1], c.cible[2] - c.pos[2]);
@@ -751,6 +770,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     cadre(c) {
       cadre = { ...c };
       if (anim) return;
+      // La vue haute tient dans ce que les feuilles laissent voir : son champ en dépend.
+      if (vueCourante === 'haute') { poserLibre(); return; }
       appliquerCam(); demander();
     },
     siegeSous(x, y) {
@@ -770,6 +791,11 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
         if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); teinter(k, null); }
       }
       I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); demander();
+    },
+    velours(couleurs) {
+      const c = new THREE.Color();
+      for (let k = 0; k < n; k++) { const v = couleurs[k] ?? null; if (v) { couleurExacte(v, c); teinter(k, c); } else teinter(k, null); }
+      teintes.needsUpdate = true; demander();
     },
     voyantsEnOnde(couleurs, duree = 1000) {
       if (opt.mouvementReduit) { salle.voyants(couleurs); return Promise.resolve(); }
@@ -852,7 +878,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       return promesse;
     },
     orbiter(dLacet, dTangage) {
-      if (anim) return;
+      if (anim || vueCourante === 'haute') return;
       if (enPlace()) {
         libre.lacet = borne(libre.lacet + dLacet, REGARD.lacet);
         libre.tangage = Math.min(REGARD.tangageHaut, Math.max(REGARD.tangageBas, libre.tangage + dTangage));
@@ -863,7 +889,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       poserLibre();
     },
     zoomer(f) {
-      if (anim) return;
+      if (anim || vueCourante === 'haute') return;
       // Aux yeux du personnage, on ne recule pas : le champ de vision se resserre ou s'ouvre.
       if (enPlace()) libre.champ = Math.max(REGARD.champMin - 70, Math.min(70 - REGARD.champMin, libre.champ + (f - 1) * 60));
       else libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));

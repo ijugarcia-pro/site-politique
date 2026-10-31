@@ -27,7 +27,7 @@ const donnees = JSON.stringify({
 <Base titre="Le quiz d'entrée" fond="tribune" vueSalle="tribune"
   focus={{ quitter: '/', total: cartes.length, libelle: `Question 1 sur ${cartes.length}` }}
   description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
-  <Trancher cartes={cartes}>
+  <Trancher cartes={cartes} revelationHaute>
     <div class="ecran fin" slot="fin" data-ecran="resultat" hidden>
       <span class="annonce-palier" data-annonce-fin hidden></span>
       <h1 class="t-feuille" tabindex="-1" data-titre-resultat>Ta place est prête.</h1>
@@ -88,7 +88,9 @@ const donnees = JSON.stringify({
     const { sieges, reperes, lots: nLots, horsMatrice } = JSON.parse(brut) as { sieges: (string | null)[];
       reperes: ([number, number] | null)[]; lots: number; horsMatrice: string[] };
     const hors = new Set(horsMatrice);
-    const t = trancher({ mot: 'Question', libelleSuivant: (i) => (i + 1 < t.questions.length ? 'Question suivante' : 'Voir ma place') });
+    // ?revelation=a|b : les prototypes du dévoilement léger (lot 2 du cadrage MVP, porte G1).
+    const t = trancher({ revelation: /[?&]revelation=([ab])(&|$)/.exec(location.search)?.[1] as 'a' | 'b' | undefined,
+      mot: 'Question', libelleSuivant: (i) => (i + 1 < t.questions.length ? 'Question suivante' : 'Voir ma place') });
     const { questions } = t;
     const etat = lireJSON<{ i: number; fini: boolean }>(CLE, { i: 0, fini: false });
     const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch { /* stockage indisponible */ } };

@@ -158,3 +158,25 @@ Même outil, même poste, même parcours. Médiane de 3 passages à CPU ×4, plu
 Le vote du quiz profite déjà du lot 1. Au gouverneur, à ×4, une révélation passe de 802 à 107 ms de tâches longues et « question suivante » de 526 à 0 ms. À ×1, aucune tâche longue. Les glisses du vote restent en place jusqu'au lot 2.
 
 **Première ouverture** de la salle (page chargée jusqu'à la salle prête, gouverneur compris) : 6,4 s à ×4 (13,1 s avant).
+
+## Lot 2 · le dévoilement léger, prototypes A et B (31 octobre 2026, t85)
+
+Les deux prototypes sont décrits dans `docs/decisions.md` (31 oct.) et `site/src/lib/revelation.ts`. Ils se testent sur `/quiz/?revelation=a` et `/quiz/?revelation=b`. Mesures faites avec `perf-navigation.mjs --quiz-seul --variantes=normal,a,b` (trois votes d'un visiteur neuf), même poste. Médiane de 3 passages à CPU ×4, plus un passage à ×1. « Aujourd'hui » est le quiz sans paramètre, avec les gains du lot 1.
+
+| Mesure (CPU ×4) | Aujourd'hui | A · image fixe + calque 2D | B · 3D allégée |
+| --- | --- | --- | --- |
+| Clic sur « Voir la salle » → premier siège coloré, 1er vote | glisse de 1,6 s, puis l'onde | **172 ms** | **4 295 ms** (la 3D s'ouvre) |
+| Idem, votes suivants | glisse de 1,6 s, puis l'onde | 15 ms | 52 ms |
+| Tâches longues, 1er dévoilement | 61 ms | 189 ms (une de 124 ms : décodage de l'image) | **3 626 ms** (une de 3,2 s) |
+| Plus longue image, 1er dévoilement | 83 ms | 117 ms | **3 267 ms** |
+| Plus longue image, votes suivants | 350 ms | 17 ms | 50 ms |
+| Images / s pendant l'onde | 42 | **60** | 39 |
+| « Question suivante » | glisse de 1,6 s | coupure, 0 tâche longue | coupure, 0 tâche longue |
+| Contexte WebGL créé | oui, dès la page | **aucun** | oui, au 1er dévoilement |
+| JavaScript chargé sur la page | 611 Ko (three compris) | **47 Ko** | 614 Ko |
+
+À ×1 : A, premier dévoilement en 78 ms puis 12 ms, onde à 60 images / s ; B, 2 547 ms puis 18 ms, onde à 48 images / s, et une image figée de 2 s au premier dévoilement.
+
+**Les 577 sièges sont visibles** dans A et dans B, à 1 440 × 900, 1 280 × 650 et 390 × 844. Ce n'est pas le cas aujourd'hui, où la vue « La salle » coupe les côtés. Planches : `docs/design-vdef/planches/G1/`.
+
+**Lecture** : A tient tous les critères de R1 (aucun WebGL, aucun mouvement, onde ≥ 30 images / s, JavaScript initial inchangé). B les tient pendant les questions et après le premier vote, mais son premier dévoilement fige la page 2 à 3 s, le temps d'ouvrir la 3D : c'est le point dur annoncé par le cadrage (« au moment du premier vote, quand la patience de l'utilisateur est la plus faible »). Les couleurs de B sont aussi moins franches : le velours rouge teinte le bleu vers le lavande. A a, en revanche, l'aspect d'une maquette vue de haut, et l'image ne suit pas la caméra : elle est posée telle quelle dans la zone libre.

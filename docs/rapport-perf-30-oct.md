@@ -113,3 +113,48 @@ Ils se mesurent avec `perf-navigation.mjs`, en médiane de 3 passages, sur ce m�
 - Le téléphone n'est pas mesuré. Julien, peux-tu noter ici le modèle et le navigateur de ton téléphone Android ?
 - L'origine fine des tâches longues de la version sans WebGL à ×4 (échange de page d'Astro, scripts des pages, décodage des images) n'est pas détaillée, car elles disparaissent à ×1. Un profil de l'onglet Performance les attribuerait si le lot 1 n'atteint pas ses seuils.
 - Les chiffres varient fortement d'un passage à l'autre (charge de la machine, fréquence de la carte graphique). Ne conclure que sur des médianes.
+
+## Lot 1 · après (30 octobre 2026, t84)
+
+Même outil, même poste, même parcours. Médiane de 3 passages à CPU ×4, plus un passage à ×1. Depuis le lot 1, la variante « normal » laisse le **gouverneur de qualité** choisir le palier. `q0` et `q1` forcent le palier (`?qualite=0|1`), pour comparer à rendu égal.
+
+### Ce qui a changé
+
+- **Navigation** : coupure de caméra et fondu de 200 ms. La glisse ne reste qu'entre `/salle/` et `/ta-place/`, en 600 ms, au palier 0 seulement. Une page qui redemande la vue où l'on est déjà ne relance plus de glisse de 1,6 s ; c'était le cas de `/quiz/` (glisse de la tribune vers la tribune) et de `/ta-place/`.
+- **Ombres** calculées une fois puis figées : elles ne sont plus recalculées à chaque changement de vue.
+- **Matières, personnage compris, compilées au chargement** : la première image de `/salle/` coûtait jusqu'à 800 ms à ×4. Le personnage n'est plus reconstruit à chaque page.
+- **Salle cachée sur les pages « lecture »** sans `display: none`, et à l'arrêt : aucun rendu. Tampon d'image réalloué seulement si la taille change ; rien n'est rendu quand l'onglet est en arrière-plan.
+- **Gouverneur de qualité** : 20 images au chargement. Au-delà de 24 ms en médiane, palier 1 (pixel ratio 1) ; au-delà de 40 ms, palier 2 (pas de 3D). Sur ce poste, il choisit le palier 1 à ×4 et le palier 0 à ×1.
+- **Données chargées une fois par visite** (`lib/matrice-cache.ts`). Le profil mémoïsé du cadrage n'est pas retenu : `profil()` coûte moins de 1 ms (voir plus haut), et le module faisait dépasser la marge de JavaScript initial sur 8 pages.
+
+### Le parcours principal
+
+| Variante (CPU ×4) | Tâches longues, total | Plus longue tâche (3 passages) | Navigations > 100 ms | Plus longue image | Clic → page échangée |
+| --- | --- | --- | --- | --- | --- |
+| Avant (lot 0) | 3 151 ms | 240 · 453 · 181 ms | 5 · 3 · 6 sur 6 | 500 à 983 ms | 92 à 104 ms |
+| **Après, gouverneur (palier 1 ici)** | **132 ms** | 76 · 64 · 82 ms | **0 · 0 · 0** | **100 à 133 ms** | 61 à 66 ms |
+| Après, palier 0 forcé | 258 ms | 74 · 63 · 74 ms | 0 · 0 · 0 | 633 à 650 ms | 53 à 61 ms |
+| Après, palier 1 forcé | 130 ms | 65 · 65 · 72 ms | 0 · 0 · 0 | 100 à 133 ms | 51 à 61 ms |
+| Sans WebGL | 57 ms | 57 · 52 · 62 ms | 0 · 0 · 0 | 83 ms | 61 à 69 ms |
+
+À ×1 (palier 0 choisi par le gouverneur) : **0 tâche longue** (1 652 ms avant), clic → page échangée en **21 à 24 ms** (115 ms avant).
+
+### Les seuils du lot 1
+
+| Mesure | Avant | Après | Seuil | Tenu ? |
+| --- | --- | --- | --- | --- |
+| Plus longue tâche, par navigation | 181 à 453 ms | 63 à 82 ms | ≤ 100 ms | **oui**, à tous les paliers |
+| Total des tâches longues du parcours | 3 151 ms | 132 ms (palier 0 : 258) | ≤ 600 ms | **oui** |
+| Plus longue image pendant une navigation | 500 à 983 ms | 100 à 133 ms au palier 1 ; **550 à 650 ms au palier 0** | ≤ 200 ms | **au palier 1 seulement** |
+| Clic → page échangée, CPU ×1 | 115 ms | 21 à 24 ms | ≤ 50 ms | **oui** |
+| Glisse restante (`/salle/` ↔ `/ta-place/`) | 15-17 images / s | 57 à 61 images / s | ≥ 30 | **oui** |
+| Rendu sur un canevas caché | 1 glisse complète | 0 rendu | 0 | **oui** |
+| Revalidation de `matrice.json` | 1 par page | 1 par visite | 1 par visite | **oui** |
+
+**Écart restant** : au palier 0, une seule image de 550 à 650 ms pendant la glisse de `/salle/` vers `/ta-place/` (et 217 à 300 ms pendant la glisse retour vers `/verdict/`), même à ×1. Aucune tâche longue ne l'accompagne : c'est la carte graphique qui bloque, à densité 1,5 avec antialiasing, au premier rendu de la vue « Ta place » après que le personnage s'est assis. L'origine exacte (ombres du personnage, vue rapprochée) reste à trouver. Au palier 1, choisi par le gouverneur sur ce poste à ×4, l'écart n'existe pas.
+
+### En passant (lots 2-3)
+
+Le vote du quiz profite déjà du lot 1. Au gouverneur, à ×4, une révélation passe de 802 à 107 ms de tâches longues et « question suivante » de 526 à 0 ms. À ×1, aucune tâche longue. Les glisses du vote restent en place jusqu'au lot 2.
+
+**Première ouverture** de la salle (page chargée jusqu'à la salle prête, gouverneur compris) : 6,4 s à ×4 (13,1 s avant).

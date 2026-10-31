@@ -103,6 +103,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   import { deputeChoisi, lireJSON } from '../lib/navigateur.ts';
   import { palierAtteint, PALIERS, votesTranches } from '../lib/paliers.ts';
   import { comparer, colonnes, INTENSITES, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, VOYANTS } from '../lib/trancher.ts';
   import { salle3D, type RepereSalle } from '../salle3d/pilote.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
@@ -141,7 +142,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     let p: ReturnType<typeof profil> | null = null;
     if (n > 0) {
       try {
-        matrice = await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        matrice = await donnee('matrice.json') as Matrice;
         p = profil(matrice, reps);
       } catch { /* hors ligne : la salle reste publique, sans comparaison */ }
     }
@@ -204,7 +205,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     let voyantsVote: (string | null)[] | null = null;
     if (uidVote) {
       try {
-        const m = matrice ?? await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        const m = matrice ?? await donnee('matrice.json') as Matrice;
         const k = m.votes.indexOf(uidVote);
         if (k >= 0) {
           const lettres = new Map(m.deputes.map((x) => [x.u, x.s[k]]));
@@ -212,7 +213,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
           peindre(voyantsVote);
           $('[data-encart-vote]').hidden = false;
           $('[data-encart-palier]').hidden = true;
-          const votes = await (await fetch('/donnees/votes.json')).json() as Record<string, [number, string, string, number, string]>;
+          const votes = await donnee('votes.json') as Record<string, [number, string, string, number, string]>;
           const v = votes[uidVote];
           if (v) {
             $('[data-vote-salle-numero]').textContent = `Le vote n° ${v[0].toLocaleString('fr-FR')} dans la salle`;

@@ -172,6 +172,7 @@ const decompte = dernier.decompte;
   import { etatLots, prochainLot } from '../lib/lots.ts';
   import { dossiers, palierAtteint, PALIERS, prochainPalier, votesTranches } from '../lib/paliers.ts';
   import { colonnes, comparer, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { etatSeance } from '../lib/seances.ts';
 
   interface Donnees {
@@ -310,9 +311,10 @@ const decompte = dernier.decompte;
     // --- Ton député : ses votes comme les tiens ---
     const uid = deputeChoisi();
     if (!uid) return;
-    Promise.all([
-      fetch('/donnees/deputes.json').then((r) => r.json()) as Promise<{ u: string; n: string; g: string | null }[]>,
-      fetch('/donnees/matrice.json').then((r) => r.json()) as Promise<Matrice>,
+    // Pas urgent : la carte se remplit une fois la page affichée (lot 1 du cadrage MVP).
+    (window.requestIdleCallback?.bind(window) ?? setTimeout)(() => void Promise.all([
+      donnee('deputes.json') as Promise<{ u: string; n: string; g: string | null }[]>,
+      donnee('matrice.json') as Promise<Matrice>,
     ]).then(([liste, m]) => {
       const dep = liste.find((x) => x.u === uid);
       if (!dep) return;
@@ -329,7 +331,7 @@ const decompte = dernier.decompte;
         + (auDernier ? ` Au dernier verdict : ${auDernier}.` : ' Absent au dernier verdict.');
       carte.hidden = false;
       $('[data-cp-depute]').hidden = true;
-    }).catch(() => {});
+    }).catch(() => {}));
   });
 </script>
 

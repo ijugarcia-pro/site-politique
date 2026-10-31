@@ -110,6 +110,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
   import { lireJSON } from '../lib/navigateur.ts';
   import { palierAtteint, prochainPalier } from '../lib/paliers.ts';
   import { profil, type Classe, type LigneDepute, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, tranches } from '../lib/trancher.ts';
   import { salle3D } from '../salle3d/pilote.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
@@ -152,7 +153,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
       // La vue est fermée : la salle du perchoir et le 578e fauteuil qui t'attend.
       const reste = prochainPalier(n)!.reste;
       salle?.asseoir(null);
-      salle?.vue('salle');
+      salle?.vue('salle', { navigation: true });
       salle?.reperes([{ i: -1, libelle: 'Ta place t’attend', toi: true }]);
       $('[data-place-consigne]').hidden = true;
       if (n > 0) {
@@ -169,7 +170,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
       return;
     }
 
-    const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+    const m: Matrice = await donnee('matrice.json');
     const p = profil(m, mesReps());
     const groupe = (uid: string | null) => m.groupes.find((g) => g.u === uid);
     $('[data-place-verrou]').hidden = true;

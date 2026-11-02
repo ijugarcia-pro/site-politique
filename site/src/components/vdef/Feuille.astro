@@ -3,7 +3,7 @@
 // gauche (Ta place), en bas (la tribune), ou en lecture : pleine page sur la salle floutée
 // (le flou est posé par Base.astro, gabarit « lecture »). Sur téléphone et tablette (≤ 900 px de large ou
 // ≤ 560 px de haut : cadrage MVP, lot 4), toutes
-// montent depuis le bas sous l'image de la salle (maquettes T1 à T5), coins arrondis en haut.
+// se posent dans le tiroir (Base.astro, lot 5).
 interface Props {
   position: 'droite' | 'gauche' | 'bas' | 'lecture';
   /** L'identifiant du titre de la feuille, pour la nommer (aria-labelledby). */
@@ -17,7 +17,6 @@ const { position, titre, etiquette, balise: Balise = 'section', class: classe, .
 ---
 <Balise class:list={['feuille', position, classe]} aria-labelledby={titre} aria-label={titre ? undefined : etiquette}
   {...reste}>
-  <span class="poignee" aria-hidden="true"></span>
   <slot />
 </Balise>
 
@@ -27,7 +26,6 @@ const { position, titre, etiquette, balise: Balise = 'section', class: classe, .
     border-radius: var(--rayon-feuille); box-shadow: var(--ombre-feuille);
     display: flex; flex-direction: column; gap: 16px;
   }
-  .poignee { display: none; }
 
   /* Posées sur la salle, sous la barre du haut (20 + 48 + 20 px). */
   .droite, .gauche {
@@ -53,14 +51,10 @@ const { position, titre, etiquette, balise: Balise = 'section', class: classe, .
 
   @media (max-width: 900px), (max-height: 560px) {
     .droite, .gauche, .bas {
-      position: relative; inset: auto; width: auto; max-width: none; min-height: 0;
-      margin-top: -64px; padding: 10px 16px 24px; gap: 12px;
-      border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
-      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); overflow: visible;
-    }
-    .poignee {
-      display: block; align-self: center; flex: 0 0 auto;
-      width: 40px; height: 5px; border-radius: var(--pilule); background: var(--bord);
+      /* Dans le tiroir (Base.astro, <main>), qui porte le fond, les coins et le défilement. */
+      position: relative; inset: auto; width: auto; max-width: none; min-height: 0; max-height: none;
+      padding: 0 16px 24px; gap: 12px; flex: 0 0 auto;
+      border-radius: 0; box-shadow: none; overflow: visible;
     }
     .lecture { padding: 24px 16px 40px; gap: 22px; min-height: calc(100vh - 72px); }
   }

@@ -26,12 +26,15 @@
   if (racine) {
     const pilote = salle3D(racine);
     const VUES: NomVue[] = ['tribune', 'salle', 'place'];
-    /** Ce que les feuilles posées sur la salle couvrent du canevas (ordinateur seulement : sur
-     *  téléphone, la feuille est sous l'image de la salle). */
+    /** Ce que les feuilles posées sur la salle couvrent du canevas ; au téléphone, le tiroir. */
     const cadre = () => {
       const c = { gauche: 0, droite: 0, bas: 0 };
-      if (matchMedia('(max-width: 900px), (max-height: 560px)').matches) return c;
       const r = racine.getBoundingClientRect();
+      if (matchMedia('(max-width: 900px), (max-height: 560px)').matches) {
+        const m = document.querySelector('.sur-salle')?.getBoundingClientRect();
+        if (m?.height) c.bas = Math.max(0, r.bottom - m.top);
+        return c;
+      }
       for (const f of document.querySelectorAll<HTMLElement>('.sur-salle .feuille')) {
         const b = f.getBoundingClientRect();
         if (!b.width || !b.height) continue;
@@ -62,11 +65,14 @@
       pilote.surSiege(null);
       pilote.voyants([]);
     });
+    // La fenêtre change, ou le tiroir change de cran (après son animation, 200 ms).
     let attente = 0;
-    addEventListener('resize', () => {
+    const recadrer = (ms: number) => {
       clearTimeout(attente);
-      attente = window.setTimeout(() => pilote.cadre(cadre()), 120);
-    });
+      attente = window.setTimeout(() => pilote.cadre(cadre()), ms);
+    };
+    addEventListener('resize', () => recadrer(120));
+    document.addEventListener('vdef:tiroir', () => recadrer(220));
   }
 </script>
 
@@ -78,7 +84,7 @@
   .ecran:focus-visible { outline: 3px solid var(--feuille); outline-offset: -6px; }
   canvas {
     position: absolute; inset: 0; width: 100%; height: 100%; display: block;
-    opacity: 0; transition: opacity 600ms ease; touch-action: pan-y;
+    opacity: 0; transition: opacity 600ms ease; touch-action: none;
   }
   .salle-vdef[data-salle3d-etat='prete'] canvas { opacity: 1; cursor: grab; }
   .salle-vdef.saisie canvas { cursor: grabbing; }

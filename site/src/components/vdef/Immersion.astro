@@ -1,0 +1,80 @@
+---
+// Le bouton d'immersion (cadrage MVP, R10, lot 5) : « Masquer les menus » cache les feuilles et les
+// barres, pour voir la salle seule ; restent le bouton et les repères. Échap, ou le bouton, en sort.
+// En bas au centre sur ordinateur, en haut à droite au téléphone. L'indice « glisse pour tourner »
+// disparaît au premier geste. Tout vit en mémoire : rien n'est gardé dans le navigateur, et
+// l'immersion s'arrête en changeant de page (<body> est remplacé).
+interface Props { consigne: string; [attr: string]: unknown }
+const { consigne, ...reste } = Astro.props;
+---
+<div class="immersion">
+  <p class="indice" {...reste} data-indice>{consigne}</p>
+  <button type="button" class="bouton-immersion" data-immersion aria-pressed="false">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span data-immersion-texte>Masquer les menus</span>
+  </button>
+</div>
+
+<script>
+  // Vaut pour toute la visite : l'indice ne revient pas après le premier geste.
+  let gesteVu = false;
+  document.addEventListener('astro:page-load', () => {
+    const bouton = document.querySelector<HTMLButtonElement>('[data-immersion]');
+    if (!bouton) return;
+    const texte = bouton.querySelector('[data-immersion-texte]')!;
+    const indice = document.querySelector<HTMLElement>('[data-indice]');
+    if (indice && gesteVu) indice.classList.add('vu');
+    bouton.addEventListener('click', () => {
+      const on = document.body.classList.toggle('immersion');
+      bouton.setAttribute('aria-pressed', String(on));
+      texte.textContent = on ? 'Afficher les menus' : 'Masquer les menus';
+      bouton.focus();
+      document.dispatchEvent(new Event('vdef:tiroir'));
+    });
+    document.querySelector('[data-salle-vdef] canvas')?.addEventListener('pointerdown', () => {
+      gesteVu = true;
+      document.querySelector('[data-indice]')?.classList.add('vu');
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('immersion')) {
+      document.querySelector<HTMLButtonElement>('[data-immersion]')?.click();
+    }
+  });
+</script>
+
+<style>
+  .immersion {
+    position: absolute; z-index: 5; left: 50%; bottom: 20px; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none;
+  }
+  :global(.salle-sans-3d) .immersion { display: none; }
+  .indice {
+    margin: 0; padding: 7px 12px; border-radius: var(--pilule); background: rgba(18, 18, 18, 0.72); color: var(--feuille);
+    font: 500 13px/1 var(--police-texte); white-space: nowrap;
+  }
+  .indice:global(.vu), .indice[hidden] { display: none; }
+  .bouton-immersion {
+    display: inline-flex; align-items: center; gap: 8px; min-height: var(--cible); padding: 0 16px; border: 0;
+    border-radius: var(--pilule); background: var(--feuille); color: var(--encre);
+    font: 600 14px/1 var(--police-texte); white-space: nowrap; cursor: pointer;
+    box-shadow: var(--ombre-flottant); pointer-events: auto;
+  }
+  .bouton-immersion:focus-visible { outline: 3px solid var(--encre); outline-offset: 2px; }
+  /* Peu de place entre les feuilles : l'icône seule (le libellé reste pour les lecteurs d'écran). */
+  @media (max-width: 1200px) {
+    .bouton-immersion { width: var(--cible); justify-content: center; padding: 0; }
+    .bouton-immersion span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .indice { display: none; }
+  }
+  @media (max-width: 900px), (max-height: 560px) {
+    /* En haut à droite, sous la pastille du parcours. */
+    .immersion { position: fixed; left: auto; right: 12px; bottom: auto; top: 64px; transform: none; align-items: flex-end; }
+    .bouton-immersion { width: var(--cible); justify-content: center; padding: 0; }
+    .bouton-immersion span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .indice { display: none; }
+    /* Tiroir ouvert en grand : la salle est presque cachée, le bouton gênerait la feuille. */
+    :global(body:has(.sur-salle[data-cran='plein'])) .immersion { display: none; }
+  }
+</style>

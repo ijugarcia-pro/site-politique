@@ -57,20 +57,32 @@ function monter() {
   return calque;
 }
 
-/** Ce que la barre flottante (en haut) et, au téléphone, la feuille (qui monte en bas) couvrent de
- *  la salle, en pixels. */
+/** Ce que la barre flottante (en haut) et, au téléphone, le tiroir (en bas) couvrent de la salle,
+ *  en pixels. */
 function couvert(scene: DOMRect): { haut: number; bas: number } {
   const barre = [...document.querySelectorAll<HTMLElement>('.barre-haut')].find((b) => !b.hidden)?.getBoundingClientRect();
-  const feuille = document.querySelector<HTMLElement>('.sur-salle .feuille')?.getBoundingClientRect();
+  const tiroir = document.querySelector<HTMLElement>('.sur-salle')?.getBoundingClientRect();
   return {
     haut: barre ? Math.max(0, Math.min(scene.height / 3, barre.bottom - scene.top + 6)) : 0,
-    bas: telephone() && feuille ? Math.max(0, Math.min(scene.height / 3, scene.bottom - feuille.top)) : 0,
+    bas: telephone() && tiroir?.height ? Math.max(0, scene.bottom - tiroir.top) : 0,
   };
 }
+
+// Le tiroir a changé de cran : l'image du dévoilement se repose, sans onde, dans la nouvelle zone
+// (après l'animation du tiroir, 200 ms).
+let dernier: { salle: Pilote | null; lettres: string; positions: PositionsRevelation } | null = null;
+let attenteTiroir = 0;
+document.addEventListener('vdef:tiroir', () => {
+  clearTimeout(attenteTiroir);
+  attenteTiroir = window.setTimeout(() => {
+    if (dernier && affiche()) void reveler(dernier.salle, dernier.lettres, dernier.positions, { onde: false });
+  }, 220);
+});
 
 /** Une question : l'image fixe de la tribune (le fond de la page), sans 3D. */
 export function question(salle: Pilote | null): void {
   cycle += 1;
+  dernier = null;
   reperesCourants = [];
   if (calque) calque.racine.style.opacity = '0';
   salle?.actif(false);
@@ -85,6 +97,7 @@ export async function reveler(salle: Pilote | null, lettres: string, positions: 
   if (reperes) reperesCourants = reperes;
   salle?.actif(false);
   if (!positions) return false;
+  dernier = { salle, lettres, positions };
   performance.mark('revelation:clic');
   const c = monter();
   const tel = telephone();

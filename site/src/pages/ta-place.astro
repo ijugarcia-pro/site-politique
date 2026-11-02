@@ -6,6 +6,7 @@
 // fermée : la salle vue du perchoir montre le 578e fauteuil, et la feuille dit ce qu'il manque.
 // Remplace /hemicycle/ (redirection 301, public/_redirects).
 import Base from '../layouts/Base.astro';
+import Immersion from '../components/vdef/Immersion.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import Carte from '../components/vdef/Carte.astro';
 import Feuille from '../components/vdef/Feuille.astro';
@@ -102,7 +103,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
       </details>
     </div>
   </Feuille>
-  <p class="consigne-salle" data-place-consigne>Depuis ton siège · glisse pour tourner la tête</p>
+  <Immersion slot="hors-feuille" consigne="Depuis ton siège · glisse pour tourner la tête" data-place-consigne />
   <script type="application/json" data-donnees-place set:html={donnees}></script>
 </Base>
 

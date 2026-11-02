@@ -58,6 +58,14 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
   const devoilement = import('./revelation.ts');
   salle?.actif(false);
 
+  /** Le cran du tiroir au téléphone (Base.astro) : sans effet sur ordinateur. */
+  const cran = (c: 'moyen' | 'plein') => {
+    const main = document.querySelector<HTMLElement>('.sur-salle');
+    if (!main || main.dataset.cran === c) return;
+    main.dataset.cran = c;
+    document.dispatchEvent(new Event('vdef:tiroir'));
+  };
+
   const montrer = (ecran: string) => {
     for (const e of document.querySelectorAll<HTMLElement>('[data-trancher] [data-ecran]')) {
       e.hidden = e.dataset.ecran !== ecran;
@@ -100,6 +108,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
     const q = questions[i];
     montrer('question');
     void devoilement.then((m) => m.question(salle));
+    cran('plein');
     // Le repère de lieu ne dit plus que la date d'un vote à venir (cadrage MVP, R1).
     lieu(q.attente ? `La tribune · ${q.date.replace(/^Ils votent /, '')}` : null);
     pastille('[data-theme]', q.theme);
@@ -184,6 +193,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
     const q = questions[i];
     montrer('revelation');
     lieu(null);
+    cran('moyen');
     // L'hémicycle 2D seulement si l'image fixe ne se charge pas.
     const repli = $('[data-repli-2d]');
     repli.hidden = true;
@@ -254,6 +264,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
    *  (la fin du quiz, maquette 04). */
   const finir = (ecran: string, libelle = 'Terminé', sortirFocus = false) => {
     montrer(ecran);
+    cran('moyen');
     lieu(null);
     if (sortirFocus) {
       document.body.classList.remove('focus');

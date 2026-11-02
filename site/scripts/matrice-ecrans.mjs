@@ -38,10 +38,16 @@ function controler({ tactile }) {
     return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
   // La page défile-t-elle (au téléphone, c'est normal tant qu'il n'y a pas de tiroir) ?
   const pageDefile = de.scrollHeight > H + 1;
-  // Sur ordinateur (hors disposition « tiroir »), un écran de salle ne défile jamais.
-  if (pageDefile && W > 900 && H > 560 && document.body.classList.contains('gabarit-salle')) defauts.push(`la page défile (${de.scrollHeight} px pour ${H})`);
+  // Un écran de salle ne défile jamais : au téléphone, c'est le tiroir qui défile (lot 5).
+  if (pageDefile && document.body.classList.contains('gabarit-salle')) defauts.push(`la page défile (${de.scrollHeight} px pour ${H})`);
   const barre = [...document.querySelectorAll('.barre-haut')].find(visible)?.getBoundingClientRect();
-  for (const f of document.querySelectorAll('.sur-salle .feuille')) {
+  const tiroir = W <= 900 || H <= 560;
+  if (tiroir) {
+    const m = document.querySelector('.sur-salle')?.getBoundingClientRect();
+    if (m && (m.top < -1 || m.bottom > H + 1)) defauts.push(`tiroir coupé (${Math.round(m.top)} à ${Math.round(m.bottom)} pour ${H})`);
+    if (m && barre && !document.body.classList.contains('focus') && m.top < barre.bottom - 1) defauts.push('tiroir sous la barre du haut');
+  }
+  for (const f of tiroir ? [] : document.querySelectorAll('.sur-salle .feuille')) {
     if (!visible(f)) continue;
     const r = f.getBoundingClientRect();
     if (r.left < -1 || r.right > W + 1) defauts.push(`feuille hors de la largeur (${Math.round(r.left)} à ${Math.round(r.right)})`);

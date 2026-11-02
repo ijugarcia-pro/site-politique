@@ -7,6 +7,7 @@
 // prend le relais (un clic sur un siège donne sa carte) ; au clavier, « Trouver un député ».
 // L'adresse peut demander un vote (#vote=), un député (#depute=) ou un groupe (#groupe=).
 import Base from '../layouts/Base.astro';
+import Immersion from '../components/vdef/Immersion.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
 import { composition, scrutins } from '../lib/donnees.ts';
@@ -95,7 +96,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     </div>
   </aside>
 
-  <p class="consigne-salle">Glisse pour tourner · touche un siège</p>
+  <Immersion slot="hors-feuille" consigne="Glisse pour tourner · touche un siège" />
   <script type="application/json" data-donnees-salle set:html={donnees}></script>
 </Base>
 
@@ -386,12 +387,8 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     .panneau, .carte-depute, .encart-palier, .encart-vote {
       position: relative; inset: auto; width: auto; max-height: none; box-shadow: none;
     }
-    .panneau {
-      margin-top: -64px; border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
-      padding: 20px 16px 12px; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
-    }
+    .panneau { border-radius: 0; padding: 0 16px 12px; flex: 0 0 auto; overflow: visible; }
     .carte-depute { margin: 0 16px 12px; border: 1px solid var(--filet); }
     .encart-palier, .encart-vote { margin: 0 16px 16px; background: var(--surface); box-shadow: none; }
-    :global(main:has([data-panneau-salle])) { background: var(--feuille); }
   }
 </style>

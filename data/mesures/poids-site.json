@@ -1,240 +1,240 @@
 {
  "/": {
-  "js": 35900,
-  "js_gzip": 13221,
-  "css": 23766,
-  "css_gzip": 5073,
-  "modules": 10
- },
- "/404/": {
-  "js": 28740,
-  "js_gzip": 10550,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
- },
- "/calcul/": {
-  "js": 29873,
-  "js_gzip": 10916,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
- },
- "/confidentialite/": {
-  "js": 28740,
-  "js_gzip": 10550,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
- },
- "/deputes/": {
-  "js": 35719,
-  "js_gzip": 13182,
-  "css": 21231,
-  "css_gzip": 4667,
-  "modules": 9
- },
- "/deputes/[uid]/": {
-  "js": 31044,
-  "js_gzip": 11317,
-  "css": 22617,
-  "css_gzip": 4817,
-  "modules": 8
- },
- "/dossiers/droits/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/economie/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/education/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/energie/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/environnement/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/immigration/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/institutions/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/logement/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/numerique/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/sante/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/securite/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/dossiers/travail/": {
-  "js": 32865,
-  "js_gzip": 12020,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 9
- },
- "/etat/": {
-  "js": 28740,
-  "js_gzip": 10550,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
- },
- "/explorer/": {
-  "js": 31609,
-  "js_gzip": 11534,
-  "css": 21983,
-  "css_gzip": 4778,
-  "modules": 9
- },
- "/lots/": {
-  "js": 40176,
-  "js_gzip": 14520,
-  "css": 22562,
-  "css_gzip": 4815,
-  "modules": 11
- },
- "/mentions-legales/": {
-  "js": 28740,
-  "js_gzip": 10550,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
- },
- "/parcours/": {
-  "js": 41818,
-  "js_gzip": 15177,
-  "css": 22876,
-  "css_gzip": 4892,
-  "modules": 11
- },
- "/quiz/": {
-  "js": 44325,
-  "js_gzip": 16279,
-  "css": 22562,
-  "css_gzip": 4815,
+  "js": 37392,
+  "js_gzip": 13700,
+  "css": 24932,
+  "css_gzip": 5294,
   "modules": 13
  },
+ "/404/": {
+  "js": 29524,
+  "js_gzip": 10805,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 8
+ },
+ "/calcul/": {
+  "js": 30657,
+  "js_gzip": 11168,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 8
+ },
+ "/confidentialite/": {
+  "js": 29524,
+  "js_gzip": 10805,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 8
+ },
+ "/deputes/": {
+  "js": 36503,
+  "js_gzip": 13427,
+  "css": 22418,
+  "css_gzip": 4888,
+  "modules": 10
+ },
+ "/deputes/[uid]/": {
+  "js": 31828,
+  "js_gzip": 11564,
+  "css": 23804,
+  "css_gzip": 5037,
+  "modules": 9
+ },
+ "/dossiers/droits/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/economie/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/education/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/energie/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/environnement/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/immigration/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/institutions/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/logement/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/numerique/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/sante/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/securite/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/dossiers/travail/": {
+  "js": 33903,
+  "js_gzip": 12359,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 11
+ },
+ "/etat/": {
+  "js": 29524,
+  "js_gzip": 10805,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 8
+ },
+ "/explorer/": {
+  "js": 32647,
+  "js_gzip": 11876,
+  "css": 23170,
+  "css_gzip": 5000,
+  "modules": 11
+ },
+ "/lots/": {
+  "js": 41561,
+  "js_gzip": 14892,
+  "css": 23765,
+  "css_gzip": 5041,
+  "modules": 13
+ },
+ "/mentions-legales/": {
+  "js": 29524,
+  "js_gzip": 10805,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 8
+ },
+ "/parcours/": {
+  "js": 43028,
+  "js_gzip": 15546,
+  "css": 24063,
+  "css_gzip": 5114,
+  "modules": 13
+ },
+ "/quiz/": {
+  "js": 46237,
+  "js_gzip": 16805,
+  "css": 23765,
+  "css_gzip": 5041,
+  "modules": 16
+ },
  "/salle/": {
-  "js": 44530,
-  "js_gzip": 16228,
-  "css": 22989,
-  "css_gzip": 4908,
-  "modules": 12
+  "js": 47294,
+  "js_gzip": 16947,
+  "css": 24757,
+  "css_gzip": 5164,
+  "modules": 15
  },
  "/seance/": {
-  "js": 40348,
-  "js_gzip": 14642,
-  "css": 22562,
-  "css_gzip": 4815,
-  "modules": 11
+  "js": 41774,
+  "js_gzip": 15019,
+  "css": 23765,
+  "css_gzip": 5041,
+  "modules": 13
  },
  "/ta-place/": {
-  "js": 42883,
-  "js_gzip": 15593,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 12
+  "js": 45368,
+  "js_gzip": 16256,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 15
  },
  "/tes-reponses/": {
-  "js": 42634,
-  "js_gzip": 15385,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 11
+  "js": 43844,
+  "js_gzip": 15795,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 13
  },
  "/vdef-composants/": {
-  "js": 29751,
-  "js_gzip": 10887,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
+  "js": 30535,
+  "js_gzip": 11139,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 8
  },
  "/vdef-composants/place/": {
-  "js": 29081,
-  "js_gzip": 10641,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 8
+  "js": 30460,
+  "js_gzip": 11070,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 10
  },
  "/vdef-composants/salle/": {
-  "js": 29137,
-  "js_gzip": 10671,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 8
+  "js": 30345,
+  "js_gzip": 11022,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 10
  },
  "/vdef-composants/tribune/": {
-  "js": 28740,
-  "js_gzip": 10550,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 7
+  "js": 29948,
+  "js_gzip": 10902,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 9
  },
  "/verdict/": {
-  "js": 42283,
-  "js_gzip": 15152,
-  "css": 17015,
-  "css_gzip": 4026,
-  "modules": 11
+  "js": 36903,
+  "js_gzip": 13482,
+  "css": 18202,
+  "css_gzip": 4244,
+  "modules": 13
  },
  "/votes/[numero]/": {
-  "js": 42486,
-  "js_gzip": 15326,
-  "css": 22544,
-  "css_gzip": 4862,
-  "modules": 11
+  "js": 43723,
+  "js_gzip": 15708,
+  "css": 23747,
+  "css_gzip": 5080,
+  "modules": 13
  }
 }

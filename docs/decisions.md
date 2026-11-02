@@ -465,3 +465,9 @@
 - Raison : R4 (« la salle n'est pas vue en entier », « baisser le bloc blanc ») et R10.
 - Conséquence : `components/vdef/TiroirMobile.astro`, `lib/tiroir.ts` (chargé à la demande, testé), `components/vdef/Immersion.astro`, `layouts/Base.astro` (`data-cran`, le tiroir en CSS, emplacement `hors-feuille`), `components/vdef/Feuille.astro` (sa fausse poignée disparaît), `salle3d` (la salle se recentre au-dessus du tiroir), `lib/revelation.ts` (l'image se repose à chaque cran). Contrôle : `scripts/tiroir.mjs`. Le JavaScript initial prend 0,3 à 0,6 Ko par page sur les lots 1 à 5 : inventaire réenregistré.
 
+## 2026-11-02 · La vue du dessus demande une nouvelle salle ; Q2, Q3 et Q4
+- Décision (Julien, porte G2 du 2 nov., non franchie) : la vue du dessus est essentielle, car c'est la vue du résultat d'un vote. Telle quelle, elle ne convient pas : le marbre s'étend vers le vide et on est trop loin des sièges. Un voile noir posé autour de l'hémicycle a été essayé et rejeté, car il n'est pas beau. La solution vient d'une nouvelle maquette 3D pensée pour cette vue, conçue avec Claude Design (tâche t92), avant la fin du lot 6. Le voile reste sur la branche `mvp-voile-rejete`, à ne pas fusionner.
+- Décision (Julien, Q2 du cadrage) : `/salle/` s'ouvre en perspective sur ordinateur, en Dessus au téléphone et sous 900 px.
+- Décision (Julien, Q3) : à égalité parfaite, l'opposé est pris dans un autre groupe que le jumeau, avant l'ordre alphabétique. Le classement ne change pas. À appliquer au lot 7.
+- Décision (Julien, Q4) : sous 10 votes, aucun jumeau ni opposé nulle part. À appliquer au lot 7.
+- Conséquence : reprise décrite dans `docs/REPRISE-MVP.md`.

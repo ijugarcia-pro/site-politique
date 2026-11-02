@@ -73,7 +73,9 @@ export async function parcourir({ page, base, ecrans = null, surEcran }) {
   };
   const salle = () => page.waitForFunction(() => {
     const e = document.querySelector('[data-salle3d]')?.dataset.salle3dEtat;
-    return !e || ['prete', 'erreur', 'webgl', 'memoire', 'economie'].includes(e);
+    // Les pages de vote gardent la salle à l'arrêt (« attente ») : l'image fixe (cadrage MVP, lot 3).
+    return !e || ['prete', 'erreur', 'webgl', 'memoire', 'economie', 'qualite'].includes(e)
+      || (e === 'attente' && document.body.classList.contains('focus'));
   }, null, { timeout: 240000 });
   const aller = async (chemin) => { await page.goto(base + chemin, { waitUntil: 'networkidle' }); await page.evaluate(() => document.fonts.ready); };
   const trancher = async (max) => {

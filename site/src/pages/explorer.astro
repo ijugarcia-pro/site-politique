@@ -134,6 +134,7 @@ const PAR_PAGE = 20;
 
 <script>
   import { reponses } from '../lib/navigateur.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { normaliser } from '../lib/votes.ts';
 
   const PAR_PAGE = 20;
@@ -192,7 +193,7 @@ const PAR_PAGE = 20;
       if (mots.join('').length < 3) { bloc.hidden = true; return; }
       if (!deputes) {
         try {
-          const brut: D[] = await (await fetch('/donnees/deputes.json')).json();
+          const brut: D[] = await donnee('deputes.json');
           deputes = brut.map((x) => ({ ...x, r: normaliser(`${x.n} ${x.g ?? ''} ${x.d}`) }));
         } catch { return; }
       }

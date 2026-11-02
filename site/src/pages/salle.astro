@@ -1,12 +1,14 @@
 ---
 // La salle (VDEF, capture 09 ; lot V6) : l'Assemblée vue du perchoir. Des repères (toi, ton
-// jumeau, ton opposé, ton député), le panneau « Montrer dans la salle » (bascules, un groupe,
-// trouver un député) et la carte du député touché. Au palier 2 (25 votes tranchés), chaque
+// jumeau, ton opposé, ton député) et le panneau « Montrer dans la salle » (bascules, un groupe,
+// trouver un député). « Voir les députés » passe en vue du dessus, sans menus : la seule où l'on
+// choisit un siège, avec sa carte (décision du 2 nov. 2026). Au palier 2 (25 votes tranchés), chaque
 // siège s'éclaire selon ses votes communs avec toi (intensités, lib/profil.ts) ; avant, un
 // encart dit ce qu'il manque. Tout est calculé dans le navigateur. Sans 3D, l'hémicycle 2D
 // prend le relais (un clic sur un siège donne sa carte) ; au clavier, « Trouver un député ».
 // L'adresse peut demander un vote (#vote=), un député (#depute=) ou un groupe (#groupe=).
 import Base from '../layouts/Base.astro';
+import Immersion from '../components/vdef/Immersion.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import MiniHemicycle from '../components/MiniHemicycle.astro';
 import { composition, scrutins } from '../lib/donnees.ts';
@@ -29,6 +31,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   <h1 class="visuellement-cache">La salle</h1>
   <section class="panneau" aria-labelledby="titre-montrer" data-panneau-salle>
     <h2 id="titre-montrer" class="titre-panneau">Montrer dans la salle</h2>
+    <p class="t-legende seuil-jumeau" data-seuil-jumeau hidden></p>
     <div class="bascules" data-bascules>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="jumeau" hidden>Ton jumeau</button>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="oppose" hidden>Ton opposé</button>
@@ -53,7 +56,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     </div>
   </section>
 
-  <section class="carte-depute" aria-labelledby="nom-touche" data-carte-depute hidden>
+  <section slot="hors-feuille" class="carte-depute" aria-labelledby="nom-touche" data-carte-depute hidden>
     <div class="carte-haut">
       <div class="carte-titres">
         <h2 id="nom-touche" class="nom-touche" tabindex="-1" data-carte-nom></h2>
@@ -95,19 +98,23 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     </div>
   </aside>
 
-  <p class="consigne-salle">Glisse pour tourner · touche un siège</p>
+  <Immersion slot="hors-feuille" consigne="Glisse pour tourner" />
   <script type="application/json" data-donnees-salle set:html={donnees}></script>
 </Base>
 
 <script>
   import { deputeChoisi, lireJSON } from '../lib/navigateur.ts';
-  import { palierAtteint, PALIERS, votesTranches } from '../lib/paliers.ts';
+  import { jumeauVisible, palierAtteint, PALIERS, phraseSeuilJumeau, votesTranches } from '../lib/paliers.ts';
   import { comparer, colonnes, INTENSITES, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, VOYANTS } from '../lib/trancher.ts';
   import { salle3D, type RepereSalle } from '../salle3d/pilote.ts';
+  import { libelleCourt } from '../salle3d/libelle.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
 
   const SEUIL_ECLAIREE = PALIERS.find((p) => p.id === 'salle-eclairee')!.seuil;
+  // Échap ferme la carte épinglée avant de quitter la vue des députés ; une seule écoute par visite.
+  let retirerEchap: (() => void) | null = null;
 
   document.addEventListener('astro:page-load', async () => {
     const brut = document.querySelector('[data-donnees-salle]')?.textContent;
@@ -132,6 +139,12 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     });
     if (!salle) { repli.hidden = false; document.body.classList.add('salle-sans-3d'); }
 
+    // « Voir les députés » (Immersion.astro) : la vue du dessus, sans menus. Sans 3D, on en sort.
+    const voirDeputes = (on: boolean) => {
+      if (document.body.classList.contains('immersion') !== on) document.querySelector<HTMLButtonElement>('[data-immersion]')?.click();
+    };
+    void salle?.prete.then((s) => { if (!s) voirDeputes(false); });
+
     // Ton personnage : assis sur le siège de ton jumeau à partir du palier 1, sinon il attend
     // au pied de la tribune.
     salle?.personnage(lireApparence(lireJSON(CLE_PERSONNAGE, null)));
@@ -141,7 +154,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     let p: ReturnType<typeof profil> | null = null;
     if (n > 0) {
       try {
-        matrice = await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        matrice = await donnee('matrice.json') as Matrice;
         p = profil(matrice, reps);
       } catch { /* hors ligne : la salle reste publique, sans comparaison */ }
     }
@@ -149,13 +162,20 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     const lignes = new Map(matrice?.deputes.map((d) => [d.u, d]) ?? []);
 
     // --- Les repères ---
-    const jumeau = p?.jumeau ?? null;
-    const oppose = p?.oppose ?? null;
+    // Sous 10 votes, ni jumeau ni opposé (lib/paliers.ts) ; « Ton député » et « Un groupe » restent.
+    const visibles = jumeauVisible(n);
+    const jumeau = visibles ? p?.jumeau ?? null : null;
+    const oppose = visibles ? p?.oppose ?? null : null;
+    const seuil = $('[data-seuil-jumeau]');
+    seuil.hidden = visibles;
+    seuil.textContent = visibles ? '' : phraseSeuilJumeau(n);
     const monDepute = deputeChoisi();
     const assis = !!(jumeau && palierAtteint(n) && parUid.has(jumeau.ligne.u));
     if (assis) salle?.asseoir(parUid.get(jumeau!.ligne.u)!, { marcher: false });
     const actifs = { jumeau: true, oppose: true, depute: true };
-    const nomDe = (uid: string) => sieges[parUid.get(uid) ?? -1]?.[1] ?? lignes.get(uid)?.n ?? '';
+    const nomDe = (uid: string) => libelleCourt(sieges[parUid.get(uid) ?? -1]?.[1] ?? lignes.get(uid)?.n ?? '',
+      [jumeau?.ligne.u, oppose?.ligne.u, monDepute].filter((u): u is string => !!u && u !== uid)
+        .map((u) => sieges[parUid.get(u) ?? -1]?.[1] ?? lignes.get(u)?.n ?? ''));
     const poserReperes = () => {
       const liste: RepereSalle[] = [];
       if (jumeau && actifs.jumeau && parUid.has(jumeau.ligne.u)) {
@@ -204,7 +224,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     let voyantsVote: (string | null)[] | null = null;
     if (uidVote) {
       try {
-        const m = matrice ?? await (await fetch('/donnees/matrice.json')).json() as Matrice;
+        const m = matrice ?? await donnee('matrice.json') as Matrice;
         const k = m.votes.indexOf(uidVote);
         if (k >= 0) {
           const lettres = new Map(m.deputes.map((x) => [x.u, x.s[k]]));
@@ -212,7 +232,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
           peindre(voyantsVote);
           $('[data-encart-vote]').hidden = false;
           $('[data-encart-palier]').hidden = true;
-          const votes = await (await fetch('/donnees/votes.json')).json() as Record<string, [number, string, string, number, string]>;
+          const votes = await donnee('votes.json') as Record<string, [number, string, string, number, string]>;
           const v = votes[uidVote];
           if (v) {
             $('[data-vote-salle-numero]').textContent = `Le vote n° ${v[0].toLocaleString('fr-FR')} dans la salle`;
@@ -240,13 +260,16 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     $('[data-encart-texte]').textContent = `À ${SEUIL_ECLAIREE} votes, chaque siège s’éclaire selon ses votes communs avec toi. ${n} / ${SEUIL_ECLAIREE}.`;
 
     // --- La carte du député touché ---
+    // Au survol, elle suit le siège ; un clic l'épingle jusqu'à un clic à côté, Échap ou la croix
+    // (cadrage MVP, R7). Annonce temporisée : pas 30 noms par seconde.
     const carte = $('[data-carte-depute]');
-    const montrer = (i: number, focus = false) => {
+    const fermeture = $('[data-carte-fermer]');
+    let epingle = false;
+    let annonceSurvol = 0;
+    const remplir = (i: number): string | null => {
       const s = sieges[i];
-      if (!s) return;
+      if (!s) return null;
       const [uid, nom, g] = s;
-      salle?.selection(i);
-      cercles.forEach((c, k) => c.classList.toggle('choisi', k === i));
       carte.hidden = false;
       $('[data-carte-nom]').textContent = nom;
       $('[data-carte-groupe]').textContent = groupes[g] ?? 'Non inscrit';
@@ -270,17 +293,47 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
         barre.style.setProperty('--absents', String(c.absents));
       }
       $('[data-carte-phrase]').textContent = phrase;
-      annonce.textContent = `${nom}, ${groupes[g] ?? 'non inscrit'} : ${phrase}`;
+      return `${nom}, ${groupes[g] ?? 'non inscrit'} : ${phrase}`;
+    };
+    const montrer = (i: number, focus = false) => {
+      const texte = remplir(i);
+      if (!texte) return;
+      clearTimeout(annonceSurvol);
+      epingle = true;
+      carte.classList.remove('survol');
+      fermeture.hidden = false;
+      salle?.selection(i);
+      cercles.forEach((c, k) => c.classList.toggle('choisi', k === i));
+      annonce.textContent = texte;
+      // Un siège se choisit dans la vue des députés : un député trouvé par son nom y mène aussi.
+      if (!document.body.classList.contains('salle-sans-3d')) voirDeputes(true);
       if (focus) $('[data-carte-nom]').focus();
     };
-    salle?.surSiege((i) => montrer(i));
-    cercles.forEach((c, i) => c.addEventListener('click', () => montrer(i)));
-    $('[data-carte-fermer]').addEventListener('click', () => {
+    const survoler = (i: number | null) => {
+      if (epingle) return;
+      clearTimeout(annonceSurvol);
+      const texte = i === null ? null : remplir(i);
+      if (!texte) { carte.hidden = true; return; }
+      carte.classList.add('survol');
+      fermeture.hidden = true;
+      annonceSurvol = window.setTimeout(() => { annonce.textContent = texte; }, 150);
+    };
+    const fermer = () => {
+      epingle = false;
       carte.hidden = true;
       salle?.selection(null);
       cercles.forEach((c) => c.classList.remove('choisi'));
-      $('[data-trouver]').focus();
-    });
+    };
+    salle?.surSiege((i) => montrer(i), survoler, fermer);
+    document.addEventListener('vdef:immersion', fermer);
+    cercles.forEach((c, i) => c.addEventListener('click', () => montrer(i)));
+    fermeture.addEventListener('click', () => { fermer(); $('[data-trouver]').focus(); });
+    retirerEchap?.();
+    const echap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && epingle) { e.stopPropagation(); fermer(); }
+    };
+    document.addEventListener('keydown', echap, true);
+    retirerEchap = () => { document.removeEventListener('keydown', echap, true); document.removeEventListener('vdef:immersion', fermer); };
     const trouver = $<HTMLInputElement>('[data-trouver]');
     const chercher = () => {
       const q = trouver.value.trim().toLocaleLowerCase('fr');
@@ -292,6 +345,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     // Depuis une fiche (« Voir dans la salle ») ou la liste des groupes : #depute=PA… montre son
     // siège et sa carte, #groupe=PO… allume les sièges du groupe.
     const depuisAdresse = /^#(depute|groupe)=(\w+)$/.exec(location.hash);
+    if (location.hash === '#deputes') voirDeputes(true);
     if (depuisAdresse?.[1] === 'depute' && parUid.has(depuisAdresse[2])) {
       montrer(parUid.get(depuisAdresse[2])!);
     } else if (depuisAdresse?.[1] === 'groupe' && groupes[depuisAdresse[2]]) {
@@ -318,6 +372,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     max-height: calc(100% - 88px - var(--marge)); overflow: auto;
   }
   .titre-panneau { font: 700 19px/1.2 var(--police-titre); }
+  .seuil-jumeau[hidden] { display: none; }
   .bascules { display: flex; flex-wrap: wrap; gap: 6px; }
   .bascule {
     display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px;
@@ -339,10 +394,15 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   .repli-2d :global(circle) { cursor: pointer; }
   .repli-2d :global(circle.choisi) { stroke: var(--encre); stroke-width: 5; }
 
+  /* En haut à droite de la salle, sur la vue des députés ; sans 3D, sous la barre. */
   .carte-depute {
-    left: 196px; bottom: 260px; width: 300px; padding: 18px; border-radius: 20px;
+    z-index: 6; right: var(--marge); top: 88px; width: 300px; padding: 18px; border-radius: 20px;
     display: flex; flex-direction: column; gap: 10px;
   }
+  :global(body.immersion) .carte-depute { top: var(--marge); }
+  .carte-depute[hidden] { display: none; }
+  /* Non épinglée, elle ne prend pas la souris : le survol continue dessous. */
+  .carte-depute.survol { pointer-events: none; }
   .carte-haut { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .carte-titres { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .nom-touche { font: 700 19px/1.2 var(--police-titre); }
@@ -351,6 +411,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     flex: 0 0 auto; width: 36px; height: 36px; border: 0; border-radius: var(--pilule);
     background: var(--surface); color: var(--encre); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
   }
+  .fermer[hidden] { display: none; }
   .phrase { font: 500 15px/1.45 var(--police-texte); color: var(--texte); }
   .mini-barre { display: flex; height: 8px; border-radius: var(--pilule); overflow: hidden; background: var(--surface); }
   .mini-barre span { display: block; height: 100%; }
@@ -381,16 +442,17 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   .pastille-intensite { flex: 0 0 auto; width: 14px; height: 14px; border-radius: var(--pilule); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2); }
   .pastille-intensite.eteinte { background: var(--feuille); box-shadow: inset 0 0 0 2px var(--absent); }
 
-  @media (max-width: 720px) {
-    .panneau, .carte-depute, .encart-palier, .encart-vote {
+  @media (max-width: 900px), (max-height: 560px) {
+    .panneau, .encart-palier, .encart-vote {
       position: relative; inset: auto; width: auto; max-height: none; box-shadow: none;
     }
-    .panneau {
-      margin-top: -64px; border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
-      padding: 20px 16px 12px; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    .panneau { border-radius: 0; padding: 0 16px 12px; flex: 0 0 auto; overflow: visible; }
+    /* La carte, posée au bas de l'écran. */
+    .carte-depute {
+      position: fixed; inset: auto 0 74px 0; width: auto; padding: 16px 16px 18px; gap: 8px; box-shadow: var(--ombre-feuille);
+      border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
     }
-    .carte-depute { margin: 0 16px 12px; border: 1px solid var(--filet); }
+    :global(body.immersion) .carte-depute { top: auto; bottom: 0; }
     .encart-palier, .encart-vote { margin: 0 16px 16px; background: var(--surface); box-shadow: none; }
-    :global(main:has([data-panneau-salle])) { background: var(--feuille); }
   }
 </style>

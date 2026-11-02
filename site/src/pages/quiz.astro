@@ -72,8 +72,9 @@ const donnees = JSON.stringify({
 <script>
   import { lireJSON, repondre } from '../lib/navigateur.ts';
   import { etatLots, prochainLot } from '../lib/lots.ts';
-  import { palierAtteint, prochainPalier } from '../lib/paliers.ts';
+  import { jumeauVisible, palierAtteint, phraseSeuilJumeau, prochainPalier } from '../lib/paliers.ts';
   import { partCommeToi, profil, VOTES_FIABLES, type Matrice, type Reponse } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, tranches, trancher } from '../lib/trancher.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
   // Les stories ne se chargent qu'au clic sur « Partager » : le quiz reste léger.
@@ -91,7 +92,7 @@ const donnees = JSON.stringify({
     const { questions } = t;
     const etat = lireJSON<{ i: number; fini: boolean }>(CLE, { i: 0, fini: false });
     const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch { /* stockage indisponible */ } };
-    const matrice: Promise<Matrice> = fetch('/donnees/matrice.json').then((r) => r.json());
+    const matrice: Promise<Matrice> = donnee('matrice.json');
     let stories: DonneesStories | null = null;
     let reponse: Reponse | null = null;
 
@@ -105,7 +106,7 @@ const donnees = JSON.stringify({
       const reps = mesReps();
       const p = profil(m, reps);
       const n = tranches(hors);
-      const j = p.jumeau;
+      const j = jumeauVisible(n) ? p.jumeau : null;
       const groupe = (uid: string | null) => m.groupes.find((g) => g.u === uid);
       const phrase = $('[data-phrase-resultat]');
       const titre = $('[data-titre-resultat]');
@@ -119,12 +120,20 @@ const donnees = JSON.stringify({
         phrase.replaceChildren('Tu sièges à la place de ', b, g ? `, ${g.libelle}. ` : ', non inscrit. ',
           `Sur tes ${pluriel(p.reponses, 'vote')} : ${pluriel(j.identiques, 'vote')} comme toi`
           + (p.egalites ? ` (et ${pluriel(p.egalites, 'autre député')} à égalité).` : '.'));
-        t.salle?.vue('salle');
-        // Il marche jusqu'au siège la première fois ; ensuite, il y est déjà assis.
+        // La salle 3D ne s'ouvre qu'ici, à la demande (cadrage MVP, lot 3) : il marche jusqu'au
+        // siège la première fois ; ensuite, il y est déjà assis. Sans 3D (pas de WebGL, appareil
+        // trop lent), l'image du dernier dévoilement reste, avec le repère sur sa place.
         const deja = lireJSON<{ siege?: string }>(CLE_PERSONNAGE, {}).siege === j.ligne.u;
-        t.salle?.personnage(lireApparence(lireJSON(CLE_PERSONNAGE, null)));
-        t.salle?.asseoir(k, { marcher: !deja });
-        t.salle?.reperes([{ i: k, libelle: `Toi · le siège de ${j.ligne.n}`, toi: true }]);
+        const toi = `Toi · le siège de ${j.ligne.n}`;
+        void t.devoilement.then(async (d) => {
+          if (!d.affiche()) await d.reveler(t.salle, '', t.positions, { onde: false });
+          d.poserReperes([{ i: k, libelle: toi }]);
+          if (!(await d.ouvrirSalle(t.salle))) return;
+          t.salle?.vue('salle', { instant: true });
+          t.salle?.personnage(lireApparence(lireJSON(CLE_PERSONNAGE, null)));
+          t.salle?.asseoir(k, { marcher: !deja });
+          t.salle?.reperes([{ i: k, libelle: toi, toi: true }]);
+        });
         try {
           localStorage.setItem(CLE_PERSONNAGE, JSON.stringify({ ...lireJSON<object>(CLE_PERSONNAGE, {}), siege: j.ligne.u }));
         } catch { /* stockage indisponible */ }
@@ -132,11 +141,14 @@ const donnees = JSON.stringify({
         const reste = (prochainPalier(n)?.reste) ?? 0;
         titre.textContent = n ? `Encore ${pluriel(reste, 'vote')} pour prendre ta place` : 'Pas encore de place';
         phrase.textContent = n
-          ? `Tu as tranché ${pluriel(n, 'vote')} : il en faut 10 pour savoir où tu siègerais. Les « Je ne sais pas » ne comptent pas.`
+          ? `Tu as tranché ${pluriel(n, 'vote')} : il en faut 10 pour savoir où tu siègerais. Les « Je ne sais pas » ne comptent pas. ${phraseSeuilJumeau(n)}.`
           : 'Tu n’as tranché aucun vote : réponds « Pour » ou « Contre » pour voir qui vote comme toi.';
         $('[data-voir-siege]').hidden = true;
-        t.salle?.vue('salle');
-        t.salle?.reperes([{ i: -1, libelle: 'Ta place t’attend', toi: true }]);
+        // Pas encore de place : l'image du dernier dévoilement, le 578e fauteuil qui attend.
+        void t.devoilement.then(async (d) => {
+          if (!d.affiche()) await d.reveler(t.salle, '', t.positions, { onde: false });
+          d.poserReperes([{ i: -1, libelle: 'Ta place t’attend' }]);
+        });
       }
       // Les 3 groupes les plus proches (hors non-inscrits), en votes comme toi.
       const top = p.groupes.slice(0, 3);
@@ -283,7 +295,7 @@ const donnees = JSON.stringify({
     width: 100%; min-height: var(--cible); border-radius: var(--pilule); border: 1px solid var(--bord);
     background: var(--feuille); color: var(--encre); font: 700 15px/1 var(--police-texte); cursor: pointer;
   }
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .stories { grid-template-columns: 1fr; }
     .partage { padding: 20px 16px; }
   }

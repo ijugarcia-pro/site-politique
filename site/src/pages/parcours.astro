@@ -111,10 +111,11 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
 
 <script>
   import { lireJSON, reponses } from '../lib/navigateur.ts';
-  import { dossiers, PALIERS, prochainPalier, SEUIL_DOSSIER, votesTranches } from '../lib/paliers.ts';
+  import { dossiers, jumeauVisible, PALIERS, prochainPalier, SEUIL_DOSSIER, votesTranches } from '../lib/paliers.ts';
   import { repriseApres, seancesFaites, serie, texteGel } from '../lib/seances.ts';
   import { $, mesReps, pluriel } from '../lib/trancher.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import type { DonneesBilan } from '../lib/stories.ts';
 
   document.addEventListener('astro:page-load', () => {
@@ -176,18 +177,19 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
         if (fait) return;
         fait = true;
         const [m, votes] = await Promise.all([
-          fetch('/donnees/matrice.json').then((r) => r.json()) as Promise<Matrice>,
-          fetch('/donnees/votes.json').then((r) => r.json()) as Promise<Record<string, [number, string, string, number, string]>>]);
+          donnee('matrice.json') as Promise<Matrice>,
+          donnee('votes.json') as Promise<Record<string, [number, string, string, number, string]>>]);
         const reps = Object.fromEntries(Object.entries(mesReps()).filter(([uid]) => !hors.has(uid)));
         const p = profil(m, reps);
         const juges = Object.entries(reps).filter(([uid]) => votes[uid]);
         const ds = dossiers(toutes, d.cartes).filter((x) => x.tranches > 0).sort((a, b) => b.tranches - a.tranches);
-        const kj = p.jumeau ? d.sieges.indexOf(p.jumeau.ligne.u) : -1;
+        const j = jumeauVisible(n) ? p.jumeau : null;
+        const kj = j ? d.sieges.indexOf(j.ligne.u) : -1;
         const rp = kj >= 0 ? d.reperes[kj] : null;
         const bilan: DonneesBilan = {
           votes: n,
           contreCourant: { n: juges.filter(([uid, r]) => (r === 'pour') !== (votes[uid][3] === 1)).length, sur: juges.length },
-          jumeau: p.jumeau ? { nom: p.jumeau.ligne.n, identiques: p.jumeau.identiques, sur: p.reponses } : null,
+          jumeau: j ? { nom: j.ligne.n, identiques: j.identiques, sur: p.reponses } : null,
           theme: ds[0] ? { nom: ds[0].theme, n: ds[0].tranches } : null,
           serie: k, repere: rp ? { x: rp[0], y: rp[1] } : null,
         };

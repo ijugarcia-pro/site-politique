@@ -1,13 +1,14 @@
 // Le déroulé commun au quiz, aux lots et à la séance (components/vdef/Trancher.astro ; VDEF, lot
 // V5) : poser une question sur la tribune, marquer la réponse, proposer la suite, révéler le
-// vrai vote dans la salle (vue « La salle », voyants aux couleurs du vote), annoncer un palier
-// franchi une seule fois. Tout est calculé dans le navigateur ; les réponses y restent
+// vrai vote (lib/revelation.ts : l'image fixe de la vue haute, sièges peints aux couleurs du vote,
+// sans 3D ; cadrage MVP, lot 3), annoncer un palier franchi une seule fois. Tout est calculé dans le navigateur ; les réponses y restent
 // (lib/navigateur.ts). La page décide de l'enchaînement et de l'écran de fin.
 import { marquerPaliersVus, paliersVus, reponses as mesReponses } from './navigateur.ts';
 import { paliersAAnnoncer, prochainPalier, votesTranches } from './paliers.ts';
 import type { Reponse } from './profil.ts';
 import { voix578 } from './votes.ts';
 import { salle3D, type Pilote } from '../salle3d/pilote.ts';
+import type { PositionsRevelation } from './revelation.ts';
 
 export interface QuestionTrancher {
   uid: string; numero: number; theme: string; question: string; titre: string; concretement: string;
@@ -48,13 +49,22 @@ export interface Options {
 }
 
 export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
-  const { questions } = JSON.parse($('[data-donnees-trancher]').textContent!) as { questions: QuestionTrancher[] };
+  const { questions, revelation: positions } = JSON.parse($('[data-donnees-trancher]').textContent!) as
+    { questions: QuestionTrancher[]; revelation?: PositionsRevelation };
   const racineSalle = document.querySelector<HTMLElement>('[data-salle-vdef]');
   const salle: Pilote | null = racineSalle ? salle3D(racineSalle) : null;
-  // Sans 3D (pas de WebGL, économie de données…), la révélation montre l'hémicycle 2D.
-  let sans3D = !salle;
-  salle?.prete.then((s) => { sans3D = !s; });
   const place = rang ?? ((i: number) => ({ n: i, total: questions.length }));
+  // Le dévoilement, chargé à la demande : la salle 3D reste à l'arrêt sur les pages de vote.
+  const devoilement = import('./revelation.ts');
+  salle?.actif(false);
+
+  /** Le cran du tiroir au téléphone (Base.astro) : sans effet sur ordinateur. */
+  const cran = (c: 'moyen' | 'plein') => {
+    const main = document.querySelector<HTMLElement>('.sur-salle');
+    if (!main || main.dataset.cran === c) return;
+    main.dataset.cran = c;
+    document.dispatchEvent(new Event('vdef:tiroir'));
+  };
 
   const montrer = (ecran: string) => {
     for (const e of document.querySelectorAll<HTMLElement>('[data-trancher] [data-ecran]')) {
@@ -97,10 +107,10 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
   const poser = (i: number) => {
     const q = questions[i];
     montrer('question');
-    salle?.voyants([]);
-    salle?.reperes([]);
-    salle?.vue('tribune');
-    lieu(q.attente ? `La tribune · ${q.date.replace(/^Ils votent /, '')}` : 'La tribune · ce texte y a été voté');
+    void devoilement.then((m) => { m.question(salle); m.preparer(positions); });
+    cran('plein');
+    // Le repère de lieu ne dit plus que la date d'un vote à venir (cadrage MVP, R1).
+    lieu(q.attente ? `La tribune · ${q.date.replace(/^Ils votent /, '')}` : null);
     pastille('[data-theme]', q.theme);
     pastille('[data-date]', q.date, q.attente);
     $('[data-mode]').textContent = q.attente ? 'Vote avant eux' : 'Et toi, qu’aurais-tu voté ?';
@@ -183,14 +193,15 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
     const q = questions[i];
     montrer('revelation');
     lieu(null);
-    const voyants = [...q.sieges].map((l) => VOYANTS[l] ?? null);
-    salle?.vue('salle');
-    salle?.onde(voyants, 1100);
+    cran('moyen');
+    // L'hémicycle 2D seulement si l'image fixe ne se charge pas.
     const repli = $('[data-repli-2d]');
-    repli.hidden = !sans3D;
-    if (sans3D) {
+    repli.hidden = true;
+    void devoilement.then((m) => m.reveler(salle, q.sieges, positions)).then((ok) => {
+      if (ok) return;
+      repli.hidden = false;
       repli.querySelectorAll<SVGCircleElement>('circle:not(.marque)').forEach((c, k) => c.setAttribute('fill', REPLI[q.sieges[k]] ?? '#E7E7E7'));
-    }
+    });
     pastille('[data-rv-theme]', q.theme);
     pastille('[data-rv-date]', q.date);
     $('[data-rv-question]').textContent = q.titre;
@@ -253,6 +264,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
    *  (la fin du quiz, maquette 04). */
   const finir = (ecran: string, libelle = 'Terminé', sortirFocus = false) => {
     montrer(ecran);
+    cran('moyen');
     lieu(null);
     if (sortirFocus) {
       document.body.classList.remove('focus');
@@ -263,5 +275,5 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
     progression(segments, segments, libelle);
   };
 
-  return { questions, salle, sans3D: () => sans3D, poser, repondu, reveler, finir, progression, annoncer, montrer };
+  return { questions, salle, devoilement, positions, poser, repondu, reveler, finir, progression, annoncer, montrer };
 }

@@ -1,0 +1,35 @@
+---
+// La poignée du tiroir (cadrage MVP, R4, lot 5) : au téléphone (≤ 900 px de large, ou ≤ 560 px de
+// haut), <main> devient une feuille à trois crans posée sur la salle plein écran (Base.astro, en
+// CSS, d'après data-cran). Un bouton de 44 px : on le glisse, ou on l'appuie (Entrée, Espace) pour
+// passer au cran suivant. Le geste est dans lib/tiroir.ts, chargé à la demande sur ces écrans. Cachée
+// sur ordinateur. Rien n'est gardé dans le navigateur.
+---
+<button type="button" class="poignee-tiroir" data-tiroir-poignee aria-expanded="true"
+  aria-label="Déplier ou replier la feuille"><span aria-hidden="true"></span></button>
+
+<script>
+  const ECRAN = '(max-width: 900px), (max-height: 560px)';
+  const brancher = () => {
+    const main = document.querySelector<HTMLElement>('.sur-salle');
+    if (!main || !matchMedia(ECRAN).matches) return;
+    // Un écran très bas (téléphone en paysage) commence replié, sauf si la page a choisi son cran.
+    if (matchMedia('(max-height: 560px)').matches && main.dataset.cran === 'moyen') main.dataset.cran = 'replie';
+    void import('../../lib/tiroir.ts').then((m) => m.brancher());
+  };
+  document.addEventListener('astro:page-load', brancher);
+  matchMedia(ECRAN).addEventListener('change', brancher);
+</script>
+
+<style>
+  .poignee-tiroir { display: none; }
+  @media (max-width: 900px), (max-height: 560px) {
+    .poignee-tiroir {
+      position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
+      width: 100%; height: var(--cible); padding: 0; border: 0; background: var(--feuille);
+      cursor: grab; touch-action: none; flex: 0 0 auto;
+    }
+    .poignee-tiroir span { width: 40px; height: 5px; border-radius: var(--pilule); background: var(--bord); }
+    .poignee-tiroir:focus-visible { outline: 3px solid var(--encre); outline-offset: -3px; }
+  }
+</style>

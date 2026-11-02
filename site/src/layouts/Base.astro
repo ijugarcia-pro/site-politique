@@ -17,6 +17,7 @@ import BarreHaut from '../components/vdef/BarreHaut.astro';
 import Feuille from '../components/vdef/Feuille.astro';
 import PiedFeuille from '../components/vdef/PiedFeuille.astro';
 import Salle from '../components/vdef/Salle.astro';
+import TiroirMobile from '../components/vdef/TiroirMobile.astro';
 import { scrutins, semaine } from '../lib/donnees.ts';
 
 type Vue = 'tribune' | 'salle' | 'place';
@@ -84,7 +85,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
     <div class="cadre">
       <div class="scene" data-scene={fond}>
         <picture>
-          <source media="(max-width: 720px)" srcset={`/salle3d/fond-${fond}-telephone.webp`} />
+          <source media="(max-width: 900px) and (orientation: portrait)" srcset={`/salle3d/fond-${fond}-telephone.webp`} />
           <img class="fond" src={`/salle3d/fond-${fond}.webp`} alt={gabarit === 'lecture' ? '' : ALT[fond]}
             aria-hidden={gabarit === 'lecture' ? 'true' : undefined} decoding="async" />
         </picture>
@@ -101,10 +102,12 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
           </Feuille>
         </main>
       ) : (
-        <main id="contenu" class="sur-salle" data-vue-salle={vueSalle}>
+        <main id="contenu" class="sur-salle" data-vue-salle={vueSalle} data-cran="moyen">
+          <TiroirMobile />
           <slot />
         </main>
       )}
+      <slot name="hors-feuille" />
     </div>
     <BarreBas actif={bas} />
     <script type="application/json" data-hors-matrice set:html={horsMatrice}></script>
@@ -177,7 +180,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
   .fond { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
 
   /* La salle nette, les feuilles posées dessus : un écran, sans défilement de la page. */
-  .gabarit-salle .cadre { height: 100vh; height: 100dvh; min-height: 760px; overflow: hidden; }
+  .gabarit-salle .cadre { height: 100vh; height: 100dvh; overflow: hidden; }
   .sur-salle { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
   .sur-salle > :global(*) { pointer-events: auto; }
   /* La tribune vue d'en bas : le pupitre dans le tiers haut (la feuille du bas couvre la moitié
@@ -185,18 +188,42 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
   .gabarit-salle .scene[data-scene='tribune'] .fond {
     position: absolute; left: 0; top: -36.7%; height: 126.7%; object-position: 50% 50%;
   }
+  /* Les pages de vote (mode focus) posent la question sur cette image, sans 3D ni feuille du bas
+     (cadrage MVP, lot 3) : elle remplit tout l'écran. */
+  .gabarit-salle:global(.focus) .scene[data-scene='tribune'] .fond { top: 0; height: 100%; object-position: 50% 35%; }
 
   /* Lecture : la salle floutée et fixe, une feuille pleine page qui défile. */
   .gabarit-lecture .scene { position: fixed; }
   .gabarit-lecture .fond { transform: scale(1.08); filter: blur(18px) brightness(0.72); }
   .page-lecture { position: relative; z-index: 3; padding: 92px var(--marge) 0; }
 
-  @media (max-width: 720px) {
-    body:not(.focus) { padding-bottom: 74px; }
-    .gabarit-salle .cadre { height: auto; min-height: 0; overflow: visible; }
-    .gabarit-salle .scene { position: relative; inset: auto; height: 300px; }
+  /* L'immersion (components/vdef/Immersion.astro) : la salle seule, le bouton et les repères. */
+  :global(body.immersion .barre-haut), :global(body.immersion .barre-bas), :global(body.immersion) .sur-salle { display: none !important; }
+
+  /* Le téléphone et les écrans bas (cadrage MVP, lot 5) : la salle en plein écran, derrière ;
+     <main> est un tiroir à trois crans (components/vdef/TiroirMobile.astro), au-dessus de la barre
+     du bas ; son contenu défile à l'intérieur. */
+  @media (max-width: 900px), (max-height: 560px) {
+    .gabarit-lecture:not(.focus) { padding-bottom: 74px; }
+    .gabarit-salle .scene { position: fixed; inset: 0; }
     .gabarit-salle .scene[data-scene='tribune'] .fond { position: static; height: 100%; object-position: 50% 45%; }
-    .sur-salle { position: relative; inset: auto; pointer-events: auto; }
+    .sur-salle {
+      --bas-tiroir: 74px;
+      position: fixed; inset: auto 0 var(--bas-tiroir) 0; z-index: 4; pointer-events: auto;
+      display: flex; flex-direction: column; height: var(--cran);
+      overflow: hidden auto; overscroll-behavior: contain;
+      background: var(--feuille); border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+      transition: height 200ms ease;
+    }
+    :global(body.focus) .sur-salle { --bas-tiroir: 0px; }
+    /* Les repères de lieu, posés sur la salle, n'ont pas leur place dans le tiroir. */
+    .sur-salle > :global(.repere) { display: none !important; }
+    .sur-salle:global(.glisse) { transition: none; }
+    .sur-salle[data-cran='replie'] { --cran: 72px; overflow: hidden; }
+    .sur-salle[data-cran='moyen'] { --cran: min(45dvh, calc(100dvh - var(--bas-tiroir) - 64px)); }
+    .sur-salle[data-cran='plein'] { --cran: min(88dvh, calc(100dvh - var(--bas-tiroir) - 64px)); }
     .page-lecture { padding: 72px 0 0; }
   }
+  @media (prefers-reduced-motion: reduce) { .sur-salle { transition: none; } }
 </style>

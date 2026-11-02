@@ -213,7 +213,9 @@ const description = censure
 
 <script>
   import { deputeChoisi, repondre, reponse, type Reponse } from '../../lib/navigateur.ts';
+  import { jumeauVisible, phraseSeuilJumeau, votesTranches } from '../../lib/paliers.ts';
   import { profil, type Matrice } from '../../lib/profil.ts';
+  import { donnee } from '../../lib/matrice-cache.ts';
   import { mesReps } from '../../lib/trancher.ts';
 
   type Ligne = [string, string, string, string, string];
@@ -307,8 +309,15 @@ const description = censure
     const reps = mesReps();
     if (Object.keys(reps).length) {
       try {
-        const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
-        const j = profil(m, reps).jumeau;
+        const m: Matrice = await donnee('matrice.json');
+        const nb = votesTranches(reps);
+        const j = jumeauVisible(nb) ? profil(m, reps).jumeau : null;
+        if (!jumeauVisible(nb)) {
+          const seuil = document.createElement('li');
+          seuil.className = 't-legende';
+          seuil.textContent = phraseSeuilJumeau(nb);
+          lignesUl.querySelector('[data-ligne-toi]')!.after(seuil);
+        }
         if (j) {
           const l = parDepute.get(j.ligne.u);
           marques.set(j.ligne.u, marques.has(j.ligne.u) ? 'ton jumeau et ton député' : 'ton jumeau');
@@ -403,7 +412,7 @@ const description = censure
   .tableau :global(td a:hover) { text-decoration: underline; }
   .voisins { display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--filet); }
   .voisins a { color: var(--encre); font: 600 15px/1 var(--police-texte); min-height: var(--cible); display: inline-flex; align-items: center; }
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .voir-salle { margin-left: 0; }
     .groupes li { grid-template-columns: 70px minmax(0, 1fr); }
     .groupes li .t-legende { grid-column: 2; }

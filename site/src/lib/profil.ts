@@ -118,11 +118,13 @@ export function profil(matrice: Matrice, reponses: Record<string, Reponse>): Pro
   const jumeau = premier && premier.identiques > 0 ? premier : null;
   const egalites = jumeau ? deputes.filter((d) => d !== jumeau
     && d.identiques === jumeau.identiques && d.contraires === jumeau.contraires).length : 0;
-  // Ton opposé : le plus de votes contraires, puis le moins d'identiques, puis le nom. Il faut
-  // au moins un vote contraire : un député toujours absent n'est jamais ton opposé.
+  // Ton opposé : le plus de votes contraires, puis le moins d'identiques ; à égalité parfaite, un
+  // autre groupe que le jumeau (décision du 2 nov. 2026, Q3 : aucun classement ne change), puis le
+  // nom. Il faut au moins un vote contraire : un député toujours absent n'est jamais ton opposé.
+  const memeGroupe = (d: Classe<LigneDepute>) => (jumeau && d.ligne.g === jumeau.ligne.g ? 1 : 0);
   const oppose = deputes.filter((d) => d !== jumeau && d.contraires > 0)
     .sort((a, b) => b.contraires - a.contraires || a.identiques - b.identiques
-      || nomDe(a.ligne).localeCompare(nomDe(b.ligne), 'fr'))[0] ?? null;
+      || memeGroupe(a) - memeGroupe(b) || nomDe(a.ligne).localeCompare(nomDe(b.ligne), 'fr'))[0] ?? null;
   return { reponses: mes.length, precision: precision(mes.length), deputes, groupes, jumeau,
     egalites, oppose };
 }

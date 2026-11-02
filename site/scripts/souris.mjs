@@ -1,21 +1,25 @@
-// Le test de la souris (VDEF, lot V10) : sur la tribune, la salle, ta place et le verdict, on
+// Le test de la souris (VDEF, lot V10) : sur la tribune, la salle et ta place, on
 // enfonce le bouton au milieu de ce que les feuilles laissent voir de la salle, on glisse de
 // 300 px, on relâche : l'image de la salle doit changer (le glisser tourne la caméra). La salle
 // est rendue en WebGL logiciel (SwiftShader) : lent, mais partout disponible. Un visiteur
 // inventé (réponses illustratives, jamais envoyées) a tranché 12 votes, pour que « Ta place »
 // s'ouvre.
 //
-// Usage (depuis site/, après npm run build) : npm run test:souris   ou   node scripts/souris.mjs [build]
+// Usage (depuis site/, après npm run build) : npm run test:souris   ou   node scripts/souris.mjs [build] [--gpu]
+// --gpu : la vraie carte graphique (une minute). Sans, en WebGL logiciel, une image prend plus de 15 s :
+// compter 15 minutes.
 
 import { join, resolve } from 'node:path';
 import { SITE } from './inventaire.mjs';
 import { servir } from './captures.mjs';
 import { lancer } from './ecrans.mjs';
 
-const PAGES = ['/', '/salle/', '/ta-place/', '/verdict/'];
-const serveur = await servir(resolve(process.argv[2] ?? join(SITE, 'dist')));
+// Depuis le lot 3 du cadrage MVP, le verdict se montre sur l'image fixe, sans 3D : il sort du test.
+const PAGES = ['/', '/salle/', '/ta-place/'];
+const args = process.argv.slice(2);
+const serveur = await servir(resolve(args.find((a) => !a.startsWith('--')) ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
-const navigateur = await lancer();
+const navigateur = await lancer({ gpu: args.includes('--gpu') });
 const page = await (await navigateur.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })).newPage();
 
 // Le visiteur : les votes de la matrice, une réponse sur trois « contre ».
@@ -29,10 +33,12 @@ await page.evaluate((v) => {
 
 let echecs = 0;
 for (const chemin of PAGES) {
-  await page.goto(base + chemin, { waitUntil: 'networkidle' });
+  // Palier 1 forcé (sans antialiasing) : le test juge le geste, pas le rendu ; en WebGL logiciel, le
+  // palier 0 ne rend pas une image en 4 minutes, et le gouverneur de qualité garderait le repli.
+  await page.goto(`${base}${chemin}?qualite=1`, { waitUntil: 'networkidle' });
   const etat = await page.waitForFunction(() => {
     const e = document.querySelector('[data-salle-vdef]')?.dataset.salle3dEtat;
-    return ['prete', 'erreur', 'webgl'].includes(e ?? '') ? e : null;
+    return ['prete', 'erreur', 'webgl', 'qualite'].includes(e ?? '') ? e : null;
   }, null, { timeout: 240000 }).then((h) => h.jsonValue());
   if (etat !== 'prete') { console.log(`✗ ${chemin} : la salle 3D ne s'est pas ouverte (${etat})`); echecs += 1; continue; }
   await page.waitForTimeout(6000);
@@ -50,7 +56,7 @@ for (const chemin of PAGES) {
   const avant = await page.screenshot({ clip: zone, timeout: 240000 });
   await page.mouse.move(depart.x, depart.y);
   await page.mouse.down();
-  for (let k = 1; k <= 10; k += 1) await page.mouse.move(depart.x + 30 * k, depart.y, { steps: 2 });
+  for (let k = 1; k <= 6; k += 1) await page.mouse.move(depart.x + 50 * k, depart.y);
   await page.mouse.up();
   await page.waitForTimeout(8000);
   const apres = await page.screenshot({ clip: zone, timeout: 240000 });
@@ -60,5 +66,5 @@ for (const chemin of PAGES) {
 }
 await navigateur.close();
 serveur.close();
-console.log(echecs ? `\n${echecs} page(s) en échec.` : '\nLe glisser à la souris tourne la salle sur les 4 pages.');
+console.log(echecs ? `\n${echecs} page(s) en échec.` : `\nLe glisser à la souris tourne la salle sur les ${PAGES.length} pages.`);
 process.exit(echecs ? 1 : 0);

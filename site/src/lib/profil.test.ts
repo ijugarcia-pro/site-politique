@@ -161,3 +161,19 @@ test('teintes et initiales', () => {
   assert.equal(initiales('Jean-Luc Mélenchon'), 'JM');
   assert.equal(initiales('Marie-France Lorho'), 'ML');
 });
+
+test("l'opposé à égalité parfaite : un autre groupe que le jumeau, avant le nom ; aucun classement ne change", () => {
+  const m = { votes: ['v1', 'v2'], groupes: [], deputes: [
+    { u: 'PA1', n: 'Jumeau', g: 'PO1', e: 1, s: 'PP' },
+    { u: 'PA2', n: 'Alice', g: 'PO1', e: 1, s: 'CC' },
+    { u: 'PA3', n: 'Bruno', g: 'PO2', e: 1, s: 'CC' },
+  ] };
+  const p = profil(m as never, { v1: 'pour', v2: 'pour' });
+  assert.equal(p.jumeau?.ligne.u, 'PA1');
+  assert.equal(p.oppose?.ligne.u, 'PA3');
+  // Le classement des députés reste celui du nom.
+  assert.deepEqual(p.deputes.map((d) => d.ligne.u), ['PA1', 'PA2', 'PA3']);
+  // Sans égalité parfaite, le départage ne joue pas : le plus de contraires, même dans le groupe.
+  const q = profil({ ...m, deputes: [m.deputes[0], m.deputes[1], { ...m.deputes[2], s: 'CP' }] } as never, { v1: 'pour', v2: 'pour' });
+  assert.equal(q.oppose?.ligne.u, 'PA2');
+});

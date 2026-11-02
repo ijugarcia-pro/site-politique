@@ -3,25 +3,38 @@
 // - couleurs : outputColorSpace et colorSpace au lieu des « encodings » ; conversion des couleurs
 //   hexadécimales coupée, comme en r128 (gestion-couleurs.ts) ;
 // - lumières physiques : intensités du prototype multipliées par π, puis réglées à l'œil ;
-// - velours : sheen devient un nombre, avec sheenColor ;
 // - matières précalculées (public/salle3d/, scripts/matieres.mjs) au lieu d'être calculées ici ;
 // - sièges tirés du plan 2D (geometrie.ts) : le siège n° i est celui de la composition ;
 // - caméras sans GSAP (tween.ts) ; rendu à la demande, ombres recalculées seulement au besoin.
 // Retirés : la vue et les matières du « carnet », les ambiances « documentaire » et « plâtre »,
 // les voyants tirés au hasard (les pages donnent les vrais votes).
+// Depuis t92 (docs/design-salle-dessus/, Claude Design, 2 nov. 2026) : le décor du Palais Bourbon
+// (decor.ts), le velours neutre teinté par siège, les lustres, le mode « Dessus » vertical.
 // Chargé à la demande par pilote.ts : jamais dans le JavaScript initial d'une page.
 
 import { couleurExacte } from './gestion-couleurs.ts';
 import * as THREE from 'three';
 import { chemin, colonnes, echelleFauteuil, FAUTEUIL_578, longueur, P, position, sieges3D, surChemin, type Siege3D } from './geometrie.ts';
-import type { Apparence } from './apparence.ts';
+import { APPARENCE_DEFAUT, type Apparence } from './apparence.ts';
 import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
+import { balayage, boiteRonde, corrigeSens, fusion, fusionnerImmobiles, mat4, rad } from './outils3d.ts';
+import { ajouterDecor } from './decor.ts';
+import { cadrageDessus, DEPUTES, DESSUS } from './cadrage-haut.ts';
+import { grilleSieges, type PointVise } from './visee.ts';
+import * as etiquettes from './etiquettes-dom.ts';
+export { etiquettes };
 
 /** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
- *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. */
-export type NomVue = 'tribune' | 'salle' | 'place';
-export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number }
+ *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus deux vues à la
+ *  verticale de l'hémicycle, coupole masquée (cadrage-haut.ts), qui ne sont pas de navigation :
+ *  « deputes », ce que montre « Voir les députés » sur /salle/, la seule où l'on choisit un siège ;
+ *  « dessus », un peu plus large, celle de l'image fixe du dévoilement. */
+export type NomVue = 'tribune' | 'salle' | 'place' | 'dessus' | 'deputes';
+/** À la verticale : plafond masqué, cadré pour tenir tous les sièges. */
+const vueFixe = (nom: NomVue) => nom === 'dessus' || nom === 'deputes';
+/** `haut` : le haut de la caméra, s'il n'est pas la verticale (le Dessus). */
+export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number; haut?: [number, number, number] }
 /** Ce que les feuilles couvrent du canevas, en pixels : le cadrage se centre sur le reste. */
 export interface Cadre { gauche?: number; droite?: number; haut?: number; bas?: number }
 export interface OptionsScene { base?: string; telephone?: boolean; mouvementReduit?: boolean }
@@ -35,7 +48,26 @@ export function modePerf(recherche: string): { marques: boolean; instant: boolea
   return { marques: v.length > 0, instant: v.includes('instant'), leger: v.includes('leger') };
 }
 
-const rad = (d: number) => (d * Math.PI) / 180;
+/** Le gouverneur de qualité (lot 1 du cadrage MVP) : la médiane des 20 premières images décide du
+ *  palier. 0 : rendu complet ; 1 : léger (pixel ratio 1) au-delà de 24 ms par image ; 2 : pas de
+ *  3D (le repli reste) au-delà de 40 ms. */
+/** `?qualite=0|1|2` dans l'adresse de la première page force le palier de rendu (pour tester),
+ *  sans rien garder dans le navigateur ; null : le gouverneur décide (gouverner). */
+export function qualiteForcee(recherche: string): 0 | 1 | 2 | null {
+  const q = /[?&]qualite=([012])(&|$)/.exec(recherche);
+  return q ? (+q[1] as 0 | 1 | 2) : null;
+}
+
+export const GOUVERNEUR = { images: 20, leger: 24, statique: 40 } as const;
+export const palierDe = (medianeMs: number): 0 | 1 | 2 =>
+  (medianeMs > GOUVERNEUR.statique ? 2 : medianeMs > GOUVERNEUR.leger ? 1 : 0);
+
+/** La glisse de caméra qui reste quand on change de page : seulement entre « La salle » et
+ *  « Ta place », 600 ms, au palier 0 ; partout ailleurs, une coupure et un fondu de 200 ms. */
+export const GLISSE_NAVIGATION = 600;
+export const glisseEntre = (de: NomVue, vers: NomVue) =>
+  (de === 'salle' && vers === 'place') || (de === 'place' && vers === 'salle');
+
 /** Lumières physiques de three récent : le prototype réglait ses intensités en mode « hérité ». */
 const PI = Math.PI;
 
@@ -43,12 +75,30 @@ const PI = Math.PI;
  *  (l'ancienne CAM 1). « Ta place » dépend du siège : voir cadrer(). Le décalage dû aux feuilles
  *  (Cadre) s'applique ensuite, sans déformer l'image (setViewOffset). */
 export function cadrage(nom: NomVue, aspect: number): Cadrage {
+  if (vueFixe(nom)) return cadrageDessus(aspect, 1, aspect, 1, nom === 'deputes' ? DEPUTES : DESSUS);
   const portrait = aspect < 0.9;
   // La tribune : l'ancienne CAM 2 remise face au pupitre ; avec la feuille du bas (moitié basse),
   // le pupitre et le perchoir tombent dans le tiers haut, à l'échelle de la maquette 05.
   if (nom === 'tribune') return portrait ? { pos: [0, 1.7, 7.0], cible: [0, 2.6, -4], fov: 64 }
     : { pos: [0, 1.7, 6.2], cible: [0, 2.55, -4], fov: 50 };
   return portrait ? { pos: [0, 9.6, -6.2], cible: [0, 6.4, 10], fov: 80 } : { pos: [0, 7.0, -6.4], cible: [0, 5.5, 11], fov: 64 };
+}
+
+const CHAMP_SALLE = { min: 58, max: 78 };
+/** Le cadrage ajusté à ce que les feuilles laissent voir du canevas (cadrage MVP, lot 4) : la zone
+ *  fait `largeur` × `hauteur` sur un canevas de `largeurCanevas` × `hauteurCanevas`. Le Dessus y
+ *  tient la salle en réglant sa hauteur ; la vue « La salle » garde le même angle horizontal (90°,
+ *  celui d'un plein écran en 16/10), borné pour ne pas déformer : le champ se calcule sur la zone,
+ *  puis se rapporte à toute la hauteur du canevas (l'image reste centrée sur la zone :
+ *  setViewOffset). Les autres vues gardent leur cadrage. */
+export function cadrageAjuste(nom: NomVue, largeur: number, hauteur: number, hauteurCanevas: number, largeurCanevas = largeur): Cadrage {
+  const aspect = Math.max(1, largeur) / Math.max(1, hauteur);
+  if (vueFixe(nom)) return cadrageDessus(Math.max(1, largeur), Math.max(1, hauteur), Math.max(1, largeurCanevas), Math.max(1, hauteurCanevas), nom === 'deputes' ? DEPUTES : DESSUS);
+  const c = cadrage(nom, aspect);
+  if (!(nom === 'salle' && aspect >= 0.9)) return c;
+  const champ = Math.min(CHAMP_SALLE.max, Math.max(CHAMP_SALLE.min, 2 * Math.atan(1 / aspect) * (180 / Math.PI)));
+  const fov = 2 * Math.atan(Math.tan((champ * Math.PI) / 360) * (Math.max(1, hauteurCanevas) / Math.max(1, hauteur))) * (180 / Math.PI);
+  return { ...c, fov };
 }
 
 /** Les bornes du regard dans la vue « Ta place » : on tourne la tête sans bouger. */
@@ -68,15 +118,34 @@ export function yeuxAuSiege(s: Pick<Siege3D, 'r' | 'th' | 'y'>): [number, number
 export const CENTRE_TRIBUNE: [number, number, number] = [0, 1.35, -0.85];
 
 export interface Salle3D {
-  vue(nom: NomVue, opt?: { instant?: boolean }): Promise<void>;
+  /** `duree` : la glisse de caméra, en ms (1 600 par défaut) ; `instant` : une coupure ;
+   *  `navigation` : un changement de page (GLISSE_NAVIGATION). Redemander la vue en cours la
+   *  recale sans glisse longue. */
+  vue(nom: NomVue, opt?: { instant?: boolean; duree?: number; navigation?: boolean }): Promise<void>;
+  /** Faux sur une page « lecture » (salle cachée) : plus aucun rendu ni redimensionnement. */
+  actif(on: boolean): void;
+  /** Le palier de rendu (lot 1 du cadrage MVP) : 0 complet, 1 léger (pixel ratio 1). */
+  qualite(palier: 0 | 1): void;
+  readonly palier: 0 | 1;
+  /** Le gouverneur de qualité : rend 20 images d'affilée, passe au palier qu'elles indiquent
+   *  (palierDe) et le rend ; 2 : la page garde le repli. */
+  gouverner(): Promise<0 | 1 | 2>;
   /** Ce que les feuilles couvrent : la vue se centre sur le reste du canevas. */
   cadre(c: Cadre): void;
-  /** Le siège sous un point du canevas (0 à 1 en largeur et en hauteur), ou null. */
-  siegeSous(x: number, y: number): number | null;
+  /** Le siège sous un point du canevas (0 à 1 en largeur et en hauteur), ou null ; `rayon` : le
+   *  plus proche à ce nombre de pixels (le doigt). Sans lancer de rayon (visee.ts). */
+  siegeSous(x: number, y: number, rayon?: number): number | null;
+  /** Le siège survolé passe au blanc (null : aucun), au-dessus de sa couleur. */
+  surligner(i: number | null): void;
   terminer(): void;
   /** La couleur du voyant de chaque siège (index de la composition) ; null : éteint. */
   voyants(couleurs: (string | null)[]): void;
   redimensionner(): void;
+  /** Le velours seul, sans voyants (l'image fixe du dévoilement : des sièges clairs, neutres). */
+  velours(couleurs: (string | null)[]): void;
+  /** Le masque d'identifiants des sièges, pour l'image fixe du dévoilement (scripts/images-fixes.mjs) :
+   *  les pixels RGBA du canevas, du haut vers le bas ; R + 256 × G : le numéro du siège + 1, 0 : rien. */
+  masqueSieges(): { largeur: number; hauteur: number; pixels: Uint8Array };
   projeter(points: [number, number, number][]): { x: number; y: number; devant: boolean }[];
   /** La position d'un siège (index de la composition) ; -1 : le 578e fauteuil, au pied de la tribune. */
   positionSiege(i: number, dy?: number): [number, number, number];
@@ -88,120 +157,37 @@ export interface Salle3D {
   asseoir(i: number | null, opt?: { marcher?: boolean }): Promise<void>;
   /** Appelée après chaque image : la page y repositionne ses repères (projeter). */
   surRendu: (() => void) | null;
-  /** Les voyants s'allument en onde, du rang intérieur vers l'extérieur (R1). */
-  voyantsEnOnde(couleurs: (string | null)[], duree?: number): Promise<void>;
   /** La caméra libre, bornée (radians ; dans « Ta place », la tête tourne sans bouger) ;
-   *  zoomer : recul, ou champ de vision dans « Ta place » ; recentrer revient à la vue en cours. */
+   *  zoomer : recul, champ de vision dans « Ta place », hauteur de la caméra dans le Dessus ;
+   *  recentrer revient à la vue en cours. */
   orbiter(dLacet: number, dTangage: number): void;
-  zoomer(f: number): void;
+  /** Dans le Dessus, la salle suit le pointeur (écart en pixels du canevas). */
+  deplacer(dx: number, dy: number): void;
+  /** `vers` : le point du canevas (pixels) qui reste sous les doigts ou la souris, dans la vue des députés. */
+  zoomer(f: number, vers?: { x: number; y: number }): void;
   recentrer(): void;
   detruire(): void;
 }
-
-/* ---------------- Géométrie utilitaire (room.js) ---------------- */
-
-/** Remet chaque triangle dans le bon sens d'après la normale fournie. */
-function corrigeSens(g: THREE.BufferGeometry) {
-  const p = g.attributes.position.array, n = g.attributes.normal.array, ix = g.index!.array as Uint32Array | Uint16Array;
-  for (let t = 0; t < ix.length; t += 3) {
-    const a = ix[t] * 3, b = ix[t + 1] * 3, c = ix[t + 2] * 3;
-    const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
-    const vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
-    const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
-    const d = cx * (n[a] + n[b] + n[c]) + cy * (n[a + 1] + n[b + 1] + n[c + 1]) + cz * (n[a + 2] + n[b + 2] + n[c + 2]);
-    if (d < 0) { const tmp = ix[t + 1]; ix[t + 1] = ix[t + 2]; ix[t + 2] = tmp; }
-  }
-  g.index!.needsUpdate = true;
-}
-
-interface OptBalayage { seg?: number; mats?: number[]; echelle?: number; rRef?: number; vNorm?: boolean; inverse?: boolean }
-/** Balayage d'un profil (r, y) autour de l'axe vertical, de th0 à th1 (degrés). */
-function balayage(profil: [number, number][], th0: number, th1: number, opt: OptBalayage = {}) {
-  const seg = opt.seg || Math.max(8, Math.ceil(Math.abs(th1 - th0) / 1.2));
-  const mats = opt.mats || [], echelle = opt.echelle || 1, rRef = opt.rRef;
-  const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [], groupes: [number, number, number][] = [];
-  let vAcc = 0, base = 0;
-  for (let k = 0; k < profil.length - 1; k++) {
-    const [r0, y0] = profil[k], [r1, y1] = profil[k + 1];
-    const len = Math.hypot(r1 - r0, y1 - y0); if (len < 1e-6) continue;
-    let nr = (y1 - y0) / len, ny = -(r1 - r0) / len;
-    const vEch = opt.vNorm ? len : echelle;
-    if (opt.inverse) { nr = -nr; ny = -ny; }
-    const debutIdx = idx.length;
-    for (let i = 0; i <= seg; i++) {
-      const th = rad(th0 + ((th1 - th0) * i) / seg), c = Math.cos(th), s = Math.sin(th);
-      const rr = rRef || (r0 + r1) / 2;
-      const u = (th * rr) / echelle;
-      pos.push(r0 * c, y0, r0 * s, r1 * c, y1, r1 * s);
-      nor.push(nr * c, ny, nr * s, nr * c, ny, nr * s);
-      if (opt.vNorm) uv.push(u, 0, u, 1); else uv.push(u, vAcc / vEch, u, (vAcc + len) / vEch);
-    }
-    for (let i = 0; i < seg; i++) {
-      const a = base + i * 2, b = a + 1, c2 = a + 2, d = a + 3;
-      idx.push(a, c2, b, b, c2, d);
-    }
-    base += (seg + 1) * 2; vAcc += len;
-    groupes.push([debutIdx, idx.length - debutIdx, mats[k] || 0]);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  g.setIndex(idx);
-  for (const [s, n, m] of groupes) g.addGroup(s, n, m);
-  corrigeSens(g);
-  return g;
-}
-
-/** Boîte à arêtes arrondies. */
-function boiteRonde(w: number, h: number, d: number, r: number, s = 3) {
-  const g = new THREE.BoxGeometry(w, h, d, s * 2, s * 2, s * 2);
-  const p = g.attributes.position, v = new THREE.Vector3(), inner = new THREE.Vector3();
-  const hw = w / 2 - r, hh = h / 2 - r, hd = d / 2 - r;
-  for (let i = 0; i < p.count; i++) {
-    v.fromBufferAttribute(p, i);
-    inner.set(Math.max(-hw, Math.min(hw, v.x)), Math.max(-hh, Math.min(hh, v.y)), Math.max(-hd, Math.min(hd, v.z)));
-    v.sub(inner); if (v.lengthSq() > 0) v.normalize().multiplyScalar(r);
-    v.add(inner); p.setXYZ(i, v.x, v.y, v.z);
-  }
-  g.computeVertexNormals();
-  return g;
-}
-
-/** Fusion simple de géométries (non indexées), chacune avec sa matrice. */
-function fusion(liste: [THREE.BufferGeometry, THREE.Matrix4 | null][]) {
-  const pos: number[] = [], nor: number[] = [], uv: number[] = [];
-  for (const [geo, m] of liste) {
-    const g = geo.index ? geo.toNonIndexed() : geo.clone(); if (m) g.applyMatrix4(m);
-    pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array);
-    if (g.attributes.uv) uv.push(...g.attributes.uv.array); else for (let i = 0; i < g.attributes.position.count; i++) uv.push(0, 0);
-  }
-  const out = new THREE.BufferGeometry();
-  out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-  out.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  return out;
-}
-const mat4 = (x: number, y: number, z: number, rx = 0, ry = 0, rz = 0, s = 1) => {
-  const o = new THREE.Object3D(); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); o.scale.setScalar(s); o.updateMatrix(); return o.matrix.clone();
-};
 
 /* ---------------- Matières ---------------- */
 
 type Textures = Record<string, THREE.Texture>;
 
-async function charger(base: string): Promise<Textures> {
+async function charger(base: string, telephone: boolean): Promise<Textures> {
   const manifeste = await (await fetch(`${base}matieres.json`)).json() as Record<string, { couleur: boolean }>;
   const loader = new THREE.TextureLoader();
   const T: Textures = {};
   await Promise.all(Object.entries(manifeste).map(async ([nom, { couleur }]) => {
-    const t = await loader.loadAsync(`${base}${nom}.webp`);
+    // Le mur du perchoir fait 4 096 px : moitié moins au téléphone.
+    const t = await loader.loadAsync(`${base}${nom}${telephone && nom === 'mur-perchoir' ? '-telephone' : ''}.webp`);
+    // Décodée en tâche de fond : sinon, le navigateur la décode pendant l'envoi à la carte graphique.
+    await (t.image as HTMLImageElement).decode?.().catch(() => {});
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.colorSpace = couleur ? THREE.SRGBColorSpace : THREE.NoColorSpace;
     t.anisotropy = 8;
     T[nom] = t;
   }));
-  for (const k of ['mosaique', 'mosaique-h', 'mur', 'mur-h', 'tribune', 'tribune-h', 'perchoir', 'perchoir-h', 'plaque', 'verriere']) {
+  for (const k of ['mosaique', 'mosaique-h', 'mur-perchoir', 'mur-perchoir-h', 'tribune', 'tribune-h', 'perchoir', 'perchoir-h', 'plaque', 'verriere']) {
     T[k].wrapS = T[k].wrapT = THREE.ClampToEdgeWrapping;
   }
   for (const k of ['entablement', 'entablement-h', 'entablement-m']) T[k].flipY = false;
@@ -215,42 +201,46 @@ function lueurCanvas() {
   g.fillStyle = r; g.fillRect(0, 0, 128, 128); return c;
 }
 
+const ROUGE_VELOURS = 0x6e0d19;
+
 function matieres(T: Textures, telephone: boolean) {
   // Sur téléphone, pas de vernis (clearcoat) : il coûte cher au processeur graphique.
-  const vernis = telephone ? {} : { clearcoat: 0.55, clearcoatRoughness: 0.28 };
   const cc = (x: number, r: number) => (telephone ? {} : { clearcoat: x, clearcoatRoughness: r });
   const M: Record<string, THREE.Material> & Record<string, any> = {};
-  M.noyer = new THREE.MeshPhysicalMaterial({ map: T.bois, bumpMap: T['bois-h'], bumpScale: 0.012, roughnessMap: T['bois-r'], roughness: 1, metalness: 0, ...vernis, envMapIntensity: 0.9 });
-  M.noyerClair = new THREE.MeshPhysicalMaterial({ map: T['bois-clair'], bumpMap: T['bois-h'], bumpScale: 0.01, roughness: 0.55, ...vernis, envMapIntensity: 0.9 });
-  M.plateau = new THREE.MeshPhysicalMaterial({ map: T.bois, color: 0x9c8474, bumpMap: T['bois-h'], bumpScale: 0.008, roughnessMap: T['bois-r'], roughness: 1, ...cc(0.3, 0.4), envMapIntensity: 0.7 });
-  M.panneau = new THREE.MeshPhysicalMaterial({ map: T.panneau, bumpMap: T['panneau-h'], bumpScale: 0.03, roughness: 0.5, ...vernis, envMapIntensity: 0.8 });
-  M.velours = new THREE.MeshPhysicalMaterial({ map: T.velours, bumpMap: T['velours-h'], bumpScale: 0.004, roughness: 0.92, metalness: 0,
-    sheen: 1, sheenColor: new THREE.Color(0.42, 0.08, 0.1), sheenRoughness: 0.92, specularIntensity: 0, envMapIntensity: 0.3 });
-  M.velours.onBeforeCompile = (sh: { fragmentShader: string }) => { // reflet rasant du velours
+  M.noyer = new THREE.MeshStandardMaterial({ map: T.bois, bumpMap: T['bois-h'], bumpScale: 0.012, roughnessMap: T['bois-r'], roughness: 1, metalness: 0, envMapIntensity: 0.9 });
+  M.noyerClair = new THREE.MeshStandardMaterial({ map: T['bois-clair'], bumpMap: T['bois-h'], bumpScale: 0.01, roughness: 0.55, envMapIntensity: 0.9 });
+  M.plateau = new THREE.MeshStandardMaterial({ map: T.bois, color: 0x9c8474, roughnessMap: T['bois-r'], roughness: 1, envMapIntensity: 0.7 });
+  M.panneau = new THREE.MeshStandardMaterial({ map: T.panneau, bumpMap: T['panneau-h'], bumpScale: 0.03, roughness: 0.5, envMapIntensity: 0.8 });
+  // Le velours est neutre : sa couleur vient de chaque siège (rouge, ou la couleur d'un vote), sinon
+  // un velours rouge multiplié par du bleu donne du noir. Le reflet rasant prend la couleur du siège.
+  M.velours = new THREE.MeshStandardMaterial({ map: T.velours, roughness: 0.92, metalness: 0, envMapIntensity: 0.3 });
+  M.velours.onBeforeCompile = (sh: { fragmentShader: string }) => {
     sh.fragmentShader = sh.fragmentShader.replace('#include <tonemapping_fragment>',
-      'float fr = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 2.2);\n gl_FragColor.rgb += vec3(0.20, 0.035, 0.045) * fr * (0.35 + 0.65 * diffuseColor.r);\n#include <tonemapping_fragment>');
+      'float fr = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 2.2);\n gl_FragColor.rgb += diffuseColor.rgb * fr * 1.5;\n#include <tonemapping_fragment>');
   };
-  M.moquette = new THREE.MeshStandardMaterial({ map: T.moquette, bumpMap: T['moquette-h'], bumpScale: 0.006, roughness: 1, envMapIntensity: 0.2, color: 0xb89a90 });
+  // Le fauteuil du président, le 578e siège, les galeries : rouges pour de bon.
+  M.veloursRouge = M.velours.clone(); M.veloursRouge.onBeforeCompile = M.velours.onBeforeCompile; M.veloursRouge.color = couleurExacte(ROUGE_VELOURS);
+  M.moquette = new THREE.MeshStandardMaterial({ map: T.moquette, roughness: 1, envMapIntensity: 0.2, color: 0xb89a90 });
   M.marbre = new THREE.MeshPhysicalMaterial({ map: T.marbre, roughness: 0.22, ...cc(0.7, 0.12), envMapIntensity: 0.8 });
   M.statuaire = new THREE.MeshPhysicalMaterial({ map: T.statuaire, roughness: 0.3, ...cc(0.4, 0.2), envMapIntensity: 0.7 });
   M.laiton = new THREE.MeshStandardMaterial({ color: 0xa47a30, metalness: 1, roughness: 1, roughnessMap: T.patine, envMapIntensity: 1.0 });
   M.or = new THREE.MeshStandardMaterial({ color: 0xd8af58, metalness: 1, roughness: 0.85, roughnessMap: T.patine, envMapIntensity: 1.35 });
   M.caisson = new THREE.MeshStandardMaterial({ map: clone(T.caisson, 28, 6), bumpMap: clone(T['caisson-h'], 28, 6), bumpScale: 0.06,
-    metalnessMap: clone(T['caisson-m'], 28, 6), metalness: 1, roughnessMap: clone(T['caisson-r'], 28, 6), roughness: 1, side: THREE.BackSide, envMapIntensity: 1.1 });
+    metalnessMap: clone(T['caisson-m'], 28, 6), metalness: 1, roughnessMap: clone(T['caisson-r'], 28, 6), roughness: 1, side: THREE.BackSide, envMapIntensity: 1.7,
+    // Sans les lumières des lustres, la coupole garde sa clarté par elle-même, sans rien coûter.
+    emissive: 0xffffff, emissiveMap: clone(T.caisson, 28, 6), emissiveIntensity: 0.3 });
   M.caissonBerceau = M.caisson.clone();
   for (const k of ['map', 'bumpMap', 'metalnessMap', 'roughnessMap']) M.caissonBerceau[k] = clone(M.caisson[k], 1, 1);
   M.caissonBerceau.side = THREE.FrontSide;
+  M.caissonBerceau.emissiveMap = clone(M.caisson.emissiveMap, 1, 1);
   M.verriere = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: T.verriere, emissiveIntensity: 2.0, roughness: 1, side: THREE.BackSide, fog: false });
   M.vitrage = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: T.vitrage, emissiveIntensity: 2.0, roughness: 1, fog: false });
   M.mosaique = new THREE.MeshPhysicalMaterial({ map: T.mosaique, bumpMap: T['mosaique-h'], bumpScale: 0.01, roughness: 0.42, ...cc(0.35, 0.2), envMapIntensity: 0.6 });
   M.sol = new THREE.MeshPhysicalMaterial({ map: clone(T.marbre, 6, 6), color: 0xb9a596, roughness: 0.3, ...cc(0.4, 0.3), envMapIntensity: 0.6 });
   M.colonne = new THREE.MeshPhysicalMaterial({ map: clone(T.statuaire, 1, 3), color: 0xeadcc4, bumpMap: T.cannelures, bumpScale: 0.09, roughness: 0.28, ...cc(0.5, 0.18), envMapIntensity: 0.8 });
-  M.balustre = new THREE.MeshStandardMaterial({ map: clone(T.balustrade, 60, 1), bumpMap: clone(T['balustrade-h'], 60, 1), bumpScale: 0.03, alphaTest: 0.5, metalness: 1, roughness: 0.38, side: THREE.DoubleSide, envMapIntensity: 1.3 });
   M.entablement = new THREE.MeshStandardMaterial({ map: clone(T.entablement, 40, 1), bumpMap: clone(T['entablement-h'], 40, 1), bumpScale: 0.04, metalnessMap: clone(T['entablement-m'], 40, 1), metalness: 1, roughness: 0.55, envMapIntensity: 1.0 });
-  M.galerie = new THREE.MeshStandardMaterial({ map: clone(T.galerie, 18, 1), emissive: 0xffffff, emissiveIntensity: 0.28, roughness: 0.85, envMapIntensity: 0.4 });
-  M.galerie.emissiveMap = M.galerie.map;
   M.stuc = new THREE.MeshStandardMaterial({ color: 0xd8c7a3, roughness: 0.85, envMapIntensity: 0.4 });
-  M.mur = new THREE.MeshStandardMaterial({ map: T.mur, bumpMap: T['mur-h'], bumpScale: 0.03, roughness: 0.6, envMapIntensity: 0.6 });
+  M.mur = new THREE.MeshStandardMaterial({ map: T['mur-perchoir'], bumpMap: T['mur-perchoir-h'], bumpScale: 0.012, roughness: 0.55, envMapIntensity: 0.6 });
   M.facT = new THREE.MeshPhysicalMaterial({ map: T.tribune, bumpMap: T['tribune-h'], bumpScale: 0.03, roughness: 0.25, ...cc(0.6, 0.15), envMapIntensity: 0.8 });
   M.facP = new THREE.MeshPhysicalMaterial({ map: T.perchoir, bumpMap: T['perchoir-h'], bumpScale: 0.03, roughness: 0.25, ...cc(0.6, 0.15), envMapIntensity: 0.8 });
   M.facB = M.facP.clone(); M.facB.map = clone(T.perchoir, 3, 1); M.facB.map.wrapS = THREE.RepeatWrapping;
@@ -276,19 +266,28 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const base = opt.base ?? '/salle3d/';
   const telephone = opt.telephone ?? canvas.clientWidth < 520;
   const perf = modePerf(location.search);
+  // `?qualite=1` crée la salle sans antialiasing (impossible à couper ensuite).
+  const forcee = qualiteForcee(location.search);
   const mesurer = <R>(nom: string, f: () => R): R => {
     if (!perf.marques) return f();
     const t0 = performance.now(); const r = f();
     performance.measure(nom, { start: t0, end: performance.now() });
     return r;
   };
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !telephone && !perf.leger, powerPreference: 'high-performance' });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !telephone && !perf.leger && forcee !== 1, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = !perf.leger; renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.autoUpdate = false;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
-  const T = await charger(base);
+  // Le découpage de l'ouverture, avec `?perf=` (scripts/audit-salle.mjs).
+  let tEtape = performance.now();
+  const etape = (nom: string) => {
+    if (perf.marques) performance.measure(`salle:creer:${nom}`, { start: tEtape, end: performance.now() });
+    tEtape = performance.now();
+  };
+  const T = await charger(base, telephone);
+  etape('matieres-chargees');
   const M = matieres(T, telephone);
   const G: Record<string, any> = {};
   const I: Record<string, THREE.InstancedMesh> = {};
@@ -343,8 +342,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
 
   /* Sièges (instances), un par siège du plan 2D */
   const velG = fusion([
-    [boiteRonde(0.56, 0.13, 0.5, 0.055, 2), mat4(0, 0.48, 0.03)],
-    [boiteRonde(0.54, 0.5, 0.12, 0.055, 2), mat4(0, 0.84, -0.24, -0.17)],
+    [boiteRonde(0.56, 0.13, 0.5, 0.055, 1), mat4(0, 0.48, 0.03)],
+    [boiteRonde(0.54, 0.5, 0.12, 0.055, 1), mat4(0, 0.84, -0.24, -0.17)],
   ]);
   const boisG = fusion([
     [boiteRonde(0.6, 0.56, 0.06, 0.025, 1), mat4(0, 0.85, -0.32, -0.17)],
@@ -355,31 +354,22 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     [new THREE.BoxGeometry(0.5, 0.4, 0.42), mat4(0, 0.2, -0.02)],
   ]);
   const n = sieges.length;
-  // La teinte d'un siège (VDEF, lot V5) : le velours de chaque fauteuil se mêle à la couleur de
+  // La couleur d'un siège (VDEF, lot V5 ; t92) : le velours de chaque fauteuil prend la couleur de
   // son voyant (un vote, un niveau d'accord), pour que la salle en prenne les couleurs vue du
-  // perchoir ; sans voyant, le velours reste tel quel. Les matières de la salle ne changent pas.
-  const velI = velG.clone();
-  const teintes = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4);
-  velI.setAttribute('teinte', teintes);
-  const veloursSieges = M.velours.clone() as THREE.MeshPhysicalMaterial;
-  veloursSieges.onBeforeCompile = (sh: { vertexShader: string; fragmentShader: string }) => {
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 teinte;\nvarying vec4 vTeinte;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTeinte = teinte;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec4 vTeinte;')
-      .replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vTeinte.rgb, vTeinte.a);');
-    (M.velours.onBeforeCompile as (x: typeof sh) => void)(sh);
-  };
-  veloursSieges.customProgramCacheKey = () => 'velours-teinte';
-  I.velours = ombre(new THREE.InstancedMesh(velI, veloursSieges, n));
-  /** La teinte d'un siège : la couleur de son voyant, ou rien. */
-  const POIDS_TEINTE = 0.82;
+  // perchoir ; sans voyant, le velours reste rouge.
+  I.velours = ombre(new THREE.InstancedMesh(velG, M.velours, n));
+  const rougeVelours = couleurExacte(ROUGE_VELOURS);
+  const blanc = couleurExacte('#FFFFFF');
+  const teintes: (THREE.Color | null)[] = new Array(n).fill(null);
+  let surligne: number | null = null;
   const teinter = (k: number, c: THREE.Color | null) => {
-    teintes.setXYZW(k, c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? POIDS_TEINTE : 0);
+    teintes[k] = c ? c.clone() : null;
+    I.velours.setColorAt(k, k === surligne ? blanc : c ?? rougeVelours);
   };
   I.bois = ombre(new THREE.InstancedMesh(boisG, M.noyer, n));
   I.plaque = new THREE.InstancedMesh(new THREE.BoxGeometry(0.15, 0.008, 0.045), M.laiton, n);
-  I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 20), M.laiton, n);
-  I.voyant = new THREE.InstancedMesh(new THREE.SphereGeometry(0.026, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.voyant, n);
+  I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 8, 1, true), M.laiton, n);
+  I.voyant = new THREE.InstancedMesh(new THREE.SphereGeometry(0.026, 6, 2, 0, Math.PI * 2, 0, Math.PI / 2), M.voyant, n);
   I.lueur = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.62, 0.5), M.lueur, n);
   const o = new THREE.Object3D(), pente = Math.atan(0.14 / 0.47), noir = new THREE.Color(0x1d1714), zero = new THREE.Color(0, 0, 0);
   const mVoyant: { p: THREE.Vector3; q: THREE.Quaternion }[] = [];
@@ -387,7 +377,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   sieges.forEach((s, k) => {
     const x = s.r * Math.cos(s.th), z = s.r * Math.sin(s.th), yaw = Math.atan2(-x, -z), e = echelleFauteuil(s.pas);
     o.position.set(x, s.y, z); o.rotation.set(0, yaw, 0); o.scale.set(e, 1, 1); o.updateMatrix();
-    I.velours.setMatrixAt(k, o.matrix); I.bois.setMatrixAt(k, o.matrix);
+    I.velours.setMatrixAt(k, o.matrix); I.bois.setMatrixAt(k, o.matrix); teinter(k, null);
     o.scale.setScalar(1);
     const surPupitre = (r: number, lat: number) => {
       const yy = s.y + 0.86 - (r - (s.rd - 0.03)) * (0.14 / 0.47) + 0.004;
@@ -407,15 +397,15 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   for (const k of ['velours', 'bois', 'plaque', 'bague', 'voyant', 'lueur']) racine.add(I[k]);
 
   /* Colonnade et galeries */
-  const fut = new THREE.CylinderGeometry(0.46, 0.5, 1, 32, 1, true);
-  const nCol = 15, colPos = colonnes();
+  const fut = new THREE.CylinderGeometry(0.46, 0.5, 1, 20, 1, true);
+  const colPos = colonnes();
   I.fut = ombre(new THREE.InstancedMesh(fut, M.colonne, colPos.length));
-  const baseG = fusion([[new THREE.BoxGeometry(1.25, 0.32, 1.25), mat4(0, 0.16, 0)], [new THREE.TorusGeometry(0.52, 0.09, 10, 32), mat4(0, 0.38, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.5, 0.06, 10, 32), mat4(0, 0.5, 0, Math.PI / 2)]]);
+  const baseG = fusion([[new THREE.BoxGeometry(1.25, 0.32, 1.25), mat4(0, 0.16, 0)], [new THREE.TorusGeometry(0.52, 0.09, 6, 20), mat4(0, 0.38, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.5, 0.06, 6, 20), mat4(0, 0.5, 0, Math.PI / 2)]]);
   const chapG = fusion([
-    [new THREE.CylinderGeometry(0.5, 0.46, 0.18, 32), mat4(0, -0.42, 0)],
-    [new THREE.TorusGeometry(0.16, 0.07, 10, 20), mat4(0.5, -0.24, 0, 0, Math.PI / 2)],
-    [new THREE.TorusGeometry(0.16, 0.07, 10, 20), mat4(-0.5, -0.24, 0, 0, Math.PI / 2)],
-    [new THREE.CylinderGeometry(0.16, 0.16, 1.0, 16), mat4(0, -0.24, 0, 0, 0, Math.PI / 2)],
+    [new THREE.CylinderGeometry(0.5, 0.46, 0.18, 20), mat4(0, -0.42, 0)],
+    [new THREE.TorusGeometry(0.16, 0.07, 6, 12), mat4(0.5, -0.24, 0, 0, Math.PI / 2)],
+    [new THREE.TorusGeometry(0.16, 0.07, 6, 12), mat4(-0.5, -0.24, 0, 0, Math.PI / 2)],
+    [new THREE.CylinderGeometry(0.16, 0.16, 1.0, 8), mat4(0, -0.24, 0, 0, 0, Math.PI / 2)],
     [boiteRonde(1.3, 0.12, 1.3, 0.03), mat4(0, -0.06, 0)],
   ]);
   I.base = ombre(new THREE.InstancedMesh(baseG, M.marbre, colPos.length));
@@ -428,13 +418,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   });
   racine.add(I.fut, I.base, I.chap);
   const aMur: [number, number] = [-15.4, 195.4];
-  const baie = 24.6 * rad((P.TH1 - P.TH0) / (nCol - 1));
-  racine.add(ombre(new THREE.Mesh(balayage([[24.6, P.YTOP], [24.6, P.YCOR]], aMur[0], aMur[1], { echelle: baie, rRef: 24.6, vNorm: true, inverse: true }), M.galerie), false));
-  M.galerie.map.repeat.set(1, 1); M.galerie.map.offset.set(0.5 - ((rad(P.TH0) * 24.6) / baie) % 1, 0);
   racine.add(ombre(new THREE.Mesh(balayage([[21.7, 8.2], [24.6, 8.2]], aMur[0], aMur[1]), M.stuc), false));
   racine.add(ombre(new THREE.Mesh(balayage([[21.7, 8.0], [21.7, 8.3], [21.6, 8.3]], aMur[0], aMur[1], { inverse: true }), M.or), false));
-  racine.add(new THREE.Mesh(balayage([[21.62, 8.3], [21.62, 9.25]], aMur[0], aMur[1], { echelle: 1, rRef: 21.62 }), M.balustre));
-  M.balustre.map.repeat.set(0.625, 1 / 0.95); M.balustre.bumpMap.repeat.set(0.625, 1 / 0.95);
   const profEnt: [number, number][] = [[20.55, P.YENT], [20.55, 13.2], [20.4, 13.25], [20.4, 13.55], [20.1, 13.65], [20.0, P.YCOR], [P.RDOME, P.YCOR]];
   racine.add(ombre(new THREE.Mesh(balayage(profEnt, aMur[0], aMur[1], { inverse: true, echelle: 1.2, mats: [0, 1, 0, 1, 1, 2] }), [M.entablement, M.or, M.stuc])));
   for (const k of ['map', 'bumpMap', 'metalnessMap']) M.entablement[k].repeat.set(0.2, 0.96);
@@ -469,7 +454,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
 
   /* Mur du fond, tribune, bureau, perchoir */
   const mur = new THREE.Mesh(new THREE.PlaneGeometry(48, 14), M.mur); mur.position.set(0, 7, P.ZFOND); racine.add(ombre(mur, false));
-  const tympan = new THREE.Mesh(new THREE.CircleGeometry(1, 64, 0, Math.PI), M.stuc); tympan.scale.set(P.RDOME, P.RDOME * P.KDOME, 1); tympan.position.set(0, P.YCOR, P.ZFOND + 0.01); racine.add(tympan);
+  const tympan = new THREE.Mesh(new THREE.CircleGeometry(1, 64, 0, Math.PI), M.stuc); tympan.scale.set(P.RDOME, P.RDOME * P.KDOME, 1); tympan.position.set(0, P.YCOR, P.ZFOND + 0.01); G.plafond.add(tympan);
   const boite = (w: number, h: number, d: number, x: number, y: number, z: number, faces: THREE.Material | THREE.Material[]) => {
     const m = new THREE.Mesh(boiteRonde(w, h, d, 0.03, 2), faces); m.position.set(x, y, z); return ombre(m);
   };
@@ -486,16 +471,19 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   racine.add(boite(3.7, 0.05, 0.9, 0, 3.45, -4.1, M.noyerClair));
   racine.add(boite(13, 2.44, 2.6, 0, 1.22, -5.25, M.noyer));
   const fauteuil = new THREE.Group();
-  fauteuil.add(ombre(new THREE.Mesh(velG, M.velours)), ombre(new THREE.Mesh(boisG, M.noyer)));
+  fauteuil.add(ombre(new THREE.Mesh(velG, M.veloursRouge)), ombre(new THREE.Mesh(boisG, M.noyer)));
   fauteuil.scale.setScalar(1.35); fauteuil.position.set(0, 2.48, -4.75); racine.add(fauteuil);
   for (const s of [-1, 1]) for (let k = 0; k < 7; k++) racine.add(boite(1.1, 0.34 * (k + 1), 0.3, s * 3.45, 0.17 * (k + 1), -3.2 - k * 0.24, M.marbre));
   for (const s of [-1, 1]) for (let k = 0; k < 3; k++) racine.add(boite(2.2, 0.08, 0.6, s * 5.6, 0.04 + k * 0.4, -2.0 - k * 0.6, M.statuaire));
 
   /* Le 578e siège : une chaise en plus, au pied de la tribune (lot 5 : le personnage y attend) */
   G.c578 = new THREE.Group();
-  G.c578.add(ombre(new THREE.Mesh(velG, M.velours)), ombre(new THREE.Mesh(boisG, M.noyer)));
+  G.c578.add(ombre(new THREE.Mesh(velG, M.veloursRouge)), ombre(new THREE.Mesh(boisG, M.noyer)));
   const p578 = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.11, 0.012), M.p578); p578.position.set(0, 0.9, -0.36); p578.rotation.set(-0.17, Math.PI, 0); G.c578.add(p578);
   G.c578.position.set(2.15, 0, 0.9); G.c578.rotation.y = -0.35; racine.add(G.c578);
+
+  /* Le décor du Palais Bourbon (palier léger : ni frise, ni statues ni lustres) */
+  ajouterDecor(racine, G.plafond, M, T, telephone);
 
   /* Faisceaux de la verrière */
   G.faisceaux = new THREE.Group();
@@ -507,6 +495,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     m.position.copy(mid); m.quaternion.copy(q); m.renderOrder = 10; G.faisceaux.add(m);
   });
   racine.add(G.faisceaux);
+  // Tout ce qui ne bouge pas, fusionné par matière (le plafond garde son calque, le 578e fauteuil sa place).
+  fusionnerImmobiles(racine, (o) => o === G.plafond || o === G.c578 || o === G.faisceaux);
+  etape('fusion');
 
   /* Lumière */
   const soleil = new THREE.DirectionalLight(0xffdcaa, 2.4 * PI);
@@ -515,23 +506,56 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const tailleOmbre = telephone ? 1024 : 2048;
   soleil.shadow.mapSize.set(tailleOmbre, tailleOmbre); soleil.shadow.bias = -0.0004; soleil.shadow.normalBias = 0.03;
   scene.add(soleil, soleil.target);
-  const hemi = new THREE.HemisphereLight(0xffe2b8, 0x3a170f, 0.42 * PI); scene.add(hemi);
+  // Le plafond sur un calque à part : la vue haute le masque à la caméra, sans toucher aux ombres.
+  G.plafond.traverse((o: THREE.Object3D) => o.layers.set(1));
+  camera.layers.enable(1); soleil.shadow.camera.layers.enable(1);
+  const hemi = new THREE.HemisphereLight(0xffe2b8, 0x3a170f, 0.5 * PI); scene.add(hemi);
   const appliques: THREE.PointLight[] = [];
   for (const a of [20, 60, 90, 120, 160]) {
     const l = new THREE.PointLight(0xffb36b, 0.55 * PI * 8, 18, 2); const ar = rad(a);
     l.position.set(19 * Math.cos(ar), 9.5, 19 * Math.sin(ar)); scene.add(l); appliques.push(l);
   }
   const fond = new THREE.PointLight(0xffc27a, 0.8 * PI * 6, 16, 2); fond.position.set(0, 7, -3); scene.add(fond); appliques.push(fond);
+  // Les lustres (salle.js) : les ampoules seules. Leurs douze lumières coûtaient un tiers de l'image
+  // sur une carte graphique intégrée (docs/rapport-perf-30-oct.md, § « L'audit de la salle »).
+  if (!telephone) {
+    const ampoules = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 8, 5), new THREE.MeshBasicMaterial({ color: 0xffe6b8, toneMapped: false }), 150);
+    const oa = new THREE.Object3D();
+    for (let i = 0; i < 150; i++) { const a = rad(-14 + i * (208 / 149)); oa.position.set(20.22 * Math.cos(a), 12.5, 20.22 * Math.sin(a)); oa.updateMatrix(); ampoules.setMatrixAt(i, oa.matrix); }
+    scene.add(ampoules);
+  }
   const spot = new THREE.SpotLight(0xffe0a8, 1.4 * PI * 28, 14, 0.32, 0.6, 1.5); spot.position.set(2.6, 9, 3.2); spot.target = G.c578; scene.add(spot);
   const env = new THREE.TextureLoader();
   const envTex = T.environnement.clone(); envTex.mapping = THREE.EquirectangularReflectionMapping; envTex.colorSpace = THREE.SRGBColorSpace; envTex.needsUpdate = true;
-  const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromEquirectangular(envTex).texture; scene.environmentIntensity = 0.5;
+  const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromEquirectangular(envTex).texture; scene.environmentIntensity = 1;
   void env;
   scene.background = new THREE.Color(0x1a0f09);
   const brouillard = new THREE.FogExp2(0x6b4a30, 0.0085); scene.fog = brouillard;
+  /** L'éclairage entre l'intérieur (0) et le Dessus (1) : soleil et exposition un peu moindres,
+   *  brouillard quasi nul, lumière du ciel plus forte pour que les sièges se lisent. Réglé à l'œil
+   *  face à la maquette (les lustres de three récent faiblissent avec la distance, pas ceux de r128 :
+   *  ils n'ont pas besoin d'y être baissés à 35 %). */
+  const eclairage = (t: number) => { 
+    soleil.intensity = (2.4 - 0.4 * t) * PI;
+    renderer.toneMappingExposure = 1.05 - 0.08 * t;
+    brouillard.density = 0.0085 - 0.0073 * t;
+    hemi.intensity = (0.5 + 0.36 * t) * PI;
+  };
+  /** La coupole, son ombre et les faisceaux, masqués pour le Dessus. La caméra de vue décide aussi
+   *  des calques des ombres (three) : elles sont recalculées quand ils changent. */
+  let plafondMasque = false;
+  const masquerPlafond = (oui: boolean) => {
+    if (oui === plafondMasque) return;
+    plafondMasque = oui;
+    if (oui) camera.layers.disable(1); else camera.layers.enable(1);
+    G.faisceaux.visible = !oui;
+    renderer.shadowMap.needsUpdate = true;
+  };
 
+  etape('construction');
   /* Le personnage : sa place (null : le 578e fauteuil), sa marche en cours */
   let perso: Personnage | null = null;
+  let clePerso = '';
   let place: number | null = null;
   let marche: { finir(): void } | null = null;
   const fauteuil578 = new THREE.Object3D();
@@ -550,30 +574,44 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   };
 
   /* Caméra et rendu à la demande */
-  const cam = { pos: [0, 7, -6.4] as number[], cible: [0, 5.5, 11] as number[], fov: 64 };
+  const cam = { pos: [0, 7, -6.4] as number[], cible: [0, 5.5, 11] as number[], fov: 64, haut: [0, 1, 0] as number[] };
   let cadre: Cadre = {};
   let vueCourante: NomVue = 'salle';
   let anim: Tween | null = null;
-  let onde: { finir(): void } | null = null;
   let demande = false;
   let surRendu: (() => void) | null = null;
-  // La caméra libre : un écart borné à la vue en cours (lacet, tangage, recul).
-  const libre = { lacet: 0, tangage: 0, zoom: 1, champ: 0 };
+  // La caméra libre : un écart borné à la vue en cours (lacet, tangage, recul ; dans le Dessus, la
+  // caméra se déplace au-dessus de la salle et descend pour zoomer).
+  const libre = { lacet: 0, tangage: 0, zoom: 1, champ: 0, dx: 0, dz: 0, proche: 1 };
   const enPlace = () => vueCourante === 'place' && place !== null;
   const allumes: boolean[] = new Array(n).fill(false);
+  let viser: ReturnType<typeof grilleSieges> | null = null;
+  let attenteVisee = 0;
   const appliquerCam = () => {
     camera.fov = cam.fov; camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
     camera.near = enPlace() ? REGARD.near : 0.1;
+    camera.up.set(cam.haut[0], cam.haut[1], cam.haut[2]).normalize();
     camera.lookAt(cam.cible[0], cam.cible[1], cam.cible[2]);
     // Le centre de l'image passe au centre de ce que les feuilles laissent voir.
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (cadre.haut ?? 0)) / 2;
+    // La barre du haut ne compte que pour les vues fixes, qui montrent toute la salle.
+    const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (vueFixe(vueCourante) ? cadre.haut ?? 0 : 0)) / 2;
     if (w && h && (dx || dy)) camera.setViewOffset(w, h, dx, dy, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
-    // Aux yeux du personnage, sa tête est cachée.
-    if (perso) perso.tete.visible = !enPlace();
+    // Aux yeux du personnage, sa tête est cachée : son ombre change, seul cas où la caméra touche
+    // aux ombres (calculées une fois, puis figées).
+    if (perso && perso.tete.visible === enPlace()) { perso.tete.visible = !enPlace(); renderer.shadowMap.needsUpdate = true; }
+    // La projection attend que la caméra se pose, hors de tout mouvement de souris.
+    viser = null;
+    clearTimeout(attenteVisee);
+    attenteVisee = window.setTimeout(() => { viser ??= viserSieges(); }, 120);
   };
-  const rendre = () => { mesurer('salle:rendre', () => renderer.render(scene, camera)); surRendu?.(); };
+  // Rien n'est rendu quand la salle est cachée (page « lecture ») ou l'onglet en arrière-plan.
+  let enService = true;
+  const rendre = () => {
+    if (!enService || document.hidden) return;
+    mesurer('salle:rendre', () => renderer.render(scene, camera)); surRendu?.();
+  };
   const demander = () => { if (demande) return; demande = true; requestAnimationFrame(() => { demande = false; rendre(); }); };
   const poserVoyants = () => {
     const m = new THREE.Matrix4(), s = new THREE.Vector3();
@@ -583,16 +621,29 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     }
     I.voyant.instanceMatrix.needsUpdate = true; I.lueur.instanceMatrix.needsUpdate = true;
   };
-  const finVue = () => { poserVoyants(); renderer.shadowMap.needsUpdate = true; };
+  // La lumière du jour ne suit pas la caméra : changer de vue ne recalcule pas les ombres.
+  const finVue = () => { poserVoyants(); };
   /** Ta place : aux yeux du personnage assis au siège du jumeau, regard vers la tribune. Sans
    *  place, la salle depuis le perchoir. */
   const cadrer = (nom: NomVue, aspect: number): Cadrage => {
-    if (nom !== 'place' || place === null) return cadrage(nom === 'place' ? 'salle' : nom, aspect);
+    if (nom !== 'place' || place === null) {
+      const h = canvas.clientHeight;
+      return cadrageAjuste(nom === 'place' ? 'salle' : nom, canvas.clientWidth - (cadre.gauche ?? 0) - (cadre.droite ?? 0),
+        h - (vueFixe(nom) ? cadre.haut ?? 0 : 0) - (cadre.bas ?? 0), h, canvas.clientWidth);
+    }
     return { pos: yeuxAuSiege(sieges[place]), cible: CENTRE_TRIBUNE, fov: aspect < 0.9 ? 66 : 56 };
   };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
   const poserLibre = () => {
     const c = cadrer(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    if (vueFixe(vueCourante)) {
+      // Le Dessus : zoomer fait descendre la caméra, glisser la déplace au-dessus de la salle.
+      const y = DESSUS.yRef + (c.pos[1] - DESSUS.yRef) / libre.proche, z = c.cible[2] + libre.dz;
+      cam.pos = [libre.dx, y, z]; cam.cible = [libre.dx, 0, z]; cam.fov = c.fov; cam.haut = [...c.haut!];
+      appliquerCam(); demander();
+      return;
+    }
+    cam.haut = [0, 1, 0];
     if (enPlace()) {
       // Depuis son siège, on tourne la tête sans bouger ; le champ se règle entre 40° et 70°.
       const v = new THREE.Vector3(c.cible[0] - c.pos[0], c.cible[1] - c.pos[1], c.cible[2] - c.pos[2]);
@@ -618,106 +669,186 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     cam.pos = [pos.x, pos.y, pos.z]; cam.cible = [...c.cible]; cam.fov = c.fov;
     appliquerCam(); demander();
   };
-  // Le siège sous le pointeur : un rayon sur les fauteuils instanciés (velours et bois).
-  const rayon = new THREE.Raycaster();
+  // Le siège sous le pointeur : les sièges sont projetés une fois par changement de caméra.
+  const viserSieges = () => {
+    const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    camera.updateMatrixWorld();
+    return grilleSieges(sieges.map((s): PointVise | null => {
+      const [x, y, z] = position(s, 0.55);
+      c.set(x, y, z); v.copy(c).project(camera);
+      if (v.z >= 1) return null;
+      b.set(x + 0.38 * Math.cos(s.th), y, z + 0.38 * Math.sin(s.th)).project(camera);
+      const px = ((v.x + 1) * w) / 2, py = ((1 - v.y) * h) / 2;
+      return { x: px, y: py, r: Math.hypot(((b.x + 1) * w) / 2 - px, ((1 - b.y) * h) / 2 - py), d: camera.position.distanceTo(c) };
+    }));
+  };
+  let palier: 0 | 1 = forcee === 1 ? 1 : 0;
+  let taille = '';
   const redimensionner = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (perf.marques) performance.mark('salle:redimensionner', { detail: { w, h } });
-    if (!w || !h) return;
-    renderer.setPixelRatio(perf.leger ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75));
-    renderer.setSize(w, h, false); camera.aspect = w / h;
+    if (!w || !h || !enService) return;
+    const ratio = perf.leger || palier === 1 ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.5);
+    // Le tampon d'image n'est réalloué que si la taille change vraiment.
+    if (taille !== `${w}×${h}×${ratio}`) {
+      taille = `${w}×${h}×${ratio}`;
+      renderer.setPixelRatio(ratio);
+      renderer.setSize(w, h, false); camera.aspect = w / h;
+    }
     if (!anim) poserLibre(); else { appliquerCam(); demander(); }
   };
   const borne = (x: number, a: number) => Math.max(-a, Math.min(a, x));
 
   const salle: Salle3D = {
     get vueCourante() { return vueCourante; },
+    get palier() { return palier; },
+    actif(on) {
+      if (on === enService) return;
+      enService = on;
+      if (!on) { anim?.finir(); return; }
+      redimensionner(); demander();
+    },
+    qualite(p) { if (p === palier) return; palier = p; redimensionner(); demander(); },
+    gouverner() {
+      if (forcee !== null) return Promise.resolve(forcee);
+      return new Promise((ok) => {
+        const t: number[] = [];
+        const image = (ts: number) => {
+          t.push(ts);
+          if (t.length > GOUVERNEUR.images) {
+            const e = t.slice(1).map((x, k) => x - t[k]).sort((a, b) => a - b);
+            const p = palierDe(e[e.length >> 1]);
+            if (p === 1) salle.qualite(1);
+            ok(p);
+            return;
+          }
+          if (enService && !document.hidden) renderer.render(scene, camera);
+          requestAnimationFrame(image);
+        };
+        requestAnimationFrame(image);
+      });
+    },
     set surRendu(f: (() => void) | null) { surRendu = f; },
     vue(nom, o2 = {}) {
+      const avant = vueCourante;
+      if (o2.navigation && !o2.instant) {
+        // Un changement de page : la glisse courte entre « La salle » et « Ta place » au
+        // palier 0 ; sinon une coupure, et la salle revient en fondu.
+        if (palier === 0 && glisseEntre(avant, nom)) o2 = { duree: GLISSE_NAVIGATION };
+        else {
+          o2 = { instant: true };
+          if (avant !== nom && !opt.mouvementReduit) canvas.animate?.([{ opacity: 0 }, { opacity: 1 }], 200);
+        }
+      } else if (o2.duree && !o2.instant && palier !== 0) {
+        // Une glisse demandée (Perspective ↔ Dessus) : au palier léger, une coupure et un fondu.
+        o2 = { instant: true };
+        if (!opt.mouvementReduit) canvas.animate?.([{ opacity: 0 }, { opacity: 1 }], 200);
+      } else if (nom === avant && !o2.instant && !o2.duree) {
+        // La page redemande la vue où l'on est (son siège vient de changer) : pas de glisse longue.
+        o2 = anim ? { duree: GLISSE_NAVIGATION } : { instant: true };
+      }
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
       const c = cadrer(nom, aspect);
       vueCourante = nom;
-      libre.lacet = 0; libre.tangage = 0; libre.zoom = 1; libre.champ = 0;
+      Object.assign(libre, { lacet: 0, tangage: 0, zoom: 1, champ: 0, dx: 0, dz: 0, proche: 1 });
       anim?.finir();
-      if (o2.instant || opt.mouvementReduit || perf.instant) {
-        cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov;
+      // La coupole s'efface avant que la caméra la traverse ; elle revient une fois la caméra rentrée.
+      const auDessus = (v: NomVue) => (vueFixe(v) ? 1 : 0);
+      if (vueFixe(nom)) masquerPlafond(true);
+      if (o2.instant || opt.mouvementReduit || perf.instant || !enService) {
+        cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov; cam.haut = [...(c.haut ?? [0, 1, 0])];
+        if (!vueFixe(nom)) masquerPlafond(false);
+        eclairage(auDessus(nom));
         finVue(); appliquerCam(); demander();
         if (perf.marques) performance.mark('salle:vue', { detail: { nom, instant: true } });
         return Promise.resolve();
       }
-      const de = { pos: [...cam.pos], cible: [...cam.cible], fov: cam.fov };
+      const de = { pos: [...cam.pos], cible: [...cam.cible], fov: cam.fov, haut: [...cam.haut] };
       const mix = (a: number[], b: number[], e: number) => a.map((v, i) => v + (b[i] - v) * e);
       const t0 = performance.now();
-      anim = interpoler(1600, (e) => {
+      const a = interpoler(o2.duree ?? 1600, (e) => {
         cam.pos = mix(de.pos, c.pos, e); cam.cible = mix(de.cible, c.cible, e); cam.fov = de.fov + (c.fov - de.fov) * e;
+        // Le haut de la caméra bascule vers la tribune pendant la montée.
+        const haut = mix(de.haut, c.haut ?? [0, 1, 0], Math.min(1, e * 1.4));
+        cam.haut = Math.hypot(...haut) < 0.2 ? [...(c.haut ?? [0, 1, 0])] : haut;
+        eclairage(auDessus(avant) + (auDessus(nom) - auDessus(avant)) * e);
         appliquerCam(); rendre();
       });
-      return anim.fini.then(() => {
-        anim = null; finVue(); demander();
+      anim = a;
+      return a.fini.then(() => {
+        // Une glisse interrompue par une autre ne libère pas la caméra de la suivante.
+        if (anim !== a) return;
+        anim = null;
+        if (!vueFixe(nom)) masquerPlafond(false);
+        finVue(); demander();
         if (perf.marques) performance.measure('salle:vue', { start: t0, end: performance.now(), detail: { nom, instant: false } });
       });
     },
     cadre(c) {
       cadre = { ...c };
       if (anim) return;
-      appliquerCam(); demander();
+      // Le cadrage dépend de ce que les feuilles laissent voir.
+      poserLibre();
     },
-    siegeSous(x, y) {
-      return mesurer('salle:siegeSous', () => {
-        rayon.setFromCamera(new THREE.Vector2(x * 2 - 1, 1 - y * 2), camera);
-        const [touche] = rayon.intersectObjects([I.velours, I.bois], false);
-        return touche?.instanceId ?? null;
-      });
+    siegeSous(x, y, rayonMin = 0) {
+      return mesurer('salle:siegeSous', () => (viser ??= viserSieges())(x * canvas.clientWidth, y * canvas.clientHeight, rayonMin));
     },
-    terminer() { anim?.finir(); onde?.finir(); marche?.finir(); },
+    surligner(i) {
+      if (i === surligne) return;
+      const avant = surligne;
+      surligne = i;
+      if (avant !== null) I.velours.setColorAt(avant, teintes[avant] ?? rougeVelours);
+      if (i !== null) I.velours.setColorAt(i, blanc);
+      I.velours.instanceColor!.needsUpdate = true;
+      demander();
+    },
+    terminer() { anim?.finir(); marche?.finir(); },
     voyants(couleurs) {
-      onde?.finir();
       const c = new THREE.Color();
       for (let k = 0; k < n; k++) {
         const v = couleurs[k] ?? null;
         allumes[k] = !!v;
         if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); } else { I.voyant.setColorAt(k, noir); I.lueur.setColorAt(k, zero); teinter(k, null); }
       }
-      I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); demander();
+      I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; I.velours.instanceColor!.needsUpdate = true; poserVoyants(); demander();
     },
-    voyantsEnOnde(couleurs, duree = 1000) {
-      if (opt.mouvementReduit) { salle.voyants(couleurs); return Promise.resolve(); }
-      onde?.finir();
-      salle.voyants([]);
-      // Du rang intérieur vers l'extérieur, avec un aléa tiré du numéro du siège (lib/hemicycle.ts,
-      // delaiOnde) : jamais un balayage de gauche à droite.
-      const delais = sieges.map((s, k) => s.rang * 55 + (((k + 1) * 2654435761) >>> 0) % 71);
-      const max = Math.max(...delais);
-      const echelle = Math.max(1, duree - 200) / max;
-      const allume = new Array(n).fill(false);
+    velours(couleurs) {
       const c = new THREE.Color();
-      const debut = performance.now();
-      let fini = false;
-      let resoudre: () => void = () => {};
-      const promesse = new Promise<void>((r) => { resoudre = r; })
-        .then(() => { if (perf.marques) performance.measure('salle:onde', { start: debut, end: performance.now() }); });
-      const pas = (t: number) => {
-        let change = false;
-        for (let k = 0; k < n; k++) {
-          if (allume[k] || delais[k] * echelle > t) continue;
-          allume[k] = true; change = true;
-          const v = couleurs[k] ?? null; allumes[k] = !!v;
-          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); }
-        }
-        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); rendre(); }
-      };
-      const image = () => {
-        if (fini) return;
-        const t = performance.now() - debut;
-        pas(t);
-        if (t >= duree) { fini = true; onde = null; resoudre(); return; }
-        requestAnimationFrame(image);
-      };
-      onde = { finir: () => { if (fini) return; pas(Infinity); fini = true; onde = null; resoudre(); } };
-      requestAnimationFrame(image);
-      return promesse;
+      for (let k = 0; k < n; k++) { const v = couleurs[k] ?? null; if (v) { couleurExacte(v, c); teinter(k, c); } else teinter(k, null); }
+      I.velours.instanceColor!.needsUpdate = true; demander();
+    },
+    masqueSieges() {
+      const largeur = renderer.domElement.width, hauteur = renderer.domElement.height;
+      // Tout en noir, les sièges au numéro de leur siège + 1 : ce qui les masque les masque aussi ici.
+      const noirBasique = new THREE.MeshBasicMaterial({ color: 0, side: THREE.DoubleSide, fog: false, toneMapped: false });
+      const idBasique = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, toneMapped: false });
+      const couleurs = new THREE.Color();
+      const avant = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
+      scene.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) { avant.set(m, m.material); m.material = m === I.velours ? idBasique : noirBasique; } });
+      for (let k = 0; k < n; k++) { const v = k + 1; I.velours.setColorAt(k, couleurs.setRGB((v & 255) / 255, (v >> 8) / 255, 0)); }
+      I.velours.instanceColor!.needsUpdate = true;
+      const cible = new THREE.WebGLRenderTarget(largeur, hauteur, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.UnsignedByteType });
+      const fondAvant = scene.background; scene.background = null;
+      const ombres = renderer.shadowMap.enabled; renderer.shadowMap.enabled = false;
+      renderer.setClearColor(0, 1); renderer.setRenderTarget(cible); renderer.clear();
+      renderer.render(scene, camera);
+      const brut = new Uint8Array(largeur * hauteur * 4);
+      renderer.readRenderTargetPixels(cible, 0, 0, largeur, hauteur, brut);
+      renderer.setRenderTarget(null); renderer.shadowMap.enabled = ombres; scene.background = fondAvant;
+      for (const [m, mat] of avant) m.material = mat;
+      for (let k = 0; k < n; k++) teinter(k, null);
+      I.velours.instanceColor!.needsUpdate = true;
+      cible.dispose(); noirBasique.dispose(); idBasique.dispose();
+      // readPixels part du bas de l'image.
+      const pixels = new Uint8Array(brut.length);
+      for (let y = 0; y < hauteur; y++) pixels.set(brut.subarray((hauteur - 1 - y) * largeur * 4, (hauteur - y) * largeur * 4), y * largeur * 4);
+      return { largeur, hauteur, pixels };
     },
     personnage(a) {
+      // Chaque page le redemande : le même personnage n'est pas reconstruit.
+      const cle = a ? JSON.stringify(a) : '';
+      if (cle === clePerso) return;
+      clePerso = cle;
       if (perso) { scene.remove(perso.groupe); perso = null; }
       if (a) { perso = creerPersonnage(a); scene.add(perso.groupe); poserAssis(); }
       renderer.shadowMap.needsUpdate = true; demander();
@@ -756,8 +887,15 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       marche = { finir: () => { tw.arreter(); terminer(); } };
       return promesse;
     },
+    deplacer(dx, dy) {
+      if (anim || !vueFixe(vueCourante)) return;
+      const mpp = (2 * (cam.pos[1] - DESSUS.yRef) * Math.tan(rad(cam.fov / 2))) / Math.max(1, canvas.clientHeight);
+      if (cam.haut[0]) { libre.dz -= dx * mpp; libre.dx += dy * mpp; } else { libre.dx += dx * mpp; libre.dz += dy * mpp; }
+      libre.dx = borne(libre.dx, 14); libre.dz = borne(libre.dz, 9);
+      poserLibre();
+    },
     orbiter(dLacet, dTangage) {
-      if (anim) return;
+      if (anim || vueFixe(vueCourante)) return;
       if (enPlace()) {
         libre.lacet = borne(libre.lacet + dLacet, REGARD.lacet);
         libre.tangage = Math.min(REGARD.tangageHaut, Math.max(REGARD.tangageBas, libre.tangage + dTangage));
@@ -767,8 +905,22 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       }
       poserLibre();
     },
-    zoomer(f) {
+    zoomer(f, vers) {
       if (anim) return;
+      if (vueFixe(vueCourante)) {
+        const avant = libre.proche;
+        libre.proche = Math.max(0.75, Math.min(2.2, libre.proche / f));
+        if (vers) {
+          // Le mètre par pixel change : la caméra se décale pour garder ce point sous le pointeur.
+          const h = canvas.clientHeight, d0 = cam.pos[1] - DESSUS.yRef;
+          const dm = (2 * Math.tan(rad(cam.fov / 2)) * d0 * (avant / libre.proche - 1)) / Math.max(1, h);
+          const sx = vers.x - canvas.clientWidth / 2, sy = vers.y - h / 2;
+          if (cam.haut[0]) { libre.dz -= sx * dm; libre.dx += sy * dm; } else { libre.dx += sx * dm; libre.dz += sy * dm; }
+          libre.dx = borne(libre.dx, 14); libre.dz = borne(libre.dz, 9);
+        }
+        poserLibre();
+        return;
+      }
       // Aux yeux du personnage, on ne recule pas : le champ de vision se resserre ou s'ouvre.
       if (enPlace()) libre.champ = Math.max(REGARD.champMin - 70, Math.min(70 - REGARD.champMin, libre.champ + (f - 1) * 60));
       else libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));
@@ -780,11 +932,23 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       return points.map((p) => { const v = new THREE.Vector3(...p).project(camera); return { x: (v.x + 1) / 2, y: (1 - v.y) / 2, devant: v.z < 1 }; });
     },
     positionSiege: (i, dy = 0) => (i < 0 ? [FAUTEUIL_578.x, FAUTEUIL_578.y + 0.9 + dy, FAUTEUIL_578.z] : position(sieges[i], dy)),
-    detruire() { anim?.arreter(); onde?.finir(); renderer.dispose(); pmrem.dispose(); },
+    detruire() { anim?.arreter(); renderer.dispose(); pmrem.dispose(); },
   };
 
   const c0 = cadrer('salle', canvas.clientWidth / Math.max(1, canvas.clientHeight));
   cam.pos = c0.pos; cam.cible = c0.cible; cam.fov = c0.fov;
+  // Toutes les matières compilées dès le chargement, personnage compris : sinon la première image
+  // d'une vue nouvelle (ou du personnage) les compile et fige la page (docs/rapport-perf-30-oct.md).
+  const essai = creerPersonnage(APPARENCE_DEFAUT);
+  scene.add(essai.groupe); appliquerCam();
+  // En tâche de fond quand le navigateur le permet : compiler d'un bloc figeait la page de 1 à 3 s.
+  await renderer.compileAsync(scene, camera);
+  etape('compilation');
+  scene.remove(essai.groupe);
   redimensionner(); renderer.shadowMap.needsUpdate = true; rendre();
+  etape('premiere-image');
+  if (perf.marques) (window as unknown as { __audit: unknown }).__audit = { scene, renderer, camera };
+  // L'onglet revient au premier plan : une image pour rattraper ce qui a changé.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) demander(); });
   return salle;
 }

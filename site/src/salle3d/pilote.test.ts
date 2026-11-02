@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { peutOuvrir } from './pilote.ts';
+import { glisseEntre, palierDe, qualiteForcee } from './scene.ts';
 
 test('la 3D ne s’ouvre pas sans WebGL, en économie de données ou avec peu de mémoire', () => {
   const oui = () => true;
@@ -38,4 +39,28 @@ test('l’inertie au lâcher s’éteint en 400 ms', async () => {
   assert.equal(vitesseInertie(2, 200), 1);
   assert.equal(vitesseInertie(2, 400), 0);
   assert.equal(vitesseInertie(2, 900), 0);
+});
+
+test('le gouverneur de qualité : 24 ms et 40 ms par image', () => {
+  assert.equal(palierDe(16.7), 0);
+  assert.equal(palierDe(24), 0);
+  assert.equal(palierDe(24.1), 1);
+  assert.equal(palierDe(40), 1);
+  assert.equal(palierDe(41), 2);
+});
+
+test('?qualite= force le palier ; toute autre valeur laisse décider le gouverneur', () => {
+  assert.equal(qualiteForcee('?qualite=0'), 0);
+  assert.equal(qualiteForcee('?perf=1&qualite=2'), 2);
+  assert.equal(qualiteForcee('?qualite=3'), null);
+  assert.equal(qualiteForcee(''), null);
+});
+
+test('en changeant de page, la caméra ne glisse qu\'entre « La salle » et « Ta place »', () => {
+  assert.ok(glisseEntre('salle', 'place'));
+  assert.ok(glisseEntre('place', 'salle'));
+  assert.ok(!glisseEntre('tribune', 'salle'));
+  assert.ok(!glisseEntre('salle', 'tribune'));
+  assert.ok(!glisseEntre('tribune', 'place'));
+  assert.ok(!glisseEntre('salle', 'salle'));
 });

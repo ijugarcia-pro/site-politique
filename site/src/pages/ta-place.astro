@@ -6,6 +6,7 @@
 // fermée : la salle vue du perchoir montre le 578e fauteuil, et la feuille dit ce qu'il manque.
 // Remplace /hemicycle/ (redirection 301, public/_redirects).
 import Base from '../layouts/Base.astro';
+import Immersion from '../components/vdef/Immersion.astro';
 import Bouton from '../components/vdef/Bouton.astro';
 import Carte from '../components/vdef/Carte.astro';
 import Feuille from '../components/vdef/Feuille.astro';
@@ -102,7 +103,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
       </details>
     </div>
   </Feuille>
-  <p class="consigne-salle" data-place-consigne>Depuis ton siège · glisse pour tourner la tête</p>
+  <Immersion slot="hors-feuille" lien="/salle/#deputes" consigne="Depuis ton siège · glisse pour tourner la tête" data-place-consigne />
   <script type="application/json" data-donnees-place set:html={donnees}></script>
 </Base>
 
@@ -110,6 +111,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
   import { lireJSON } from '../lib/navigateur.ts';
   import { palierAtteint, prochainPalier } from '../lib/paliers.ts';
   import { profil, type Classe, type LigneDepute, type Matrice } from '../lib/profil.ts';
+  import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, tranches } from '../lib/trancher.ts';
   import { salle3D } from '../salle3d/pilote.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
@@ -152,7 +154,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
       // La vue est fermée : la salle du perchoir et le 578e fauteuil qui t'attend.
       const reste = prochainPalier(n)!.reste;
       salle?.asseoir(null);
-      salle?.vue('salle');
+      salle?.vue('salle', { navigation: true });
       salle?.reperes([{ i: -1, libelle: 'Ta place t’attend', toi: true }]);
       $('[data-place-consigne]').hidden = true;
       if (n > 0) {
@@ -169,7 +171,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
       return;
     }
 
-    const m: Matrice = await (await fetch('/donnees/matrice.json')).json();
+    const m: Matrice = await donnee('matrice.json');
     const p = profil(m, mesReps());
     const groupe = (uid: string | null) => m.groupes.find((g) => g.u === uid);
     $('[data-place-verrou]').hidden = true;
@@ -271,7 +273,7 @@ const gris = compo.sieges.map(() => '#E7E7E7');
   }
   .mot input:checked + span { background: var(--encre); color: var(--feuille); }
   .choix input:focus-visible + span { outline: 3px solid var(--encre); outline-offset: 2px; }
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .titre { font-size: 26px; }
   }
 </style>

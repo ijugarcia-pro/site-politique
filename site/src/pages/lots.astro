@@ -73,7 +73,7 @@ const horsMatrice = scrutins().filter((s) => s.motion_censure).map((s) => s.uid)
     const fin = (k: number | null) => {
       t.finir('fin');
       t.annoncer($('[data-annonce-fin]'), hors);
-      t.salle?.vue('salle');
+      // La salle du dernier dévoilement reste à l'écran (lib/revelation.ts), sans 3D.
       const reps = mesReps();
       const n = tranches(hors);
       const suite = suiteDesLots(etat.faits, parcours, nLots);
@@ -188,5 +188,5 @@ const horsMatrice = scrutins().filter((s) => s.motion_censure).map((s) => s.uid)
   .progression-barre span { display: block; height: 100%; width: 0; background: var(--encre); border-radius: var(--pilule); }
   .actions { display: flex; flex-direction: column; gap: 8px; }
   .progression[hidden] + .actions { margin-top: auto; }
-  @media (max-width: 720px) { .titre-fin { font-size: 30px; } }
+  @media (max-width: 900px), (max-height: 560px) { .titre-fin { font-size: 30px; } }
 </style>

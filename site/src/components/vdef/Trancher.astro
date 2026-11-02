@@ -15,6 +15,7 @@ import MiniHemicycle from '../MiniHemicycle.astro';
 import { composition, dateLisible, lienVote, majuscule, scrutinPublie } from '../../lib/donnees.ts';
 import { SIEGES } from '../../lib/hemicycle.ts';
 import { verdict } from '../../lib/votes.ts';
+import { positionsDevoilement } from '../../salle3d/cadrage-haut.ts';
 
 interface Props {
   /** `uid` vide : un vote annoncé, pas encore tenu (séance de la semaine) ; `quand` dit alors
@@ -55,7 +56,9 @@ const questions = cartes.map((q) => {
     }).join(''),
   };
 });
-const donnees = JSON.stringify({ questions }).replace(/</g, '\\u003c');
+// Le dévoilement (lib/revelation.ts) : les sièges posés sur l'image fixe de la vue haute.
+const revelation = positionsDevoilement();
+const donnees = JSON.stringify({ questions, revelation }).replace(/</g, '\\u003c');
 const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
 ---
 <Repere libelle="La tribune" forme="lieu" x={46} y={55} class="lieu-trancher" data-lieu />
@@ -203,7 +206,7 @@ const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
   .progression-barre span { display: block; height: 100%; width: 0; background: var(--encre); border-radius: var(--pilule); }
   :global(.lieu-trancher[hidden]) { display: none; }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .titre-question { font-size: 26px; }
     .titre-question.longue { font-size: 23px; }
     :global(.lieu-trancher) { display: none; }

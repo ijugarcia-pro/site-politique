@@ -28,18 +28,31 @@ const VARIANTES = opt('variantes', 'normal,instant,leger,sans-webgl').split(',')
 const CPU = Number(opt('cpu', '4'));
 const DPR = Number(opt('dpr', '1.5'));
 const LOGICIEL = args.includes('--logiciel');
+const trace = args.includes('--trace') ? (...m) => console.error(new Date().toISOString().slice(11, 19), ...m) : () => {};
 // Le parcours principal du cadrage (§ R2), plus un retour vers /salle/ : /tes-reponses/ est en
 // gabarit « lecture », où la salle est cachée (display: none), ce qui teste H3.
 const PARCOURS = ['/', '/quiz/', '/salle/', '/ta-place/', '/verdict/', '/tes-reponses/', '/salle/'];
 /** Ce qu'une variante met dans l'adresse de la première page (salle3d/scene.ts, modePerf). */
-const PERF = { normal: 'perf=1', instant: 'perf=instant', leger: 'perf=leger', 'instant-leger': 'perf=instant&perf=leger', 'sans-webgl': 'perf=1' };
+// Depuis le lot 1, « normal » laisse le gouverneur de qualité choisir le palier ; q0 et q1 le
+// forcent (salle3d/pilote.ts, qualiteForcee), pour comparer à rendu égal.
+const PERF = { normal: 'perf=1', instant: 'perf=instant', leger: 'perf=leger', 'instant-leger': 'perf=instant&perf=leger',
+  'sans-webgl': 'perf=1', q0: 'perf=1&qualite=0', q1: 'perf=1&qualite=1' };
+// --quiz-seul : seulement les votes du quiz (lots 2 et 3 : le dévoilement), sans le parcours ni le survol.
+// Les prototypes A et B du lot 2 (?revelation=a|b) ne sont plus là : A est devenu le dévoilement.
+const QUIZ_SEUL = args.includes('--quiz-seul');
 
 const serveur = await servir(resolve(dossier ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
 
 /** Observé dans la page dès son ouverture : tâches longues, images, gestionnaires, données. */
 function observer() {
-  const P = (window.__perf = { longues: [], images: [], gestionnaires: [], donnees: [], evenements: [] });
+  const P = (window.__perf = { longues: [], images: [], gestionnaires: [], donnees: [], evenements: [], webgl: 0 });
+  // Les contextes WebGL créés sur un canevas de la page (le test de peutOuvrir, hors page, ne compte pas).
+  const contexte0 = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (type, ...r) {
+    if (/webgl/.test(type) && this.isConnected) P.webgl += 1;
+    return contexte0.call(this, type, ...r);
+  };
   try {
     new PerformanceObserver((l) => { for (const e of l.getEntries()) P.longues.push([e.startTime, e.duration]); })
       .observe({ type: 'longtask', buffered: true });
@@ -111,6 +124,14 @@ async function tranche(page, t0, t1) {
       imagesParSeconde: imagesGlisse,
       rendu: rendus.length ? { n: rendus.length, median: +rendus[rendus.length >> 1].toFixed(1), max: +rendus[rendus.length - 1].toFixed(1) } : null,
       ondes: m('salle:onde').map((e) => Math.round(e.duration)),
+      // Les prototypes du dévoilement : du clic au premier siège peint, et la cadence de l'onde.
+      premier: (() => { const c = m('revelation:clic')[0], p = m('revelation:premier')[0]; return c && p ? Math.round(p.startTime - c.startTime) : null; })(),
+      imagesOnde: (() => { const p = m('revelation:premier')[0], f = m('revelation:fin')[0] ?? m('salle:onde')[0];
+        const fin = f ? (f.duration ? f.startTime + f.duration : f.startTime) : null;
+        if (!p || !fin || fin <= p.startTime) return null;
+        return Math.round((1000 * images.filter((t) => t >= p.startTime && t <= fin).length) / (fin - p.startTime)); })(),
+      webgl: P.webgl,
+      js: Math.round(performance.getEntriesByType('resource').filter((e) => /\.js(\?|$)/.test(e.name)).reduce((s, e) => s + (e.encodedBodySize || 0), 0) / 1024),
     };
   }, [t0, t1]);
 }
@@ -158,26 +179,30 @@ async function variante(nom) {
 
   // 1. Le parcours principal, navigation par navigation.
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU });
-  const t00 = Date.now();
-  await page.goto(`${base}/?${PERF[nom]}`, { waitUntil: 'load' });
-  sortie.salle = await attendreSalle(page);
-  sortie.premiereOuverture = Date.now() - t00;
-  await page.waitForTimeout(2500);
-  for (const chemin of PARCOURS.slice(1)) {
-    const t0 = await cliquerVers(page, chemin);
-    await page.waitForFunction(([c, debut]) => window.__perf.evenements.some(([t, tt, p]) => t === 'astro:page-load' && p === c && tt > debut),
-      [chemin, t0], { timeout: 60000 }).catch(() => {});
-    await page.waitForTimeout(3500);
-    sortie.navigations.push({ vers: chemin, ...(await tranche(page, t0, await maintenant(page))) });
+  if (!QUIZ_SEUL) {
+    const t00 = Date.now();
+    await page.goto(`${base}/?${PERF[nom]}`, { waitUntil: 'load' });
+    sortie.salle = await attendreSalle(page);
+    sortie.premiereOuverture = Date.now() - t00;
+    await page.waitForTimeout(2500);
+    for (const chemin of PARCOURS.slice(1)) {
+      trace(nom, "vers", chemin);
+      const t0 = await cliquerVers(page, chemin);
+      await page.waitForFunction(([c, debut]) => window.__perf.evenements.some(([t, tt, p]) => t === 'astro:page-load' && p === c && tt > debut),
+        [chemin, t0], { timeout: 60000 }).catch(() => {});
+      await page.waitForTimeout(3500);
+      sortie.navigations.push({ vers: chemin, ...(await tranche(page, t0, await maintenant(page))) });
+    }
   }
 
   // 2. Le quiz : trois votes de suite, sur un visiteur neuf.
   if (nom !== 'sans-webgl') {
     await page.evaluate(preparer, null);
     await page.goto(`${base}/quiz/?${PERF[nom]}`, { waitUntil: 'load' });
-    await attendreSalle(page);
+    // Le quiz pose ses questions sans 3D (lib/revelation.ts) : rien à attendre.
     await page.waitForTimeout(3000);
     for (let k = 0; k < 3; k++) {
+      trace(nom, "vote", k + 1);
       const r = await page.$('[data-reponse="pour"]:not([disabled])');
       if (!r) break;
       await r.click();
@@ -194,20 +219,23 @@ async function variante(nom) {
       sortie.quiz.push({ geste: `question suivante ${k + 1}`, ...(await tranche(page, t0, await maintenant(page))) });
     }
 
+    trace(nom, "survol");
     // 3. Le survol sur /salle/ : 60 positions de souris sur la salle.
-    await page.evaluate(preparer, votes);
-    await page.goto(`${base}/salle/?${PERF[nom]}`, { waitUntil: 'load' });
-    await attendreSalle(page);
-    await page.waitForTimeout(3000);
-    await page.evaluate(() => performance.clearMeasures('salle:siegeSous'));
-    for (let k = 0; k < 60; k++) {
-      await page.mouse.move(560 + (k % 20) * 20, 330 + Math.floor(k / 20) * 60);
-      await page.waitForTimeout(40);
-    }
-    sortie.survol = await page.evaluate(() => {
-      const d = performance.getEntriesByName('salle:siegeSous').map((e) => e.duration).sort((a, b) => a - b);
-      return d.length ? { n: d.length, median: +d[d.length >> 1].toFixed(2), max: +d[d.length - 1].toFixed(2) } : null;
-    });
+    if (!QUIZ_SEUL) {
+      await page.evaluate(preparer, votes);
+      await page.goto(`${base}/salle/?${PERF[nom]}`, { waitUntil: 'load' });
+      await attendreSalle(page);
+      await page.waitForTimeout(3000);
+      await page.evaluate(() => performance.clearMeasures('salle:siegeSous'));
+      for (let k = 0; k < 60; k++) {
+        await page.mouse.move(560 + (k % 20) * 20, 330 + Math.floor(k / 20) * 60);
+        await page.waitForTimeout(40);
+      }
+      sortie.survol = await page.evaluate(() => {
+        const d = performance.getEntriesByName('salle:siegeSous').map((e) => e.duration).sort((a, b) => a - b);
+        return d.length ? { n: d.length, median: +d[d.length >> 1].toFixed(2), max: +d[d.length - 1].toFixed(2) } : null;
+      });
+      }
   }
   sortie.info = await page.evaluate(() => {
     const gl = document.createElement('canvas').getContext('webgl2');
@@ -230,6 +258,7 @@ for (const v of VARIANTES) {
   if (r.quiz.length) {
     console.table(r.quiz.map((q) => ({ geste: q.geste, 'longues n': q.longues.n, 'longue max': q.longues.max, 'image max': q.imageMax,
       'images>50': q.images50, glisse: q.glisses.join(' '), 'img/s': q.imagesParSeconde.join(' '), onde: q.ondes.join(' '),
+      premier: q.premier ?? '', 'img/s onde': q.imagesOnde ?? '', webgl: q.webgl, 'js Ko': q.js,
       'rendu med': q.rendu?.median ?? '', 'rendu n': q.rendu?.n ?? '' })));
   }
   if (r.survol) console.log('survol (siegeSous, ms) :', r.survol);

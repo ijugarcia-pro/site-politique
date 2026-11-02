@@ -87,7 +87,7 @@ export function ajouterDecor(racine: THREE.Group, plafond: THREE.Group, M: Matie
   // jusqu'aux bords de l'écran. Invisible de l'intérieur (il ne regarde que vers le haut), sans ombre.
   const copie = (m: THREE.Material, rx: number, ry: number) => {
     const c = m.clone() as Matieres[string];
-    for (const k of ['map', 'bumpMap', 'metalnessMap', 'roughnessMap']) { c[k] = c[k].clone(); c[k].needsUpdate = true; c[k].repeat.set(rx, ry); }
+    for (const k of ['map', 'bumpMap', 'metalnessMap', 'roughnessMap', 'emissiveMap']) { c[k] = c[k].clone(); c[k].needsUpdate = true; c[k].repeat.set(rx, ry); }
     c.side = THREE.FrontSide; c.envMapIntensity = 0.75;
     return c;
   };

@@ -174,8 +174,10 @@ export async function reveler(salle: Pilote | null, lettres: string, positions: 
   const k = Math.min(zl / (li * format.zone[0]), zh / (hi * format.zone[1]));
   const w = li * k, h = hi * k, x0 = (zl - w) / 2, y0 = haut + (zh - h) / 2;
   for (const el of [c.img, c.toile]) Object.assign(el.style, { left: `${x0}px`, top: `${y0}px`, width: `${w}px`, height: `${h}px` });
-  // Sur un écran très large, le plafond continue au-delà de l'image : elle se répète derrière elle.
-  Object.assign(c.racine.style, { backgroundImage: `url(${src})`, backgroundSize: `${w}px ${h}px`, backgroundPosition: `${x0}px ${y0}px` });
+  // Au-delà de l'image, le plafond continue : ses caissons (2,4 m), à la même échelle, jamais une
+  // deuxième salle (un seul hémicycle par écran).
+  const caisson = Math.max(16, (w * format.zone[0] * 2.4) / 44);
+  Object.assign(c.racine.style, { backgroundImage: 'url(/salle3d/caisson.webp)', backgroundSize: `${caisson}px ${caisson}px`, backgroundPosition: `${x0}px ${y0}px` });
   pose = { x0, y0, w, h, format };
   poserReperes(reperesCourants);
   // La toile a la taille de l'image, posée exactement sur elle : un pixel du masque, un pixel d'image.

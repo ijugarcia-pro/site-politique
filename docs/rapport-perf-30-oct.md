@@ -229,3 +229,34 @@ Limites : la plus longue image touche le seuil au palier 0. Ces chiffres lisent 
 ## Lot 6 · le survol en 2D (2 novembre 2026, t89)
 
 Même outil, CPU ×4, palier 0, 3 passages. Survol (`siegeSous`, 60 mouvements) : médiane de 0,1 ms, au plus 1,4 à 2,9 ms (seuils : moins de 1 ms, 4 ms au plus ; avant, sur la nouvelle salle : 1,3 à 1,6 ms en médiane, 10 à 17 ms au plus). Tâches longues du parcours : 333 ms (seuil : 600 ms). Le nom apparaît 6 ms après le mouvement, à CPU ×1 (`scripts/survol.mjs`). Sans cette projection différée (120 ms après l'arrêt de la caméra), le premier survol montait de 6 à 9 ms.
+
+## L'audit de la salle (3 novembre 2026)
+
+Demande de Julien : repasser sur tout ce qui alourdit le chargement et la fluidité. Nouvel outil : `scripts/audit-salle.mjs` (`--retraits`). Il mesure pour la première fois le temps réel de la carte graphique (lecture d'un pixel juste après le rendu), que `salle:rendre` ne voit pas. Iris Xe, 1 440 × 900, densité 1,5, CPU ×1, vue « La salle ». Les retraits sont des mesures : ce sont eux qui ont décidé.
+
+| Retiré, sur la salle de t92 | Carte graphique (46 ms au départ) |
+| --- | --- |
+| Toutes les lumières ponctuelles | 23 ms |
+| Les 12 lumières des lustres seules | 30 ms |
+| Tous les objets répétés (sièges, colonnes) | 31 ms |
+| Densité 1 au lieu de 1,5 | 27 ms |
+| Le vernis | 41 ms |
+| Le relief | 44 ms |
+| Anisotropie 2, ombres reçues | pas de gain |
+
+| Mesure | Avant | Après |
+| --- | --- | --- |
+| Image, carte graphique, La salle | 46 ms | **23 ms** |
+| Image, carte graphique, La tribune | 26 ms | **14 ms** |
+| Image, carte graphique, vue des députés | 46 ms | **21 ms** |
+| Image, processeur, CPU ×1 | 6 ms | **1,5 ms** |
+| Appels de dessin | 901 | **51** |
+| Triangles | 678 000 | **312 000** |
+| Lumières | 21 | **9** |
+| Compilation des matières, 1re ouverture | 2 465 ms | **897 ms** |
+| Salle prête, 1re ouverture | 3,8 à 4,5 s | **2,6 s** |
+| Plus longue tâche à l'ouverture, cache vide | 3,2 s | environ 1 s |
+
+Ce qui a changé : les 12 lumières des lustres sont retirées, les ampoules restent et la coupole garde sa clarté par une émission légère ; les sièges passent de 384 à 96 triangles de velours, les voyants de 240 à une vingtaine, colonnes et bagues sont simplifiées ; 532 objets immobiles fusionnés par matière en 56 (`fusionnerImmobiles`, testé) ; plus de vernis sur le bois, plus de relief sur le velours et la moquette (deux textures en moins) ; densité plafonnée à 1,5 au lieu de 1,75 ; images décodées en tâche de fond ; matières compilées en tâche de fond. Le rendu a été comparé vue par vue. Images fixes régénérées.
+
+Limites : Iris Xe seulement, navigateur sans écran. Le gain réel sur un téléphone reste à voir. Plus loin, il resterait surtout la densité (15 ms à densité 1), ce que fait déjà le palier 1.

@@ -34,20 +34,10 @@
   "h": 512,
   "couleur": true
  },
- "velours-h": {
-  "l": 512,
-  "h": 512,
-  "couleur": false
- },
  "moquette": {
   "l": 512,
   "h": 512,
   "couleur": true
- },
- "moquette-h": {
-  "l": 512,
-  "h": 512,
-  "couleur": false
  },
  "marbre": {
   "l": 1024,

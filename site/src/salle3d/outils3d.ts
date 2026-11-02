@@ -89,3 +89,66 @@ export function fusion(liste: [THREE.BufferGeometry, THREE.Matrix4 | null][]) {
 export const mat4 = (x: number, y: number, z: number, rx = 0, ry = 0, rz = 0, s = 1) => {
   const o = new THREE.Object3D(); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); o.scale.setScalar(s); o.updateMatrix(); return o.matrix.clone();
 };
+
+
+/** Fusionne les objets immobiles par matière (et par ombre) : plus de 500 objets deviennent quelques
+ *  dizaines d'appels de dessin, sans changer un triangle. Les objets d'origine sont retirés. */
+export function fusionnerImmobiles(racine: THREE.Object3D, garder: (o: THREE.Object3D) => boolean) {
+  racine.updateMatrixWorld(true);
+  type Morceau = { g: THREE.BufferGeometry; debut: number; n: number; m: THREE.Matrix4 };
+  const paquets = new Map<string, { mat: THREE.Material; cast: boolean; recv: boolean; morceaux: Morceau[] }>();
+  const retires: THREE.Mesh[] = [];
+  const parcourir = (o: THREE.Object3D) => {
+    if (garder(o)) return;
+    for (const c of o.children) parcourir(c);
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh || (mesh as unknown as THREE.InstancedMesh).isInstancedMesh || !mesh.visible) return;
+    const g = mesh.geometry;
+    const total = g.index ? g.index.count : g.attributes.position.count;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    const parts = g.groups.length ? g.groups.map((x) => ({ debut: x.start, n: x.count, mat: mats[x.materialIndex ?? 0] ?? mats[0] }))
+      : [{ debut: 0, n: total, mat: mats[0] }];
+    for (const p of parts) {
+      const cle = `${p.mat.uuid}|${mesh.castShadow}|${mesh.receiveShadow}`;
+      let q = paquets.get(cle);
+      if (!q) paquets.set(cle, q = { mat: p.mat, cast: mesh.castShadow, recv: mesh.receiveShadow, morceaux: [] });
+      q.morceaux.push({ g, debut: p.debut, n: p.n, m: mesh.matrixWorld });
+    }
+    retires.push(mesh);
+  };
+  parcourir(racine);
+  const normale = new THREE.Matrix3(), v = new THREE.Vector3();
+  const sortie: THREE.Mesh[] = [];
+  for (const q of paquets.values()) {
+    const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [];
+    for (const { g, debut, n, m } of q.morceaux) {
+      normale.getNormalMatrix(m);
+      const P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv, I = g.index;
+      // Seuls les sommets de ce morceau sont copiés.
+      const vus = new Map<number, number>();
+      for (let k = debut; k < debut + n; k++) {
+        const s = I ? I.getX(k) : k;
+        let d = vus.get(s);
+        if (d === undefined) {
+          d = pos.length / 3;
+          vus.set(s, d);
+          v.fromBufferAttribute(P as THREE.BufferAttribute, s).applyMatrix4(m); pos.push(v.x, v.y, v.z);
+          v.fromBufferAttribute(N as THREE.BufferAttribute, s).applyMatrix3(normale).normalize(); nor.push(v.x, v.y, v.z);
+          if (U) uv.push(U.getX(s), U.getY(s)); else uv.push(0, 0);
+        }
+        idx.push(d);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx);
+    const mesh = new THREE.Mesh(g, q.mat);
+    mesh.castShadow = q.cast; mesh.receiveShadow = q.recv;
+    sortie.push(mesh);
+  }
+  for (const m of retires) { m.parent?.remove(m); m.geometry.dispose(); }
+  racine.add(...sortie);
+  return sortie;
+}

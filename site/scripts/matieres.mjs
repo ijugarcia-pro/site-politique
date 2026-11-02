@@ -54,8 +54,8 @@ const images = await page.evaluate(() => {
   // nom → [canevas, couleur ?] ; une carte de relief, de rugosité ou de métal n'est pas une couleur.
   const liste = {
     bois: [bois.c, 1], 'bois-h': [bois.h, 0], 'bois-r': [bois.ro, 0], 'bois-clair': [M.noyer(9, 0.05).c, 1],
-    panneau: [pan.c, 1], 'panneau-h': [pan.h, 0], velours: [enGris(vel.c), 1], 'velours-h': [vel.h, 0],
-    moquette: [moq.c, 1], 'moquette-h': [moq.h, 0], marbre: [M.marbre(17, 'gris-rose').c, 1],
+    panneau: [pan.c, 1], 'panneau-h': [pan.h, 0], velours: [enGris(vel.c), 1],
+    moquette: [moq.c, 1], marbre: [M.marbre(17, 'gris-rose').c, 1],
     statuaire: [M.marbre(19, 'statuaire').c, 1], patine: [M.patine().ro, 0],
     caisson: [cai.c, 1], 'caisson-h': [cai.h, 0], 'caisson-m': [cai.m, 0], 'caisson-r': [cai.ro, 0],
     verriere: [M.verriere().c, 1], vitrage: [M.vitrage().c, 1], mosaique: [reduire(mos.c, 2), 1], 'mosaique-h': [reduire(mos.h, 4), 0],

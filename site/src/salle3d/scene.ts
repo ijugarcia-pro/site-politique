@@ -3,7 +3,6 @@
 // - couleurs : outputColorSpace et colorSpace au lieu des « encodings » ; conversion des couleurs
 //   hexadécimales coupée, comme en r128 (gestion-couleurs.ts) ;
 // - lumières physiques : intensités du prototype multipliées par π, puis réglées à l'œil ;
-// - velours : sheen devient un nombre, avec sheenColor ;
 // - matières précalculées (public/salle3d/, scripts/matieres.mjs) au lieu d'être calculées ici ;
 // - sièges tirés du plan 2D (geometrie.ts) : le siège n° i est celui de la composition ;
 // - caméras sans GSAP (tween.ts) ; rendu à la demande, ombres recalculées seulement au besoin.
@@ -19,7 +18,7 @@ import { chemin, colonnes, echelleFauteuil, FAUTEUIL_578, longueur, P, position,
 import { APPARENCE_DEFAUT, type Apparence } from './apparence.ts';
 import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
-import { balayage, boiteRonde, corrigeSens, fusion, mat4, rad } from './outils3d.ts';
+import { balayage, boiteRonde, corrigeSens, fusion, fusionnerImmobiles, mat4, rad } from './outils3d.ts';
 import { ajouterDecor } from './decor.ts';
 import { cadrageDessus, DEPUTES, DESSUS } from './cadrage-haut.ts';
 import { grilleSieges, type PointVise } from './visee.ts';
@@ -181,6 +180,8 @@ async function charger(base: string, telephone: boolean): Promise<Textures> {
   await Promise.all(Object.entries(manifeste).map(async ([nom, { couleur }]) => {
     // Le mur du perchoir fait 4 096 px : moitié moins au téléphone.
     const t = await loader.loadAsync(`${base}${nom}${telephone && nom === 'mur-perchoir' ? '-telephone' : ''}.webp`);
+    // Décodée en tâche de fond : sinon, le navigateur la décode pendant l'envoi à la carte graphique.
+    await (t.image as HTMLImageElement).decode?.().catch(() => {});
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.colorSpace = couleur ? THREE.SRGBColorSpace : THREE.NoColorSpace;
     t.anisotropy = 8;
@@ -204,33 +205,34 @@ const ROUGE_VELOURS = 0x6e0d19;
 
 function matieres(T: Textures, telephone: boolean) {
   // Sur téléphone, pas de vernis (clearcoat) : il coûte cher au processeur graphique.
-  const vernis = telephone ? {} : { clearcoat: 0.55, clearcoatRoughness: 0.28 };
   const cc = (x: number, r: number) => (telephone ? {} : { clearcoat: x, clearcoatRoughness: r });
   const M: Record<string, THREE.Material> & Record<string, any> = {};
-  M.noyer = new THREE.MeshPhysicalMaterial({ map: T.bois, bumpMap: T['bois-h'], bumpScale: 0.012, roughnessMap: T['bois-r'], roughness: 1, metalness: 0, ...vernis, envMapIntensity: 0.9 });
-  M.noyerClair = new THREE.MeshPhysicalMaterial({ map: T['bois-clair'], bumpMap: T['bois-h'], bumpScale: 0.01, roughness: 0.55, ...vernis, envMapIntensity: 0.9 });
-  M.plateau = new THREE.MeshPhysicalMaterial({ map: T.bois, color: 0x9c8474, bumpMap: T['bois-h'], bumpScale: 0.008, roughnessMap: T['bois-r'], roughness: 1, ...cc(0.3, 0.4), envMapIntensity: 0.7 });
-  M.panneau = new THREE.MeshPhysicalMaterial({ map: T.panneau, bumpMap: T['panneau-h'], bumpScale: 0.03, roughness: 0.5, ...vernis, envMapIntensity: 0.8 });
+  M.noyer = new THREE.MeshStandardMaterial({ map: T.bois, bumpMap: T['bois-h'], bumpScale: 0.012, roughnessMap: T['bois-r'], roughness: 1, metalness: 0, envMapIntensity: 0.9 });
+  M.noyerClair = new THREE.MeshStandardMaterial({ map: T['bois-clair'], bumpMap: T['bois-h'], bumpScale: 0.01, roughness: 0.55, envMapIntensity: 0.9 });
+  M.plateau = new THREE.MeshStandardMaterial({ map: T.bois, color: 0x9c8474, roughnessMap: T['bois-r'], roughness: 1, envMapIntensity: 0.7 });
+  M.panneau = new THREE.MeshStandardMaterial({ map: T.panneau, bumpMap: T['panneau-h'], bumpScale: 0.03, roughness: 0.5, envMapIntensity: 0.8 });
   // Le velours est neutre : sa couleur vient de chaque siège (rouge, ou la couleur d'un vote), sinon
   // un velours rouge multiplié par du bleu donne du noir. Le reflet rasant prend la couleur du siège.
-  M.velours = new THREE.MeshPhysicalMaterial({ map: T.velours, bumpMap: T['velours-h'], bumpScale: 0.004, roughness: 0.92, metalness: 0,
-    specularIntensity: 0, envMapIntensity: 0.3 });
+  M.velours = new THREE.MeshStandardMaterial({ map: T.velours, roughness: 0.92, metalness: 0, envMapIntensity: 0.3 });
   M.velours.onBeforeCompile = (sh: { fragmentShader: string }) => {
     sh.fragmentShader = sh.fragmentShader.replace('#include <tonemapping_fragment>',
       'float fr = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 2.2);\n gl_FragColor.rgb += diffuseColor.rgb * fr * 1.5;\n#include <tonemapping_fragment>');
   };
   // Le fauteuil du président, le 578e siège, les galeries : rouges pour de bon.
   M.veloursRouge = M.velours.clone(); M.veloursRouge.onBeforeCompile = M.velours.onBeforeCompile; M.veloursRouge.color = couleurExacte(ROUGE_VELOURS);
-  M.moquette = new THREE.MeshStandardMaterial({ map: T.moquette, bumpMap: T['moquette-h'], bumpScale: 0.006, roughness: 1, envMapIntensity: 0.2, color: 0xb89a90 });
+  M.moquette = new THREE.MeshStandardMaterial({ map: T.moquette, roughness: 1, envMapIntensity: 0.2, color: 0xb89a90 });
   M.marbre = new THREE.MeshPhysicalMaterial({ map: T.marbre, roughness: 0.22, ...cc(0.7, 0.12), envMapIntensity: 0.8 });
   M.statuaire = new THREE.MeshPhysicalMaterial({ map: T.statuaire, roughness: 0.3, ...cc(0.4, 0.2), envMapIntensity: 0.7 });
   M.laiton = new THREE.MeshStandardMaterial({ color: 0xa47a30, metalness: 1, roughness: 1, roughnessMap: T.patine, envMapIntensity: 1.0 });
   M.or = new THREE.MeshStandardMaterial({ color: 0xd8af58, metalness: 1, roughness: 0.85, roughnessMap: T.patine, envMapIntensity: 1.35 });
   M.caisson = new THREE.MeshStandardMaterial({ map: clone(T.caisson, 28, 6), bumpMap: clone(T['caisson-h'], 28, 6), bumpScale: 0.06,
-    metalnessMap: clone(T['caisson-m'], 28, 6), metalness: 1, roughnessMap: clone(T['caisson-r'], 28, 6), roughness: 1, side: THREE.BackSide, envMapIntensity: 1.1 });
+    metalnessMap: clone(T['caisson-m'], 28, 6), metalness: 1, roughnessMap: clone(T['caisson-r'], 28, 6), roughness: 1, side: THREE.BackSide, envMapIntensity: 1.7,
+    // Sans les lumières des lustres, la coupole garde sa clarté par elle-même, sans rien coûter.
+    emissive: 0xffffff, emissiveMap: clone(T.caisson, 28, 6), emissiveIntensity: 0.3 });
   M.caissonBerceau = M.caisson.clone();
   for (const k of ['map', 'bumpMap', 'metalnessMap', 'roughnessMap']) M.caissonBerceau[k] = clone(M.caisson[k], 1, 1);
   M.caissonBerceau.side = THREE.FrontSide;
+  M.caissonBerceau.emissiveMap = clone(M.caisson.emissiveMap, 1, 1);
   M.verriere = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: T.verriere, emissiveIntensity: 2.0, roughness: 1, side: THREE.BackSide, fog: false });
   M.vitrage = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: T.vitrage, emissiveIntensity: 2.0, roughness: 1, fog: false });
   M.mosaique = new THREE.MeshPhysicalMaterial({ map: T.mosaique, bumpMap: T['mosaique-h'], bumpScale: 0.01, roughness: 0.42, ...cc(0.35, 0.2), envMapIntensity: 0.6 });
@@ -278,7 +280,14 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   renderer.shadowMap.enabled = !perf.leger; renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.autoUpdate = false;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
+  // Le découpage de l'ouverture, avec `?perf=` (scripts/audit-salle.mjs).
+  let tEtape = performance.now();
+  const etape = (nom: string) => {
+    if (perf.marques) performance.measure(`salle:creer:${nom}`, { start: tEtape, end: performance.now() });
+    tEtape = performance.now();
+  };
   const T = await charger(base, telephone);
+  etape('matieres-chargees');
   const M = matieres(T, telephone);
   const G: Record<string, any> = {};
   const I: Record<string, THREE.InstancedMesh> = {};
@@ -333,8 +342,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
 
   /* Sièges (instances), un par siège du plan 2D */
   const velG = fusion([
-    [boiteRonde(0.56, 0.13, 0.5, 0.055, 2), mat4(0, 0.48, 0.03)],
-    [boiteRonde(0.54, 0.5, 0.12, 0.055, 2), mat4(0, 0.84, -0.24, -0.17)],
+    [boiteRonde(0.56, 0.13, 0.5, 0.055, 1), mat4(0, 0.48, 0.03)],
+    [boiteRonde(0.54, 0.5, 0.12, 0.055, 1), mat4(0, 0.84, -0.24, -0.17)],
   ]);
   const boisG = fusion([
     [boiteRonde(0.6, 0.56, 0.06, 0.025, 1), mat4(0, 0.85, -0.32, -0.17)],
@@ -359,8 +368,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   };
   I.bois = ombre(new THREE.InstancedMesh(boisG, M.noyer, n));
   I.plaque = new THREE.InstancedMesh(new THREE.BoxGeometry(0.15, 0.008, 0.045), M.laiton, n);
-  I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 20), M.laiton, n);
-  I.voyant = new THREE.InstancedMesh(new THREE.SphereGeometry(0.026, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.voyant, n);
+  I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 8, 1, true), M.laiton, n);
+  I.voyant = new THREE.InstancedMesh(new THREE.SphereGeometry(0.026, 6, 2, 0, Math.PI * 2, 0, Math.PI / 2), M.voyant, n);
   I.lueur = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.62, 0.5), M.lueur, n);
   const o = new THREE.Object3D(), pente = Math.atan(0.14 / 0.47), noir = new THREE.Color(0x1d1714), zero = new THREE.Color(0, 0, 0);
   const mVoyant: { p: THREE.Vector3; q: THREE.Quaternion }[] = [];
@@ -388,15 +397,15 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   for (const k of ['velours', 'bois', 'plaque', 'bague', 'voyant', 'lueur']) racine.add(I[k]);
 
   /* Colonnade et galeries */
-  const fut = new THREE.CylinderGeometry(0.46, 0.5, 1, 32, 1, true);
+  const fut = new THREE.CylinderGeometry(0.46, 0.5, 1, 20, 1, true);
   const colPos = colonnes();
   I.fut = ombre(new THREE.InstancedMesh(fut, M.colonne, colPos.length));
-  const baseG = fusion([[new THREE.BoxGeometry(1.25, 0.32, 1.25), mat4(0, 0.16, 0)], [new THREE.TorusGeometry(0.52, 0.09, 10, 32), mat4(0, 0.38, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.5, 0.06, 10, 32), mat4(0, 0.5, 0, Math.PI / 2)]]);
+  const baseG = fusion([[new THREE.BoxGeometry(1.25, 0.32, 1.25), mat4(0, 0.16, 0)], [new THREE.TorusGeometry(0.52, 0.09, 6, 20), mat4(0, 0.38, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.5, 0.06, 6, 20), mat4(0, 0.5, 0, Math.PI / 2)]]);
   const chapG = fusion([
-    [new THREE.CylinderGeometry(0.5, 0.46, 0.18, 32), mat4(0, -0.42, 0)],
-    [new THREE.TorusGeometry(0.16, 0.07, 10, 20), mat4(0.5, -0.24, 0, 0, Math.PI / 2)],
-    [new THREE.TorusGeometry(0.16, 0.07, 10, 20), mat4(-0.5, -0.24, 0, 0, Math.PI / 2)],
-    [new THREE.CylinderGeometry(0.16, 0.16, 1.0, 16), mat4(0, -0.24, 0, 0, 0, Math.PI / 2)],
+    [new THREE.CylinderGeometry(0.5, 0.46, 0.18, 20), mat4(0, -0.42, 0)],
+    [new THREE.TorusGeometry(0.16, 0.07, 6, 12), mat4(0.5, -0.24, 0, 0, Math.PI / 2)],
+    [new THREE.TorusGeometry(0.16, 0.07, 6, 12), mat4(-0.5, -0.24, 0, 0, Math.PI / 2)],
+    [new THREE.CylinderGeometry(0.16, 0.16, 1.0, 8), mat4(0, -0.24, 0, 0, 0, Math.PI / 2)],
     [boiteRonde(1.3, 0.12, 1.3, 0.03), mat4(0, -0.06, 0)],
   ]);
   I.base = ombre(new THREE.InstancedMesh(baseG, M.marbre, colPos.length));
@@ -486,6 +495,9 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     m.position.copy(mid); m.quaternion.copy(q); m.renderOrder = 10; G.faisceaux.add(m);
   });
   racine.add(G.faisceaux);
+  // Tout ce qui ne bouge pas, fusionné par matière (le plafond garde son calque, le 578e fauteuil sa place).
+  fusionnerImmobiles(racine, (o) => o === G.plafond || o === G.c578 || o === G.faisceaux);
+  etape('fusion');
 
   /* Lumière */
   const soleil = new THREE.DirectionalLight(0xffdcaa, 2.4 * PI);
@@ -497,24 +509,20 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   // Le plafond sur un calque à part : la vue haute le masque à la caméra, sans toucher aux ombres.
   G.plafond.traverse((o: THREE.Object3D) => o.layers.set(1));
   camera.layers.enable(1); soleil.shadow.camera.layers.enable(1);
-  const hemi = new THREE.HemisphereLight(0xffe2b8, 0x3a170f, 0.42 * PI); scene.add(hemi);
+  const hemi = new THREE.HemisphereLight(0xffe2b8, 0x3a170f, 0.5 * PI); scene.add(hemi);
   const appliques: THREE.PointLight[] = [];
   for (const a of [20, 60, 90, 120, 160]) {
     const l = new THREE.PointLight(0xffb36b, 0.55 * PI * 8, 18, 2); const ar = rad(a);
     l.position.set(19 * Math.cos(ar), 9.5, 19 * Math.sin(ar)); scene.add(l); appliques.push(l);
   }
   const fond = new THREE.PointLight(0xffc27a, 0.8 * PI * 6, 16, 2); fond.position.set(0, 7, -3); scene.add(fond); appliques.push(fond);
-  // Les lustres (salle.js) : douze lumières de plus, jamais au palier léger.
+  // Les lustres (salle.js) : les ampoules seules. Leurs douze lumières coûtaient un tiers de l'image
+  // sur une carte graphique intégrée (docs/rapport-perf-30-oct.md, § « L'audit de la salle »).
   if (!telephone) {
-    const ampoules = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffe6b8, toneMapped: false }), 150);
+    const ampoules = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 8, 5), new THREE.MeshBasicMaterial({ color: 0xffe6b8, toneMapped: false }), 150);
     const oa = new THREE.Object3D();
     for (let i = 0; i < 150; i++) { const a = rad(-14 + i * (208 / 149)); oa.position.set(20.22 * Math.cos(a), 12.5, 20.22 * Math.sin(a)); oa.updateMatrix(); ampoules.setMatrixAt(i, oa.matrix); }
     scene.add(ampoules);
-    const lustre = (coul: number, i0: number, portee: number, x: number, y: number, z: number) => {
-      const l = new THREE.PointLight(coul, i0, portee, 2); l.position.set(x, y, z); scene.add(l);
-    };
-    for (const a of [-10, 15, 40, 65, 90, 115, 140, 165, 190]) lustre(0xffc98a, 1.25 * PI * 8, 30, 17.5 * Math.cos(rad(a)), 11.6, 17.5 * Math.sin(rad(a)));
-    for (const x of [-9, 0, 9]) lustre(0xffd29a, 0.9 * PI * 6, 16, x, 9, -5.2);
   }
   const spot = new THREE.SpotLight(0xffe0a8, 1.4 * PI * 28, 14, 0.32, 0.6, 1.5); spot.position.set(2.6, 9, 3.2); spot.target = G.c578; scene.add(spot);
   const env = new THREE.TextureLoader();
@@ -531,7 +539,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     soleil.intensity = (2.4 - 0.4 * t) * PI;
     renderer.toneMappingExposure = 1.05 - 0.08 * t;
     brouillard.density = 0.0085 - 0.0073 * t;
-    hemi.intensity = (0.42 + 0.336 * t) * PI;
+    hemi.intensity = (0.5 + 0.36 * t) * PI;
   };
   /** La coupole, son ombre et les faisceaux, masqués pour le Dessus. La caméra de vue décide aussi
    *  des calques des ombres (three) : elles sont recalculées quand ils changent. */
@@ -544,6 +552,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     renderer.shadowMap.needsUpdate = true;
   };
 
+  etape('construction');
   /* Le personnage : sa place (null : le 578e fauteuil), sa marche en cours */
   let perso: Personnage | null = null;
   let clePerso = '';
@@ -679,7 +688,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (perf.marques) performance.mark('salle:redimensionner', { detail: { w, h } });
     if (!w || !h || !enService) return;
-    const ratio = perf.leger || palier === 1 ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.75);
+    const ratio = perf.leger || palier === 1 ? 1 : Math.min(window.devicePixelRatio || 1, w < 520 ? 2 : 1.5);
     // Le tampon d'image n'est réalloué que si la taille change vraiment.
     if (taille !== `${w}×${h}×${ratio}`) {
       taille = `${w}×${h}×${ratio}`;
@@ -934,8 +943,11 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   scene.add(essai.groupe); appliquerCam();
   // En tâche de fond quand le navigateur le permet : compiler d'un bloc figeait la page de 1 à 3 s.
   await renderer.compileAsync(scene, camera);
+  etape('compilation');
   scene.remove(essai.groupe);
   redimensionner(); renderer.shadowMap.needsUpdate = true; rendre();
+  etape('premiere-image');
+  if (perf.marques) (window as unknown as { __audit: unknown }).__audit = { scene, renderer, camera };
   // L'onglet revient au premier plan : une image pour rattraper ce qui a changé.
   document.addEventListener('visibilitychange', () => { if (!document.hidden) demander(); });
   return salle;

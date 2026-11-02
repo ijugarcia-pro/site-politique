@@ -35,7 +35,7 @@ const SALLE_SEULE = `
 
 /** [nom, vue, neutre, formats : [suffixe, largeur, hauteur, densité, zone de la salle]] */
 const VUES = [
-  ['fond-revelation', 'dessus', true, [['', 2000, 1400, 1, [1200, 1000]], ['-telephone', 620, 1000, 1.6, [390, 618]]]],
+  ['fond-revelation', 'dessus', true, [['', 2000, 1400, 1, [1200, 1000]], ['-telephone', 620, 1000, 1.5, [390, 618]]]],
   ['fond-tribune', 'tribune', false, [['', 1600, 1000, 1], ['-telephone', 430, 932, 2]]],
   ['fond-salle', 'salle', false, [['', 1600, 1000, 1], ['-telephone', 430, 932, 2]]],
 ].filter(([nom]) => voulues.includes(nom));
@@ -90,6 +90,8 @@ for (const [nom, vue, neutre, formats] of VUES) {
       writeFileSync(join(SITE, 'public', 'salle3d', `${fichier}-masque.png`), octets);
       console.log(`${fichier}-masque : ${masque.w} × ${masque.h}, ${Math.round(octets.length / 1024)} Ko, ${masque.sieges} sièges`);
       if (masque.sieges !== 577) throw new Error(`masque : ${masque.sieges} sièges au lieu de 577`);
+      // Un pixel du masque, un pixel de l'image : le canevas doit rendre à cette densité (scene.ts, redimensionner).
+      if (Math.abs(masque.w - zone[0] * densite) > 1) throw new Error(`masque de ${masque.w} px pour une zone de ${zone[0] * densite} : densité plafonnée`);
     }
     await contexte.close();
   }

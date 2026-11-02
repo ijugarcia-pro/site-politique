@@ -68,6 +68,7 @@ function controler({ tactile }) {
     const [fx, fy] = img.naturalWidth < 1200 ? [390 / 620, 618 / 1000] : [1200 / 2000, 1000 / 1400];
     const zw = rect.width * fx, zh = rect.height * fy, zx = rect.left + (rect.width - zw) / 2, zy = rect.top + (rect.height - zh) / 2;
     const i = { left: zx, right: zx + zw, top: zy, bottom: zy + zh };
+    if (/fond-revelation/.test(calque.style.backgroundImage)) defauts.push('image du dévoilement répétée : plusieurs hémicycles');
     const droite = [...document.querySelectorAll('.sur-salle .feuille.droite')].find(visible)?.getBoundingClientRect();
     const scene = calque.getBoundingClientRect();
     if (i.left < scene.left - 1 || i.top < scene.top - 1 || i.bottom > scene.bottom + 1 || i.right > scene.right + 1) defauts.push('salle du dévoilement coupée');
@@ -117,6 +118,11 @@ for (const [l, h] of TAILLES) {
     await page.goto(base + chemin, { waitUntil: 'networkidle' });
     await prise(nom);
   }
+  // « Voir les députés » : la salle seule, vue du dessus, sans menus.
+  await page.goto(`${base}/salle/`, { waitUntil: 'networkidle' });
+  const bouton = await page.$('[data-immersion]:visible');
+  if (bouton) { await bouton.click(); await page.waitForTimeout(args.includes('--gpu') ? 2000 : 300); }
+  await prise('deputes');
   await page.goto(`${base}/verdict/`, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.querySelector('[data-decouvrir-bouton]:not([hidden])')?.click());
   await page.waitForTimeout(1600);
@@ -126,7 +132,7 @@ for (const [l, h] of TAILLES) {
 writeFileSync(join(sortie, 'resultats.json'), JSON.stringify(resultats, null, 1));
 
 // La planche : une ligne par taille, une colonne par écran.
-const ECRANS = ['tribune', 'quiz-question', 'quiz-devoilement', 'salle', 'ta-place', 'verdict'];
+const ECRANS = ['tribune', 'quiz-question', 'quiz-devoilement', 'salle', 'deputes', 'ta-place', 'verdict'];
 const lignes = TAILLES.map(([l, h]) => '<tr><th>' + l + ' × ' + h + '</th>' + ECRANS.map((e) => {
   const png = readFileSync(join(sortie, l + 'x' + h + '-' + e + '.png')).toString('base64');
   return '<td><img src="data:image/png;base64,' + png + '"></td>';

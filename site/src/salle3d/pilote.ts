@@ -43,6 +43,9 @@ export function geste(touche: string): { lacet?: number; tangage?: number; zoom?
   }
 }
 
+/** Le pas du clavier dans le Dessus, en pixels. */
+const PAS_DESSUS = 30;
+
 /** Le glisser : la part de l'écart rattrapée à chaque image, la durée de l'inertie au lâcher, et
  *  le déplacement en deçà duquel un appui est un clic. */
 export const GLISSER = { rattrapage: 0.15, inertie: 400, clic: 6 } as const;
@@ -67,8 +70,8 @@ export interface RepereSalle {
 
 export interface Pilote {
   voyants(couleurs: (string | null)[]): void;
-  /** `navigation` : un changement de page (scene.ts, vue). */
-  vue(nom: NomVue, opt?: { instant?: boolean; navigation?: boolean }): void;
+  /** `navigation` : un changement de page ; `duree` : une glisse (scene.ts, vue). */
+  vue(nom: NomVue, opt?: { instant?: boolean; navigation?: boolean; duree?: number }): void;
   /** Faux sur une page « lecture » : la salle, cachée, ne se charge pas et ne rend rien. */
   actif(on: boolean): void;
   /** Ce que les feuilles couvrent : la vue se centre sur le reste. */
@@ -279,6 +282,8 @@ function creerPilote(racine: HTMLElement): Pilote {
       return;
     }
     if (appui) appui.bouge += Math.hypot(e.clientX - avant.x, e.clientY - avant.y);
+    // Dans le Dessus, la salle suit le pointeur (sans inertie).
+    if (salle.vueCourante === 'dessus') { salle.deplacer(e.clientX - avant.x, e.clientY - avant.y); return; }
     const l = canvas.clientWidth || 1;
     // Au doigt, seul le glissé horizontal tourne : le glissé vertical fait défiler la page.
     const dLacet = (-1.2 * (e.clientX - avant.x)) / l;
@@ -325,7 +330,8 @@ function creerPilote(racine: HTMLElement): Pilote {
   canvas.addEventListener('dblclick', () => { arreter(); salle?.recentrer(); });
   canvas.addEventListener('wheel', (e) => {
     // La molette fait défiler la page ; Ctrl + molette (et le pincement du pavé tactile) zoome.
-    if (!e.ctrlKey || !salle) return;
+    // Dans le Dessus, la molette seule zoome : rien à faire défiler.
+    if (!salle || (!e.ctrlKey && salle.vueCourante !== 'dessus')) return;
     e.preventDefault();
     salle.zoomer(Math.exp(e.deltaY * 0.002));
   }, { passive: false });
@@ -337,6 +343,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     arreter();
     if (g.recentrer) salle.recentrer();
     else if (g.zoom) salle.zoomer(g.zoom);
+    else if (salle.vueCourante === 'dessus') salle.deplacer(-Math.sign(g.lacet ?? 0) * PAS_DESSUS, Math.sign(g.tangage ?? 0) * PAS_DESSUS);
     else salle.orbiter(g.lacet ?? 0, g.tangage ?? 0);
   });
 

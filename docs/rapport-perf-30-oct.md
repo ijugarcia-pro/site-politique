@@ -202,3 +202,26 @@ Porte G1 : Julien a retenu A. Le quiz, les lots, la séance et le verdict se dé
 **Correctif trouvé par la mesure** : lire la couleur du coin de l'image fixe (`getImageData`) à chaque dévoilement forçait une relecture depuis la carte graphique ; à l'arrivée sur `/verdict/`, cela faisait une tâche de 152 à 184 ms à ×4. La couleur est maintenant fixée (`FOND_IMAGE`, relevée une fois sur l'image), ce qui a aussi réduit le premier dévoilement du quiz de 136-142 à 49-57 ms.
 
 **« Ta place est prête »** (10e réponse du quiz) : la 3D s'ouvre à ce moment-là seulement (vérifié : la salle est « en attente » pendant les 10 questions, « prête » après « Voir ma place », personnage assis et repère posé). Avec `?qualite=2`, elle ne s'ouvre pas : l'image du dernier dévoilement reste, avec le repère sur la place.
+
+## t92 · la nouvelle salle (2 novembre 2026)
+
+Même outil et même poste (Iris Xe, 1 440 × 900, densité 1,5, CPU ×4), médiane de 3 passages, avant (`mvp-lot-6`) et après (`mvp-salle-def`), paliers forcés 0 et 1. Le build d'avant ne contient pas la nouvelle salle.
+
+| Mesure | Avant, palier 0 / 1 | Après, palier 0 / 1 | Seuil |
+| --- | --- | --- | --- |
+| Tâches longues du parcours (6 navigations) | 538 / 299 ms | 396 / 304 ms | ≤ 600 ms |
+| Plus longue tâche, par navigation | 124 / 101 ms | 92 / 70 ms | ≤ 100 ms |
+| Plus longue image pendant une navigation | 167 / 150 ms | 200 / 117 ms | ≤ 200 ms |
+| Rendu de `/salle/` au retour (appel de rendu, côté processeur) | 34 / 36 ms | 39 / 40 ms | — |
+| Rendu de `/ta-place/` au palier 1 | 37 ms | 48 ms | — |
+| Première ouverture de la 3D | 4 853 / 4 672 ms | 5 317 / 5 318 ms | — |
+| Révélation : clic → premier siège, 1er vote (un seul passage) | 51 / 71 ms | 63 / 64 ms | — |
+| Onde, 1er vote, images / s (un seul passage) | 55 / 65 | 59 / 55 | ≥ 30 |
+| WebGL sur les pages de vote | aucun | aucun | aucun |
+| JavaScript chargé sur le quiz | 50 Ko | 51 Ko | — |
+
+Le passage Perspective ↔ Dessus n'existait pas sous cette forme (`scripts/perf-dessus.mjs`, un passage, palier 0) : à CPU ×1, 61 à 64 images / s, aucune tâche longue, rendu médian de 8 ms ; à CPU ×4, 43 à 44 images / s, plus longue image de 67 à 83 ms, tâches de 51 à 74 ms, ombres recalculées comprises. Le gouverneur garde la salle ouverte à CPU ×1 sur ce poste.
+
+Poids : `public/salle3d` passe de 2,4 à 3,5 Mo au total. L'image du dévoilement fait 406 Ko sur ordinateur (2 000 × 1 400, contre 178 Ko) et 234 Ko au téléphone, plus son masque de 89 ou 65 Ko ; le mur du perchoir, 319 Ko (121 Ko au téléphone).
+
+Limites : la plus longue image touche le seuil au palier 0. Ces chiffres lisent le temps d'appel et le rythme des images dans un navigateur sans écran, pas le temps réel de la carte graphique : douze lumières de plus peuvent peser davantage à l'écran. La mesure sur un vrai téléphone (palier léger : ni lustres, ni frise, ni statues) reste à faire par Julien. L'image figée de 550 à 650 ms vers `/ta-place/` n'apparaît pas dans ces passages (200 ms au plus), sans que la cause soit connue : à reconfirmer en recette. Survol (lot 6, seuil non visé ici) : médiane de 1,3 à 1,6 ms, contre 0,6 à 1,4 ms.

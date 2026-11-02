@@ -20,12 +20,12 @@ Le MVP est fini quand le parcours « première visite → quiz de 10 votes → t
 | t86 | 3 · Dévoilement sur image fixe, partout | Fait | `mvp-lot-3`, local |
 | t87 | 4 · Cadre et responsive | Fait | `mvp-lot-4`, local |
 | t88 | 5 · Tiroir mobile et immersion | Fait | `mvp-lot-5`, local |
-| **t92** | **Nouvelle salle 3D, vue du dessus** | **À faire en premier, porte G2** | à créer |
+| **t92** | **Nouvelle salle 3D, vue du dessus** | **Livrée, en attente de la porte G2** | `mvp-salle-def`, local |
 | t89 | 6 · Dessus, survol, carte, sélection | Mode Dessus livré, à refaire sur la nouvelle salle ; le reste n'est pas commencé | `mvp-lot-6`, local |
 | t90 | 7 · Étiquettes et seuil des 10 votes | À faire ; Q3 et Q4 tranchées | |
 | t91 | 8 · Recette finale | À faire | |
 
-Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6`. Le dossier de travail est sur `mvp-lot-6`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
+Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6` → `mvp-salle-def`. Le dossier de travail est sur `mvp-salle-def`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
 
 `git status` montre trois restes sans importance, à ne pas commiter : `.claude/launch.json` et les anciens prompts `docs/PROMPT-JUMEAU-CAMERAS.md` et `docs/PROMPT-VDEF.local.md`.
 
@@ -40,7 +40,7 @@ Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6`
 
 ## Phase 1 · La nouvelle salle (t92)
 
-Julien arrive avec le travail de Claude Design. **S'il n'est pas dans le dépôt, le lui demander avant de commencer** et le ranger dans `docs/design-salle-dessus/`. Ne pas inventer un rendu à sa place.
+Le travail de Claude Design est dans `docs/design-salle-dessus/` (repris de l'artefact « La salle du 578e siège » le 2 nov. 2026). Ne pas inventer un rendu à sa place.
 
 **À garder absolument**
 - Le siège n° i reste celui de la composition : `sieges3D()` et `position()` (`site/src/salle3d/geometrie.ts`) partent du plan 2D `lib/hemicycle.ts`. Tout (votes, repères, personnage, images) en dépend. Si la géométrie des sièges bouge, tout ce qui suit doit bouger avec elle.
@@ -49,10 +49,10 @@ Julien arrive avec le travail de Claude Design. **S'il n'est pas dans le dépôt
 - Les contraintes de CLAUDE.md : palette, polices, couleurs de vote, neutralité.
 
 **Ce que la vue du dessus alimente aujourd'hui**
-- `site/src/salle3d/cadrage-haut.ts` : les deux points de vue (`VUE_HAUTE`, 42 m, pour le dévoilement ; `VUE_DESSUS`, 95 m, pour `/salle/`), le champ calculé pour tenir tous les sièges, `positionsDevoilement` (les sièges posés sur l'image, au build).
-- `site/src/salle3d/scene.ts` : vues `haute` et `dessus`, `vueFixe`, plafond sur le calque 1 (three calcule les ombres avec les calques de la caméra de vue : il faut `shadowMap.needsUpdate` quand ils changent), `cadrageAjuste`, brouillard coupé en `dessus`.
-- `site/src/lib/revelation.ts` : l'image fixe, le calque 2D (`multiply` : **les sièges de l'image doivent rester clairs et neutres**), les repères, `FOND_IMAGE` (à accorder au fond de la nouvelle image).
-- `site/scripts/images-fixes.mjs` : à relancer sur la vraie carte graphique. Par défaut `fond-revelation` ; `--vues=fond-tribune,fond-salle` pour les fonds, à régénérer aussi si la salle change. Les proportions de l'image (1,2 et 1,3) doivent rester celles de `positionsDevoilement`.
+- `site/src/salle3d/cadrage-haut.ts` : un seul point de vue, `DESSUS`, pour `/salle/` et le dévoilement, sa hauteur calculée pour tenir la zone visible, `FORMATS_DEVOILEMENT`, `positionsDevoilement` (les sièges posés sur l'image, au build).
+- `site/src/salle3d/scene.ts` : vue `dessus`, `vueFixe`, plafond sur le calque 1 (three calcule les ombres avec les calques de la caméra de vue : `masquerPlafond` demande `shadowMap.needsUpdate`), `cadrageAjuste`, `eclairage`, `masqueSieges`. `salle3d/decor.ts` : le décor.
+- `site/src/lib/revelation.ts` : l'image fixe, le calque 2D (`multiply` : **les sièges de l'image doivent rester clairs et neutres**), le masque des sièges, les repères, `FOND_IMAGE`.
+- `site/scripts/images-fixes.mjs` : à relancer sur la vraie carte graphique. Par défaut `fond-revelation` et son masque ; `--vues=fond-tribune,fond-salle` pour les fonds, à régénérer aussi si la salle change. Les formats doivent rester ceux de `FORMATS_DEVOILEMENT`.
 - `site/src/salle3d/projection.ts` (stories, fiche député) et les tests `geometrie`, `vue-place`, `projection`, `cadrage-haut`, `cadrage-ajuste`, `personnage`.
 
 **Fin de la phase : porte G2**

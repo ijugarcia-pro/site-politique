@@ -30,7 +30,7 @@ for (const [l, h] of TAILLES) {
   await page.waitForTimeout(1500);
   for (const [mode] of MODES) {
     await page.click(`[data-mode="${mode}"]`);
-    await page.waitForTimeout(900);
+    await page.waitForTimeout(1900);
     await page.screenshot({ path: join(sortie, `${l}x${h}-${mode}.png`) });
   }
   await contexte.close();

@@ -107,7 +107,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
   const poser = (i: number) => {
     const q = questions[i];
     montrer('question');
-    void devoilement.then((m) => m.question(salle));
+    void devoilement.then((m) => { m.question(salle); m.preparer(positions); });
     cran('plein');
     // Le repère de lieu ne dit plus que la date d'un vote à venir (cadrage MVP, R1).
     lieu(q.attente ? `La tribune · ${q.date.replace(/^Ils votent /, '')}` : null);

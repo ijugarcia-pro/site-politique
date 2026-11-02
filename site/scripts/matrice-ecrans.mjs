@@ -60,15 +60,21 @@ function controler({ tactile }) {
       defauts.push(`feuille sous la barre du haut (${Math.round(r.top)} < ${Math.round(barre.bottom)})`);
     }
   }
-  // Le dévoilement : l'image (donc les 577 sièges) dans la zone libre.
+  // Le dévoilement : la salle (donc les 577 sièges) dans la zone libre ; le reste de l'image déborde
+  // exprès sous la barre et les feuilles (salle3d/cadrage-haut.ts, FORMATS_DEVOILEMENT).
   const calque = document.querySelector('.revelation-calque');
   if (calque && calque.style.opacity === '1') {
-    const i = calque.querySelector('img').getBoundingClientRect();
+    const img = calque.querySelector('img'), rect = img.getBoundingClientRect();
+    const [fx, fy] = img.naturalWidth < 1200 ? [390 / 620, 618 / 1000] : [1200 / 2000, 1000 / 1400];
+    const zw = rect.width * fx, zh = rect.height * fy, zx = rect.left + (rect.width - zw) / 2, zy = rect.top + (rect.height - zh) / 2;
+    const i = { left: zx, right: zx + zw, top: zy, bottom: zy + zh };
     const droite = [...document.querySelectorAll('.sur-salle .feuille.droite')].find(visible)?.getBoundingClientRect();
     const scene = calque.getBoundingClientRect();
-    if (i.left < scene.left - 1 || i.top < scene.top - 1 || i.bottom > scene.bottom + 1) defauts.push('image du dévoilement coupée');
-    if (droite && W > 900 && H > 560 && i.right > droite.left + 1) defauts.push('image du dévoilement sous la feuille');
-    if (barre && W > 900 && i.top < barre.bottom - 1) defauts.push('image du dévoilement sous la barre');
+    if (i.left < scene.left - 1 || i.top < scene.top - 1 || i.bottom > scene.bottom + 1 || i.right > scene.right + 1) defauts.push('salle du dévoilement coupée');
+    const tiroirHaut = tiroir ? document.querySelector('.sur-salle')?.getBoundingClientRect().top : null;
+    if (tiroirHaut && i.bottom > tiroirHaut + 1) defauts.push('salle du dévoilement sous le tiroir');
+    if (droite && W > 900 && H > 560 && i.right > droite.left + 1) defauts.push('salle du dévoilement sous la feuille');
+    if (barre && W > 900 && i.top < barre.bottom - 1) defauts.push('salle du dévoilement sous la barre');
   }
   if (tactile) {
     const petites = [...document.querySelectorAll('.sur-salle button, .barre-bas a')].filter((b) => {

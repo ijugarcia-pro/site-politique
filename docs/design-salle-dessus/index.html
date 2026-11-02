@@ -1,0 +1,232 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>La salle du 578e siège</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  /* Une salle plein écran, des feuilles blanches posées dessus (la direction du site). Un seul thème, volontairement. */
+  :root {
+    --fond: #2A211B; --feuille: #FFFFFF; --encre: #121212; --texte: #3A3A3A; --second: #5E5E5E;
+    --surface: #F2F2F2; --filet: #E7E7E7;
+    --pour: #2F7BFF; --contre: #FF6A3D; --abst: #FFC531; --absent: #8A8A8A;
+    --titre: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+    --corps: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --ombre: 0 1px 2px rgba(18,18,18,.14), 0 6px 22px rgba(18,18,18,.16);
+    color-scheme: light;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { background: var(--fond); color: var(--encre); font-family: var(--corps); overflow: hidden; }
+  .app { position: fixed; inset: 0; }
+  canvas#salle { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; outline: none; }
+  canvas#salle.prise { cursor: grabbing; }
+  canvas#salle:focus-visible { box-shadow: inset 0 0 0 3px var(--feuille); }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px; background: var(--feuille); color: var(--encre); box-shadow: var(--ombre); font-size: 14px; font-weight: 500; }
+  .haut { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); left: calc(14px + env(safe-area-inset-left, 0px)); right: calc(14px + env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; pointer-events: none; }
+  .haut > * { pointer-events: auto; }
+  .marque { font-family: var(--titre); font-weight: 800; letter-spacing: -0.01em; }
+  .bascule { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--feuille); box-shadow: var(--ombre); margin-left: auto; margin-right: auto; }
+  .bascule button { height: 34px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: var(--texte); font: 500 14px var(--corps); cursor: pointer; }
+  .bascule button[aria-pressed="true"] { background: var(--encre); color: var(--feuille); font-weight: 600; }
+  .bascule button:disabled { cursor: progress; }
+  .espace { width: 150px; }
+  .bascule button + button { margin-left: 2px; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--pour); outline-offset: 2px; }
+
+  .carte { position: absolute; left: calc(14px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: min(320px, calc(100% - 28px)); box-sizing: border-box; padding: 18px 18px 14px; border-radius: 18px; background: var(--feuille); box-shadow: var(--ombre); display: flex; flex-direction: column; gap: 12px; }
+  .carte .titre { margin: 0; font: 800 20px/1.1 var(--titre); letter-spacing: -0.01em; }
+  .carte .texte { margin: 0; font-size: 14px; line-height: 1.45; color: var(--texte); }
+  .verdict { margin: 0; display: flex; align-items: baseline; gap: 10px; font: 800 34px/1 var(--titre); letter-spacing: -0.02em; }
+  .verdict span { font: 500 13px var(--corps); letter-spacing: 0; color: var(--second); }
+  .barre { display: flex; gap: 2px; height: 8px; border-radius: 999px; overflow: hidden; }
+  .barre i { display: block; height: 100%; }
+  .puces { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .puces li { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; background: var(--surface); color: var(--texte); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .puces li b { width: 9px; height: 9px; border-radius: 50%; }
+  .primaire, .secondaire { height: 46px; border-radius: 999px; font: 600 15px var(--corps); cursor: pointer; }
+  .primaire { border: 0; background: var(--encre); color: var(--feuille); }
+  .secondaire { border: 1px solid var(--filet); background: var(--feuille); color: var(--encre); }
+  .primaire:disabled, .secondaire:disabled { opacity: .55; cursor: progress; }
+
+  .carte { padding: 14px; gap: 10px; }
+  .verdict { font-size: 28px; }
+  .puces { gap: 4px 10px; }
+  .puces li { height: auto; padding: 0; background: none; font-size: 12px; }
+  .lien { align-self: flex-start; height: 32px; padding: 0; border: 0; background: none; color: var(--encre); font: 600 13px var(--corps); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .lien:disabled { opacity: .55; }
+  .primaire { height: 44px; }
+  .illu { margin: 0; font-size: 11.5px; line-height: 1.4; color: var(--second); }
+
+  .zoom { position: absolute; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 999px; background: var(--feuille); box-shadow: var(--ombre); }
+  .zoom button { width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--surface); color: var(--encre); font: 600 18px var(--corps); cursor: pointer; display: grid; place-items: center; }
+  .zoom input { width: 120px; accent-color: var(--encre); }
+  .aide { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); margin: 0; padding: 6px 12px; border-radius: 999px; background: rgba(18,18,18,.78); color: var(--feuille); font-size: 12px; white-space: nowrap; pointer-events: none; }
+
+  .chargement { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; background: var(--fond); color: var(--feuille); text-align: center; padding-inline: 24px; }
+  .chargement p { margin: 0; font: 800 22px var(--titre); letter-spacing: -0.01em; }
+  .chargement .petit { font: 400 14px var(--corps); color: #d9cfc4; }
+  .anneau { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.2); border-top-color: var(--feuille); animation: tourne 0.9s linear infinite; }
+  @keyframes tourne { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .anneau { animation: none; } }
+
+  @media (max-width: 760px) {
+    .aide, .espace, .marque .nom { display: none; }
+    .marque { width: 40px; padding: 0; justify-content: center; }
+    .bascule button { padding: 0 12px; font-size: 13px; }
+    .bascule { margin-left: auto; margin-right: 0; }
+    .carte { width: auto; right: calc(14px + env(safe-area-inset-right, 0px)); padding: 14px 14px 12px; gap: 10px; }
+    .carte .texte { display: none; }
+    .zoom { bottom: auto; top: calc(66px + env(safe-area-inset-top, 0px)); }
+    .zoom input { width: 90px; }
+  }
+</style>
+
+<div class="app">
+  <canvas id="salle" tabindex="0" aria-label="La salle de l'Assemblée nationale en 3D. Glisser ou utiliser les flèches pour se déplacer, plus et moins pour zoomer, zéro pour recadrer."></canvas>
+
+  <header class="haut">
+    <div class="pill marque" aria-label="Le 578e siège">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 17a9 9 0 0 1 18 0"></path><path d="M7.5 17a4.5 4.5 0 0 1 9 0"></path></svg>
+      <span class="nom">Le 578e siège</span>
+    </div>
+    <div class="bascule" role="group" aria-label="Vue de la salle">
+      <button type="button" id="v-salle" aria-pressed="false">Perspective</button>
+      <button type="button" id="v-perchoir" aria-pressed="false">Perchoir</button>
+      <button type="button" id="v-dessus" aria-pressed="true">Dessus</button>
+    </div>
+    <div class="espace" aria-hidden="true"></div>
+  </header>
+
+  <section class="carte" aria-label="Le dévoilement d'un vote">
+    <div id="repos" style="display: flex; flex-direction: column; gap: 12px">
+      <button type="button" class="primaire" id="devoiler">Dévoiler un vote</button>
+    </div>
+    <div id="resultat" hidden>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <p class="verdict">Adopté <span>51 voix d'écart</span></p>
+        <div class="barre" id="barre" role="img" aria-label="287 pour, 236 contre, 31 abstentions, 19 absents, 4 non-votants"></div>
+        <ul class="puces" id="puces"></ul>
+        <button type="button" class="lien" id="retablir">Remettre le velours rouge</button>
+      </div>
+    </div>
+    <p class="illu">Vote illustratif : couleurs tirées au hasard, sans lien avec les groupes ni la place.</p>
+  </section>
+
+  <div class="zoom" role="group" aria-label="Zoom">
+    <button type="button" id="moins" aria-label="Dézoomer">−</button>
+    <input type="range" id="niveau" min="0.75" max="2.2" step="0.01" value="1.08" aria-label="Niveau de zoom">
+    <button type="button" id="plus" aria-label="Zoomer">+</button>
+  </div>
+  <p class="aide" id="aide">Glisse pour te déplacer · molette pour zoomer · double-clic pour recadrer</p>
+
+  <div class="chargement" id="chargement" role="status">
+    <div class="anneau" aria-hidden="true"></div>
+    <p>La salle se construit</p>
+    <span class="petit" id="chargement-detail">Marbre, velours et dorures sont peints à l'ouverture : quelques secondes.</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="textures.js"></script>
+<script src="salle.js"></script>
+<script src="decor.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const cv = $('salle'), reduit = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ZOOM = { dessus: { min: 0.75, max: 2.2, base: 1 }, salle: { min: 0.75, max: 1.35, base: 1 }, perchoir: { min: 0.75, max: 1.35, base: 1 } };
+  const VUES = { salle: 'v-salle', perchoir: 'v-perchoir', dessus: 'v-dessus' }, HASH = { salle: '#perspective', perchoir: '#perchoir', dessus: '#dessus' };
+  const depuisHash = () => location.hash === '#perspective' ? 'salle' : location.hash === '#perchoir' ? 'perchoir' : 'dessus';
+  const presser = v => { for (const [k, id] of Object.entries(VUES)) $(id).setAttribute('aria-pressed', k === v); };
+  const bloquer = b => { for (const id of Object.values(VUES)) $(id).disabled = b; };
+  let pret = false, occupe = false;
+
+  // légende du vote
+  const V = [['pour', 'pour', 'var(--pour)'], ['contre', 'contre', 'var(--contre)'], ['abst', 'abstentions', 'var(--abst)'], ['absent', 'absents', 'var(--absent)'], ['nv', 'non-votants', '#EDE6D6']];
+  const tot = 577;
+  $('barre').innerHTML = V.map(([k, , c]) => `<i style="width:${(DECOR.VOTE[k] / tot * 100).toFixed(2)}%;background:${c}${k === 'nv' ? ';box-shadow:inset 0 0 0 1.5px #121212' : ''}"></i>`).join('');
+  $('puces').innerHTML = V.map(([k, t, c]) => `<li><b style="background:${c}${k === 'nv' ? ';box-shadow:inset 0 0 0 1.5px #121212' : ''}"></b>${DECOR.VOTE[k]} ${t}</li>`).join('');
+
+  function majUI() {
+    const v = SALLE.vueCourante, z = ZOOM[v];
+    presser(v);
+    const n = $('niveau'); n.min = z.min; n.max = z.max; n.value = SALLE.libre.zoom;
+    $('aide').textContent = v === 'dessus' ? 'Glisse pour te déplacer · molette pour zoomer · double-clic pour recadrer' : 'Glisse pour regarder autour · molette pour zoomer · double-clic pour recadrer';
+  }
+  async function aller(nom) {
+    if (!pret || occupe || nom === SALLE.vueCourante) return;
+    occupe = true; bloquer(true); presser(nom);
+    try { history.replaceState(null, '', HASH[nom]); } catch (e) {}
+    await SALLE.vue(nom, { instant: reduit, duree: 1600 });
+    occupe = false; bloquer(false); majUI();
+  }
+  $('v-salle').onclick = () => aller('salle');
+  $('v-dessus').onclick = () => aller('dessus'); $('v-perchoir').onclick = () => aller('perchoir');
+  addEventListener('hashchange', () => aller(depuisHash()));
+
+  // zoom
+  const zoomer = f => { if (!pret) return; SALLE.regler({ zoom: SALLE.libre.zoom * f }); $('niveau').value = SALLE.libre.zoom; };
+  $('plus').onclick = () => zoomer(1.12); $('moins').onclick = () => zoomer(1 / 1.12);
+  $('niveau').oninput = e => { if (pret) SALLE.regler({ zoom: +e.target.value }); };
+  cv.addEventListener('wheel', e => { e.preventDefault(); zoomer(Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+  const recadrer = () => { if (!pret) return; SALLE.regler({ lacet: 0, tangage: 0, dx: 0, dz: 0, zoom: ZOOM[SALLE.vueCourante].base }); majUI(); };
+  cv.addEventListener('dblclick', recadrer);
+
+  // glisser : en Dessus on se déplace au-dessus de la salle, en Perspective on tourne autour du point regardé
+  function deplacer(dx, dy) {
+    if (!pret || occupe) return;
+    const L = SALLE.libre;
+    if (SALLE.vueCourante === 'dessus') {
+      const cam = SALLE._int.camera, mpp = 2 * cam.position.y * Math.tan(cam.fov * Math.PI / 360) / Math.max(1, cv.clientHeight);
+      if (cv.clientWidth / cv.clientHeight < 0.8) SALLE.regler({ dz: L.dz - dx * mpp, dx: L.dx + dy * mpp });
+      else SALLE.regler({ dx: L.dx + dx * mpp, dz: L.dz + dy * mpp });
+    } else SALLE.regler({ lacet: L.lacet - dx * 0.12, tangage: L.tangage + dy * 0.08 });
+  }
+  const doigts = new Map(); let pince = null;
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); doigts.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.classList.add('prise'); });
+  cv.addEventListener('pointermove', e => {
+    const p = doigts.get(e.pointerId); if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y; doigts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (doigts.size >= 2) { const [a, b] = [...doigts.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pince) zoomer(d / pince); pince = d; return; }
+    deplacer(dx, dy);
+  });
+  const lacher = e => { doigts.delete(e.pointerId); pince = null; if (!doigts.size) cv.classList.remove('prise'); };
+  cv.addEventListener('pointerup', lacher); cv.addEventListener('pointercancel', lacher);
+  cv.addEventListener('keydown', e => {
+    const m = { ArrowLeft: [-30, 0], ArrowRight: [30, 0], ArrowUp: [0, -30], ArrowDown: [0, 30] }[e.key];
+    if (m) { e.preventDefault(); deplacer(...m); }
+    else if (e.key === '+' || e.key === '=') zoomer(1.12); else if (e.key === '-') zoomer(1 / 1.12); else if (e.key === '0') recadrer();
+  });
+
+  // le dévoilement
+  $('devoiler').onclick = async () => {
+    if (!pret) return; $('devoiler').disabled = true;
+    await DECOR.devoiler({ instant: reduit });
+    $('repos').hidden = true; $('resultat').hidden = false; $('devoiler').disabled = false; $('retablir').focus();
+  };
+  $('retablir').onclick = async () => {
+    $('retablir').disabled = true; await DECOR.retablir({ instant: reduit });
+    $('resultat').hidden = true; $('repos').hidden = false; $('retablir').disabled = false; $('devoiler').focus();
+  };
+
+  addEventListener('resize', () => { if (pret) { SALLE.redimensionner(); majUI(); } });
+
+  function demarrer() {
+    try {
+      if (typeof THREE === 'undefined') throw new Error('three');
+      SALLE.init(cv, { ombre: innerWidth < 760 ? 1024 : 2048, avantRendu: () => DECOR.init(SALLE) });
+      SALLE.vue(depuisHash(), { instant: true });
+      pret = true; majUI(); $('chargement').hidden = true;
+    } catch (e) {
+      console.error(e);
+      $('chargement').querySelector('.anneau').hidden = true;
+      $('chargement').querySelector('p').textContent = 'La salle ne peut pas s\'afficher ici';
+      $('chargement-detail').textContent = 'Ce navigateur ne permet pas la 3D (WebGL). Essaie sur un autre navigateur ou un autre appareil.';
+    }
+  }
+  requestAnimationFrame(() => setTimeout(demarrer, 40));
+})();
+</script>
+
+</body></html>

@@ -109,16 +109,6 @@
   "h": 16,
   "couleur": false
  },
- "balustrade": {
-  "l": 512,
-  "h": 128,
-  "couleur": true
- },
- "balustrade-h": {
-  "l": 512,
-  "h": 128,
-  "couleur": false
- },
  "entablement": {
   "l": 1024,
   "h": 256,
@@ -134,20 +124,40 @@
   "h": 256,
   "couleur": false
  },
- "galerie": {
+ "mur-perchoir": {
+  "l": 4096,
+  "h": 1195,
+  "couleur": true
+ },
+ "mur-perchoir-h": {
+  "l": 1024,
+  "h": 299,
+  "couleur": false
+ },
+ "loge": {
+  "l": 512,
+  "h": 128,
+  "couleur": true
+ },
+ "tenture": {
   "l": 512,
   "h": 512,
   "couleur": true
  },
- "mur": {
-  "l": 2048,
-  "h": 600,
+ "soubassement": {
+  "l": 512,
+  "h": 330,
   "couleur": true
  },
- "mur-h": {
-  "l": 2048,
-  "h": 600,
-  "couleur": false
+ "dossier": {
+  "l": 256,
+  "h": 64,
+  "couleur": true
+ },
+ "frise": {
+  "l": 1024,
+  "h": 192,
+  "couleur": true
  },
  "tribune": {
   "l": 1024,

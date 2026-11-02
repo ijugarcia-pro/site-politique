@@ -1,4 +1,4 @@
-// Le cadrage ajusté à la zone visible (cadrage MVP, lot 4) : la vue haute tient les 577 sièges dans
+// Le cadrage ajusté à la zone visible (cadrage MVP, lot 4) : le Dessus tient les 577 sièges dans
 // ce que les feuilles laissent voir, quelles que soient la fenêtre et la feuille ; la vue « La
 // salle » garde son angle dans les bornes prévues, et son cadrage d'origine en plein écran.
 import assert from 'node:assert/strict';
@@ -18,11 +18,12 @@ const CAS: [string, number, number, number, number][] = [
 ];
 
 for (const [nom, w, h, droite, haut] of CAS) {
-  test(`vue haute, ${nom} : les 577 sièges dans la zone`, () => {
+  test(`Dessus, ${nom} : les 577 sièges dans la zone`, () => {
     const zl = w - droite, zh = h - haut;
-    const c = cadrageAjuste('haute', zl, zh, h);
+    const c = cadrageAjuste('dessus', zl, zh, h, w);
     const cam = new THREE.PerspectiveCamera(c.fov, w / h, 0.1, 400);
     cam.position.set(...c.pos);
+    cam.up.set(...c.haut!);
     cam.lookAt(...c.cible);
     cam.updateMatrixWorld();
     cam.updateProjectionMatrix();

@@ -1,75 +1,58 @@
-// La vue haute du dévoilement (lot 2 du cadrage MVP, docs/cadrage-mvp-retours-test-578e.md, R1) :
-// la salle vue de haut, derrière la tribune, plafond masqué, les 577 sièges visibles. Le point de
-// vue est fixe ; le champ se calcule pour que tous les sièges tiennent dans la zone visible (sa
-// largeur sur sa hauteur), avec une marge de 4 %. Partagé par la 3D (scene.ts, vue « haute ») et
-// par le build (positionsDevoilement, sièges posés sur l'image fixe du dévoilement). Le cadrage
-// « ajusté » à toutes les tailles d'écran viendra au lot 4.
+// Le « Dessus » (t92, docs/design-salle-dessus/, d'après la visite virtuelle de l'Assemblée) : la
+// caméra à la verticale de l'hémicycle, tribune en bas, à la hauteur où le dossier et le perchoir
+// tiennent dans ce que les feuilles laissent voir. Sur un canevas en portrait, la salle est couchée
+// (tribune à gauche) : les sièges y sont environ 1,6 fois plus grands. Partagé par la 3D (scene.ts)
+// et par le build (positionsDevoilement, sièges posés sur l'image fixe du dévoilement).
 import * as THREE from 'three';
-import { FAUTEUIL_578, position, sieges3D } from './geometrie.ts';
+import { FAUTEUIL_578, P, position, sieges3D } from './geometrie.ts';
 import { delaiOnde } from '../lib/hemicycle.ts';
 
-/** Au-dessus de la tribune, à 42 m (au-dessus de la coupole, masquée), regard vers le milieu des gradins. */
-export const VUE_HAUTE = { pos: [0, 42, -10] as [number, number, number], cible: [0, 0, 9.5] as [number, number, number] };
-/** Le mode « Dessus » de la vue « La salle » (cadrage MVP, R5, lot 6) : presque à la verticale des
- *  gradins, de loin, avec un champ étroit : quasi orthographique, aucun siège n'en masque un autre. */
-export const VUE_DESSUS = { pos: [0, 95, 10.4] as [number, number, number], cible: [0, 0, 10.5] as [number, number, number] };
-export const MARGE_HAUTE = 0.04;
+/** fov : le champ vertical du canevas ; demiLargeur : le dossier (r = 21,9 m) ; demiProfondeur et
+ *  centre : du perchoir au dossier ; yRef : le haut des gradins ; couche : sous ces proportions de
+ *  canevas, la salle se couche. */
+export const DESSUS = { fov: 50, demiLargeur: 21.9, demiProfondeur: 13.8, centre: 7.4, yRef: P.YTOP + 1.0, couche: 0.8 } as const;
 
-let points: THREE.Vector3[] | null = null;
-/** Le pied et le haut de chaque fauteuil, et le bord de son pupitre (0,5 m devant) : un siège est
- *  visible s'ils le sont tous. */
-const pointsSieges = () => (points ??= sieges3D().flatMap((s) => [new THREE.Vector3(...position(s, 0)),
-  new THREE.Vector3(...position(s, 1.05)), new THREE.Vector3(...position({ ...s, r: s.r + 0.5 }, 0.9))]));
-
-/** La caméra de la vue haute pour un champ et des proportions données. */
-export function cameraHaute(fov: number, aspect: number, vue = VUE_HAUTE): THREE.PerspectiveCamera {
-  const c = new THREE.PerspectiveCamera(fov, aspect, 0.1, 400);
-  c.position.set(...vue.pos);
-  c.lookAt(...vue.cible);
-  c.updateMatrixWorld();
-  c.updateProjectionMatrix();
-  return c;
+/** Le Dessus pour une zone visible de `zl` × `zh` sur un canevas de `l` × `h` (même unité). La zone
+ *  se centre ensuite dans le canevas par setViewOffset (scene.ts), sans déformer. */
+export function cadrageDessus(zl: number, zh: number, l: number, h: number) {
+  const tv = Math.tan((DESSUS.fov * Math.PI) / 360), couche = l / h < DESSUS.couche;
+  const [enX, enY] = couche ? [DESSUS.demiProfondeur, DESSUS.demiLargeur] : [DESSUS.demiLargeur, DESSUS.demiProfondeur];
+  const d = Math.max((enX * h) / (tv * zl), (enY * h) / (tv * zh));
+  return {
+    pos: [0, DESSUS.yRef + d, DESSUS.centre] as [number, number, number],
+    cible: [0, 0, DESSUS.centre] as [number, number, number],
+    fov: DESSUS.fov as number,
+    haut: (couche ? [1, 0, 0] : [0, 0, 1]) as [number, number, number],
+  };
 }
 
-const champs = new Map<number, number>();
-/** Le plus petit champ vertical (en degrés) où les 577 sièges tiennent dans une zone de ces
- *  proportions, marge comprise. */
-export function champHaut(aspect: number, marge = MARGE_HAUTE, vue = VUE_HAUTE): number {
-  const cle = Math.round(aspect * 100) / 100 + marge * 1000 + (vue === VUE_HAUTE ? 0 : 1000);
-  const deja = champs.get(cle);
-  if (deja) return deja;
-  const borne = 1 - 2 * marge;
-  const v = new THREE.Vector3();
-  let bas = 10, haut = 120;
-  for (let k = 0; k < 24; k++) {
-    const f = (bas + haut) / 2;
-    const c = cameraHaute(f, aspect, vue);
-    const tient = pointsSieges().every((p) => {
-      v.copy(p).project(c);
-      return Math.abs(v.x) <= borne && Math.abs(v.y) <= borne && v.z < 1;
-    });
-    if (tient) haut = f; else bas = f;
-  }
-  champs.set(cle, haut);
-  return haut;
+/** La caméra du Dessus pour une zone centrée dans un canevas (sans feuille d'un seul côté). */
+export function cameraDessus(zl: number, zh: number, l: number, h: number): THREE.PerspectiveCamera {
+  const c = cadrageDessus(zl, zh, l, h);
+  const cam = new THREE.PerspectiveCamera(c.fov, l / h, 0.1, 400);
+  cam.position.set(...c.pos);
+  cam.up.set(...c.haut);
+  cam.lookAt(...c.cible);
+  cam.updateMatrixWorld();
+  cam.updateProjectionMatrix();
+  return cam;
 }
 
-/** La vue haute, pour une zone visible de ces proportions. */
-export function cadrageHaut(aspect: number) {
-  return { pos: [...VUE_HAUTE.pos] as [number, number, number], cible: [...VUE_HAUTE.cible] as [number, number, number], fov: champHaut(aspect) };
-}
+/** Les formats de l'image fixe du dévoilement : [largeur, hauteur] de l'image et de la zone où la
+ *  salle doit tenir (en pixels CSS). Le reste de l'image (le plafond doré) remplit l'écran autour de
+ *  la salle, sous les feuilles. Au téléphone en portrait, la salle est couchée. À garder en accord
+ *  avec scripts/images-fixes.mjs. */
+export const FORMATS_DEVOILEMENT = {
+  ordinateur: { image: [2000, 1400], zone: [1200, 1000] },
+  telephone: { image: [620, 1000], zone: [390, 618] },
+} as const;
 
-/** Le mode « Dessus », pour une zone visible de ces proportions. */
-export function cadrageDessus(aspect: number) {
-  return { pos: [...VUE_DESSUS.pos] as [number, number, number], cible: [...VUE_DESSUS.cible] as [number, number, number], fov: champHaut(aspect, MARGE_HAUTE, VUE_DESSUS) };
-}
-
-/** Chaque siège dans une image de la vue haute de ces proportions : x et y entre 0 et 1 depuis le
- *  coin haut gauche, r le rayon apparent du fauteuil en part de la largeur de l'image, rang le
- *  rang du siège (0 : le plus près de la tribune). */
-export function siegesHaut(aspect: number): { x: number; y: number; r: number; rang: number }[] {
-  const c = cameraHaute(champHaut(aspect), aspect);
-  const v = new THREE.Vector3(), w = new THREE.Vector3();
+/** Chaque siège dans une image du Dessus : x et y entre 0 et 1 depuis le coin haut gauche, r le rayon
+ *  apparent du fauteuil en part de la largeur de l'image, rang le rang du siège (0 : le plus près de
+ *  la tribune). */
+export function siegesDessus(zl: number, zh: number, l: number, h: number): { x: number; y: number; r: number; rang: number }[] {
+  const c = cameraDessus(zl, zh, l, h);
+  const v = new THREE.Vector3(), w = new THREE.Vector3(), aspect = l / h;
   return sieges3D().map((s) => {
     const [x, y, z] = position(s, 0.55);
     v.set(x, y, z).project(c);
@@ -80,19 +63,18 @@ export function siegesHaut(aspect: number): { x: number; y: number; r: number; r
 }
 
 /** Où tombent les sièges sur l'image fixe du dévoilement, au build (Trancher.astro, verdict.astro) :
- *  pour chaque siège [x, y, rayon, délai de l'onde en ms], dans les proportions de l'image
- *  d'ordinateur (1,2) et de téléphone (1,3) (scripts/images-fixes.mjs) ; plus le 578e fauteuil
- *  (le repère « Ta place t'attend »). L'onde va du rang intérieur vers l'extérieur, avec un aléa
- *  tiré du numéro du siège (lib/hemicycle.ts, delaiOnde). */
+ *  pour chaque siège [x, y, rayon, délai de l'onde en ms] ; plus le 578e fauteuil (le repère « Ta
+ *  place t'attend ») et la part de l'image que la salle occupe (`zone`, centrée). L'onde va du rang
+ *  intérieur vers l'extérieur, avec un aléa tiré du numéro du siège (lib/hemicycle.ts, delaiOnde). */
 export function positionsDevoilement() {
-  const poser = (aspect: number) => {
-    const c = cameraHaute(champHaut(aspect), aspect);
-    const f = new THREE.Vector3(FAUTEUIL_578.x, FAUTEUIL_578.y + 0.9, FAUTEUIL_578.z).project(c);
+  const poser = ({ image: [l, h], zone: [zl, zh] }: { image: readonly [number, number]; zone: readonly [number, number] }) => {
+    const f = new THREE.Vector3(FAUTEUIL_578.x, FAUTEUIL_578.y + 0.9, FAUTEUIL_578.z).project(cameraDessus(zl, zh, l, h));
     return {
-      sieges: siegesHaut(aspect).map((s, k) => [+s.x.toFixed(4), +s.y.toFixed(4), +s.r.toFixed(4),
+      sieges: siegesDessus(zl, zh, l, h).map((s, k) => [+s.x.toFixed(4), +s.y.toFixed(4), +s.r.toFixed(4),
         delaiOnde(s.rang, k)] as [number, number, number, number]),
       fauteuil: [+((f.x + 1) / 2).toFixed(4), +((1 - f.y) / 2).toFixed(4)] as [number, number],
+      zone: [zl / l, zh / h] as [number, number],
     };
   };
-  return { ordinateur: poser(1.2), telephone: poser(1.3) };
+  return { ordinateur: poser(FORMATS_DEVOILEMENT.ordinateur), telephone: poser(FORMATS_DEVOILEMENT.telephone) };
 }

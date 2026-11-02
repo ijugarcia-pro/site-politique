@@ -144,7 +144,8 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     const modes = [...document.querySelectorAll<HTMLButtonElement>('[data-mode]')];
     const poserMode = (m: 'salle' | 'dessus', premier = false) => {
       for (const b of modes) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
-      salle?.vue(m, premier ? { instant: true } : { navigation: true });
+      // Glissement de 1,4 s entre les deux modes (coupé en mouvement réduit par la scène).
+      salle?.vue(m, premier ? { instant: true } : { duree: 1400 });
     };
     poserMode(modeChoisi ?? (matchMedia('(max-width: 900px), (max-height: 560px)').matches ? 'dessus' : 'salle'), true);
     for (const b of modes) b.addEventListener('click', () => { modeChoisi = b.dataset.mode as 'salle' | 'dessus'; poserMode(modeChoisi); });

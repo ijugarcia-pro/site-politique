@@ -1,0 +1,41 @@
+{
+ "lundi": "2026-11-02",
+ "vacances": false,
+ "votes": [
+  {
+   "cle": "RUANR5L17S2027IDS30977PT53449",
+   "type": "annonce",
+   "date": "2026-11-03",
+   "debut": "2026-11-03 15:00:00+01",
+   "objet": "Vote solennel sur le projet de loi de finances pour 2027 (première partie)",
+   "nature": "partie",
+   "dossier_uid": "DLR5L17N54629",
+   "dossier": "Projet de loi de finances pour 2027",
+   "groupe": null
+  },
+  {
+   "cle": "scrutin:VTANR5L17V2244",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V2244",
+   "numero": 2244,
+   "date": "2025-06-04",
+   "objet": "l'ensemble de la proposition de loi relative au droit de vote par correspondance des personnes détenues (première lecture).",
+   "dossier_uid": "DLR5L17N51052",
+   "dossier": "Proposition de loi relative au droit de vote par correspondance des personnes détenues",
+   "reserve": false,
+   "lot": 8
+  },
+  {
+   "cle": "scrutin:VTANR5L17V5106",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V5106",
+   "numero": 5106,
+   "date": "2026-01-22",
+   "objet": "l'article unique de la proposition de résolution européenne visant à inscrire la mouvance des frères musulmans sur la liste européenne des organisations terroristes.",
+   "dossier_uid": "DLR5L17N52132",
+   "dossier": "Inscrire la mouvance des frères musulmans sur la liste européenne des organisations terroristes",
+   "reserve": false,
+   "lot": 7
+  }
+ ]
+}

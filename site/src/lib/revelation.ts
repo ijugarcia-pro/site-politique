@@ -21,7 +21,7 @@ export interface PositionsRevelation { ordinateur: Format; telephone: Format }
 export interface RepereImage { i: number; libelle: string }
 
 const reduit = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-const telephone = () => matchMedia('(max-width: 720px)').matches;
+const telephone = () => matchMedia('(max-width: 900px), (max-height: 560px)').matches;
 /** L'onde, comme dans la 3D : 1,1 s du premier au dernier siège. */
 /** Le fond de l'image fixe (le haut de fond-revelation*.webp, relevé une fois : le lire dans l'image
  *  à chaque dévoilement figeait la page) : le calque se fond avec elle. */
@@ -57,14 +57,14 @@ function monter() {
   return calque;
 }
 
-/** Au téléphone, ce que la barre flottante (en haut) et la feuille (qui monte en bas) couvrent de
+/** Ce que la barre flottante (en haut) et, au téléphone, la feuille (qui monte en bas) couvrent de
  *  la salle, en pixels. */
 function couvert(scene: DOMRect): { haut: number; bas: number } {
   const barre = [...document.querySelectorAll<HTMLElement>('.barre-haut')].find((b) => !b.hidden)?.getBoundingClientRect();
   const feuille = document.querySelector<HTMLElement>('.sur-salle .feuille')?.getBoundingClientRect();
   return {
     haut: barre ? Math.max(0, Math.min(scene.height / 3, barre.bottom - scene.top + 6)) : 0,
-    bas: feuille ? Math.max(0, Math.min(scene.height / 3, scene.bottom - feuille.top)) : 0,
+    bas: telephone() && feuille ? Math.max(0, Math.min(scene.height / 3, scene.bottom - feuille.top)) : 0,
   };
 }
 
@@ -92,8 +92,8 @@ export async function reveler(salle: Pilote | null, lettres: string, positions: 
   if (c.img.getAttribute('src') !== src) c.img.src = src;
   try { await c.img.decode(); } catch { return false; }
   if (n !== cycle) return true;
-  // La zone que la feuille de droite laisse voir (ordinateur) ; au téléphone, sous la barre et
-  // au-dessus de la feuille.
+  // La zone que la feuille de droite laisse voir (ordinateur), sous la barre ; au téléphone, sous la
+  // barre et au-dessus de la feuille.
   const scene = c.racine.getBoundingClientRect();
   let droite = 0;
   if (!tel) {
@@ -102,7 +102,7 @@ export async function reveler(salle: Pilote | null, lettres: string, positions: 
       if (b.width) droite = Math.max(droite, scene.right - b.left);
     }
   }
-  const { haut, bas } = tel ? couvert(scene) : { haut: 0, bas: 0 };
+  const { haut, bas } = couvert(scene);
   const zl = Math.max(1, scene.width - droite), zh = Math.max(1, scene.height - haut - bas);
   const k = Math.min(zl / c.img.naturalWidth, zh / c.img.naturalHeight);
   const w = c.img.naturalWidth * k, h = c.img.naturalHeight * k, x0 = (zl - w) / 2, y0 = haut + (zh - h) / 2;

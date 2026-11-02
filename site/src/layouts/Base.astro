@@ -84,7 +84,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
     <div class="cadre">
       <div class="scene" data-scene={fond}>
         <picture>
-          <source media="(max-width: 720px)" srcset={`/salle3d/fond-${fond}-telephone.webp`} />
+          <source media="(max-width: 900px), (max-height: 560px)" srcset={`/salle3d/fond-${fond}-telephone.webp`} />
           <img class="fond" src={`/salle3d/fond-${fond}.webp`} alt={gabarit === 'lecture' ? '' : ALT[fond]}
             aria-hidden={gabarit === 'lecture' ? 'true' : undefined} decoding="async" />
         </picture>
@@ -177,7 +177,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
   .fond { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
 
   /* La salle nette, les feuilles posées dessus : un écran, sans défilement de la page. */
-  .gabarit-salle .cadre { height: 100vh; height: 100dvh; min-height: 760px; overflow: hidden; }
+  .gabarit-salle .cadre { height: 100vh; height: 100dvh; overflow: hidden; }
   .sur-salle { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
   .sur-salle > :global(*) { pointer-events: auto; }
   /* La tribune vue d'en bas : le pupitre dans le tiers haut (la feuille du bas couvre la moitié
@@ -194,7 +194,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
   .gabarit-lecture .fond { transform: scale(1.08); filter: blur(18px) brightness(0.72); }
   .page-lecture { position: relative; z-index: 3; padding: 92px var(--marge) 0; }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     body:not(.focus) { padding-bottom: 74px; }
     .gabarit-salle .cadre { height: auto; min-height: 0; overflow: visible; }
     .gabarit-salle .scene { position: relative; inset: auto; height: 300px; }

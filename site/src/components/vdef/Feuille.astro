@@ -1,7 +1,8 @@
 ---
 // Feuille (VDEF § 7) : le contenu posé sur la salle. À droite (vote, verdict, révélation), à
 // gauche (Ta place), en bas (la tribune), ou en lecture : pleine page sur la salle floutée
-// (le flou est posé par Base.astro, gabarit « lecture »). Sur téléphone (≤ 720 px), toutes
+// (le flou est posé par Base.astro, gabarit « lecture »). Sur téléphone et tablette (≤ 900 px de large ou
+// ≤ 560 px de haut : cadrage MVP, lot 4), toutes
 // montent depuis le bas sous l'image de la salle (maquettes T1 à T5), coins arrondis en haut.
 interface Props {
   position: 'droite' | 'gauche' | 'bas' | 'lecture';
@@ -40,7 +41,8 @@ const { position, titre, etiquette, balise: Balise = 'section', class: classe, .
   .gauche { top: 88px; left: var(--marge); width: var(--feuille-gauche); padding: 24px; gap: 14px; }
   .bas {
     position: absolute; z-index: 3; left: var(--marge); right: var(--marge); bottom: var(--marge);
-    min-height: var(--feuille-bas); padding: 22px; gap: 12px;
+    min-height: var(--feuille-bas); max-height: calc(100dvh - 88px - var(--marge)); overflow: auto;
+    padding: 22px; gap: 12px;
   }
   .lecture {
     position: relative; z-index: 3; width: 100%; max-width: var(--feuille-lecture);
@@ -49,7 +51,7 @@ const { position, titre, etiquette, balise: Balise = 'section', class: classe, .
     min-height: calc(100vh - 92px);
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .droite, .gauche, .bas {
       position: relative; inset: auto; width: auto; max-width: none; min-height: 0;
       margin-top: -64px; padding: 10px 16px 24px; gap: 12px;

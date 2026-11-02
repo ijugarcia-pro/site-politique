@@ -112,7 +112,7 @@ const VUES: { id: Vue; href: string; libelle: string }[] = [
   .segment { width: 60px; height: 6px; border-radius: var(--pilule); background: var(--bord); }
   .segment.plein { background: var(--encre); }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .barre-haut { top: 12px; left: 12px; right: 12px; justify-content: space-between; }
     .vues, .loupe { display: none; }
     .logo { width: var(--cible); height: var(--cible); padding: 0; justify-content: center; }

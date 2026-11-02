@@ -293,8 +293,8 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   .partiel { padding: 10px 14px; border-radius: 14px; background: var(--surface); }
   .repli-2d { padding: 8px; border-radius: var(--rayon-carte); background: var(--surface); }
   .repli-2d[hidden] { display: none; }
-  .actions { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  @media (max-width: 720px) {
+  .actions { margin-top: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+  @media (max-width: 900px), (max-height: 560px) {
     .issue { font-size: 44px; }
   }
 </style>

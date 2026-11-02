@@ -75,6 +75,22 @@ export function cadrage(nom: NomVue, aspect: number): Cadrage {
   return portrait ? { pos: [0, 9.6, -6.2], cible: [0, 6.4, 10], fov: 80 } : { pos: [0, 7.0, -6.4], cible: [0, 5.5, 11], fov: 64 };
 }
 
+const CHAMP_SALLE = { min: 58, max: 78 };
+/** Le cadrage ajusté à ce que les feuilles laissent voir du canevas (cadrage MVP, lot 4) : la zone
+ *  fait `largeur` × `hauteur` sur un canevas de `hauteurCanevas`. La vue haute y tient les 577 sièges ;
+ *  la vue « La salle » garde le même angle horizontal (90°, celui d'un plein écran en 16/10), borné
+ *  pour ne pas déformer. Le champ se calcule sur la zone, puis se rapporte à toute la hauteur du
+ *  canevas (l'image reste centrée sur la zone : setViewOffset). Les autres vues gardent leur cadrage. */
+export function cadrageAjuste(nom: NomVue, largeur: number, hauteur: number, hauteurCanevas: number): Cadrage {
+  const aspect = Math.max(1, largeur) / Math.max(1, hauteur);
+  const c = cadrage(nom, aspect);
+  if (nom !== 'haute' && !(nom === 'salle' && aspect >= 0.9)) return c;
+  const champ = nom === 'haute' ? c.fov
+    : Math.min(CHAMP_SALLE.max, Math.max(CHAMP_SALLE.min, 2 * Math.atan(1 / aspect) * (180 / Math.PI)));
+  const fov = 2 * Math.atan(Math.tan((champ * Math.PI) / 360) * (Math.max(1, hauteurCanevas) / Math.max(1, hauteur))) * (180 / Math.PI);
+  return { ...c, fov };
+}
+
 /** Les bornes du regard dans la vue « Ta place » : on tourne la tête sans bouger. */
 export const REGARD = { lacet: rad(80), tangageBas: rad(-30), tangageHaut: rad(20), champMin: 40, champMax: 70,
   avance: 0.12, near: 0.05 } as const;
@@ -635,14 +651,11 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   /** Ta place : aux yeux du personnage assis au siège du jumeau, regard vers la tribune. Sans
    *  place, la salle depuis le perchoir. */
   const cadrer = (nom: NomVue, aspect: number): Cadrage => {
-    // La vue haute tient dans ce que les feuilles laissent voir.
-    if (nom === 'haute') {
-      // Le champ se calcule sur la zone visible, puis se rapporte à toute la hauteur du canevas.
-      const h = Math.max(1, canvas.clientHeight), hz = Math.max(1, h - (cadre.haut ?? 0) - (cadre.bas ?? 0));
-      const c = cadrage('haute', Math.max(1, canvas.clientWidth - (cadre.gauche ?? 0) - (cadre.droite ?? 0)) / hz);
-      return { ...c, fov: (2 * Math.atan(Math.tan((c.fov * Math.PI) / 360) * (h / hz)) * 180) / Math.PI };
+    if (nom !== 'place' || place === null) {
+      const h = canvas.clientHeight;
+      return cadrageAjuste(nom === 'place' ? 'salle' : nom, canvas.clientWidth - (cadre.gauche ?? 0) - (cadre.droite ?? 0),
+        h - (cadre.haut ?? 0) - (cadre.bas ?? 0), h);
     }
-    if (nom !== 'place' || place === null) return cadrage(nom === 'place' ? 'salle' : nom, aspect);
     return { pos: yeuxAuSiege(sieges[place]), cible: CENTRE_TRIBUNE, fov: aspect < 0.9 ? 66 : 56 };
   };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
@@ -767,9 +780,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     cadre(c) {
       cadre = { ...c };
       if (anim) return;
-      // La vue haute tient dans ce que les feuilles laissent voir : son champ en dépend.
-      if (vueCourante === 'haute') { poserLibre(); return; }
-      appliquerCam(); demander();
+      // Le cadrage dépend de ce que les feuilles laissent voir.
+      poserLibre();
     },
     siegeSous(x, y) {
       return mesurer('salle:siegeSous', () => {

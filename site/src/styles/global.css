@@ -41,7 +41,7 @@
   /* Largeurs des feuilles (VDEF § 7) */
   --feuille-droite: 480px;
   --feuille-gauche: 460px;
-  --feuille-bas: 520px;
+  --feuille-bas: min(520px, calc(100dvh - 88px - var(--marge)));
   --feuille-lecture: 1040px;
 
   color-scheme: light;
@@ -91,7 +91,7 @@ summary::-webkit-details-marker { display: none; }
 .t-etiquette { font: 600 14px/1.35 var(--police-texte); color: var(--texte-2); }
 .t-legende { font: 500 13px/1.35 var(--police-texte); color: var(--texte-2); }
 
-@media (max-width: 720px) {
+@media (max-width: 900px), (max-height: 560px) {
   .t-ecran, .t-ecran-grand { font-size: 28px; }
   .t-feuille { font-size: 26px; }
   .t-section { font-size: 22px; }
@@ -147,7 +147,7 @@ summary::-webkit-details-marker { display: none; }
   pointer-events: none;
 }
 .salle-sans-3d .consigne-salle { display: none; }
-@media (max-width: 720px) { .consigne-salle { display: none; } }
+@media (max-width: 900px), (max-height: 560px) { .consigne-salle { display: none; } }
 
 /* Les noms techniques (clés du navigateur, fichiers) : en Figtree, comme tout le texte (VDEF § 6 :
    deux polices seulement), en gras pour les distinguer. */

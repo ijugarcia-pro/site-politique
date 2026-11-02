@@ -30,7 +30,7 @@
      *  téléphone, la feuille est sous l'image de la salle). */
     const cadre = () => {
       const c = { gauche: 0, droite: 0, bas: 0 };
-      if (matchMedia('(max-width: 720px)').matches) return c;
+      if (matchMedia('(max-width: 900px), (max-height: 560px)').matches) return c;
       const r = racine.getBoundingClientRect();
       for (const f of document.querySelectorAll<HTMLElement>('.sur-salle .feuille')) {
         const b = f.getBoundingClientRect();

@@ -421,7 +421,7 @@ const decompte = dernier.decompte;
   .tel { display: none; }
 
   /* Téléphone (maquette T1) : la feuille monte sous la salle, les cartes en deux colonnes. */
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     :global(.lieu-tribune) { display: none; }
     :global(.feuille.tribune) { display: flex; height: auto; }
     :global(.feuille.tribune) { flex-direction: column; }

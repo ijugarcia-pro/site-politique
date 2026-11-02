@@ -206,7 +206,7 @@ const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
   .progression-barre span { display: block; height: 100%; width: 0; background: var(--encre); border-radius: var(--pilule); }
   :global(.lieu-trancher[hidden]) { display: none; }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .titre-question { font-size: 26px; }
     .titre-question.longue { font-size: 23px; }
     :global(.lieu-trancher) { display: none; }

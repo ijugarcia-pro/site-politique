@@ -404,7 +404,7 @@ const description = censure
   .tableau :global(td a:hover) { text-decoration: underline; }
   .voisins { display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--filet); }
   .voisins a { color: var(--encre); font: 600 15px/1 var(--police-texte); min-height: var(--cible); display: inline-flex; align-items: center; }
-  @media (max-width: 720px) {
+  @media (max-width: 900px), (max-height: 560px) {
     .voir-salle { margin-left: 0; }
     .groupes li { grid-template-columns: 70px minmax(0, 1fr); }
     .groupes li .t-legende { grid-column: 2; }

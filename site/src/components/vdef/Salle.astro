@@ -28,18 +28,20 @@
     const VUES: NomVue[] = ['tribune', 'salle', 'place'];
     /** Ce que les feuilles posées sur la salle couvrent du canevas ; au téléphone, le tiroir. */
     const cadre = () => {
-      const c = { gauche: 0, droite: 0, bas: 0 };
+      const c = { gauche: 0, droite: 0, bas: 0, haut: 0 };
       const r = racine.getBoundingClientRect();
+      const barre = [...document.querySelectorAll<HTMLElement>('.barre-haut')].find((b) => !b.hidden)?.getBoundingClientRect();
+      if (barre?.height) c.haut = Math.max(0, barre.bottom - r.top + 6);
       if (matchMedia('(max-width: 900px), (max-height: 560px)').matches) {
         const m = document.querySelector('.sur-salle')?.getBoundingClientRect();
         if (m?.height) c.bas = Math.max(0, r.bottom - m.top);
         return c;
       }
-      for (const f of document.querySelectorAll<HTMLElement>('.sur-salle .feuille')) {
+      for (const f of document.querySelectorAll<HTMLElement>('.sur-salle .feuille, [data-panneau-salle]')) {
         const b = f.getBoundingClientRect();
         if (!b.width || !b.height) continue;
         if (f.classList.contains('bas')) c.bas = Math.max(c.bas, r.bottom - b.top);
-        else if (f.classList.contains('gauche')) c.gauche = Math.max(c.gauche, b.right - r.left);
+        else if (f.classList.contains('gauche') || f.hasAttribute('data-panneau-salle')) c.gauche = Math.max(c.gauche, b.right - r.left);
         else if (f.classList.contains('droite')) c.droite = Math.max(c.droite, r.right - b.left);
       }
       return c;

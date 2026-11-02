@@ -17,13 +17,16 @@ import { chemin, colonnes, echelleFauteuil, FAUTEUIL_578, longueur, P, position,
 import { APPARENCE_DEFAUT, type Apparence } from './apparence.ts';
 import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
-import { cadrageHaut } from './cadrage-haut.ts';
+import { cadrageDessus, cadrageHaut } from './cadrage-haut.ts';
 
 /** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
  *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus, pour le
  *  dévoilement d'un vote (lot 2 du cadrage MVP, prototype B), la vue haute : les 577 sièges vus
- *  d'au-dessus de la tribune, plafond masqué (cadrage-haut.ts) ; ce n'est pas une vue de navigation. */
-export type NomVue = 'tribune' | 'salle' | 'place' | 'haute';
+ *  d'au-dessus de la tribune, plafond masqué (cadrage-haut.ts) ; et le mode « Dessus » de /salle/
+ *  (lot 6, R5). Ce ne sont pas des vues de navigation. */
+export type NomVue = 'tribune' | 'salle' | 'place' | 'haute' | 'dessus';
+/** Les vues fixes, plafond masqué, cadrées pour tenir tous les sièges. */
+const vueFixe = (nom: NomVue) => nom === 'haute' || nom === 'dessus';
 export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number }
 /** Ce que les feuilles couvrent du canevas, en pixels : le cadrage se centre sur le reste. */
 export interface Cadre { gauche?: number; droite?: number; haut?: number; bas?: number }
@@ -67,6 +70,7 @@ const PI = Math.PI;
  *  (Cadre) s'applique ensuite, sans déformer l'image (setViewOffset). */
 export function cadrage(nom: NomVue, aspect: number): Cadrage {
   if (nom === 'haute') return cadrageHaut(aspect);
+  if (nom === 'dessus') return cadrageDessus(aspect);
   const portrait = aspect < 0.9;
   // La tribune : l'ancienne CAM 2 remise face au pupitre ; avec la feuille du bas (moitié basse),
   // le pupitre et le perchoir tombent dans le tiers haut, à l'échelle de la maquette 05.
@@ -84,8 +88,8 @@ const CHAMP_SALLE = { min: 58, max: 78 };
 export function cadrageAjuste(nom: NomVue, largeur: number, hauteur: number, hauteurCanevas: number): Cadrage {
   const aspect = Math.max(1, largeur) / Math.max(1, hauteur);
   const c = cadrage(nom, aspect);
-  if (nom !== 'haute' && !(nom === 'salle' && aspect >= 0.9)) return c;
-  const champ = nom === 'haute' ? c.fov
+  if (!vueFixe(nom) && !(nom === 'salle' && aspect >= 0.9)) return c;
+  const champ = vueFixe(nom) ? c.fov
     : Math.min(CHAMP_SALLE.max, Math.max(CHAMP_SALLE.min, 2 * Math.atan(1 / aspect) * (180 / Math.PI)));
   const fov = 2 * Math.atan(Math.tan((champ * Math.PI) / 360) * (Math.max(1, hauteurCanevas) / Math.max(1, hauteur))) * (180 / Math.PI);
   return { ...c, fov };
@@ -621,10 +625,13 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     camera.fov = cam.fov; camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
     camera.near = enPlace() ? REGARD.near : 0.1;
     camera.lookAt(cam.cible[0], cam.cible[1], cam.cible[2]);
-    if (vueCourante === 'haute') camera.layers.disable(1); else camera.layers.enable(1);
+    if (vueFixe(vueCourante)) camera.layers.disable(1); else camera.layers.enable(1);
+    // De si haut (95 m), le brouillard de la salle voilerait tout.
+    brouillard.density = vueCourante === 'dessus' ? 0 : 0.0085;
     // Le centre de l'image passe au centre de ce que les feuilles laissent voir.
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (cadre.haut ?? 0)) / 2;
+    // La barre du haut ne compte que pour les vues fixes, qui montrent toute la salle.
+    const dx = ((cadre.droite ?? 0) - (cadre.gauche ?? 0)) / 2, dy = ((cadre.bas ?? 0) - (vueFixe(vueCourante) ? cadre.haut ?? 0 : 0)) / 2;
     if (w && h && (dx || dy)) camera.setViewOffset(w, h, dx, dy, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
     // Aux yeux du personnage, sa tête est cachée : son ombre change, seul cas où la caméra touche
@@ -654,15 +661,15 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     if (nom !== 'place' || place === null) {
       const h = canvas.clientHeight;
       return cadrageAjuste(nom === 'place' ? 'salle' : nom, canvas.clientWidth - (cadre.gauche ?? 0) - (cadre.droite ?? 0),
-        h - (cadre.haut ?? 0) - (cadre.bas ?? 0), h);
+        h - (vueFixe(nom) ? cadre.haut ?? 0 : 0) - (cadre.bas ?? 0), h);
     }
     return { pos: yeuxAuSiege(sieges[place]), cible: CENTRE_TRIBUNE, fov: aspect < 0.9 ? 66 : 56 };
   };
   /** La vue en cours, écartée par la caméra libre, sans jamais sortir de la salle. */
   const poserLibre = () => {
     const c = cadrer(vueCourante, canvas.clientWidth / Math.max(1, canvas.clientHeight));
-    // La vue haute est fixe : ni caméra libre, ni bornes de la salle (elle est au-dessus).
-    if (vueCourante === 'haute') { cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov; appliquerCam(); demander(); return; }
+    // Les vues fixes : ni caméra libre, ni bornes de la salle (elles sont au-dessus).
+    if (vueFixe(vueCourante)) { cam.pos = [...c.pos]; cam.cible = [...c.cible]; cam.fov = c.fov; appliquerCam(); demander(); return; }
     if (enPlace()) {
       // Depuis son siège, on tourne la tête sans bouger ; le champ se règle entre 40° et 70°.
       const v = new THREE.Vector3(c.cible[0] - c.pos[0], c.cible[1] - c.pos[1], c.cible[2] - c.pos[2]);
@@ -849,7 +856,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       return promesse;
     },
     orbiter(dLacet, dTangage) {
-      if (anim || vueCourante === 'haute') return;
+      if (anim || vueFixe(vueCourante)) return;
       if (enPlace()) {
         libre.lacet = borne(libre.lacet + dLacet, REGARD.lacet);
         libre.tangage = Math.min(REGARD.tangageHaut, Math.max(REGARD.tangageBas, libre.tangage + dTangage));
@@ -860,7 +867,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       poserLibre();
     },
     zoomer(f) {
-      if (anim || vueCourante === 'haute') return;
+      if (anim || vueFixe(vueCourante)) return;
       // Aux yeux du personnage, on ne recule pas : le champ de vision se resserre ou s'ouvre.
       if (enPlace()) libre.champ = Math.max(REGARD.champMin - 70, Math.min(70 - REGARD.champMin, libre.champ + (f - 1) * 60));
       else libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));

@@ -10,6 +10,9 @@ import { delaiOnde } from '../lib/hemicycle.ts';
 
 /** Au-dessus de la tribune, à 42 m (au-dessus de la coupole, masquée), regard vers le milieu des gradins. */
 export const VUE_HAUTE = { pos: [0, 42, -10] as [number, number, number], cible: [0, 0, 9.5] as [number, number, number] };
+/** Le mode « Dessus » de la vue « La salle » (cadrage MVP, R5, lot 6) : presque à la verticale des
+ *  gradins, de loin, avec un champ étroit : quasi orthographique, aucun siège n'en masque un autre. */
+export const VUE_DESSUS = { pos: [0, 95, 10.4] as [number, number, number], cible: [0, 0, 10.5] as [number, number, number] };
 export const MARGE_HAUTE = 0.04;
 
 let points: THREE.Vector3[] | null = null;
@@ -19,10 +22,10 @@ const pointsSieges = () => (points ??= sieges3D().flatMap((s) => [new THREE.Vect
   new THREE.Vector3(...position(s, 1.05)), new THREE.Vector3(...position({ ...s, r: s.r + 0.5 }, 0.9))]));
 
 /** La caméra de la vue haute pour un champ et des proportions données. */
-export function cameraHaute(fov: number, aspect: number): THREE.PerspectiveCamera {
+export function cameraHaute(fov: number, aspect: number, vue = VUE_HAUTE): THREE.PerspectiveCamera {
   const c = new THREE.PerspectiveCamera(fov, aspect, 0.1, 400);
-  c.position.set(...VUE_HAUTE.pos);
-  c.lookAt(...VUE_HAUTE.cible);
+  c.position.set(...vue.pos);
+  c.lookAt(...vue.cible);
   c.updateMatrixWorld();
   c.updateProjectionMatrix();
   return c;
@@ -31,8 +34,8 @@ export function cameraHaute(fov: number, aspect: number): THREE.PerspectiveCamer
 const champs = new Map<number, number>();
 /** Le plus petit champ vertical (en degrés) où les 577 sièges tiennent dans une zone de ces
  *  proportions, marge comprise. */
-export function champHaut(aspect: number, marge = MARGE_HAUTE): number {
-  const cle = Math.round(aspect * 100) / 100 + marge * 1000;
+export function champHaut(aspect: number, marge = MARGE_HAUTE, vue = VUE_HAUTE): number {
+  const cle = Math.round(aspect * 100) / 100 + marge * 1000 + (vue === VUE_HAUTE ? 0 : 1000);
   const deja = champs.get(cle);
   if (deja) return deja;
   const borne = 1 - 2 * marge;
@@ -40,7 +43,7 @@ export function champHaut(aspect: number, marge = MARGE_HAUTE): number {
   let bas = 10, haut = 120;
   for (let k = 0; k < 24; k++) {
     const f = (bas + haut) / 2;
-    const c = cameraHaute(f, aspect);
+    const c = cameraHaute(f, aspect, vue);
     const tient = pointsSieges().every((p) => {
       v.copy(p).project(c);
       return Math.abs(v.x) <= borne && Math.abs(v.y) <= borne && v.z < 1;
@@ -54,6 +57,11 @@ export function champHaut(aspect: number, marge = MARGE_HAUTE): number {
 /** La vue haute, pour une zone visible de ces proportions. */
 export function cadrageHaut(aspect: number) {
   return { pos: [...VUE_HAUTE.pos] as [number, number, number], cible: [...VUE_HAUTE.cible] as [number, number, number], fov: champHaut(aspect) };
+}
+
+/** Le mode « Dessus », pour une zone visible de ces proportions. */
+export function cadrageDessus(aspect: number) {
+  return { pos: [...VUE_DESSUS.pos] as [number, number, number], cible: [...VUE_DESSUS.cible] as [number, number, number], fov: champHaut(aspect, MARGE_HAUTE, VUE_DESSUS) };
 }
 
 /** Chaque siège dans une image de la vue haute de ces proportions : x et y entre 0 et 1 depuis le

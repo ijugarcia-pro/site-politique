@@ -260,7 +260,7 @@ function creerPilote(racine: HTMLElement): Pilote {
         survolPrevu = false;
         if (!salle || !dernierSurvol || !survolSiege) return;
         const p = point(dernierSurvol);
-        const i = salle.vueCourante === 'salle' ? salle.siegeSous(p.x, p.y) : null;
+        const i = salle.vueCourante === 'salle' || salle.vueCourante === 'dessus' ? salle.siegeSous(p.x, p.y) : null;
         if (i === survole) return;
         survole = i;
         placerReperes();
@@ -300,7 +300,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     // pas un clic en glisser.
     const clic = a.bouge < GLISSER.clic && e.timeStamp - a.t < 500;
     if (clic) {
-      if (toucheSiege && salle && salle.vueCourante === 'salle') {
+      if (toucheSiege && salle && (salle.vueCourante === 'salle' || salle.vueCourante === 'dessus')) {
         const p = point(e);
         const i = salle.siegeSous(p.x, p.y);
         if (i !== null) toucheSiege(i);

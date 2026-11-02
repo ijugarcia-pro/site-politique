@@ -30,6 +30,10 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   <h1 class="visuellement-cache">La salle</h1>
   <section class="panneau" aria-labelledby="titre-montrer" data-panneau-salle>
     <h2 id="titre-montrer" class="titre-panneau">Montrer dans la salle</h2>
+    <div class="mode-salle" role="group" aria-label="Angle de vue" data-mode-salle>
+      <button type="button" aria-pressed="true" data-mode="salle">Perspective</button>
+      <button type="button" aria-pressed="false" data-mode="dessus">Dessus</button>
+    </div>
     <div class="bascules" data-bascules>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="jumeau" hidden>Ton jumeau</button>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="oppose" hidden>Ton opposé</button>
@@ -110,6 +114,9 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
 
   const SEUIL_ECLAIREE = PALIERS.find((p) => p.id === 'salle-eclairee')!.seuil;
+  // Perspective ou Dessus (cadrage MVP, R5, lot 6) : gardé en mémoire pendant la visite, jamais dans
+  // le navigateur. Par défaut, la perspective sur ordinateur, le dessus au téléphone.
+  let modeChoisi: 'salle' | 'dessus' | null = null;
 
   document.addEventListener('astro:page-load', async () => {
     const brut = document.querySelector('[data-donnees-salle]')?.textContent;
@@ -133,6 +140,14 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
       repli.hidden = !!s;
     });
     if (!salle) { repli.hidden = false; document.body.classList.add('salle-sans-3d'); }
+
+    const modes = [...document.querySelectorAll<HTMLButtonElement>('[data-mode]')];
+    const poserMode = (m: 'salle' | 'dessus', premier = false) => {
+      for (const b of modes) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
+      salle?.vue(m, premier ? { instant: true } : { navigation: true });
+    };
+    poserMode(modeChoisi ?? (matchMedia('(max-width: 900px), (max-height: 560px)').matches ? 'dessus' : 'salle'), true);
+    for (const b of modes) b.addEventListener('click', () => { modeChoisi = b.dataset.mode as 'salle' | 'dessus'; poserMode(modeChoisi); });
 
     // Ton personnage : assis sur le siège de ton jumeau à partir du palier 1, sinon il attend
     // au pied de la tribune.
@@ -320,6 +335,15 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     max-height: calc(100% - 88px - var(--marge)); overflow: auto;
   }
   .titre-panneau { font: 700 19px/1.2 var(--police-titre); }
+  /* La bascule Perspective / Dessus : deux segments, le choisi en noir. */
+  .mode-salle { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: var(--pilule); background: var(--surface); }
+  .mode-salle button {
+    min-height: var(--cible); border: 0; border-radius: var(--pilule); background: transparent; color: var(--encre);
+    font: 600 14px/1 var(--police-texte); cursor: pointer;
+  }
+  .mode-salle button[aria-pressed='true'] { background: var(--encre); color: var(--feuille); }
+  .mode-salle button:focus-visible { outline: 3px solid var(--encre); outline-offset: 2px; }
+  :global(.salle-sans-3d) .mode-salle { display: none; }
   .bascules { display: flex; flex-wrap: wrap; gap: 6px; }
   .bascule {
     display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px;

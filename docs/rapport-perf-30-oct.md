@@ -225,3 +225,7 @@ Le passage Perspective ↔ Dessus n'existait pas sous cette forme (`scripts/perf
 Poids : `public/salle3d` passe de 2,4 à 3,5 Mo au total. L'image du dévoilement fait 406 Ko sur ordinateur (2 000 × 1 400, contre 178 Ko) et 234 Ko au téléphone, plus son masque de 89 ou 65 Ko ; le mur du perchoir, 319 Ko (121 Ko au téléphone).
 
 Limites : la plus longue image touche le seuil au palier 0. Ces chiffres lisent le temps d'appel et le rythme des images dans un navigateur sans écran, pas le temps réel de la carte graphique : douze lumières de plus peuvent peser davantage à l'écran. La mesure sur un vrai téléphone (palier léger : ni lustres, ni frise, ni statues) reste à faire par Julien. L'image figée de 550 à 650 ms vers `/ta-place/` n'apparaît pas dans ces passages (200 ms au plus), sans que la cause soit connue : à reconfirmer en recette. Survol (lot 6, seuil non visé ici) : médiane de 1,3 à 1,6 ms, contre 0,6 à 1,4 ms.
+
+## Lot 6 · le survol en 2D (2 novembre 2026, t89)
+
+Même outil, CPU ×4, palier 0, 3 passages. Survol (`siegeSous`, 60 mouvements) : médiane de 0,1 ms, au plus 1,4 à 2,9 ms (seuils : moins de 1 ms, 4 ms au plus ; avant, sur la nouvelle salle : 1,3 à 1,6 ms en médiane, 10 à 17 ms au plus). Tâches longues du parcours : 333 ms (seuil : 600 ms). Le nom apparaît 6 ms après le mouvement, à CPU ×1 (`scripts/survol.mjs`). Sans cette projection différée (120 ms après l'arrêt de la caméra), le premier survol montait de 6 à 9 ms.

@@ -22,6 +22,7 @@ import { interpoler, type Tween } from './tween.ts';
 import { balayage, boiteRonde, corrigeSens, fusion, mat4, rad } from './outils3d.ts';
 import { ajouterDecor } from './decor.ts';
 import { cadrageDessus, DESSUS } from './cadrage-haut.ts';
+import { grilleSieges, type PointVise } from './visee.ts';
 
 /** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
  *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus le « Dessus »
@@ -129,8 +130,11 @@ export interface Salle3D {
   gouverner(): Promise<0 | 1 | 2>;
   /** Ce que les feuilles couvrent : la vue se centre sur le reste du canevas. */
   cadre(c: Cadre): void;
-  /** Le siège sous un point du canevas (0 à 1 en largeur et en hauteur), ou null. */
-  siegeSous(x: number, y: number): number | null;
+  /** Le siège sous un point du canevas (0 à 1 en largeur et en hauteur), ou null ; `rayon` : le
+   *  plus proche à ce nombre de pixels (le doigt). Sans lancer de rayon (visee.ts). */
+  siegeSous(x: number, y: number, rayon?: number): number | null;
+  /** Le siège survolé passe au blanc (null : aucun), au-dessus de sa couleur. */
+  surligner(i: number | null): void;
   terminer(): void;
   /** La couleur du voyant de chaque siège (index de la composition) ; null : éteint. */
   voyants(couleurs: (string | null)[]): void;
@@ -342,7 +346,13 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   // perchoir ; sans voyant, le velours reste rouge.
   I.velours = ombre(new THREE.InstancedMesh(velG, M.velours, n));
   const rougeVelours = couleurExacte(ROUGE_VELOURS);
-  const teinter = (k: number, c: THREE.Color | null) => { I.velours.setColorAt(k, c ?? rougeVelours); };
+  const blanc = couleurExacte('#FFFFFF');
+  const teintes: (THREE.Color | null)[] = new Array(n).fill(null);
+  let surligne: number | null = null;
+  const teinter = (k: number, c: THREE.Color | null) => {
+    teintes[k] = c ? c.clone() : null;
+    I.velours.setColorAt(k, k === surligne ? blanc : c ?? rougeVelours);
+  };
   I.bois = ombre(new THREE.InstancedMesh(boisG, M.noyer, n));
   I.plaque = new THREE.InstancedMesh(new THREE.BoxGeometry(0.15, 0.008, 0.045), M.laiton, n);
   I.bague = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.032, 0.012, 20), M.laiton, n);
@@ -562,6 +572,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   const libre = { lacet: 0, tangage: 0, zoom: 1, champ: 0, dx: 0, dz: 0, proche: 1 };
   const enPlace = () => vueCourante === 'place' && place !== null;
   const allumes: boolean[] = new Array(n).fill(false);
+  let viser: ReturnType<typeof grilleSieges> | null = null;
+  let attenteVisee = 0;
   const appliquerCam = () => {
     camera.fov = cam.fov; camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
     camera.near = enPlace() ? REGARD.near : 0.1;
@@ -576,6 +588,10 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     // Aux yeux du personnage, sa tête est cachée : son ombre change, seul cas où la caméra touche
     // aux ombres (calculées une fois, puis figées).
     if (perso && perso.tete.visible === enPlace()) { perso.tete.visible = !enPlace(); renderer.shadowMap.needsUpdate = true; }
+    // La projection attend que la caméra se pose, hors de tout mouvement de souris.
+    viser = null;
+    clearTimeout(attenteVisee);
+    attenteVisee = window.setTimeout(() => { viser ??= viserSieges(); }, 120);
   };
   // Rien n'est rendu quand la salle est cachée (page « lecture ») ou l'onglet en arrière-plan.
   let enService = true;
@@ -640,8 +656,19 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     cam.pos = [pos.x, pos.y, pos.z]; cam.cible = [...c.cible]; cam.fov = c.fov;
     appliquerCam(); demander();
   };
-  // Le siège sous le pointeur : un rayon sur les fauteuils instanciés (velours et bois).
-  const rayon = new THREE.Raycaster();
+  // Le siège sous le pointeur : les sièges sont projetés une fois par changement de caméra.
+  const viserSieges = () => {
+    const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    camera.updateMatrixWorld();
+    return grilleSieges(sieges.map((s): PointVise | null => {
+      const [x, y, z] = position(s, 0.55);
+      c.set(x, y, z); v.copy(c).project(camera);
+      if (v.z >= 1) return null;
+      b.set(x + 0.38 * Math.cos(s.th), y, z + 0.38 * Math.sin(s.th)).project(camera);
+      const px = ((v.x + 1) * w) / 2, py = ((1 - v.y) * h) / 2;
+      return { x: px, y: py, r: Math.hypot(((b.x + 1) * w) / 2 - px, ((1 - b.y) * h) / 2 - py), d: camera.position.distanceTo(c) };
+    }));
+  };
   let palier: 0 | 1 = forcee === 1 ? 1 : 0;
   let taille = '';
   const redimensionner = () => {
@@ -750,12 +777,17 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       // Le cadrage dépend de ce que les feuilles laissent voir.
       poserLibre();
     },
-    siegeSous(x, y) {
-      return mesurer('salle:siegeSous', () => {
-        rayon.setFromCamera(new THREE.Vector2(x * 2 - 1, 1 - y * 2), camera);
-        const [touche] = rayon.intersectObjects([I.velours, I.bois], false);
-        return touche?.instanceId ?? null;
-      });
+    siegeSous(x, y, rayonMin = 0) {
+      return mesurer('salle:siegeSous', () => (viser ??= viserSieges())(x * canvas.clientWidth, y * canvas.clientHeight, rayonMin));
+    },
+    surligner(i) {
+      if (i === surligne) return;
+      const avant = surligne;
+      surligne = i;
+      if (avant !== null) I.velours.setColorAt(avant, teintes[avant] ?? rougeVelours);
+      if (i !== null) I.velours.setColorAt(i, blanc);
+      I.velours.instanceColor!.needsUpdate = true;
+      demander();
     },
     terminer() { anim?.finir(); marche?.finir(); },
     voyants(couleurs) {

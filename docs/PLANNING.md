@@ -119,8 +119,8 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t86 🤖 Lot 3 · Dévoilement final *(fait le 31 oct. 2026, branche `mvp-lot-3`, empilée sur `mvp-lot-2`)*
 - [x] t87 🤖 Lot 4 · Cadre et responsive *(fait le 2 nov. 2026, branche `mvp-lot-4`, empilée sur `mvp-lot-3`)*
 - [x] t88 🤖 Lot 5 · Tiroir mobile et immersion *(fait le 2 nov. 2026, branche `mvp-lot-5`, empilée sur `mvp-lot-4`)*
-- [ ] t92 🤝 ◆ Nouvelle salle 3D qui favorise la vue du dessus *(ajoutée le 2 nov. 2026 à la demande de Julien, à faire avant la fin de t89 ; conception avec Claude Design. Livrée le 2 nov. 2026, branche `mvp-salle-def`, empilée sur `mvp-lot-6` : **en attente de la porte G2, Julien valide**. Reprise : docs/REPRISE-MVP.md)*
-- [ ] t89 🤖 Lot 6 · La salle : Dessus, survol, carte, sélection *(mode Dessus livré le 2 nov. 2026, branche `mvp-lot-6`, rendu refusé à la porte G2 : à refaire sur la nouvelle salle, t92 ; le reste du lot suit)*
+- [x] t92 🤝 ◆ Nouvelle salle 3D qui favorise la vue du dessus *(fait le 2 nov. 2026, branche `mvp-salle-def`, empilée sur `mvp-lot-6` ; porte G2 validée par Julien le 2 nov.)*
+- [x] t89 🤖 Lot 6 · La salle : Dessus, survol, carte, sélection *(fait le 2 nov. 2026, branche `mvp-lot-6-suite`, empilée sur `mvp-salle-def`)*
 - [ ] t90 🤖 Lot 7 · Étiquettes sans collision et seuil des 10 votes *(Q3 et Q4 tranchées le 2 nov. 2026 : oui, partout)*
 - [ ] t91 🤖 Lot 8 · Recette finale
 
@@ -573,11 +573,13 @@ Les fiches (À faire, livrable, critère de fin, Ne pas faire) sont les lots 0 �
 - **À faire :** intégrer le travail de Claude Design (docs/design-salle-dessus/) en gardant le contrat de la salle (siège n° i, personnage, repères). Fiche : docs/REPRISE-MVP.md, phase 1.
 - **Réalisé (2 nov. 2026) :** `salle3d/decor.ts` (mur du perchoir, galeries, draperies, dossier, frise, statues, plafond doré vu d'en haut), `salle3d/outils3d.ts`, velours neutre teinté par siège, deux paires de colonnes au perchoir, lustres, Dessus vertical (`cadrage-haut.ts`, salle couchée sur un canevas en portrait), déplacement et zoom en Dessus, glissement de 1,4 s entre Perspective et Dessus. Dévoilement sur l'image du Dessus avec un masque d'identifiants (`fond-revelation*-masque.png`, 577 sièges vérifiés au script) ; l'image déborde autour de la salle, sous la barre et les feuilles. Matières exportées en webp (`scripts/matieres.mjs`). Nouveau contrôle : `scripts/perf-dessus.mjs`. Planches : docs/design-salle-dessus/planches/ ; mesures : docs/rapport-perf-30-oct.md, § « t92 ».
 - **Écarts :** la vue « Perchoir » de la maquette n'est pas reprise (hors de la fiche). Lustres non baissés à 35 % en Dessus (ils faiblissent avec la distance dans three récent) ; lumière d'environnement portée de 0,5 à 1 partout, pour approcher la maquette. Masque lu au navigateur, avec un disque par siège en repli. Rien de mesuré sur un vrai téléphone.
-- **Reste :** la porte G2 (Julien), puis l'entrée de décision et le § 9, point 1, du cadrage.
+- **Porte G2 (2 nov.) :** validée par Julien ; docs/decisions.md.
 
 #### t89 🤖 Lot 6 · La salle : Dessus, survol, carte, sélection
 - **Réalisé, 1re partie (2 nov.) :** mode « Dessus » de `/salle/` : caméra quasi verticale à 95 m, champ étroit, plafond masqué pour la caméra seulement, sans brouillard, tous les sièges dans la zone libre (`salle3d/cadrage-haut.ts`, `cadrageDessus` ; `scene.ts`). Bascule Perspective / Dessus dans le panneau (`data-mode-salle`, `data-mode`, `aria-pressed`), coupure et fondu de 200 ms, en mémoire ; Dessus par défaut au téléphone et sous 900 px. Le panneau de `/salle/` et la barre du haut comptent maintenant dans le cadrage. Planche : `docs/design-vdef/planches/G2/planche-dessus.jpg` (`scripts/planche-dessus.mjs`). **Reste :** la porte G2 (Julien), puis le test 2D des sièges, le survol, la carte, la sélection tactile.
 - **Porte G2 (2 nov.) :** non franchie. Julien refuse ce rendu (marbre vers le vide, trop loin des sièges), puis le voile noir essayé ensuite (branche `mvp-voile-rejete`). Il fait concevoir une nouvelle salle avec Claude Design : t92. Q2, Q3 et Q4 sont tranchées (docs/decisions.md). Reprise : docs/REPRISE-MVP.md.
+- **Réalisé (2 nov. 2026, suite) :** `salle3d/visee.ts` (siège visé en 2D, sans lancer de rayon, testé), siège survolé en blanc avec un anneau fin, siège choisi à l'anneau plein, carte au survol à droite ou dans le tiroir, épinglée au clic, fermée par un clic à côté, Échap ou la croix ; annonce temporisée à 150 ms ; nom sur l'anneau en immersion et tiroir replié ; le doigt vise dans 22 px. Contrôle : `scripts/survol.mjs`. Survol : 0,1 ms en médiane, 2,9 ms au plus, à CPU ×4.
+- **Écarts :** les flèches déplacent la salle en Dessus, pas la sélection (P2 du cadrage, facultatif) ; la bascule dure 1,4 s (maquette de Claude Design), pas 600 ms ou moins (R5). Pincement et toucher vérifiés par des événements simulés à 390 × 844, pas sur un vrai téléphone.
 
 ## 8. Phase 3 — La séance de la semaine (S9–S10)
 

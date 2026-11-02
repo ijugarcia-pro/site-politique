@@ -112,11 +112,22 @@
   .calque :global(.toi .repere-libelle) { background: var(--encre); color: var(--feuille); }
   .calque :global(.a-gauche .repere-libelle) { transform: translateX(-18px); }
   .calque :global(.a-droite .repere-libelle) { transform: translateX(calc(-100% + 18px)); }
-  /* Le siège survolé ou choisi : un anneau blanc (maquette 09). */
+  /* Le siège survolé : un anneau blanc fin ; le siège choisi : un anneau plein (maquette 09). */
   .calque :global(.anneau-siege) {
-    position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px;
-    border-radius: var(--pilule); border: 3px solid var(--feuille);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+    position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px;
+    border-radius: var(--pilule); border: 2px solid var(--feuille);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.45);
   }
+  .calque :global(.anneau-siege.choisi) { border-width: 5px; }
   .calque :global(.anneau-siege[hidden]) { display: none; }
+  /* Son nom, quand la carte n'est pas à l'écran : en immersion, et le tiroir replié au téléphone. */
+  .calque :global(.anneau-nom) {
+    display: none; position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%);
+    padding: 7px 11px; border-radius: var(--pilule); background: var(--encre); color: var(--feuille);
+    font: 600 13px/1 var(--police-texte); white-space: nowrap;
+  }
+  :global(body.immersion) .calque :global(.anneau-nom:not(:empty)) { display: block; }
+  @media (max-width: 900px), (max-height: 560px) {
+    :global(body:has(.sur-salle[data-cran='replie'])) .calque :global(.anneau-nom:not(:empty)) { display: block; }
+  }
 </style>

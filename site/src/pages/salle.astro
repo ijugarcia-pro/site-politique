@@ -146,6 +146,9 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
       for (const b of modes) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
       // Glissement de 1,4 s entre les deux modes (coupé en mouvement réduit par la scène).
       salle?.vue(m, premier ? { instant: true } : { duree: 1400 });
+      // Dans le Dessus, la caméra ne tourne pas : pas d'indice « glisse pour tourner ».
+      const indice = document.querySelector<HTMLElement>('[data-indice]');
+      if (indice) indice.hidden = m === 'dessus';
     };
     poserMode(modeChoisi ?? (matchMedia('(max-width: 900px), (max-height: 560px)').matches ? 'dessus' : 'salle'), true);
     for (const b of modes) b.addEventListener('click', () => { modeChoisi = b.dataset.mode as 'salle' | 'dessus'; poserMode(modeChoisi); });
@@ -258,13 +261,16 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     $('[data-encart-texte]').textContent = `À ${SEUIL_ECLAIREE} votes, chaque siège s’éclaire selon ses votes communs avec toi. ${n} / ${SEUIL_ECLAIREE}.`;
 
     // --- La carte du député touché ---
+    // Au survol, elle suit le siège ; un clic l'épingle jusqu'à un clic à côté, Échap ou la croix
+    // (cadrage MVP, R7). Annonce temporisée : pas 30 noms par seconde.
     const carte = $('[data-carte-depute]');
-    const montrer = (i: number, focus = false) => {
+    const fermeture = $('[data-carte-fermer]');
+    let epingle = false;
+    let annonceSurvol = 0;
+    const remplir = (i: number): string | null => {
       const s = sieges[i];
-      if (!s) return;
+      if (!s) return null;
       const [uid, nom, g] = s;
-      salle?.selection(i);
-      cercles.forEach((c, k) => c.classList.toggle('choisi', k === i));
       carte.hidden = false;
       $('[data-carte-nom]').textContent = nom;
       $('[data-carte-groupe]').textContent = groupes[g] ?? 'Non inscrit';
@@ -288,16 +294,42 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
         barre.style.setProperty('--absents', String(c.absents));
       }
       $('[data-carte-phrase]').textContent = phrase;
-      annonce.textContent = `${nom}, ${groupes[g] ?? 'non inscrit'} : ${phrase}`;
+      return `${nom}, ${groupes[g] ?? 'non inscrit'} : ${phrase}`;
+    };
+    const montrer = (i: number, focus = false) => {
+      const texte = remplir(i);
+      if (!texte) return;
+      clearTimeout(annonceSurvol);
+      epingle = true;
+      carte.classList.remove('survol');
+      fermeture.hidden = false;
+      salle?.selection(i);
+      cercles.forEach((c, k) => c.classList.toggle('choisi', k === i));
+      annonce.textContent = texte;
+      // Au téléphone, la carte est en haut du tiroir.
+      carte.closest('main')?.scrollTo({ top: 0 });
       if (focus) $('[data-carte-nom]').focus();
     };
-    salle?.surSiege((i) => montrer(i));
-    cercles.forEach((c, i) => c.addEventListener('click', () => montrer(i)));
-    $('[data-carte-fermer]').addEventListener('click', () => {
+    const survoler = (i: number | null) => {
+      if (epingle) return;
+      clearTimeout(annonceSurvol);
+      const texte = i === null ? null : remplir(i);
+      if (!texte) { carte.hidden = true; return; }
+      carte.classList.add('survol');
+      fermeture.hidden = true;
+      annonceSurvol = window.setTimeout(() => { annonce.textContent = texte; }, 150);
+    };
+    const fermer = () => {
+      epingle = false;
       carte.hidden = true;
       salle?.selection(null);
       cercles.forEach((c) => c.classList.remove('choisi'));
-      $('[data-trouver]').focus();
+    };
+    salle?.surSiege((i) => montrer(i), survoler, { vide: fermer, nom: (i) => sieges[i]?.[1] ?? '' });
+    cercles.forEach((c, i) => c.addEventListener('click', () => montrer(i)));
+    fermeture.addEventListener('click', () => { fermer(); $('[data-trouver]').focus(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && epingle && carte.isConnected) fermer();
     });
     const trouver = $<HTMLInputElement>('[data-trouver]');
     const chercher = () => {
@@ -366,10 +398,14 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   .repli-2d :global(circle) { cursor: pointer; }
   .repli-2d :global(circle.choisi) { stroke: var(--encre); stroke-width: 5; }
 
+  /* Dans l'espace libre à droite, sous la barre, au-dessus des encarts du bas. */
   .carte-depute {
-    left: 196px; bottom: 260px; width: 300px; padding: 18px; border-radius: 20px;
+    right: var(--marge); top: 88px; width: 300px; padding: 18px; border-radius: 20px;
     display: flex; flex-direction: column; gap: 10px;
   }
+  .carte-depute[hidden] { display: none; }
+  /* Non épinglée, elle ne prend pas la souris : le survol continue dessous. */
+  .carte-depute.survol { pointer-events: none; }
   .carte-haut { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .carte-titres { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .nom-touche { font: 700 19px/1.2 var(--police-titre); }
@@ -378,6 +414,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     flex: 0 0 auto; width: 36px; height: 36px; border: 0; border-radius: var(--pilule);
     background: var(--surface); color: var(--encre); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
   }
+  .fermer[hidden] { display: none; }
   .phrase { font: 500 15px/1.45 var(--police-texte); color: var(--texte); }
   .mini-barre { display: flex; height: 8px; border-radius: var(--pilule); overflow: hidden; background: var(--surface); }
   .mini-barre span { display: block; height: 100%; }
@@ -413,6 +450,9 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
       position: relative; inset: auto; width: auto; max-height: none; box-shadow: none;
     }
     .panneau { border-radius: 0; padding: 0 16px 12px; flex: 0 0 auto; overflow: visible; }
+    /* Dans le tiroir, la carte passe avant le panneau. */
+    .panneau { order: 1; }
+    .encart-palier, .encart-vote { order: 2; }
     .carte-depute { margin: 0 16px 12px; border: 1px solid var(--filet); }
     .encart-palier, .encart-vote { margin: 0 16px 16px; background: var(--surface); box-shadow: none; }
   }

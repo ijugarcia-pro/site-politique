@@ -20,12 +20,12 @@ Le MVP est fini quand le parcours « première visite → quiz de 10 votes → t
 | t86 | 3 · Dévoilement sur image fixe, partout | Fait | `mvp-lot-3`, local |
 | t87 | 4 · Cadre et responsive | Fait | `mvp-lot-4`, local |
 | t88 | 5 · Tiroir mobile et immersion | Fait | `mvp-lot-5`, local |
-| **t92** | **Nouvelle salle 3D, vue du dessus** | **Livrée, en attente de la porte G2** | `mvp-salle-def`, local |
-| t89 | 6 · Dessus, survol, carte, sélection | Mode Dessus livré, à refaire sur la nouvelle salle ; le reste n'est pas commencé | `mvp-lot-6`, local |
+| t92 | Nouvelle salle 3D, vue du dessus | Fait, porte G2 franchie | `mvp-salle-def`, local |
+| t89 | 6 · Dessus, survol, carte, sélection | Fait | `mvp-lot-6` et `mvp-lot-6-suite`, local |
 | t90 | 7 · Étiquettes et seuil des 10 votes | À faire ; Q3 et Q4 tranchées | |
 | t91 | 8 · Recette finale | À faire | |
 
-Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6` → `mvp-salle-def`. Le dossier de travail est sur `mvp-salle-def`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
+Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6` → `mvp-salle-def` → `mvp-lot-6-suite`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
 
 `git status` montre trois restes sans importance, à ne pas commiter : `.claude/launch.json` et les anciens prompts `docs/PROMPT-JUMEAU-CAMERAS.md` et `docs/PROMPT-VDEF.local.md`.
 

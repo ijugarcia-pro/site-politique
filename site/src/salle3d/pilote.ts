@@ -6,8 +6,9 @@
 // Il porte aussi les gestes (VDEF, lot V3) : glisser pour tourner (pointeur capturé, amortissement,
 // petite inertie ; ni l'un ni l'autre en mouvement réduit), pincer ou Ctrl + molette pour zoomer,
 // double clic ou Échap pour revenir ; au clavier, flèches, + et −, Échap. La molette seule fait
-// défiler la page. Un clic sur un siège le donne à la page (son député) ; un anneau blanc marque
-// le siège survolé et le siège choisi (maquette 09).
+// défiler la page. Un clic sur un siège le donne à la page (son député) ; au doigt, le siège le plus
+// proche dans 22 px. Un anneau blanc marque le siège survolé (fin, et le fauteuil passe au blanc) et
+// le siège choisi (plein, maquette 09). Dans le Dessus, glisser déplace, pincer ou la molette zoome.
 
 import type { Apparence } from './apparence.ts';
 import type { Cadre, NomVue, Salle3D } from './scene.ts';
@@ -43,6 +44,8 @@ export function geste(touche: string): { lacet?: number; tangage?: number; zoom?
   }
 }
 
+/** Au doigt, le siège le plus proche à cette distance, en pixels (cadrage MVP, R6). */
+const RAYON_DOIGT = 22;
 /** Le pas du clavier dans le Dessus, en pixels. */
 const PAS_DESSUS = 30;
 
@@ -78,9 +81,11 @@ export interface Pilote {
   cadre(c: Cadre): void;
   /** Les repères de la VDEF, plusieurs à la fois ; cachés quand ils sortent du cadre. */
   reperes(liste: RepereSalle[]): void;
-  /** Le siège touché (clic, toucher) et le siège survolé (null en sortant) ; sans gestionnaire,
+  /** Le siège touché (clic, toucher), le siège survolé (null en sortant), un clic à côté (`vide`)
+   *  et le nom d'un siège, posé sur son anneau quand les feuilles sont cachées ; sans gestionnaire,
    *  les sièges ne réagissent pas. */
-  surSiege(touche: ((i: number) => void) | null, survol?: (i: number | null) => void): void;
+  surSiege(touche: ((i: number) => void) | null, survol?: (i: number | null) => void,
+    plus?: { vide?: () => void; nom?: (i: number) => string }): void;
   /** Le siège choisi (sa carte est ouverte), marqué d'un anneau ; null : aucun. */
   selection(i: number | null): void;
   /** Le personnage du visiteur, et sa place (null : au pied de la tribune). */
@@ -99,6 +104,9 @@ function anneau(calque: HTMLElement | null, sorte: string): HTMLElement | null {
   el.className = `anneau-siege ${sorte}`;
   el.hidden = true;
   el.setAttribute('aria-hidden', 'true');
+  const nom = document.createElement('span');
+  nom.className = 'anneau-nom';
+  el.append(nom);
   calque.append(el);
   return el;
 }
@@ -125,6 +133,18 @@ function creerPilote(racine: HTMLElement): Pilote {
   let choisi: number | null = null;
   const anneaux = { survol: anneau(calque, 'survol'), choisi: anneau(calque, 'choisi') };
   let survolSiege: ((i: number | null) => void) | null = null;
+  let clicVide: (() => void) | null = null;
+  let nomSiege: ((i: number) => string) | null = null;
+  /** Le siège survolé : son anneau, le fauteuil en blanc, et la page prévenue. */
+  const survoler = (i: number | null) => {
+    if (i === survole) return;
+    survole = i;
+    salle?.surligner(i);
+    if (i !== null && anneaux.survol) anneaux.survol.firstChild!.textContent = nomSiege?.(i) ?? '';
+    placerReperes();
+    racine.classList.toggle('sur-siege', i !== null);
+    survolSiege?.(i);
+  };
   const faire = (f: (s: Salle3D) => void) => { if (salle) f(salle); else attente.push(f); };
   const reduit = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -263,12 +283,7 @@ function creerPilote(racine: HTMLElement): Pilote {
         survolPrevu = false;
         if (!salle || !dernierSurvol || !survolSiege) return;
         const p = point(dernierSurvol);
-        const i = salle.vueCourante === 'salle' || salle.vueCourante === 'dessus' ? salle.siegeSous(p.x, p.y) : null;
-        if (i === survole) return;
-        survole = i;
-        placerReperes();
-        racine.classList.toggle('sur-siege', i !== null);
-        survolSiege(i);
+        survoler(salle.vueCourante === 'salle' || salle.vueCourante === 'dessus' ? salle.siegeSous(p.x, p.y) : null);
       });
       return;
     }
@@ -307,8 +322,8 @@ function creerPilote(racine: HTMLElement): Pilote {
     if (clic) {
       if (toucheSiege && salle && (salle.vueCourante === 'salle' || salle.vueCourante === 'dessus')) {
         const p = point(e);
-        const i = salle.siegeSous(p.x, p.y);
-        if (i !== null) toucheSiege(i);
+        const i = salle.siegeSous(p.x, p.y, e.pointerType === 'touch' ? RAYON_DOIGT : 0);
+        if (i !== null) toucheSiege(i); else clicVide?.();
       }
       return;
     }
@@ -322,10 +337,7 @@ function creerPilote(racine: HTMLElement): Pilote {
   canvas.addEventListener('pointercancel', (e) => relacher(e, true));
   canvas.addEventListener('pointerleave', () => {
     if (pointeurs.size || !survolSiege) return;
-    survole = null;
-    placerReperes();
-    racine.classList.remove('sur-siege');
-    survolSiege(null);
+    survoler(null);
   });
   canvas.addEventListener('dblclick', () => { arreter(); salle?.recentrer(); });
   canvas.addEventListener('wheel', (e) => {
@@ -384,13 +396,19 @@ function creerPilote(racine: HTMLElement): Pilote {
       });
       if (salle) placerReperes();
     },
-    surSiege: (touche, survol) => {
+    surSiege: (touche, survol, plus) => {
+      if (!touche) { survoler(null); choisi = null; placerReperes(); }
       toucheSiege = touche;
       survolSiege = touche ? (survol ?? (() => {})) : null;
+      clicVide = plus?.vide ?? null;
+      nomSiege = plus?.nom ?? null;
       racine.classList.toggle('sieges-actifs', !!touche);
-      if (!touche) { survole = null; choisi = null; placerReperes(); racine.classList.remove('sur-siege'); }
     },
-    selection: (i) => { choisi = i; placerReperes(); },
+    selection: (i) => {
+      choisi = i;
+      if (i !== null && anneaux.choisi) anneaux.choisi.firstChild!.textContent = nomSiege?.(i) ?? '';
+      placerReperes();
+    },
     prete,
   };
 }

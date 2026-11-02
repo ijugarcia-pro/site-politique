@@ -500,3 +500,7 @@
 - Décision (demande de Julien du 2 nov. : tout ce qui alourdit la salle, mesuré par `scripts/audit-salle.mjs`) : les 12 lumières des lustres disparaissent, les ampoules restent ; géométrie des sièges et des colonnes simplifiée ; objets immobiles fusionnés par matière ; plus de vernis sur le bois ni de relief sur le velours et la moquette ; densité plafonnée à 1,5 ; matières compilées et images décodées en tâche de fond. Écart assumé à la maquette de Claude Design, validée à G2 : ses lustres éclairaient la salle, leurs ampoules seules restent. Le rendu a été comparé vue par vue, et la coupole compensée.
 - Raison : l'image prenait 46 ms sur une carte graphique intégrée (22 images / s), mesure que les chiffres précédents ne voyaient pas ; elle en prend 23.
 - Conséquence : mesures dans docs/rapport-perf-30-oct.md, § « L'audit de la salle » ; images fixes régénérées.
+
+## 2026-11-03 · Le MVP est validé et publié
+- Décision (Julien, 3 nov.) : le MVP est bon, on publie. Une seule PR de `mvp-lot-8` vers `main`, qui contient toute la pile (lots 1 à 8, t92) ; les PR par lot prévues à la reprise auraient publié autant d'états intermédiaires.
+- Conséquence : le dernier point ouvert de la recette (docs/recette-mvp.md) reste la mesure sur un vrai téléphone. Le chantier suivant est le responsive (t93).

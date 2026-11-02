@@ -6,7 +6,7 @@
 
 Le parcours « première visite → quiz de 10 votes → ta place → salle → séance → verdict » se déroule de bout en bout sur ordinateur, petit portable et téléphone émulé, sans erreur de page et sans écran coupé (`scripts/recette.mjs`). Les seuils de mesure sont tenus, sauf deux réserves ci-dessous.
 
-**Le critère de fin n'est pas encore atteint : il demande la validation de Julien sur son téléphone.** Rien n'a été mesuré sur un vrai téléphone.
+**Julien a validé le MVP et demandé la publication le 3 novembre 2026.** Aucune mesure n'a été faite sur un vrai téléphone ; le modèle et le navigateur restent à noter.
 
 ## Ce qui marche
 
@@ -44,13 +44,13 @@ Le parcours « première visite → quiz de 10 votes → ta place → salle → 
 
 1. **L'image figée vers `/ta-place/`, au palier 0 (767 ms en médiane, seuil 200 ms).** C'est la dette du lot 1, toujours présente. Elle survient juste après la glisse, quand plus rien ne bouge : aucun script, aucune tâche longue, aucun rendu demandé. Elle disparaît sans la glisse. La cause n'est pas prouvée : elle peut tenir au navigateur sans écran. **À vérifier par Julien à l'œil.** Si elle se voit, couper cette glisse règle le problème, mais c'est une décision.
 2. **L'ouverture de la 3D fige la page une fois**, de 0,8 à 1,3 s selon la charge du poste (une tâche, à la première ouverture seulement). Elle allait jusqu'à 3,2 s avant la compilation en tâche de fond.
-3. **Pas de vrai téléphone.** Pincement et toucher sont vérifiés par des événements simulés. Modèle et navigateur restent à noter dans le rapport de performance.
-4. **`uv run pytest`** : voir l'état dans `docs/PLANNING.md`, t91. Aucun fichier du pipeline n'a changé.
+3. **Pas de mesure sur un vrai téléphone.** Pincement et toucher sont vérifiés par des événements simulés. Modèle et navigateur restent à noter dans le rapport de performance.
+4. **`uv run pytest`** : 146 tests verts en 18 s. Aucun fichier du pipeline n'a changé.
 5. **Responsive** : le cadrage tient sur la matrice, mais des écrans restent à soigner, notamment le téléphone en paysage (844 × 390), où la salle du dévoilement est petite. C'est le chantier suivant, demandé par Julien (t93).
 6. **La glisse de 1,4 s** vers la vue des députés : le cadrage demandait 600 ms ou moins, Julien jugera après ses tests.
 7. **Clavier** : dans la vue des députés, les flèches déplacent la salle, pas la sélection (P2 du cadrage, non fait). « Trouver un député » reste le chemin principal au clavier.
 8. **La porte t82** n'a jamais été cochée : c'est à Julien de le faire.
-9. **Le kit de captures du portfolio** se prépare après la validation de Julien.
+9. **Le kit de captures du portfolio** peut se préparer : la recette est validée.
 
 ## Les questions et les portes
 
@@ -60,4 +60,4 @@ Le parcours « première visite → quiz de 10 votes → ta place → salle → 
 
 ## La mise en ligne (avec l'accord de Julien)
 
-Fusionner la PR #64, pousser la suite de la pile (`mvp-lot-2` à `mvp-lot-8`, avec `mvp-salle-def` et `mvp-lot-6-suite`) et ouvrir les PR dans l'ordre. Le pipeline publie à chaque fusion sur `main`. Vérifier ensuite https://le578esiege.pages.dev.
+Une seule PR de `mvp-lot-8` vers `main` : elle contient toute la pile, garde un commit par lot et ferme la PR #64, sans publier d'états intermédiaires. Le pipeline publie à la fusion. Vérifier ensuite https://le578esiege.pages.dev.

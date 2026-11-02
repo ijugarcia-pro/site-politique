@@ -23,7 +23,7 @@ Le MVP est fini quand le parcours « première visite → quiz de 10 votes → t
 | t92 | Nouvelle salle 3D, vue du dessus | Fait, porte G2 franchie | `mvp-salle-def`, local |
 | t89 | 6 · Dessus, survol, carte, sélection | Fait | `mvp-lot-6` et `mvp-lot-6-suite`, local |
 | t90 | 7 · Étiquettes et seuil des 10 votes | Fait | `mvp-lot-7`, local |
-| t91 | 8 · Recette finale | Livrée, en attente du test de Julien sur son téléphone : `docs/recette-mvp.md` | `mvp-lot-8`, local |
+| t91 | 8 · Recette finale | Fait, validé par Julien le 3 nov. : `docs/recette-mvp.md` | `mvp-lot-8` |
 | t93 | Responsive | À faire, demandée par Julien après le MVP | |
 
 Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6` → `mvp-salle-def` → `mvp-lot-6-suite` → `mvp-lot-7` → `mvp-lot-8`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
@@ -83,12 +83,12 @@ Montrer à Julien `scripts/planche-dessus.mjs` (Perspective et Dessus) et `scrip
 **Les dettes connues, à solder en recette**
 - Au palier 0, une image figée de 550 à 650 ms pendant la glisse de `/salle/` vers `/ta-place/` (carte graphique, sans tâche longue ; seuil : 200 ms). Cause non trouvée. À retester sur la nouvelle salle.
 - Rien n'a été mesuré ni touché sur un vrai téléphone. Julien doit tester les gestes, et noter le modèle et le navigateur dans le rapport de performance.
-- `uv run pytest` n'a pas été relancé depuis le lot 0 (aucun fichier Python touché ; 146 tests verts, 1 h 43 sur ce poste). À relancer en arrière-plan avant la fusion finale.
+- `uv run pytest` : relancé le 3 nov., 146 tests verts en 18 s.
 - La porte t82 n'a jamais été cochée, alors que la PR VDEF est fusionnée ; les retours de test du 30 oct. en tiennent lieu. C'est à Julien de la cocher.
 - Profil mémoïsé du lot 1 écarté (décision du 30 oct.) ; `perf-navigation.mjs` garde des marques `?perf=` inactives par défaut.
 
-**La mise en ligne** (toujours avec l'accord de Julien)
-Fusionner la PR #64, pousser la suite de la pile et ouvrir les PR dans l'ordre. Le pipeline publie le site à chaque fusion sur `main`. Vérifier ensuite https://le578esiege.pages.dev.
+**La mise en ligne** (accord de Julien du 3 nov. : une seule PR de `mvp-lot-8` vers `main`, qui contient toute la pile et ferme la PR #64, pour ne pas publier d'états intermédiaires)
+Autrefois prévu : fusionner la PR #64, pousser la suite de la pile et ouvrir les PR dans l'ordre. Le pipeline publie le site à chaque fusion sur `main`. Vérifier ensuite https://le578esiege.pages.dev.
 
 ## Hors périmètre
 

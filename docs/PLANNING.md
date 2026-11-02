@@ -122,7 +122,7 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t92 🤝 ◆ Nouvelle salle 3D qui favorise la vue du dessus *(fait le 2 nov. 2026, branche `mvp-salle-def`, empilée sur `mvp-lot-6` ; porte G2 validée par Julien le 2 nov.)*
 - [x] t89 🤖 Lot 6 · La salle : Dessus, survol, carte, sélection *(fait le 2 nov. 2026, branche `mvp-lot-6-suite`, empilée sur `mvp-salle-def`)*
 - [x] t90 🤖 Lot 7 · Étiquettes sans collision et seuil des 10 votes *(fait le 2 nov. 2026, branche `mvp-lot-7`, empilée sur `mvp-lot-6-suite` ; Q3 et Q4 : oui, partout)*
-- [ ] t91 🤖 Lot 8 · Recette finale *(livrée le 3 nov. 2026, branche `mvp-lot-8` : docs/recette-mvp.md ; **en attente du test de Julien sur son téléphone**, critère de fin du MVP)*
+- [x] t91 🤖 Lot 8 · Recette finale *(fait le 3 nov. 2026, branche `mvp-lot-8` : docs/recette-mvp.md ; Julien a validé le MVP et demandé la publication le 3 nov.)*
 - [ ] t93 🤖 Responsive *(demandée par Julien le 2 nov. 2026, après le MVP ; fiche à écrire avec lui)*
 
 ### Phase 3 — La séance de la semaine (S9–S10, 30 nov. → 13 déc.)

@@ -51,6 +51,12 @@ const GROUPES = [['Groupe A', 9], ['Groupe B', 8], ['Groupe C', 6]] as const;
     // ?vue=dessus&neutre (scripts/images-fixes.mjs) : une vue posée sans mouvement ; neutre : des
     // sièges clairs, sans voyants (l'image fixe du dévoilement). Le script pilote aussi le cadre et
     // lit le masque des sièges par `__salle`, sur cette seule page interne.
+    // ?reperes=100,101,300 (scripts/etiquettes.mjs) : des repères illustratifs sur ces sièges.
+    const reperes = p.get('reperes');
+    if (reperes) {
+      const noms = ['Ton jumeau · Prénom Illustratif', 'Ton opposé · Autre Prénom Illustratif', 'Ton député · Encore Un Nom', 'Toi'];
+      pilote.reperes(reperes.split(',').map((i, k) => ({ i: Number(i), libelle: noms[k % 4] })));
+    }
     const vue = p.get('vue');
     if (vue === 'dessus' || vue === 'salle' || vue === 'tribune') {
       pilote.vue(vue, { instant: true });

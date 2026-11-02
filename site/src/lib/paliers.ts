@@ -41,6 +41,12 @@ export const PALIERS: readonly Palier[] = [
 export const palierAtteint = (n: number): Palier | null =>
   [...PALIERS].reverse().find((p) => n >= p.seuil) ?? null;
 
+/** Sous 10 votes tranchés (le palier 1), aucun jumeau ni opposé nulle part (cadrage MVP, R9, Q4) :
+ *  à 2 votes, ils n'auraient pas de sens. Toute page qui les montre passe par ici. */
+export const jumeauVisible = (n: number): boolean => palierAtteint(n) !== null;
+export const phraseSeuilJumeau = (n: number): string =>
+  `À ${PALIERS[0].seuil} votes, ton jumeau et ton opposé apparaissent · ${n} / ${PALIERS[0].seuil}`;
+
 /** Le prochain palier et les votes qui manquent pour l'atteindre, ou null quand tout est ouvert. */
 export function prochainPalier(n: number): { palier: Palier; reste: number } | null {
   const palier = PALIERS.find((p) => n < p.seuil);

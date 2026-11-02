@@ -12,6 +12,8 @@
 
 import type { Apparence } from './apparence.ts';
 import type { Cadre, NomVue, Salle3D } from './scene.ts';
+import type { Rect } from './etiquettes.ts';
+import type { RepereDom } from './etiquettes-dom.ts';
 
 export type Raison = 'ok' | 'webgl' | 'economie' | 'memoire' | 'erreur';
 
@@ -127,7 +129,11 @@ function creerPilote(racine: HTMLElement): Pilote {
   const calque = racine.querySelector<HTMLElement>('[data-reperes]');
   const attente: ((s: Salle3D) => void)[] = [];
   let salle: Salle3D | null = null;
-  let liste: { r: RepereSalle; el: HTMLElement }[] = [];
+  let liste: (RepereDom & { r: RepereSalle })[] = [];
+  // Le placement des étiquettes arrive avec la scène, chargée à la demande ; ce qu'elles évitent est
+  // relu quand le cadre, les repères ou la sélection changent.
+  let etiquetage: typeof import('./etiquettes-dom.ts') | null = null;
+  let obstacles: Rect[] | null = null;
   let toucheSiege: ((i: number) => void) | null = null;
   let survole: number | null = null;
   let choisi: number | null = null;
@@ -155,6 +161,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     if (!salle) return;
     const points = salle.projeter(liste.map(({ r }) => salle!.positionSiege(r.i, 1.05)));
     liste.forEach(({ el }, k) => poser(el, points[k]));
+    if (etiquetage) etiquetage.poserEtiquettes(liste, points, canvas.clientWidth, canvas.clientHeight, obstacles ??= etiquetage.lireObstacles(canvas));
     for (const [cle, i] of [['survol', survole], ['choisi', choisi]] as const) {
       const el = anneaux[cle];
       if (!el) continue;
@@ -166,9 +173,6 @@ function creerPilote(racine: HTMLElement): Pilote {
     el.hidden = !dansLeCadre(p);
     el.style.left = `${(100 * p.x).toFixed(2)}%`;
     el.style.top = `${(100 * p.y).toFixed(2)}%`;
-    // Près d'un bord, l'étiquette s'ancre sur le côté pour rester dans le cadre.
-    el.classList.toggle('a-gauche', p.x < 0.15);
-    el.classList.toggle('a-droite', p.x > 0.85);
   };
 
   // Sur une page « lecture », la salle est cachée : elle ne se charge pas, ne rend rien. À l'arrêt
@@ -185,7 +189,8 @@ function creerPilote(racine: HTMLElement): Pilote {
       charger = null;
       racine.dataset.salle3dEtat = 'chargement';
       try {
-        const { creer } = await import('./scene.ts');
+        const { creer, etiquettes } = await import('./scene.ts');
+        etiquetage = etiquettes;
         const s = await creer(canvas, { mouvementReduit: reduit });
         // Le gouverneur de qualité (ou `?qualite=`) : trop lent, le repli reste.
         if ((await s.gouverner()) === 2) {
@@ -374,7 +379,7 @@ function creerPilote(racine: HTMLElement): Pilote {
       if (on) setTimeout(() => void charger?.());
       if (salle) salle.actif(on);
     },
-    cadre: (c) => faire((s) => s.cadre(c)),
+    cadre: (c) => { obstacles = null; faire((s) => s.cadre(c)); },
     personnage: (a) => faire((s) => s.personnage(a)),
     asseoir: (i, opt) => faire((s) => { void s.asseoir(i, opt); }),
     reperes: (nouveaux) => {
@@ -390,10 +395,14 @@ function creerPilote(racine: HTMLElement): Pilote {
         const lib = document.createElement('span');
         lib.className = 'repere-libelle';
         lib.textContent = r.libelle;
-        el.append(pt, lib);
+        const fil = document.createElement('span');
+        fil.className = 'repere-fil';
+        fil.hidden = true;
+        el.append(fil, pt, lib);
         calque.append(el);
-        return { r, el };
+        return { r, libelle: r.libelle, el, lib, fil, l: 0, h: 0 };
       });
+      obstacles = null;
       if (salle) placerReperes();
     },
     surSiege: (touche, survol, plus) => {
@@ -407,6 +416,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     selection: (i) => {
       choisi = i;
       if (i !== null && anneaux.choisi) anneaux.choisi.firstChild!.textContent = nomSiege?.(i) ?? '';
+      obstacles = null;
       placerReperes();
     },
     prete,

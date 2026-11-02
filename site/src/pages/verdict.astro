@@ -131,7 +131,7 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
 
 <script>
   import { deputeChoisi, lireJSON, reponses } from '../lib/navigateur.ts';
-  import { palierAtteint, votesTranches } from '../lib/paliers.ts';
+  import { jumeauVisible, phraseSeuilJumeau, votesTranches } from '../lib/paliers.ts';
   import { profil, type Matrice } from '../lib/profil.ts';
   import { donnee } from '../lib/matrice-cache.ts';
   import { etatSeance } from '../lib/seances.ts';
@@ -209,12 +209,19 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       const p = matrice ? profil(matrice, mes) : null;
       const kv = matrice ? matrice.votes.indexOf(v.uid) : -1;
       const lettre = (s: string | undefined) => (kv >= 0 && s && s[kv] !== '-' ? s[kv] : null);
-      const jumeau = p?.jumeau ?? null;
+      const n = votesTranches(mes);
+      const jumeau = jumeauVisible(n) ? p?.jumeau ?? null : null;
       const depute = monDepute && matrice ? matrice.deputes.find((d) => d.u === monDepute) : null;
       const lignes = [ligne('Toi', a === 'pour' ? 'P' : a === 'contre' ? 'C' : null,
         a ? ` · ${a === gagnant ? 'avec la majorité' : 'à contre-courant'}` : '')];
       if (!a) lignes[0].lastChild!.textContent = 'Pas tranché';
       if (jumeau) lignes.push(ligne(`Ton jumeau, ${jumeau.ligne.n}`, lettre(jumeau.ligne.s), '', `/deputes/${jumeau.ligne.u}/`));
+      else if (!jumeauVisible(n)) {
+        const seuil = document.createElement('li');
+        seuil.className = 't-legende';
+        seuil.textContent = phraseSeuilJumeau(n);
+        lignes.push(seuil);
+      }
       if (depute) lignes.push(ligne(`Ton député, ${depute.n}`, lettre(depute.s), '', `/deputes/${depute.u}/`));
       document.querySelector(`[data-lignes="${k}"]`)!.replaceChildren(...lignes);
       // Ton pronostic et ta voix de 578e (lib/votes.ts) : la majorité requise est recalculée.
@@ -229,8 +236,7 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       }
       document.querySelector(`[data-voix="${k}"]`)!.textContent = textes.join(' ');
       // Le repère « Toi » sur ta place (le siège de ton jumeau, à partir du palier 1), avec ton vote.
-      const n = votesTranches(mes);
-      const place = jumeau && palierAtteint(n) ? sieges.indexOf(jumeau.ligne.u) : -1;
+      const place = jumeau ? sieges.indexOf(jumeau.ligne.u) : -1;
       const toi = place >= 0 && !html.classList.contains('verdict-cache') ? [{ i: place, libelle: a ? `Toi · ${a}` : 'Toi' }] : [];
       void devoilement.then((d) => d.poserReperes(toi));
     };

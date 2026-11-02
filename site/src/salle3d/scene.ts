@@ -23,6 +23,8 @@ import { balayage, boiteRonde, corrigeSens, fusion, mat4, rad } from './outils3d
 import { ajouterDecor } from './decor.ts';
 import { cadrageDessus, DESSUS } from './cadrage-haut.ts';
 import { grilleSieges, type PointVise } from './visee.ts';
+import * as etiquettes from './etiquettes-dom.ts';
+export { etiquettes };
 
 /** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
  *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus le « Dessus »

@@ -213,6 +213,7 @@ const description = censure
 
 <script>
   import { deputeChoisi, repondre, reponse, type Reponse } from '../../lib/navigateur.ts';
+  import { jumeauVisible, phraseSeuilJumeau, votesTranches } from '../../lib/paliers.ts';
   import { profil, type Matrice } from '../../lib/profil.ts';
   import { donnee } from '../../lib/matrice-cache.ts';
   import { mesReps } from '../../lib/trancher.ts';
@@ -309,7 +310,14 @@ const description = censure
     if (Object.keys(reps).length) {
       try {
         const m: Matrice = await donnee('matrice.json');
-        const j = profil(m, reps).jumeau;
+        const nb = votesTranches(reps);
+        const j = jumeauVisible(nb) ? profil(m, reps).jumeau : null;
+        if (!jumeauVisible(nb)) {
+          const seuil = document.createElement('li');
+          seuil.className = 't-legende';
+          seuil.textContent = phraseSeuilJumeau(nb);
+          lignesUl.querySelector('[data-ligne-toi]')!.after(seuil);
+        }
         if (j) {
           const l = parDepute.get(j.ligne.u);
           marques.set(j.ligne.u, marques.has(j.ligne.u) ? 'ton jumeau et ton député' : 'ton jumeau');

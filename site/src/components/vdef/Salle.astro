@@ -105,13 +105,19 @@
   }
   .calque :global(.toi .repere-point) { background: var(--encre); border-color: var(--feuille); }
   .calque :global(.repere-libelle) {
-    position: absolute; left: 0; bottom: 20px; transform: translateX(-50%);
+    position: absolute; left: 0; top: -52px;
     padding: 9px 13px; border-radius: var(--pilule); background: var(--feuille); color: var(--encre);
     font: 600 14px/1 var(--police-texte); white-space: nowrap; box-shadow: var(--ombre-repere);
   }
   .calque :global(.toi .repere-libelle) { background: var(--encre); color: var(--feuille); }
-  .calque :global(.a-gauche .repere-libelle) { transform: translateX(-18px); }
-  .calque :global(.a-droite .repere-libelle) { transform: translateX(calc(-100% + 18px)); }
+  .calque :global(.repere-libelle[hidden]), .calque :global(.repere-fil[hidden]) { display: none; }
+  /* Deux points très proches : une étiquette à deux lignes (salle3d/etiquettes.ts). */
+  .calque :global(.repere-libelle.double) { white-space: pre; line-height: 16px; padding: 9px 13px; border-radius: 16px; }
+  /* Le fil, quand l'étiquette a dû s'éloigner de son point. */
+  .calque :global(.repere-fil) {
+    position: absolute; left: 0; top: -1px; height: 2px; transform-origin: 0 50%;
+    background: var(--feuille); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
   /* Le siège survolé : un anneau blanc fin ; le siège choisi : un anneau plein (maquette 09). */
   .calque :global(.anneau-siege) {
     position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px;

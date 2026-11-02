@@ -34,6 +34,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
       <button type="button" aria-pressed="true" data-mode="salle">Perspective</button>
       <button type="button" aria-pressed="false" data-mode="dessus">Dessus</button>
     </div>
+    <p class="t-legende seuil-jumeau" data-seuil-jumeau hidden></p>
     <div class="bascules" data-bascules>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="jumeau" hidden>Ton jumeau</button>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="oppose" hidden>Ton opposé</button>
@@ -106,11 +107,12 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
 
 <script>
   import { deputeChoisi, lireJSON } from '../lib/navigateur.ts';
-  import { palierAtteint, PALIERS, votesTranches } from '../lib/paliers.ts';
+  import { jumeauVisible, palierAtteint, PALIERS, phraseSeuilJumeau, votesTranches } from '../lib/paliers.ts';
   import { comparer, colonnes, INTENSITES, NIVEAUX, niveau, profil, type Matrice } from '../lib/profil.ts';
   import { donnee } from '../lib/matrice-cache.ts';
   import { $, mesReps, pluriel, VOYANTS } from '../lib/trancher.ts';
   import { salle3D, type RepereSalle } from '../salle3d/pilote.ts';
+  import { libelleCourt } from '../salle3d/libelle.ts';
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
 
   const SEUIL_ECLAIREE = PALIERS.find((p) => p.id === 'salle-eclairee')!.seuil;
@@ -170,13 +172,20 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     const lignes = new Map(matrice?.deputes.map((d) => [d.u, d]) ?? []);
 
     // --- Les repères ---
-    const jumeau = p?.jumeau ?? null;
-    const oppose = p?.oppose ?? null;
+    // Sous 10 votes, ni jumeau ni opposé (lib/paliers.ts) ; « Ton député » et « Un groupe » restent.
+    const visibles = jumeauVisible(n);
+    const jumeau = visibles ? p?.jumeau ?? null : null;
+    const oppose = visibles ? p?.oppose ?? null : null;
+    const seuil = $('[data-seuil-jumeau]');
+    seuil.hidden = visibles;
+    seuil.textContent = visibles ? '' : phraseSeuilJumeau(n);
     const monDepute = deputeChoisi();
     const assis = !!(jumeau && palierAtteint(n) && parUid.has(jumeau.ligne.u));
     if (assis) salle?.asseoir(parUid.get(jumeau!.ligne.u)!, { marcher: false });
     const actifs = { jumeau: true, oppose: true, depute: true };
-    const nomDe = (uid: string) => sieges[parUid.get(uid) ?? -1]?.[1] ?? lignes.get(uid)?.n ?? '';
+    const nomDe = (uid: string) => libelleCourt(sieges[parUid.get(uid) ?? -1]?.[1] ?? lignes.get(uid)?.n ?? '',
+      [jumeau?.ligne.u, oppose?.ligne.u, monDepute].filter((u): u is string => !!u && u !== uid)
+        .map((u) => sieges[parUid.get(u) ?? -1]?.[1] ?? lignes.get(u)?.n ?? ''));
     const poserReperes = () => {
       const liste: RepereSalle[] = [];
       if (jumeau && actifs.jumeau && parUid.has(jumeau.ligne.u)) {
@@ -377,6 +386,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   .mode-salle button[aria-pressed='true'] { background: var(--encre); color: var(--feuille); }
   .mode-salle button:focus-visible { outline: 3px solid var(--encre); outline-offset: 2px; }
   :global(.salle-sans-3d) .mode-salle { display: none; }
+  .seuil-jumeau[hidden] { display: none; }
   .bascules { display: flex; flex-wrap: wrap; gap: 6px; }
   .bascule {
     display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px;

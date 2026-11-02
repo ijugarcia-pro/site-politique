@@ -6,9 +6,10 @@
 // Il porte aussi les gestes (VDEF, lot V3) : glisser pour tourner (pointeur capturé, amortissement,
 // petite inertie ; ni l'un ni l'autre en mouvement réduit), pincer ou Ctrl + molette pour zoomer,
 // double clic ou Échap pour revenir ; au clavier, flèches, + et −, Échap. La molette seule fait
-// défiler la page. Un clic sur un siège le donne à la page (son député) ; au doigt, le siège le plus
-// proche dans 22 px. Un anneau blanc marque le siège survolé (fin, et le fauteuil passe au blanc) et
-// le siège choisi (plein, maquette 09). Dans le Dessus, glisser déplace, pincer ou la molette zoome.
+// défiler la page. Dans la vue des députés seulement (décision du 2 nov. 2026 : en perspective, ce
+// n'est pas assez fluide), un siège se survole et se choisit ; au doigt, le plus proche dans 22 px.
+// Un anneau blanc marque le siège survolé (fin, et le fauteuil passe au blanc) et le siège choisi
+// (plein, maquette 09). Dans cette vue, glisser déplace, pincer ou la molette zoome.
 
 import type { Apparence } from './apparence.ts';
 import type { Cadre, NomVue, Salle3D } from './scene.ts';
@@ -48,7 +49,7 @@ export function geste(touche: string): { lacet?: number; tangage?: number; zoom?
 
 /** Au doigt, le siège le plus proche à cette distance, en pixels (cadrage MVP, R6). */
 const RAYON_DOIGT = 22;
-/** Le pas du clavier dans le Dessus, en pixels. */
+/** Le pas du clavier dans la vue des députés, en pixels. */
 const PAS_DESSUS = 30;
 
 /** Le glisser : la part de l'écart rattrapée à chaque image, la durée de l'inertie au lâcher, et
@@ -83,11 +84,9 @@ export interface Pilote {
   cadre(c: Cadre): void;
   /** Les repères de la VDEF, plusieurs à la fois ; cachés quand ils sortent du cadre. */
   reperes(liste: RepereSalle[]): void;
-  /** Le siège touché (clic, toucher), le siège survolé (null en sortant), un clic à côté (`vide`)
-   *  et le nom d'un siège, posé sur son anneau quand les feuilles sont cachées ; sans gestionnaire,
-   *  les sièges ne réagissent pas. */
-  surSiege(touche: ((i: number) => void) | null, survol?: (i: number | null) => void,
-    plus?: { vide?: () => void; nom?: (i: number) => string }): void;
+  /** Le siège touché (clic, toucher), le siège survolé (null en sortant) et un clic à côté ; sans
+   *  gestionnaire, les sièges ne réagissent pas. */
+  surSiege(touche: ((i: number) => void) | null, survol?: (i: number | null) => void, vide?: () => void): void;
   /** Le siège choisi (sa carte est ouverte), marqué d'un anneau ; null : aucun. */
   selection(i: number | null): void;
   /** Le personnage du visiteur, et sa place (null : au pied de la tribune). */
@@ -106,9 +105,6 @@ function anneau(calque: HTMLElement | null, sorte: string): HTMLElement | null {
   el.className = `anneau-siege ${sorte}`;
   el.hidden = true;
   el.setAttribute('aria-hidden', 'true');
-  const nom = document.createElement('span');
-  nom.className = 'anneau-nom';
-  el.append(nom);
   calque.append(el);
   return el;
 }
@@ -140,13 +136,11 @@ function creerPilote(racine: HTMLElement): Pilote {
   const anneaux = { survol: anneau(calque, 'survol'), choisi: anneau(calque, 'choisi') };
   let survolSiege: ((i: number | null) => void) | null = null;
   let clicVide: (() => void) | null = null;
-  let nomSiege: ((i: number) => string) | null = null;
   /** Le siège survolé : son anneau, le fauteuil en blanc, et la page prévenue. */
   const survoler = (i: number | null) => {
     if (i === survole) return;
     survole = i;
     salle?.surligner(i);
-    if (i !== null && anneaux.survol) anneaux.survol.firstChild!.textContent = nomSiege?.(i) ?? '';
     placerReperes();
     racine.classList.toggle('sur-siege', i !== null);
     survolSiege?.(i);
@@ -288,7 +282,7 @@ function creerPilote(racine: HTMLElement): Pilote {
         survolPrevu = false;
         if (!salle || !dernierSurvol || !survolSiege) return;
         const p = point(dernierSurvol);
-        survoler(salle.vueCourante === 'salle' || salle.vueCourante === 'dessus' ? salle.siegeSous(p.x, p.y) : null);
+        survoler(salle.vueCourante === 'deputes' ? salle.siegeSous(p.x, p.y) : null);
       });
       return;
     }
@@ -297,13 +291,14 @@ function creerPilote(racine: HTMLElement): Pilote {
     if (pointeurs.size === 2) {
       const [a, b] = [...pointeurs.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (ecart0 > 0 && d > 0) salle.zoomer(ecart0 / d);
+      const r = canvas.getBoundingClientRect();
+      if (ecart0 > 0 && d > 0) salle.zoomer(ecart0 / d, { x: (a.x + b.x) / 2 - r.left, y: (a.y + b.y) / 2 - r.top });
       ecart0 = d;
       return;
     }
     if (appui) appui.bouge += Math.hypot(e.clientX - avant.x, e.clientY - avant.y);
-    // Dans le Dessus, la salle suit le pointeur (sans inertie).
-    if (salle.vueCourante === 'dessus') { salle.deplacer(e.clientX - avant.x, e.clientY - avant.y); return; }
+    // Dans la vue des députés, la salle suit le pointeur (sans inertie).
+    if (salle.vueCourante === 'deputes') { salle.deplacer(e.clientX - avant.x, e.clientY - avant.y); return; }
     const l = canvas.clientWidth || 1;
     // Au doigt, seul le glissé horizontal tourne : le glissé vertical fait défiler la page.
     const dLacet = (-1.2 * (e.clientX - avant.x)) / l;
@@ -325,7 +320,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     // pas un clic en glisser.
     const clic = a.bouge < GLISSER.clic && e.timeStamp - a.t < 500;
     if (clic) {
-      if (toucheSiege && salle && (salle.vueCourante === 'salle' || salle.vueCourante === 'dessus')) {
+      if (toucheSiege && salle && salle.vueCourante === 'deputes') {
         const p = point(e);
         const i = salle.siegeSous(p.x, p.y, e.pointerType === 'touch' ? RAYON_DOIGT : 0);
         if (i !== null) toucheSiege(i); else clicVide?.();
@@ -347,10 +342,11 @@ function creerPilote(racine: HTMLElement): Pilote {
   canvas.addEventListener('dblclick', () => { arreter(); salle?.recentrer(); });
   canvas.addEventListener('wheel', (e) => {
     // La molette fait défiler la page ; Ctrl + molette (et le pincement du pavé tactile) zoome.
-    // Dans le Dessus, la molette seule zoome : rien à faire défiler.
-    if (!salle || (!e.ctrlKey && salle.vueCourante !== 'dessus')) return;
+    // Dans la vue des députés, la molette seule zoome : rien à faire défiler.
+    if (!salle || (!e.ctrlKey && salle.vueCourante !== 'deputes')) return;
     e.preventDefault();
-    salle.zoomer(Math.exp(e.deltaY * 0.002));
+    const r = canvas.getBoundingClientRect();
+    salle.zoomer(Math.exp(e.deltaY * 0.002), { x: e.clientX - r.left, y: e.clientY - r.top });
   }, { passive: false });
   ecran.addEventListener('keydown', (e) => {
     if (e.target !== ecran || !salle) return;
@@ -360,7 +356,7 @@ function creerPilote(racine: HTMLElement): Pilote {
     arreter();
     if (g.recentrer) salle.recentrer();
     else if (g.zoom) salle.zoomer(g.zoom);
-    else if (salle.vueCourante === 'dessus') salle.deplacer(-Math.sign(g.lacet ?? 0) * PAS_DESSUS, Math.sign(g.tangage ?? 0) * PAS_DESSUS);
+    else if (salle.vueCourante === 'deputes') salle.deplacer(-Math.sign(g.lacet ?? 0) * PAS_DESSUS, Math.sign(g.tangage ?? 0) * PAS_DESSUS);
     else salle.orbiter(g.lacet ?? 0, g.tangage ?? 0);
   });
 
@@ -405,17 +401,15 @@ function creerPilote(racine: HTMLElement): Pilote {
       obstacles = null;
       if (salle) placerReperes();
     },
-    surSiege: (touche, survol, plus) => {
+    surSiege: (touche, survol, vide) => {
       if (!touche) { survoler(null); choisi = null; placerReperes(); }
       toucheSiege = touche;
       survolSiege = touche ? (survol ?? (() => {})) : null;
-      clicVide = plus?.vide ?? null;
-      nomSiege = plus?.nom ?? null;
+      clicVide = vide ?? null;
       racine.classList.toggle('sieges-actifs', !!touche);
     },
     selection: (i) => {
       choisi = i;
-      if (i !== null && anneaux.choisi) anneaux.choisi.firstChild!.textContent = nomSiege?.(i) ?? '';
       obstacles = null;
       placerReperes();
     },

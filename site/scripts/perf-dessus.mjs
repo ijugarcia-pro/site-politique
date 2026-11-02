@@ -1,5 +1,5 @@
-// La mesure du mode Dessus de /salle/ (t92) : le palier choisi par le gouverneur, le passage
-// Perspective → Dessus → Perspective (images par seconde, plus longue image, tâches longues : les
+// La mesure de « Voir les députés » sur /salle/ (t92) : le palier choisi par le gouverneur, le passage
+// Perspective → députés → Perspective (images par seconde, plus longue image, tâches longues : les
 // ombres y sont recalculées une fois) et le déplacement au glisser. Chromium, vraie carte graphique,
 // 1 440 × 900, densité 1,5. perf-navigation.mjs ne passe pas par ce bouton.
 //
@@ -44,14 +44,14 @@ const fenetre = async (nom, geste, ms) => {
   console.log(`${nom} : ${(images.length / (ms / 1000)).toFixed(0)} images/s, médiane ${tri[tri.length >> 1]?.toFixed(0)} ms, plus longue image ${tri.at(-1)?.toFixed(0)} ms, tâches longues ${JSON.stringify(longues)} ; ${rendus.length} rendus, médiane ${trR[trR.length >> 1]?.toFixed(1)} ms, max ${trR.at(-1)?.toFixed(1)} ms`);
 };
 if (etat === 'prete') {
-  await fenetre('Perspective → Dessus', () => page.click('[data-mode="dessus"]'), 2000);
+  await fenetre('Perspective → députés', () => page.click('[data-immersion]'), 2000);
   const glisser = async () => {
     await page.mouse.move(900, 450); await page.mouse.down();
     for (let k = 0; k < 40; k++) { await page.mouse.move(900 + k * 3, 450 + k * 2); await page.waitForTimeout(16); }
     await page.mouse.up();
   };
-  await fenetre('Dessus, glisser', glisser, 1200);
-  await fenetre('Dessus → Perspective', () => page.click('[data-mode="salle"]'), 2000);
+  await fenetre('Députés, glisser', glisser, 1200);
+  await fenetre('Députés → Perspective', () => page.click('[data-immersion]'), 2000);
 }
 await navigateur.close();
 serveur.close();

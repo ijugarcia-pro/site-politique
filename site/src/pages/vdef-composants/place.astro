@@ -58,7 +58,7 @@ const GROUPES = [['Groupe A', 9], ['Groupe B', 8], ['Groupe C', 6]] as const;
       pilote.reperes(reperes.split(',').map((i, k) => ({ i: Number(i), libelle: noms[k % 4] })));
     }
     const vue = p.get('vue');
-    if (vue === 'dessus' || vue === 'salle' || vue === 'tribune') {
+    if (vue === 'dessus' || vue === 'deputes' || vue === 'salle' || vue === 'tribune') {
       pilote.vue(vue, { instant: true });
       void pilote.prete.then((s) => {
         (window as unknown as { __salle: typeof s }).__salle = s;

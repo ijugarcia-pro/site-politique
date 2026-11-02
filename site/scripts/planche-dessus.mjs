@@ -1,4 +1,4 @@
-// La planche de la porte G2 (cadrage MVP, R5, lot 6) : /salle/ en perspective et en mode « Dessus »,
+// La planche de /salle/ : la perspective (les menus) et la vue « Voir les députés »,
 // à 1 440 × 900, 1 280 × 650 et 390 × 844, sur la vraie carte graphique ; d'un groupe allumé, pour
 // voir les sièges. Un visiteur inventé (12 réponses illustratives, jamais envoyées).
 //
@@ -17,7 +17,7 @@ const serveur = await servir(resolve(dossier ?? join(SITE, 'dist')));
 const base = `http://127.0.0.1:${serveur.address().port}`;
 const navigateur = await lancer({ gpu: true });
 const TAILLES = [[1440, 900], [1280, 650], [390, 844]];
-const MODES = [['salle', 'Perspective'], ['dessus', 'Dessus']];
+const MODES = [['salle', 'Perspective'], ['deputes', 'Voir les députés']];
 
 for (const [l, h] of TAILLES) {
   const contexte = await navigateur.newContext({ viewport: { width: l, height: h }, deviceScaleFactor: l < 500 ? 2 : 1 });
@@ -29,7 +29,7 @@ for (const [l, h] of TAILLES) {
   await page.waitForFunction(() => document.querySelector('[data-salle-vdef]')?.dataset.salle3dEtat === 'prete', null, { timeout: 60000 });
   await page.waitForTimeout(1500);
   for (const [mode] of MODES) {
-    await page.click(`[data-mode="${mode}"]`);
+    if (mode === 'deputes') await page.click('[data-immersion]');
     await page.waitForTimeout(1900);
     await page.screenshot({ path: join(sortie, `${l}x${h}-${mode}.png`) });
   }

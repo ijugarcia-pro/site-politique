@@ -128,3 +128,14 @@ Tutoiement, phrases courtes, langage courant d'abord ; l'intitulé officiel n'ap
 - **La 3D** ne s'ouvre plus sur ces pages, sauf pour « Ta place est prête » (palier 1), où la salle se charge à ce moment-là pour la marche du personnage (« La salle s'ouvre… »). Si l'appareil ne peut pas l'ouvrir, l'image et le repère restent.
 - **Changer de page** coupe la caméra, avec un fondu de 200 ms ; seule la glisse entre « La salle » et « Ta place » reste (600 ms).
 - Les images fixes se régénèrent avec `site/scripts/images-fixes.mjs --gpu` à chaque changement de la salle.
+
+## Addendum · 2 novembre 2026 · la nouvelle salle et le Dessus (cadrage MVP, t92, lots 6 et 7)
+
+> Ajouté après la porte G2, où Julien a validé la salle de Claude Design (`docs/design-salle-dessus/`). Le reste de ce contrat ne change pas.
+
+- **La salle** garde le vrai hémicycle et se complète du décor du Palais Bourbon (mur du perchoir, galeries, draperies, statues). Velours rouge et dorures sont ceux de la salle : le « jamais de dorure » et la palette valent pour l'interface. Un siège prend la couleur d'un vote sur un velours neutre.
+- **« La salle » est en perspective tant que les menus sont là**, sur ordinateur comme au téléphone. **« Voir les députés »** (l'œil) cache les menus et passe en vue du dessus, verticale, cadrée sur les sièges (tribune en bas ; sur un écran en portrait, salle couchée, tribune à gauche) : ce n'est pas une quatrième vue. On s'y déplace au glisser et on zoome à la molette ou au pincement, autour du pointeur. « Afficher les menus » ou Échap en sort.
+- **Le dévoilement et le verdict** se montrent sur l'image fixe du Dessus (remplace la vue haute de l'addendum du 31 oct.), sièges colorés au pixel près ; le plafond doré remplit l'écran autour de la salle.
+- **Choisir un siège** n'existe que dans la vue des députés : au survol, il passe au blanc avec un anneau fin, et sa carte s'affiche en haut à droite (au bas de l'écran au téléphone) ; un clic l'épingle, avec un anneau plein ; un clic à côté, Échap ou la croix la ferme. « Trouver un député » y mène aussi.
+- **Sous 10 votes**, aucun jumeau ni opposé nulle part : « À 10 votes, ton jumeau et ton opposé apparaissent · N / 10 ».
+- **Les étiquettes** des repères ne se recouvrent jamais ; loin de leur point, elles ont un fil ; deux points à moins de 30 px partagent une étiquette.

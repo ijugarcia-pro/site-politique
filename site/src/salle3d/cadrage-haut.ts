@@ -12,16 +12,20 @@ import { delaiOnde } from '../lib/hemicycle.ts';
  *  canevas, la salle se couche. */
 export const DESSUS = { fov: 50, demiLargeur: 21.9, demiProfondeur: 13.8, centre: 7.4, yRef: P.YTOP + 1.0, couche: 0.8 } as const;
 
+/** La vue « Voir les députés » : le même Dessus, plus proche, cadré sur les seuls sièges. Le perchoir
+ *  sort par le bas de l'écran (retour de Julien du 2 nov. 2026). */
+export const DEPUTES = { ...DESSUS, demiLargeur: 22.2, demiProfondeur: 11.2, centre: 10.6 } as const;
+
 /** Le Dessus pour une zone visible de `zl` × `zh` sur un canevas de `l` × `h` (même unité). La zone
  *  se centre ensuite dans le canevas par setViewOffset (scene.ts), sans déformer. */
-export function cadrageDessus(zl: number, zh: number, l: number, h: number) {
-  const tv = Math.tan((DESSUS.fov * Math.PI) / 360), couche = l / h < DESSUS.couche;
-  const [enX, enY] = couche ? [DESSUS.demiProfondeur, DESSUS.demiLargeur] : [DESSUS.demiLargeur, DESSUS.demiProfondeur];
+export function cadrageDessus(zl: number, zh: number, l: number, h: number, vue: typeof DESSUS | typeof DEPUTES = DESSUS) {
+  const tv = Math.tan((vue.fov * Math.PI) / 360), couche = l / h < vue.couche;
+  const [enX, enY] = couche ? [vue.demiProfondeur, vue.demiLargeur] : [vue.demiLargeur, vue.demiProfondeur];
   const d = Math.max((enX * h) / (tv * zl), (enY * h) / (tv * zh));
   return {
-    pos: [0, DESSUS.yRef + d, DESSUS.centre] as [number, number, number],
-    cible: [0, 0, DESSUS.centre] as [number, number, number],
-    fov: DESSUS.fov as number,
+    pos: [0, vue.yRef + d, vue.centre] as [number, number, number],
+    cible: [0, 0, vue.centre] as [number, number, number],
+    fov: vue.fov as number,
     haut: (couche ? [1, 0, 0] : [0, 0, 1]) as [number, number, number],
   };
 }

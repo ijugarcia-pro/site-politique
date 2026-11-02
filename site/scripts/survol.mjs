@@ -1,6 +1,7 @@
-// Le contrôle du survol et de la sélection des sièges (cadrage MVP, R5 à R7, lot 6), sur /salle/ en
-// mode Dessus : la carte au survol (moins de 100 ms), épinglée au clic, fermée par Échap ou un clic
-// à côté ; au doigt à 390 × 844, un siège précis en deux gestes au plus (pincer, toucher). Le siège
+// Le contrôle du survol et de la sélection des sièges (cadrage MVP, R5 à R7, lot 6), sur /salle/ dans
+// la vue « Voir les députés » : en perspective, aucun siège ne réagit ; la carte au survol (moins de
+// 100 ms), épinglée au clic, fermée par Échap ou un clic à côté ; au doigt à 390 × 844, un siège
+// précis en deux gestes au plus (pincer, toucher). Le siège
 // visé est le repère « Ton opposé » : son nom doit arriver dans la carte. Un visiteur inventé.
 //
 // Usage (depuis site/, après un build) : node scripts/survol.mjs [build]
@@ -40,8 +41,20 @@ const opposé = (page) => page.evaluate(() => {
 {
   const contexte = await navigateur.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await ouvrir(contexte);
-  await page.click('[data-mode="dessus"]');
+  // En perspective : ni survol, ni sélection.
+  const enPerspective = await opposé(page);
+  await page.mouse.move(enPerspective.x, enPerspective.y);
+  await page.waitForTimeout(250);
+  await page.mouse.down(); await page.mouse.up();
+  await page.waitForTimeout(150);
+  controle(!(await lireCarte(page)).visible, 'perspective : un siège ne réagit ni au survol ni au clic');
+  const menus = await page.evaluate(() => getComputedStyle(document.querySelector('[data-panneau-salle]')).display !== 'none');
+  controle(menus, 'perspective : les menus sont là');
+  controle(await page.locator('[data-immersion]').innerText() === 'Voir les députés', 'le bouton dit « Voir les députés »');
+  await page.mouse.move(5, 5);
+  await page.click('[data-immersion]');
   await page.waitForTimeout(1900);
+  controle(await page.evaluate(() => !document.querySelector('[data-panneau-salle]').offsetParent && !document.querySelector('.barre-haut').offsetParent), 'députés : les menus sont cachés');
   const cible = await opposé(page);
   await page.evaluate(() => {
     const c = document.querySelector('[data-carte-depute]');
@@ -61,9 +74,9 @@ const opposé = (page) => page.evaluate(() => {
   const place = await page.evaluate(() => {
     const c = document.querySelector('[data-carte-depute]').getBoundingClientRect();
     const auDessus = (a) => !a || !a.width || c.bottom <= a.top + 1 || c.top >= a.bottom - 1 || c.right <= a.left + 1 || c.left >= a.right - 1;
-    return { panneau: auDessus(document.querySelector('[data-panneau-salle]').getBoundingClientRect()), encart: auDessus(document.querySelector('[data-encart-palier]').getBoundingClientRect()) };
+    return { panneau: auDessus(document.querySelector('[data-immersion]').getBoundingClientRect()), encart: true };
   });
-  controle(place.panneau && place.encart, 'la carte ne recouvre ni le panneau ni l’encart');
+  controle(place.panneau && place.encart, 'la carte ne recouvre pas le bouton');
   await page.mouse.down(); await page.mouse.up();
   await page.waitForTimeout(100);
   carte = await lireCarte(page);
@@ -79,13 +92,14 @@ const opposé = (page) => page.evaluate(() => {
   await page.waitForTimeout(200);
   await page.mouse.down(); await page.mouse.up();
   await page.waitForTimeout(100);
-  const zoneVide = await page.evaluate(() => { const r = document.querySelector('[data-panneau-salle]').getBoundingClientRect(); return { x: r.right + 30, y: 870 }; });
+  const zoneVide = { x: 720, y: 860 };
   await page.mouse.move(zoneVide.x, zoneVide.y);
   await page.mouse.down(); await page.mouse.up();
   await page.waitForTimeout(100);
   controle(!(await lireCarte(page)).visible, 'un clic à côté ferme la carte');
-  const indice = await page.evaluate(() => { const i = document.querySelector('[data-indice]'); return !i || i.hidden || getComputedStyle(i).display === 'none'; });
-  controle(indice, 'en Dessus, pas d’indice « glisse pour tourner »');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(1900);
+  controle(await page.evaluate(() => !document.body.classList.contains('immersion') && !!document.querySelector('[data-panneau-salle]').offsetParent), 'Échap ramène aux menus');
   await contexte.close();
 }
 
@@ -110,21 +124,24 @@ const opposé = (page) => page.evaluate(() => {
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await page.waitForTimeout(200);
   };
-  const mode = await page.evaluate(() => document.querySelector('[data-mode="dessus"]').getAttribute('aria-pressed'));
-  controle(mode === 'true', 'téléphone : /salle/ s’ouvre en Dessus');
+  controle(await page.evaluate(() => !document.body.classList.contains('immersion')), 'téléphone : /salle/ s’ouvre sur les menus');
+  await page.tap('[data-immersion]');
+  await page.waitForTimeout(1900);
   let cible = await opposé(page);
   await appuyer(cible.x, cible.y);
   let carte = await lireCarte(page);
   controle(carte.visible && carte.nom === cible.nom, `un toucher sur le siège : le bon député (${carte.nom})`);
   await appuyer(cible.x + 2, cible.y - 1);
   controle((await lireCarte(page)).nom === cible.nom, 'à 2 pixels près, le même siège');
-  const place = await page.evaluate(() => { const c = document.querySelector('[data-carte-depute]').getBoundingClientRect(), m = document.querySelector('main').getBoundingClientRect(); return c.top >= m.top && c.top < m.bottom; });
-  controle(place, 'la carte est visible dans le tiroir');
+  const place = await page.evaluate(() => { const c = document.querySelector('[data-carte-depute]').getBoundingClientRect(); return c.top >= 0 && c.bottom <= innerHeight + 1 && c.height < innerHeight / 2; });
+  controle(place, 'la carte est à l’écran, au bas');
+  await appuyer(195, 30);
+  await page.waitForTimeout(100);
   const avant = await opposé(page);
-  await pincer(195, 240, 40, 90);
+  await pincer(avant.x + 20, avant.y + 20, 40, 90);
   cible = await opposé(page);
-  const ecart = Math.hypot(cible.x - 195, cible.y - 240), ecartAvant = Math.hypot(avant.x - 195, avant.y - 240);
-  controle(ecart > ecartAvant * 1.3, `pincer rapproche la salle (${Math.round(ecartAvant)} → ${Math.round(ecart)} px du centre)`);
+  const ecart = Math.hypot(cible.x - avant.x - 20, cible.y - avant.y - 20), ecartAvant = Math.hypot(20, 20);
+  controle(cible.x > 0 && Math.abs(ecart / Math.max(1, ecartAvant) - 2.2) < 0.5, `pincer rapproche la salle autour des doigts (${Math.round(ecartAvant)} → ${Math.round(ecart)} px)`);
   if (cible.y > 60 && cible.x > 0 && cible.x < 390) {
     await appuyer(cible.x, cible.y);
     controle((await lireCarte(page)).nom === cible.nom, 'pincer puis toucher : le bon siège, en deux gestes');

@@ -21,18 +21,19 @@ import { creerPersonnage, yeuxAssis, type Personnage } from './personnage3d.ts';
 import { interpoler, type Tween } from './tween.ts';
 import { balayage, boiteRonde, corrigeSens, fusion, mat4, rad } from './outils3d.ts';
 import { ajouterDecor } from './decor.ts';
-import { cadrageDessus, DESSUS } from './cadrage-haut.ts';
+import { cadrageDessus, DEPUTES, DESSUS } from './cadrage-haut.ts';
 import { grilleSieges, type PointVise } from './visee.ts';
 import * as etiquettes from './etiquettes-dom.ts';
 export { etiquettes };
 
 /** Les trois vues de la VDEF (docs/design-vdef/VDEF.md, § 3) : la tribune vue du sol, la salle
- *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus le « Dessus »
- *  (t92) : le mode de /salle/ et la vue de l'image fixe du dévoilement, à la verticale de
- *  l'hémicycle, coupole masquée (cadrage-haut.ts). Ce n'est pas une vue de navigation. */
-export type NomVue = 'tribune' | 'salle' | 'place' | 'dessus';
-/** Le Dessus : plafond masqué, cadré pour tenir tous les sièges. */
-const vueFixe = (nom: NomVue) => nom === 'dessus';
+ *  vue du perchoir, ta place vue de tes yeux, assis au siège de ton jumeau. Plus deux vues à la
+ *  verticale de l'hémicycle, coupole masquée (cadrage-haut.ts), qui ne sont pas de navigation :
+ *  « deputes », ce que montre « Voir les députés » sur /salle/, la seule où l'on choisit un siège ;
+ *  « dessus », un peu plus large, celle de l'image fixe du dévoilement. */
+export type NomVue = 'tribune' | 'salle' | 'place' | 'dessus' | 'deputes';
+/** À la verticale : plafond masqué, cadré pour tenir tous les sièges. */
+const vueFixe = (nom: NomVue) => nom === 'dessus' || nom === 'deputes';
 /** `haut` : le haut de la caméra, s'il n'est pas la verticale (le Dessus). */
 export interface Cadrage { pos: [number, number, number]; cible: [number, number, number]; fov: number; haut?: [number, number, number] }
 /** Ce que les feuilles couvrent du canevas, en pixels : le cadrage se centre sur le reste. */
@@ -75,7 +76,7 @@ const PI = Math.PI;
  *  (l'ancienne CAM 1). « Ta place » dépend du siège : voir cadrer(). Le décalage dû aux feuilles
  *  (Cadre) s'applique ensuite, sans déformer l'image (setViewOffset). */
 export function cadrage(nom: NomVue, aspect: number): Cadrage {
-  if (nom === 'dessus') return cadrageDessus(aspect, 1, aspect, 1);
+  if (vueFixe(nom)) return cadrageDessus(aspect, 1, aspect, 1, nom === 'deputes' ? DEPUTES : DESSUS);
   const portrait = aspect < 0.9;
   // La tribune : l'ancienne CAM 2 remise face au pupitre ; avec la feuille du bas (moitié basse),
   // le pupitre et le perchoir tombent dans le tiers haut, à l'échelle de la maquette 05.
@@ -93,7 +94,7 @@ const CHAMP_SALLE = { min: 58, max: 78 };
  *  setViewOffset). Les autres vues gardent leur cadrage. */
 export function cadrageAjuste(nom: NomVue, largeur: number, hauteur: number, hauteurCanevas: number, largeurCanevas = largeur): Cadrage {
   const aspect = Math.max(1, largeur) / Math.max(1, hauteur);
-  if (vueFixe(nom)) return cadrageDessus(Math.max(1, largeur), Math.max(1, hauteur), Math.max(1, largeurCanevas), Math.max(1, hauteurCanevas));
+  if (vueFixe(nom)) return cadrageDessus(Math.max(1, largeur), Math.max(1, hauteur), Math.max(1, largeurCanevas), Math.max(1, hauteurCanevas), nom === 'deputes' ? DEPUTES : DESSUS);
   const c = cadrage(nom, aspect);
   if (!(nom === 'salle' && aspect >= 0.9)) return c;
   const champ = Math.min(CHAMP_SALLE.max, Math.max(CHAMP_SALLE.min, 2 * Math.atan(1 / aspect) * (180 / Math.PI)));
@@ -163,7 +164,8 @@ export interface Salle3D {
   orbiter(dLacet: number, dTangage: number): void;
   /** Dans le Dessus, la salle suit le pointeur (écart en pixels du canevas). */
   deplacer(dx: number, dy: number): void;
-  zoomer(f: number): void;
+  /** `vers` : le point du canevas (pixels) qui reste sous les doigts ou la souris, dans la vue des députés. */
+  zoomer(f: number, vers?: { x: number; y: number }): void;
   recentrer(): void;
   detruire(): void;
 }
@@ -894,9 +896,22 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       }
       poserLibre();
     },
-    zoomer(f) {
+    zoomer(f, vers) {
       if (anim) return;
-      if (vueFixe(vueCourante)) { libre.proche = Math.max(0.75, Math.min(2.2, libre.proche / f)); poserLibre(); return; }
+      if (vueFixe(vueCourante)) {
+        const avant = libre.proche;
+        libre.proche = Math.max(0.75, Math.min(2.2, libre.proche / f));
+        if (vers) {
+          // Le mètre par pixel change : la caméra se décale pour garder ce point sous le pointeur.
+          const h = canvas.clientHeight, d0 = cam.pos[1] - DESSUS.yRef;
+          const dm = (2 * Math.tan(rad(cam.fov / 2)) * d0 * (avant / libre.proche - 1)) / Math.max(1, h);
+          const sx = vers.x - canvas.clientWidth / 2, sy = vers.y - h / 2;
+          if (cam.haut[0]) { libre.dz -= sx * dm; libre.dx += sy * dm; } else { libre.dx += sx * dm; libre.dz += sy * dm; }
+          libre.dx = borne(libre.dx, 14); libre.dz = borne(libre.dz, 9);
+        }
+        poserLibre();
+        return;
+      }
       // Aux yeux du personnage, on ne recule pas : le champ de vision se resserre ou s'ouvre.
       if (enPlace()) libre.champ = Math.max(REGARD.champMin - 70, Math.min(70 - REGARD.champMin, libre.champ + (f - 1) * 60));
       else libre.zoom = Math.max(0.55, Math.min(1.25, libre.zoom * f));
@@ -917,7 +932,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   // d'une vue nouvelle (ou du personnage) les compile et fige la page (docs/rapport-perf-30-oct.md).
   const essai = creerPersonnage(APPARENCE_DEFAUT);
   scene.add(essai.groupe); appliquerCam();
-  renderer.compile(scene, camera);
+  // En tâche de fond quand le navigateur le permet : compiler d'un bloc figeait la page de 1 à 3 s.
+  await renderer.compileAsync(scene, camera);
   scene.remove(essai.groupe);
   redimensionner(); renderer.shadowMap.needsUpdate = true; rendre();
   // L'onglet revient au premier plan : une image pour rattraper ce qui a changé.

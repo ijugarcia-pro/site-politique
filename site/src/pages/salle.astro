@@ -1,7 +1,8 @@
 ---
 // La salle (VDEF, capture 09 ; lot V6) : l'Assemblée vue du perchoir. Des repères (toi, ton
-// jumeau, ton opposé, ton député), le panneau « Montrer dans la salle » (bascules, un groupe,
-// trouver un député) et la carte du député touché. Au palier 2 (25 votes tranchés), chaque
+// jumeau, ton opposé, ton député) et le panneau « Montrer dans la salle » (bascules, un groupe,
+// trouver un député). « Voir les députés » passe en vue du dessus, sans menus : la seule où l'on
+// choisit un siège, avec sa carte (décision du 2 nov. 2026). Au palier 2 (25 votes tranchés), chaque
 // siège s'éclaire selon ses votes communs avec toi (intensités, lib/profil.ts) ; avant, un
 // encart dit ce qu'il manque. Tout est calculé dans le navigateur. Sans 3D, l'hémicycle 2D
 // prend le relais (un clic sur un siège donne sa carte) ; au clavier, « Trouver un député ».
@@ -30,10 +31,6 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   <h1 class="visuellement-cache">La salle</h1>
   <section class="panneau" aria-labelledby="titre-montrer" data-panneau-salle>
     <h2 id="titre-montrer" class="titre-panneau">Montrer dans la salle</h2>
-    <div class="mode-salle" role="group" aria-label="Angle de vue" data-mode-salle>
-      <button type="button" aria-pressed="true" data-mode="salle">Perspective</button>
-      <button type="button" aria-pressed="false" data-mode="dessus">Dessus</button>
-    </div>
     <p class="t-legende seuil-jumeau" data-seuil-jumeau hidden></p>
     <div class="bascules" data-bascules>
       <button type="button" class="bascule" aria-pressed="true" data-bascule="jumeau" hidden>Ton jumeau</button>
@@ -59,7 +56,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     </div>
   </section>
 
-  <section class="carte-depute" aria-labelledby="nom-touche" data-carte-depute hidden>
+  <section slot="hors-feuille" class="carte-depute" aria-labelledby="nom-touche" data-carte-depute hidden>
     <div class="carte-haut">
       <div class="carte-titres">
         <h2 id="nom-touche" class="nom-touche" tabindex="-1" data-carte-nom></h2>
@@ -101,7 +98,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     </div>
   </aside>
 
-  <Immersion slot="hors-feuille" consigne="Glisse pour tourner · touche un siège" />
+  <Immersion slot="hors-feuille" consigne="Glisse pour tourner" />
   <script type="application/json" data-donnees-salle set:html={donnees}></script>
 </Base>
 
@@ -116,9 +113,8 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   import { CLE_PERSONNAGE, lireApparence } from '../salle3d/apparence.ts';
 
   const SEUIL_ECLAIREE = PALIERS.find((p) => p.id === 'salle-eclairee')!.seuil;
-  // Perspective ou Dessus (cadrage MVP, R5, lot 6) : gardé en mémoire pendant la visite, jamais dans
-  // le navigateur. Par défaut, la perspective sur ordinateur, le dessus au téléphone.
-  let modeChoisi: 'salle' | 'dessus' | null = null;
+  // Échap ferme la carte épinglée avant de quitter la vue des députés ; une seule écoute par visite.
+  let retirerEchap: (() => void) | null = null;
 
   document.addEventListener('astro:page-load', async () => {
     const brut = document.querySelector('[data-donnees-salle]')?.textContent;
@@ -143,17 +139,11 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     });
     if (!salle) { repli.hidden = false; document.body.classList.add('salle-sans-3d'); }
 
-    const modes = [...document.querySelectorAll<HTMLButtonElement>('[data-mode]')];
-    const poserMode = (m: 'salle' | 'dessus', premier = false) => {
-      for (const b of modes) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
-      // Glissement de 1,4 s entre les deux modes (coupé en mouvement réduit par la scène).
-      salle?.vue(m, premier ? { instant: true } : { duree: 1400 });
-      // Dans le Dessus, la caméra ne tourne pas : pas d'indice « glisse pour tourner ».
-      const indice = document.querySelector<HTMLElement>('[data-indice]');
-      if (indice) indice.hidden = m === 'dessus';
+    // « Voir les députés » (Immersion.astro) : la vue du dessus, sans menus. Sans 3D, on en sort.
+    const voirDeputes = (on: boolean) => {
+      if (document.body.classList.contains('immersion') !== on) document.querySelector<HTMLButtonElement>('[data-immersion]')?.click();
     };
-    poserMode(modeChoisi ?? (matchMedia('(max-width: 900px), (max-height: 560px)').matches ? 'dessus' : 'salle'), true);
-    for (const b of modes) b.addEventListener('click', () => { modeChoisi = b.dataset.mode as 'salle' | 'dessus'; poserMode(modeChoisi); });
+    void salle?.prete.then((s) => { if (!s) voirDeputes(false); });
 
     // Ton personnage : assis sur le siège de ton jumeau à partir du palier 1, sinon il attend
     // au pied de la tribune.
@@ -315,8 +305,8 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
       salle?.selection(i);
       cercles.forEach((c, k) => c.classList.toggle('choisi', k === i));
       annonce.textContent = texte;
-      // Au téléphone, la carte est en haut du tiroir.
-      carte.closest('main')?.scrollTo({ top: 0 });
+      // Un siège se choisit dans la vue des députés : un député trouvé par son nom y mène aussi.
+      if (!document.body.classList.contains('salle-sans-3d')) voirDeputes(true);
       if (focus) $('[data-carte-nom]').focus();
     };
     const survoler = (i: number | null) => {
@@ -334,12 +324,16 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
       salle?.selection(null);
       cercles.forEach((c) => c.classList.remove('choisi'));
     };
-    salle?.surSiege((i) => montrer(i), survoler, { vide: fermer, nom: (i) => sieges[i]?.[1] ?? '' });
+    salle?.surSiege((i) => montrer(i), survoler, fermer);
+    document.addEventListener('vdef:immersion', fermer);
     cercles.forEach((c, i) => c.addEventListener('click', () => montrer(i)));
     fermeture.addEventListener('click', () => { fermer(); $('[data-trouver]').focus(); });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && epingle && carte.isConnected) fermer();
-    });
+    retirerEchap?.();
+    const echap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && epingle) { e.stopPropagation(); fermer(); }
+    };
+    document.addEventListener('keydown', echap, true);
+    retirerEchap = () => { document.removeEventListener('keydown', echap, true); document.removeEventListener('vdef:immersion', fermer); };
     const trouver = $<HTMLInputElement>('[data-trouver]');
     const chercher = () => {
       const q = trouver.value.trim().toLocaleLowerCase('fr');
@@ -351,6 +345,7 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     // Depuis une fiche (« Voir dans la salle ») ou la liste des groupes : #depute=PA… montre son
     // siège et sa carte, #groupe=PO… allume les sièges du groupe.
     const depuisAdresse = /^#(depute|groupe)=(\w+)$/.exec(location.hash);
+    if (location.hash === '#deputes') voirDeputes(true);
     if (depuisAdresse?.[1] === 'depute' && parUid.has(depuisAdresse[2])) {
       montrer(parUid.get(depuisAdresse[2])!);
     } else if (depuisAdresse?.[1] === 'groupe' && groupes[depuisAdresse[2]]) {
@@ -377,15 +372,6 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
     max-height: calc(100% - 88px - var(--marge)); overflow: auto;
   }
   .titre-panneau { font: 700 19px/1.2 var(--police-titre); }
-  /* La bascule Perspective / Dessus : deux segments, le choisi en noir. */
-  .mode-salle { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: var(--pilule); background: var(--surface); }
-  .mode-salle button {
-    min-height: var(--cible); border: 0; border-radius: var(--pilule); background: transparent; color: var(--encre);
-    font: 600 14px/1 var(--police-texte); cursor: pointer;
-  }
-  .mode-salle button[aria-pressed='true'] { background: var(--encre); color: var(--feuille); }
-  .mode-salle button:focus-visible { outline: 3px solid var(--encre); outline-offset: 2px; }
-  :global(.salle-sans-3d) .mode-salle { display: none; }
   .seuil-jumeau[hidden] { display: none; }
   .bascules { display: flex; flex-wrap: wrap; gap: 6px; }
   .bascule {
@@ -408,11 +394,12 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   .repli-2d :global(circle) { cursor: pointer; }
   .repli-2d :global(circle.choisi) { stroke: var(--encre); stroke-width: 5; }
 
-  /* Dans l'espace libre à droite, sous la barre, au-dessus des encarts du bas. */
+  /* En haut à droite de la salle, sur la vue des députés ; sans 3D, sous la barre. */
   .carte-depute {
-    right: var(--marge); top: 88px; width: 300px; padding: 18px; border-radius: 20px;
+    z-index: 6; right: var(--marge); top: 88px; width: 300px; padding: 18px; border-radius: 20px;
     display: flex; flex-direction: column; gap: 10px;
   }
+  :global(body.immersion) .carte-depute { top: var(--marge); }
   .carte-depute[hidden] { display: none; }
   /* Non épinglée, elle ne prend pas la souris : le survol continue dessous. */
   .carte-depute.survol { pointer-events: none; }
@@ -456,14 +443,16 @@ const gris = compo.sieges.map((s) => (s.depute ? '#BDBDBD' : '#FFFFFF'));
   .pastille-intensite.eteinte { background: var(--feuille); box-shadow: inset 0 0 0 2px var(--absent); }
 
   @media (max-width: 900px), (max-height: 560px) {
-    .panneau, .carte-depute, .encart-palier, .encart-vote {
+    .panneau, .encart-palier, .encart-vote {
       position: relative; inset: auto; width: auto; max-height: none; box-shadow: none;
     }
     .panneau { border-radius: 0; padding: 0 16px 12px; flex: 0 0 auto; overflow: visible; }
-    /* Dans le tiroir, la carte passe avant le panneau. */
-    .panneau { order: 1; }
-    .encart-palier, .encart-vote { order: 2; }
-    .carte-depute { margin: 0 16px 12px; border: 1px solid var(--filet); }
+    /* La carte, posée au bas de l'écran. */
+    .carte-depute {
+      position: fixed; inset: auto 0 74px 0; width: auto; padding: 16px 16px 18px; gap: 8px; box-shadow: var(--ombre-feuille);
+      border-radius: var(--rayon-feuille) var(--rayon-feuille) 0 0;
+    }
+    :global(body.immersion) .carte-depute { top: auto; bottom: 0; }
     .encart-palier, .encart-vote { margin: 0 16px 16px; background: var(--surface); box-shadow: none; }
   }
 </style>

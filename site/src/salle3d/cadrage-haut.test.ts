@@ -2,7 +2,9 @@
 // ses proportions ; au téléphone en portrait, la salle est couchée et les sièges sont plus grands.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { cadrageDessus, FORMATS_DEVOILEMENT, positionsDevoilement, siegesDessus } from './cadrage-haut.ts';
+import * as THREE from 'three';
+import { cadrageDessus, DEPUTES, FORMATS_DEVOILEMENT, positionsDevoilement, siegesDessus } from './cadrage-haut.ts';
+import { position, sieges3D } from './geometrie.ts';
 
 for (const [nom, zl, zh, l, h] of [['1 440 × 900 moins la feuille', 936, 826, 1440, 900], ['1 280 × 650 moins la feuille', 776, 576, 1280, 650],
   ['téléphone, tiroir moyen', 390, 400, 390, 844], ['téléphone, tiroir replié', 390, 712, 390, 844],
@@ -36,3 +38,21 @@ test('la tribune est en bas de l\'image, ou à gauche quand la salle est couché
   assert.ok(p.telephone.fauteuil[0] < 0.5, 'tribune à gauche');
   assert.deepEqual(p.ordinateur.zone, [FORMATS_DEVOILEMENT.ordinateur.zone[0] / FORMATS_DEVOILEMENT.ordinateur.image[0], FORMATS_DEVOILEMENT.ordinateur.zone[1] / FORMATS_DEVOILEMENT.ordinateur.image[1]]);
 });
+
+// La vue « Voir les députés » : plein écran, sur toutes les tailles de la matrice (cadrage, § 7).
+for (const [l, h] of [[1280, 600], [1366, 650], [1440, 900], [1536, 730], [1920, 1080], [2560, 1080], [768, 1024], [1024, 768], [360, 640], [390, 844], [412, 915], [844, 390]]) {
+  test(`vue des députés, ${l} × ${h} : les 577 sièges à l'écran, et le plus grands possible`, () => {
+    const c = cadrageDessus(l, h, l, h, DEPUTES);
+    const cam = new THREE.PerspectiveCamera(c.fov, l / h, 0.1, 400);
+    cam.position.set(...c.pos); cam.up.set(...c.haut); cam.lookAt(...c.cible);
+    cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+    let xMax = 0, yMax = 0;
+    for (const s of sieges3D()) {
+      const v = new THREE.Vector3(...position(s, 0.55)).project(cam);
+      assert.ok(Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1, `siège hors de l'écran : ${v.x}, ${v.y}`);
+      xMax = Math.max(xMax, Math.abs(v.x)); yMax = Math.max(yMax, Math.abs(v.y));
+    }
+    // La salle remplit l'écran dans au moins une direction.
+    assert.ok(Math.max(xMax, yMax) > 0.79, `salle trop petite : ${xMax}, ${yMax}`);
+  });
+}

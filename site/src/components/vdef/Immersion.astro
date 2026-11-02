@@ -1,19 +1,29 @@
 ---
-// Le bouton d'immersion (cadrage MVP, R10, lot 5) : « Masquer les menus » cache les feuilles et les
-// barres, pour voir la salle seule ; restent le bouton et les repères. Échap, ou le bouton, en sort.
-// En bas au centre sur ordinateur, en haut à droite au téléphone. L'indice « glisse pour tourner »
-// disparaît au premier geste. Tout vit en mémoire : rien n'est gardé dans le navigateur, et
-// l'immersion s'arrête en changeant de page (<body> est remplacé).
-interface Props { consigne: string; [attr: string]: unknown }
-const { consigne, ...reste } = Astro.props;
+// Le bouton « Voir les députés » (cadrage MVP, R10, lot 5 ; décision du 2 nov. 2026) : il cache les
+// feuilles et les barres et passe la salle en vue du dessus, la seule où l'on choisit un siège ;
+// restent le bouton, les repères et la carte du député. Échap, ou le bouton, en sort. En bas au centre
+// sur ordinateur, en haut à droite au téléphone. Sur une autre page que /salle/ (`lien`), il y mène.
+// L'indice « glisse pour tourner » disparaît au premier geste. Tout vit en mémoire : rien n'est gardé
+// dans le navigateur, et ce mode s'arrête en changeant de page (<body> est remplacé).
+interface Props { consigne: string; lien?: string; [attr: string]: unknown }
+const { consigne, lien, ...reste } = Astro.props;
+const oeil = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle>';
 ---
 <div class="immersion">
   <p class="indice" {...reste} data-indice>{consigne}</p>
-  <button type="button" class="bouton-immersion" data-immersion aria-pressed="false">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-      stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span data-immersion-texte>Masquer les menus</span>
-  </button>
+  {lien ? (
+    <a class="bouton-immersion compact" href={lien}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true" set:html={oeil}></svg>
+      <span>Voir les députés</span>
+    </a>
+  ) : (
+    <button type="button" class="bouton-immersion" data-immersion aria-pressed="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true" set:html={oeil}></svg>
+      <span data-immersion-texte>Voir les députés</span>
+    </button>
+  )}
 </div>
 
 <script>
@@ -28,9 +38,9 @@ const { consigne, ...reste } = Astro.props;
     bouton.addEventListener('click', () => {
       const on = document.body.classList.toggle('immersion');
       bouton.setAttribute('aria-pressed', String(on));
-      texte.textContent = on ? 'Afficher les menus' : 'Masquer les menus';
+      texte.textContent = on ? 'Afficher les menus' : 'Voir les députés';
       bouton.focus();
-      document.dispatchEvent(new Event('vdef:tiroir'));
+      document.dispatchEvent(new CustomEvent('vdef:immersion', { detail: on }));
     });
     document.querySelector('[data-salle-vdef] canvas')?.addEventListener('pointerdown', () => {
       gesteVu = true;
@@ -54,25 +64,25 @@ const { consigne, ...reste } = Astro.props;
     margin: 0; padding: 7px 12px; border-radius: var(--pilule); background: rgba(18, 18, 18, 0.72); color: var(--feuille);
     font: 500 13px/1 var(--police-texte); white-space: nowrap;
   }
-  .indice:global(.vu), .indice[hidden] { display: none; }
+  .indice:global(.vu), .indice[hidden], :global(body.immersion) .indice { display: none; }
   .bouton-immersion {
-    display: inline-flex; align-items: center; gap: 8px; min-height: var(--cible); padding: 0 16px; border: 0;
+    display: inline-flex; align-items: center; gap: 8px; min-height: var(--cible); padding: 0 16px; border: 0; text-decoration: none;
     border-radius: var(--pilule); background: var(--feuille); color: var(--encre);
     font: 600 14px/1 var(--police-texte); white-space: nowrap; cursor: pointer;
     box-shadow: var(--ombre-flottant); pointer-events: auto;
   }
   .bouton-immersion:focus-visible { outline: 3px solid var(--encre); outline-offset: 2px; }
-  /* Peu de place entre les feuilles : l'icône seule (le libellé reste pour les lecteurs d'écran). */
+  /* Ta place : peu de place à côté de sa large feuille, l'icône seule (le libellé reste pour les
+     lecteurs d'écran). */
   @media (max-width: 1200px) {
-    .bouton-immersion { width: var(--cible); justify-content: center; padding: 0; }
-    .bouton-immersion span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .bouton-immersion.compact { width: var(--cible); justify-content: center; padding: 0; }
+    .bouton-immersion.compact span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .indice { display: none; }
   }
   @media (max-width: 900px), (max-height: 560px) {
     /* En haut à droite, sous la pastille du parcours. */
     .immersion { position: fixed; left: auto; right: 12px; bottom: auto; top: 64px; transform: none; align-items: flex-end; }
-    .bouton-immersion { width: var(--cible); justify-content: center; padding: 0; }
-    .bouton-immersion span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    :global(body.immersion) .immersion { top: 12px; }
     .indice { display: none; }
     /* Tiroir ouvert en grand : la salle est presque cachée, le bouton gênerait la feuille. */
     :global(body:has(.sur-salle[data-cran='plein'])) .immersion { display: none; }

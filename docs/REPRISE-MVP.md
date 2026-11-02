@@ -23,16 +23,19 @@ Le MVP est fini quand le parcours « première visite → quiz de 10 votes → t
 | t92 | Nouvelle salle 3D, vue du dessus | Fait, porte G2 franchie | `mvp-salle-def`, local |
 | t89 | 6 · Dessus, survol, carte, sélection | Fait | `mvp-lot-6` et `mvp-lot-6-suite`, local |
 | t90 | 7 · Étiquettes et seuil des 10 votes | Fait | `mvp-lot-7`, local |
-| t91 | 8 · Recette finale | À faire | |
+| t91 | 8 · Recette finale | Livrée, en attente du test de Julien sur son téléphone : `docs/recette-mvp.md` | `mvp-lot-8`, local |
+| t93 | Responsive | À faire, demandée par Julien après le MVP | |
 
-Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6` → `mvp-salle-def` → `mvp-lot-6-suite` → `mvp-lot-7`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
+Les branches sont **empilées** : `main` → `mvp-lot-1` → … → `mvp-lot-6` → `mvp-salle-def` → `mvp-lot-6-suite` → `mvp-lot-7` → `mvp-lot-8`. Continuer dans la même pile, et ne rien pousser ni fusionner sans l'accord de Julien.
 
 `git status` montre trois restes sans importance, à ne pas commiter : `.claude/launch.json` et les anciens prompts `docs/PROMPT-JUMEAU-CAMERAS.md` et `docs/PROMPT-VDEF.local.md`.
+
+> **État au 3 nov. 2026.** Ce document a servi à reprendre le 2 nov. Depuis : porte G2 validée, lots 6, 7 et 8 livrés, « Voir les députés » et salle allégée. Pour la suite, lire d'abord `docs/recette-mvp.md` (ce qui reste) et la fin de `docs/decisions.md`. Le serveur local (port 4321) sert `site/dist` : reconstruire avec `npx astro build` depuis `site/` pour que Julien voie un changement.
 
 ## Les décisions de Julien (déjà prises, à ne pas rouvrir)
 
 - **Porte G1** : le dévoilement se fait sur une image fixe, sièges peints en 2D (A). Aucune 3D ni three sur le quiz, les lots, la séance et le verdict.
-- **Q2** : `/salle/` s'ouvre en perspective sur ordinateur, en Dessus au téléphone et sous 900 px.
+- **Q2** : remplacée le 2 nov. : `/salle/` est en perspective partout, « Voir les députés » passe en vue du dessus.
 - **Q3** : à égalité parfaite, l'opposé est pris dans un autre groupe que le jumeau, avant l'ordre alphabétique. Aucun classement ne change.
 - **Q4** : sous 10 votes, aucun jumeau ni opposé **nulle part**, avec la phrase « À 10 votes, ton jumeau et ton opposé apparaissent · N / 10 ».
 - **Q5** : Julien n'a pas répondu ; la recommandation du cadrage a été suivie (la marche du personnage reste, la 3D se charge à la demande, repli statique). Lui signaler en recette.

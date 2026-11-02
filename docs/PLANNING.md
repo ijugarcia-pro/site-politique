@@ -122,7 +122,8 @@ Légende : 🤖 Claude Code · 👤 Julien · 🤝 ensemble · ◆ porte (décis
 - [x] t92 🤝 ◆ Nouvelle salle 3D qui favorise la vue du dessus *(fait le 2 nov. 2026, branche `mvp-salle-def`, empilée sur `mvp-lot-6` ; porte G2 validée par Julien le 2 nov.)*
 - [x] t89 🤖 Lot 6 · La salle : Dessus, survol, carte, sélection *(fait le 2 nov. 2026, branche `mvp-lot-6-suite`, empilée sur `mvp-salle-def`)*
 - [x] t90 🤖 Lot 7 · Étiquettes sans collision et seuil des 10 votes *(fait le 2 nov. 2026, branche `mvp-lot-7`, empilée sur `mvp-lot-6-suite` ; Q3 et Q4 : oui, partout)*
-- [ ] t91 🤖 Lot 8 · Recette finale
+- [ ] t91 🤖 Lot 8 · Recette finale *(livrée le 3 nov. 2026, branche `mvp-lot-8` : docs/recette-mvp.md ; **en attente du test de Julien sur son téléphone**, critère de fin du MVP)*
+- [ ] t93 🤖 Responsive *(demandée par Julien le 2 nov. 2026, après le MVP ; fiche à écrire avec lui)*
 
 ### Phase 3 — La séance de la semaine (S9–S10, 30 nov. → 13 déc.)
 - [x] t23 🤖 Agenda et sélection automatique des 3 votes *(livrée le 9 oct. 2026, en ligne depuis le 12 oct. ; fait le 19 oct. 2026 : la séance de la semaine du 19 oct. a été choisie et figée par un passage programmé, sans intervention)*
@@ -580,6 +581,7 @@ Les fiches (À faire, livrable, critère de fin, Ne pas faire) sont les lots 0 �
 - **Porte G2 (2 nov.) :** non franchie. Julien refuse ce rendu (marbre vers le vide, trop loin des sièges), puis le voile noir essayé ensuite (branche `mvp-voile-rejete`). Il fait concevoir une nouvelle salle avec Claude Design : t92. Q2, Q3 et Q4 sont tranchées (docs/decisions.md). Reprise : docs/REPRISE-MVP.md.
 - **Réalisé (2 nov. 2026, suite) :** `salle3d/visee.ts` (siège visé en 2D, sans lancer de rayon, testé), siège survolé en blanc avec un anneau fin, siège choisi à l'anneau plein, carte au survol à droite ou dans le tiroir, épinglée au clic, fermée par un clic à côté, Échap ou la croix ; annonce temporisée à 150 ms ; nom sur l'anneau en immersion et tiroir replié ; le doigt vise dans 22 px. Contrôle : `scripts/survol.mjs`. Survol : 0,1 ms en médiane, 2,9 ms au plus, à CPU ×4.
 - **t90, réalisé (2 nov. 2026) :** `salle3d/etiquettes.ts` (pur, 200 tirages dans deux cadres), `etiquettes-dom.ts`, `libelle.ts` ; seuil des 10 votes par `jumeauVisible` (`lib/paliers.ts`) sur toutes les pages qui lisent le jumeau, gardé par `lib/seuil-jumeau.test.ts` et `scripts/seuil-jumeau.mjs` ; départage de l'opposé (`lib/profil.ts`, testé). Captures de jumeau et opposé adjacents : `scripts/etiquettes.mjs`. Inventaire réenregistré (`data-seuil-jumeau`, 0,3 à 0,6 Ko de JavaScript initial sur les lots 6 et 7). Tribune et stories : rien à changer pour la tribune, les stories reçoivent un jumeau nul sous le seuil.
+- **Après G2 (2 et 3 nov.) :** « Voir les députés » remplace la bascule Perspective / Dessus, le choix d'un siège n'existe plus qu'en vue du dessus (docs/decisions.md) ; salle allégée (`scripts/audit-salle.mjs`) ; recette : `scripts/recette.mjs`, docs/recette-mvp.md.
 - **t89, écarts :** les flèches déplacent la salle en Dessus, pas la sélection (P2 du cadrage, facultatif) ; la bascule dure 1,4 s (maquette de Claude Design), pas 600 ms ou moins (R5). Pincement et toucher vérifiés par des événements simulés à 390 × 844, pas sur un vrai téléphone.
 
 ## 8. Phase 3 — La séance de la semaine (S9–S10)

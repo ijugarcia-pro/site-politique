@@ -180,3 +180,25 @@ Les deux prototypes sont décrits dans `docs/decisions.md` (31 oct.) et `site/sr
 **Les 577 sièges sont visibles** dans A et dans B, à 1 440 × 900, 1 280 × 650 et 390 × 844. Ce n'est pas le cas aujourd'hui, où la vue « La salle » coupe les côtés. Planches : `docs/design-vdef/planches/G1/`.
 
 **Lecture** : A tient tous les critères de R1 (aucun WebGL, aucun mouvement, onde ≥ 30 images / s, JavaScript initial inchangé). B les tient pendant les questions et après le premier vote, mais son premier dévoilement fige la page 2 à 3 s, le temps d'ouvrir la 3D : c'est le point dur annoncé par le cadrage (« au moment du premier vote, quand la patience de l'utilisateur est la plus faible »). Les couleurs de B sont aussi moins franches : le velours rouge teinte le bleu vers le lavande. A a, en revanche, l'aspect d'une maquette vue de haut, et l'image ne suit pas la caméra : elle est posée telle quelle dans la zone libre.
+
+## Lot 3 · le dévoilement A généralisé (31 octobre 2026, t86)
+
+Porte G1 : Julien a retenu A. Le quiz, les lots, la séance et le verdict se dévoilent sur l'image fixe. Mesures sur le code final : même outil, parcours complet et 3 votes du quiz, médiane de 3 passages à CPU ×4, plus un passage à ×1.
+
+| Mesure (CPU ×4) | Lot 1 (avant) | Lot 3 | Seuil |
+| --- | --- | --- | --- |
+| Tâches longues du parcours (6 navigations) | 132 ms | 120 à 201 ms | ≤ 600 ms |
+| Plus longue tâche, par navigation | 64 à 82 ms | 61 à 93 ms | ≤ 100 ms |
+| `/verdict/` : tâches longues à l'arrivée | 0 ms | 0 ms (152 à 184 ms avant le dernier correctif, voir plus bas) | ≤ 100 ms |
+| Plus longue image pendant une navigation | 100 à 133 ms | 83 à 150 ms | ≤ 200 ms |
+| Révélation : clic → premier siège coloré | glisse de 1,6 s | 49 à 57 ms, puis 8 à 14 ms | — |
+| Révélation : tâches longues | 107 ms | 0 à 58 ms | ≤ 100 ms |
+| Onde | 27-42 images / s | 60 images / s | ≥ 30 |
+| WebGL sur les pages de vote | oui | **aucun** (quiz et verdict, aux 3 tailles) | aucun |
+| JavaScript chargé sur le quiz | 611 Ko | **48 Ko** | — |
+
+À ×1 : aucune tâche longue sur le parcours, clic → page échangée en 18 ms, révélation en 24 ms puis 11-12 ms. L'image figée de 550 à 650 ms à la glisse vers `/ta-place/` au palier 0 (lot 1) est toujours là (567 ms) : elle reste à traiter.
+
+**Correctif trouvé par la mesure** : lire la couleur du coin de l'image fixe (`getImageData`) à chaque dévoilement forçait une relecture depuis la carte graphique ; à l'arrivée sur `/verdict/`, cela faisait une tâche de 152 à 184 ms à ×4. La couleur est maintenant fixée (`FOND_IMAGE`, relevée une fois sur l'image), ce qui a aussi réduit le premier dévoilement du quiz de 136-142 à 49-57 ms.
+
+**« Ta place est prête »** (10e réponse du quiz) : la 3D s'ouvre à ce moment-là seulement (vérifié : la salle est « en attente » pendant les 10 questions, « prête » après « Voir ma place », personnage assis et repère posé). Avec `?qualite=2`, elle ne s'ouvre pas : l'image du dernier dévoilement reste, avec le repère sur la place.

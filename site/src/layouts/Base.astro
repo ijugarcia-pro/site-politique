@@ -185,6 +185,9 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
   .gabarit-salle .scene[data-scene='tribune'] .fond {
     position: absolute; left: 0; top: -36.7%; height: 126.7%; object-position: 50% 50%;
   }
+  /* Les pages de vote (mode focus) posent la question sur cette image, sans 3D ni feuille du bas
+     (cadrage MVP, lot 3) : elle remplit tout l'écran. */
+  .gabarit-salle:global(.focus) .scene[data-scene='tribune'] .fond { top: 0; height: 100%; object-position: 50% 35%; }
 
   /* Lecture : la salle floutée et fixe, une feuille pleine page qui défile. */
   .gabarit-lecture .scene { position: fixed; }

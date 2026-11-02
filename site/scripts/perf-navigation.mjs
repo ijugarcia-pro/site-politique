@@ -36,10 +36,9 @@ const PARCOURS = ['/', '/quiz/', '/salle/', '/ta-place/', '/verdict/', '/tes-rep
 // Depuis le lot 1, « normal » laisse le gouverneur de qualité choisir le palier ; q0 et q1 le
 // forcent (salle3d/pilote.ts, qualiteForcee), pour comparer à rendu égal.
 const PERF = { normal: 'perf=1', instant: 'perf=instant', leger: 'perf=leger', 'instant-leger': 'perf=instant&perf=leger',
-  'sans-webgl': 'perf=1', q0: 'perf=1&qualite=0', q1: 'perf=1&qualite=1',
-  // Lot 2 : les prototypes du dévoilement (lib/revelation.ts), sur le quiz.
-  a: 'perf=1&revelation=a', b: 'perf=1&revelation=b' };
-// --quiz-seul : seulement les votes du quiz (lot 2), sans le parcours ni le survol.
+  'sans-webgl': 'perf=1', q0: 'perf=1&qualite=0', q1: 'perf=1&qualite=1' };
+// --quiz-seul : seulement les votes du quiz (lots 2 et 3 : le dévoilement), sans le parcours ni le survol.
+// Les prototypes A et B du lot 2 (?revelation=a|b) ne sont plus là : A est devenu le dévoilement.
 const QUIZ_SEUL = args.includes('--quiz-seul');
 
 const serveur = await servir(resolve(dossier ?? join(SITE, 'dist')));
@@ -200,8 +199,7 @@ async function variante(nom) {
   if (nom !== 'sans-webgl') {
     await page.evaluate(preparer, null);
     await page.goto(`${base}/quiz/?${PERF[nom]}`, { waitUntil: 'load' });
-    // Les prototypes posent la question sans 3D : rien à attendre.
-    if (nom !== 'a' && nom !== 'b') await attendreSalle(page);
+    // Le quiz pose ses questions sans 3D (lib/revelation.ts) : rien à attendre.
     await page.waitForTimeout(3000);
     for (let k = 0; k < 3; k++) {
       trace(nom, "vote", k + 1);
@@ -211,8 +209,7 @@ async function variante(nom) {
       await page.waitForTimeout(300);
       let t0 = await maintenant(page);
       await page.click('[data-continuer]');
-      // B ouvre la 3D au premier dévoilement : plus long.
-      await page.waitForTimeout(nom === 'b' && k === 0 ? 12000 : 3500);
+      await page.waitForTimeout(3500);
       sortie.quiz.push({ geste: `révélation ${k + 1}`, ...(await tranche(page, t0, await maintenant(page))) });
       const suite = await page.$('[data-suivant]:visible');
       if (!suite) break;

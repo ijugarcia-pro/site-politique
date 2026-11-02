@@ -1,7 +1,7 @@
 // Le déroulé commun au quiz, aux lots et à la séance (components/vdef/Trancher.astro ; VDEF, lot
 // V5) : poser une question sur la tribune, marquer la réponse, proposer la suite, révéler le
-// vrai vote dans la salle (vue « La salle », voyants aux couleurs du vote), annoncer un palier
-// franchi une seule fois. Tout est calculé dans le navigateur ; les réponses y restent
+// vrai vote (lib/revelation.ts : l'image fixe de la vue haute, sièges peints aux couleurs du vote,
+// sans 3D ; cadrage MVP, lot 3), annoncer un palier franchi une seule fois. Tout est calculé dans le navigateur ; les réponses y restent
 // (lib/navigateur.ts). La page décide de l'enchaînement et de l'écran de fin.
 import { marquerPaliersVus, paliersVus, reponses as mesReponses } from './navigateur.ts';
 import { paliersAAnnoncer, prochainPalier, votesTranches } from './paliers.ts';
@@ -46,22 +46,17 @@ export interface Options {
   mot?: string;
   /** Le libellé du bouton de la révélation après la question i. */
   libelleSuivant: (i: number) => string;
-  /** Un prototype du dévoilement léger (lot 2 du cadrage MVP, lib/revelation.ts ; quiz seulement). */
-  revelation?: 'a' | 'b';
 }
 
-export function trancher({ rang, mot = 'Vote', libelleSuivant, revelation: proto }: Options) {
+export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
   const { questions, revelation: positions } = JSON.parse($('[data-donnees-trancher]').textContent!) as
     { questions: QuestionTrancher[]; revelation?: PositionsRevelation };
   const racineSalle = document.querySelector<HTMLElement>('[data-salle-vdef]');
   const salle: Pilote | null = racineSalle ? salle3D(racineSalle) : null;
-  // Sans 3D (pas de WebGL, économie de données…), la révélation montre l'hémicycle 2D.
-  let sans3D = !salle;
-  salle?.prete.then((s) => { sans3D = !s; });
   const place = rang ?? ((i: number) => ({ n: i, total: questions.length }));
-  // Les prototypes : la question sur l'image fixe de la tribune, sans 3D (chargés à la demande).
-  const prototype = proto ? import('./revelation.ts') : null;
-  if (proto) salle?.actif(false);
+  // Le dévoilement, chargé à la demande : la salle 3D reste à l'arrêt sur les pages de vote.
+  const devoilement = import('./revelation.ts');
+  salle?.actif(false);
 
   const montrer = (ecran: string) => {
     for (const e of document.querySelectorAll<HTMLElement>('[data-trancher] [data-ecran]')) {
@@ -104,10 +99,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant, revelation: proto
   const poser = (i: number) => {
     const q = questions[i];
     montrer('question');
-    salle?.voyants([]);
-    salle?.reperes([]);
-    if (prototype) void prototype.then((m) => m.question(salle));
-    else salle?.vue('tribune');
+    void devoilement.then((m) => m.question(salle));
     // Le repère de lieu ne dit plus que la date d'un vote à venir (cadrage MVP, R1).
     lieu(q.attente ? `La tribune · ${q.date.replace(/^Ils votent /, '')}` : null);
     pastille('[data-theme]', q.theme);
@@ -192,16 +184,14 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant, revelation: proto
     const q = questions[i];
     montrer('revelation');
     lieu(null);
-    const voyants = [...q.sieges].map((l) => VOYANTS[l] ?? null);
-    if (prototype) void prototype.then((m) => m.reveler(proto!, salle, q.sieges, positions));
-    else { salle?.vue('salle'); salle?.onde(voyants, 1100); }
-    // Le repli 2D (sans WebGL) ; le prototype A n'en a pas besoin.
+    // L'hémicycle 2D seulement si l'image fixe ne se charge pas.
     const repli = $('[data-repli-2d]');
-    const repli2d = sans3D && proto !== 'a';
-    repli.hidden = !repli2d;
-    if (repli2d) {
+    repli.hidden = true;
+    void devoilement.then((m) => m.reveler(salle, q.sieges, positions)).then((ok) => {
+      if (ok) return;
+      repli.hidden = false;
       repli.querySelectorAll<SVGCircleElement>('circle:not(.marque)').forEach((c, k) => c.setAttribute('fill', REPLI[q.sieges[k]] ?? '#E7E7E7'));
-    }
+    });
     pastille('[data-rv-theme]', q.theme);
     pastille('[data-rv-date]', q.date);
     $('[data-rv-question]').textContent = q.titre;
@@ -274,5 +264,5 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant, revelation: proto
     progression(segments, segments, libelle);
   };
 
-  return { questions, salle, sans3D: () => sans3D, poser, repondu, reveler, finir, progression, annoncer, montrer };
+  return { questions, salle, devoilement, positions, poser, repondu, reveler, finir, progression, annoncer, montrer };
 }

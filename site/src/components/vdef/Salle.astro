@@ -81,9 +81,6 @@
     opacity: 0; transition: opacity 600ms ease; touch-action: pan-y;
   }
   .salle-vdef[data-salle3d-etat='prete'] canvas { opacity: 1; cursor: grab; }
-  /* Une question posée sur l'image fixe (prototype B du dévoilement, lib/revelation.ts) : la salle
-     s'efface en fondu, 250 ms. */
-  .salle-vdef.arret canvas, .salle-vdef[data-salle3d-etat='prete'].arret canvas { opacity: 0; transition-duration: 250ms; }
   .salle-vdef.saisie canvas { cursor: grabbing; }
   .salle-vdef.sieges-actifs.sur-siege:not(.saisie) canvas { cursor: pointer; }
   @media (prefers-reduced-motion: reduce) { canvas { transition: none; } }

@@ -67,8 +67,6 @@ export interface RepereSalle {
 
 export interface Pilote {
   voyants(couleurs: (string | null)[]): void;
-  /** Les voyants en onde (verdict) ; en mouvement réduit, d'un coup. */
-  onde(couleurs: (string | null)[], duree?: number): void;
   /** `navigation` : un changement de page (scene.ts, vue). */
   vue(nom: NomVue, opt?: { instant?: boolean; navigation?: boolean }): void;
   /** Faux sur une page « lecture » : la salle, cachée, ne se charge pas et ne rend rien. */
@@ -345,7 +343,6 @@ function creerPilote(racine: HTMLElement): Pilote {
 
   return {
     voyants: (c) => faire((s) => s.voyants(c)),
-    onde: (c, duree) => faire((s) => { void s.voyantsEnOnde(c, duree); }),
     vue: (nom, opt) => {
       racine.dataset.vue = nom;
       arreter();

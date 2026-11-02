@@ -1,6 +1,7 @@
 ---
-// Le verdict de la séance de la semaine (t25 ; VDEF, lot V5 ; maquette 08) : la salle vue du
-// perchoir, aux couleurs du vote (voyants et sièges), le repère « Toi » sur ta place ; la feuille
+// Le verdict de la séance de la semaine (t25 ; VDEF, lot V5 ; maquette 08) : la salle aux couleurs
+// du vote, sur l'image fixe de la vue haute, sans 3D (lib/revelation.ts ; cadrage MVP, lot 3), le
+// repère « Toi » sur ta place ; la feuille
 // de droite : l'issue en grand, « il aurait suffi que N députés changent d'avis », la barre et
 // les pastilles, toi / ton jumeau / ton député, ton pronostic et ta voix de 578e, « Comprendre ce
 // vote » et « Verdict suivant ». La logique ne change pas : le verdict du matin (décision de t10),
@@ -15,6 +16,7 @@ import { avancementSeance, composition, lienVote, quandVote, questionSeance, scr
   voteJuge } from '../lib/donnees.ts';
 import { SIEGES } from '../lib/hemicycle.ts';
 import { verdict } from '../lib/votes.ts';
+import { positionsDevoilement } from '../salle3d/cadrage-haut.ts';
 
 const sem = semaine();
 const compo = composition();
@@ -41,7 +43,7 @@ const verdicts = seance.flatMap((v) => {
 const attendus = sem.votes.filter((v) => v.type === 'annonce' && v.statut === 'à venir');
 const etape = avancementSeance(sem);
 const donnees = JSON.stringify({
-  lundi: sem.lundi, verdicts, sieges: compo.sieges.map((s) => s.depute ?? null),
+  lundi: sem.lundi, verdicts, sieges: compo.sieges.map((s) => s.depute ?? null), revelation: positionsDevoilement(),
 }).replace(/</g, '\\u003c');
 const eteints = Array.from({ length: SIEGES }, () => '#E7E7E7');
 const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
@@ -133,7 +135,7 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   import { profil, type Matrice } from '../lib/profil.ts';
   import { donnee } from '../lib/matrice-cache.ts';
   import { etatSeance } from '../lib/seances.ts';
-  import { VOYANTS } from '../lib/trancher.ts';
+  import type { PositionsRevelation } from '../lib/revelation.ts';
   import { voix578 } from '../lib/votes.ts';
   import { salle3D } from '../salle3d/pilote.ts';
 
@@ -149,11 +151,13 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   document.addEventListener('astro:page-load', () => {
     const brut = document.querySelector('[data-donnees-verdict]')?.textContent;
     if (!brut) return;
-    const { lundi, verdicts, sieges } = JSON.parse(brut) as { lundi: string; verdicts: Verdict[]; sieges: (string | null)[] };
+    const { lundi, verdicts, sieges, revelation } = JSON.parse(brut) as { lundi: string; verdicts: Verdict[];
+      sieges: (string | null)[]; revelation: PositionsRevelation };
+    // La salle 3D reste à l'arrêt : le verdict se montre sur l'image fixe (chargée à la demande).
     const racineSalle = document.querySelector<HTMLElement>('[data-salle-vdef]');
     const salle = racineSalle ? salle3D(racineSalle) : null;
-    let sans3D = !salle;
-    salle?.prete.then((s) => { sans3D = !s; });
+    salle?.actif(false);
+    const devoilement = import('../lib/revelation.ts');
     const seance = etatSeance(lundi);
     const mes = Object.fromEntries(Object.entries(reponses()).map(([k, r]) => [k, r.v]));
     const monDepute = deputeChoisi();
@@ -186,13 +190,14 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       if (libelle) libelle.textContent = `Verdict ${k + 1} sur ${total}`;
       document.querySelectorAll<HTMLElement>('[data-focus-segment]').forEach((s, i) => s.classList.toggle('plein', i <= k));
       const cache = html.classList.contains('verdict-cache');
-      const couleurs = cache ? [] : [...v.sieges].map((l) => VOYANTS[l] ?? null);
-      if (onde) salle?.onde(couleurs, 1100); else salle?.voyants(couleurs);
+      // L'hémicycle 2D seulement si l'image fixe ne se charge pas.
       const repli = document.querySelector<HTMLElement>(`[data-verdict="${k}"] [data-repli-2d]`);
-      if (repli) {
-        repli.hidden = !sans3D || cache;
+      if (repli) repli.hidden = true;
+      void devoilement.then((d) => d.reveler(salle, cache ? '' : v.sieges, revelation, { onde })).then((ok) => {
+        if (ok || !repli || cache) return;
+        repli.hidden = false;
         repli.querySelectorAll<SVGCircleElement>('circle:not(.marque)').forEach((c, i) => c.setAttribute('fill', REPLI[v.sieges[i]] ?? '#E7E7E7'));
-      }
+      });
       remplir(k);
     };
 
@@ -226,8 +231,8 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       // Le repère « Toi » sur ta place (le siège de ton jumeau, à partir du palier 1), avec ton vote.
       const n = votesTranches(mes);
       const place = jumeau && palierAtteint(n) ? sieges.indexOf(jumeau.ligne.u) : -1;
-      salle?.reperes(place >= 0 && !html.classList.contains('verdict-cache')
-        ? [{ i: place, libelle: a ? `Toi · ${a}` : 'Toi', toi: true }] : []);
+      const toi = place >= 0 && !html.classList.contains('verdict-cache') ? [{ i: place, libelle: a ? `Toi · ${a}` : 'Toi' }] : [];
+      void devoilement.then((d) => d.poserReperes(toi));
     };
 
     for (const b of document.querySelectorAll<HTMLElement>('[data-suivant]')) {

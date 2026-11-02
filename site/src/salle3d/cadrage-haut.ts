@@ -2,10 +2,11 @@
 // la salle vue de haut, derrière la tribune, plafond masqué, les 577 sièges visibles. Le point de
 // vue est fixe ; le champ se calcule pour que tous les sièges tiennent dans la zone visible (sa
 // largeur sur sa hauteur), avec une marge de 4 %. Partagé par la 3D (scene.ts, vue « haute ») et
-// par le build (projection.ts, sièges posés sur l'image fixe du prototype A). Le cadrage
+// par le build (positionsDevoilement, sièges posés sur l'image fixe du dévoilement). Le cadrage
 // « ajusté » à toutes les tailles d'écran viendra au lot 4.
 import * as THREE from 'three';
-import { position, sieges3D } from './geometrie.ts';
+import { FAUTEUIL_578, position, sieges3D } from './geometrie.ts';
+import { delaiOnde } from '../lib/hemicycle.ts';
 
 /** Au-dessus de la tribune, à 42 m (au-dessus de la coupole, masquée), regard vers le milieu des gradins. */
 export const VUE_HAUTE = { pos: [0, 42, -10] as [number, number, number], cible: [0, 0, 9.5] as [number, number, number] };
@@ -68,4 +69,22 @@ export function siegesHaut(aspect: number): { x: number; y: number; r: number; r
     w.set(x + 0.3 * Math.cos(s.th), y, z + 0.3 * Math.sin(s.th)).project(c);
     return { x: (v.x + 1) / 2, y: (1 - v.y) / 2, r: Math.hypot(w.x - v.x, (w.y - v.y) / aspect) / 2, rang: s.rang };
   });
+}
+
+/** Où tombent les sièges sur l'image fixe du dévoilement, au build (Trancher.astro, verdict.astro) :
+ *  pour chaque siège [x, y, rayon, délai de l'onde en ms], dans les proportions de l'image
+ *  d'ordinateur (1,2) et de téléphone (1,3) (scripts/images-fixes.mjs) ; plus le 578e fauteuil
+ *  (le repère « Ta place t'attend »). L'onde va du rang intérieur vers l'extérieur, avec un aléa
+ *  tiré du numéro du siège (lib/hemicycle.ts, delaiOnde). */
+export function positionsDevoilement() {
+  const poser = (aspect: number) => {
+    const c = cameraHaute(champHaut(aspect), aspect);
+    const f = new THREE.Vector3(FAUTEUIL_578.x, FAUTEUIL_578.y + 0.9, FAUTEUIL_578.z).project(c);
+    return {
+      sieges: siegesHaut(aspect).map((s, k) => [+s.x.toFixed(4), +s.y.toFixed(4), +s.r.toFixed(4),
+        delaiOnde(s.rang, k)] as [number, number, number, number]),
+      fauteuil: [+((f.x + 1) / 2).toFixed(4), +((1 - f.y) / 2).toFixed(4)] as [number, number],
+    };
+  };
+  return { ordinateur: poser(1.2), telephone: poser(1.3) };
 }

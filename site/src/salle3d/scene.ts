@@ -125,8 +125,6 @@ export interface Salle3D {
   asseoir(i: number | null, opt?: { marcher?: boolean }): Promise<void>;
   /** Appelée après chaque image : la page y repositionne ses repères (projeter). */
   surRendu: (() => void) | null;
-  /** Les voyants s'allument en onde, du rang intérieur vers l'extérieur (R1). */
-  voyantsEnOnde(couleurs: (string | null)[], duree?: number): Promise<void>;
   /** La caméra libre, bornée (radians ; dans « Ta place », la tête tourne sans bouger) ;
    *  zoomer : recul, ou champ de vision dans « Ta place » ; recentrer revient à la vue en cours. */
   orbiter(dLacet: number, dTangage: number): void;
@@ -597,7 +595,6 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
   let cadre: Cadre = {};
   let vueCourante: NomVue = 'salle';
   let anim: Tween | null = null;
-  let onde: { finir(): void } | null = null;
   let demande = false;
   let surRendu: (() => void) | null = null;
   // La caméra libre : un écart borné à la vue en cours (lacet, tangage, recul).
@@ -703,7 +700,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
     actif(on) {
       if (on === enService) return;
       enService = on;
-      if (!on) { anim?.finir(); onde?.finir(); return; }
+      if (!on) { anim?.finir(); return; }
       redimensionner(); demander();
     },
     qualite(p) { if (p === palier) return; palier = p; redimensionner(); demander(); },
@@ -781,9 +778,8 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
         return touche?.instanceId ?? null;
       });
     },
-    terminer() { anim?.finir(); onde?.finir(); marche?.finir(); },
+    terminer() { anim?.finir(); marche?.finir(); },
     voyants(couleurs) {
-      onde?.finir();
       const c = new THREE.Color();
       for (let k = 0; k < n; k++) {
         const v = couleurs[k] ?? null;
@@ -796,43 +792,6 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       const c = new THREE.Color();
       for (let k = 0; k < n; k++) { const v = couleurs[k] ?? null; if (v) { couleurExacte(v, c); teinter(k, c); } else teinter(k, null); }
       teintes.needsUpdate = true; demander();
-    },
-    voyantsEnOnde(couleurs, duree = 1000) {
-      if (opt.mouvementReduit) { salle.voyants(couleurs); return Promise.resolve(); }
-      onde?.finir();
-      salle.voyants([]);
-      // Du rang intérieur vers l'extérieur, avec un aléa tiré du numéro du siège (lib/hemicycle.ts,
-      // delaiOnde) : jamais un balayage de gauche à droite.
-      const delais = sieges.map((s, k) => s.rang * 55 + (((k + 1) * 2654435761) >>> 0) % 71);
-      const max = Math.max(...delais);
-      const echelle = Math.max(1, duree - 200) / max;
-      const allume = new Array(n).fill(false);
-      const c = new THREE.Color();
-      const debut = performance.now();
-      let fini = false;
-      let resoudre: () => void = () => {};
-      const promesse = new Promise<void>((r) => { resoudre = r; })
-        .then(() => { if (perf.marques) performance.measure('salle:onde', { start: debut, end: performance.now() }); });
-      const pas = (t: number) => {
-        let change = false;
-        for (let k = 0; k < n; k++) {
-          if (allume[k] || delais[k] * echelle > t) continue;
-          allume[k] = true; change = true;
-          const v = couleurs[k] ?? null; allumes[k] = !!v;
-          if (v) { couleurExacte(v, c); I.voyant.setColorAt(k, c); I.lueur.setColorAt(k, c); teinter(k, c); }
-        }
-        if (change) { I.voyant.instanceColor!.needsUpdate = true; I.lueur.instanceColor!.needsUpdate = true; teintes.needsUpdate = true; poserVoyants(); rendre(); }
-      };
-      const image = () => {
-        if (fini) return;
-        const t = performance.now() - debut;
-        pas(t);
-        if (t >= duree) { fini = true; onde = null; resoudre(); return; }
-        requestAnimationFrame(image);
-      };
-      onde = { finir: () => { if (fini) return; pas(Infinity); fini = true; onde = null; resoudre(); } };
-      requestAnimationFrame(image);
-      return promesse;
     },
     personnage(a) {
       // Chaque page le redemande : le même personnage n'est pas reconstruit.
@@ -901,7 +860,7 @@ export async function creer(canvas: HTMLCanvasElement, opt: OptionsScene = {}): 
       return points.map((p) => { const v = new THREE.Vector3(...p).project(camera); return { x: (v.x + 1) / 2, y: (1 - v.y) / 2, devant: v.z < 1 }; });
     },
     positionSiege: (i, dy = 0) => (i < 0 ? [FAUTEUIL_578.x, FAUTEUIL_578.y + 0.9 + dy, FAUTEUIL_578.z] : position(sieges[i], dy)),
-    detruire() { anim?.arreter(); onde?.finir(); renderer.dispose(); pmrem.dispose(); },
+    detruire() { anim?.arreter(); renderer.dispose(); pmrem.dispose(); },
   };
 
   const c0 = cadrer('salle', canvas.clientWidth / Math.max(1, canvas.clientHeight));

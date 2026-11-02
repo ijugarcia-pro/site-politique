@@ -124,7 +124,8 @@ const donnees = JSON.stringify({
       sauver();
       t.finir('fin');
       t.annoncer($('[data-annonce-fin]'), hors);
-      t.salle?.vue('tribune');
+      // Retour à l'image fixe de la tribune, sans 3D (lib/revelation.ts).
+      void t.devoilement.then((d) => d.question(t.salle));
       const enAttente = questions.some((q, k) => q.attente && cles[k] in etat.reponses);
       $('[data-fin-texte]').textContent = enAttente && premier && verdict
         ? `${premier.quand.charAt(0).toUpperCase()}${premier.quand.slice(1)}, les 577 députés votent à leur tour. Le verdict arrive ${verdict.jour} matin, dès que l’Assemblée publie le scrutin.`

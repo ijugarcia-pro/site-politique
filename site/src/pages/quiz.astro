@@ -27,7 +27,7 @@ const donnees = JSON.stringify({
 <Base titre="Le quiz d'entrée" fond="tribune" vueSalle="tribune"
   focus={{ quitter: '/', total: cartes.length, libelle: `Question 1 sur ${cartes.length}` }}
   description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
-  <Trancher cartes={cartes} revelationHaute>
+  <Trancher cartes={cartes}>
     <div class="ecran fin" slot="fin" data-ecran="resultat" hidden>
       <span class="annonce-palier" data-annonce-fin hidden></span>
       <h1 class="t-feuille" tabindex="-1" data-titre-resultat>Ta place est prête.</h1>
@@ -88,9 +88,7 @@ const donnees = JSON.stringify({
     const { sieges, reperes, lots: nLots, horsMatrice } = JSON.parse(brut) as { sieges: (string | null)[];
       reperes: ([number, number] | null)[]; lots: number; horsMatrice: string[] };
     const hors = new Set(horsMatrice);
-    // ?revelation=a|b : les prototypes du dévoilement léger (lot 2 du cadrage MVP, porte G1).
-    const t = trancher({ revelation: /[?&]revelation=([ab])(&|$)/.exec(location.search)?.[1] as 'a' | 'b' | undefined,
-      mot: 'Question', libelleSuivant: (i) => (i + 1 < t.questions.length ? 'Question suivante' : 'Voir ma place') });
+    const t = trancher({ mot: 'Question', libelleSuivant: (i) => (i + 1 < t.questions.length ? 'Question suivante' : 'Voir ma place') });
     const { questions } = t;
     const etat = lireJSON<{ i: number; fini: boolean }>(CLE, { i: 0, fini: false });
     const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch { /* stockage indisponible */ } };
@@ -122,12 +120,20 @@ const donnees = JSON.stringify({
         phrase.replaceChildren('Tu sièges à la place de ', b, g ? `, ${g.libelle}. ` : ', non inscrit. ',
           `Sur tes ${pluriel(p.reponses, 'vote')} : ${pluriel(j.identiques, 'vote')} comme toi`
           + (p.egalites ? ` (et ${pluriel(p.egalites, 'autre député')} à égalité).` : '.'));
-        t.salle?.vue('salle');
-        // Il marche jusqu'au siège la première fois ; ensuite, il y est déjà assis.
+        // La salle 3D ne s'ouvre qu'ici, à la demande (cadrage MVP, lot 3) : il marche jusqu'au
+        // siège la première fois ; ensuite, il y est déjà assis. Sans 3D (pas de WebGL, appareil
+        // trop lent), l'image du dernier dévoilement reste, avec le repère sur sa place.
         const deja = lireJSON<{ siege?: string }>(CLE_PERSONNAGE, {}).siege === j.ligne.u;
-        t.salle?.personnage(lireApparence(lireJSON(CLE_PERSONNAGE, null)));
-        t.salle?.asseoir(k, { marcher: !deja });
-        t.salle?.reperes([{ i: k, libelle: `Toi · le siège de ${j.ligne.n}`, toi: true }]);
+        const toi = `Toi · le siège de ${j.ligne.n}`;
+        void t.devoilement.then(async (d) => {
+          if (!d.affiche()) await d.reveler(t.salle, '', t.positions, { onde: false });
+          d.poserReperes([{ i: k, libelle: toi }]);
+          if (!(await d.ouvrirSalle(t.salle))) return;
+          t.salle?.vue('salle', { instant: true });
+          t.salle?.personnage(lireApparence(lireJSON(CLE_PERSONNAGE, null)));
+          t.salle?.asseoir(k, { marcher: !deja });
+          t.salle?.reperes([{ i: k, libelle: toi, toi: true }]);
+        });
         try {
           localStorage.setItem(CLE_PERSONNAGE, JSON.stringify({ ...lireJSON<object>(CLE_PERSONNAGE, {}), siege: j.ligne.u }));
         } catch { /* stockage indisponible */ }
@@ -138,8 +144,11 @@ const donnees = JSON.stringify({
           ? `Tu as tranché ${pluriel(n, 'vote')} : il en faut 10 pour savoir où tu siègerais. Les « Je ne sais pas » ne comptent pas.`
           : 'Tu n’as tranché aucun vote : réponds « Pour » ou « Contre » pour voir qui vote comme toi.';
         $('[data-voir-siege]').hidden = true;
-        t.salle?.vue('salle');
-        t.salle?.reperes([{ i: -1, libelle: 'Ta place t’attend', toi: true }]);
+        // Pas encore de place : l'image du dernier dévoilement, le 578e fauteuil qui attend.
+        void t.devoilement.then(async (d) => {
+          if (!d.affiche()) await d.reveler(t.salle, '', t.positions, { onde: false });
+          d.poserReperes([{ i: -1, libelle: 'Ta place t’attend' }]);
+        });
       }
       // Les 3 groupes les plus proches (hors non-inscrits), en votes comme toi.
       const top = p.groupes.slice(0, 3);

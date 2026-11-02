@@ -117,4 +117,14 @@ Tutoiement, phrases courtes, langage courant d'abord ; l'intitulé officiel n'ap
 | `/_blob/383414f…` (tribune) | `site/public/salle3d/fond-tribune.webp` |
 | `/_blob/dcb642f…`, `/_blob/761b240…` (téléphone) | `fond-salle-telephone.webp`, `fond-tribune-telephone.webp` |
 | `/_blob/7d171cd…` (depuis ton siège) | rendu de la vue « Ta place » (pas d'image fixe : elle dépend du siège) |
-| `/_blob/daca37c…` (salle aux couleurs d'un vote) | retouche d'illustration : sur le site, ce sont les voyants de la vraie salle |
+| `/_blob/daca37c…` (salle aux couleurs d'un vote) | retouche d'illustration : sur le site, la vue haute `fond-revelation.webp`, sièges peints aux couleurs du vote (addendum du 31 oct.) |
+
+## Addendum · 31 octobre 2026 · le dévoilement d'un vote sans 3D (cadrage MVP, lots 2 et 3)
+
+> Ajouté après les retours de test du 30 oct. (`docs/cadrage-mvp-retours-test-578e.md`, R1) et la porte G1, où Julien a retenu le prototype A. Le reste de ce contrat ne change pas.
+
+- **Pendant un vote** (quiz, lots, séance), la question se pose sur l'image fixe de la tribune (`fond-tribune.webp`), sans 3D ni mouvement de caméra. Le repère « La tribune · ce texte y a été voté » disparaît ; un vote à venir garde « La tribune · *date* ».
+- **Le dévoilement** et **le verdict** se montrent sur une image fixe de la salle vue de haut, au-dessus de la tribune, plafond masqué, où les 577 sièges sont visibles (`fond-revelation.webp`, `fond-revelation-telephone.webp`). Les sièges s'y colorent aux couleurs du vote, en onde du rang intérieur vers l'extérieur ; l'image arrive en fondu de 250 ms, sans fondu en mouvement réduit. Le repère « Toi » s'y pose comme dans la salle 3D. Ce n'est pas une vue de navigation : les trois vues (§ 3) ne changent pas.
+- **La 3D** ne s'ouvre plus sur ces pages, sauf pour « Ta place est prête » (palier 1), où la salle se charge à ce moment-là pour la marche du personnage (« La salle s'ouvre… »). Si l'appareil ne peut pas l'ouvrir, l'image et le repère restent.
+- **Changer de page** coupe la caméra, avec un fondu de 200 ms ; seule la glisse entre « La salle » et « Ta place » reste (600 ms).
+- Les images fixes se régénèrent avec `site/scripts/images-fixes.mjs --gpu` à chaque changement de la salle.

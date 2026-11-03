@@ -9,7 +9,7 @@ labels: parcours
 
 **Appareil et navigateur** : <!-- ex. iPhone 13, Safari · Windows, Chrome -->
 
-**Page** : <!-- adresse, ex. https://le578esiege.pages.dev/quiz/ -->
+**Page** : <!-- adresse, ex. https://vote-assemblee.pages.dev/quiz/ -->
 
 **Ce que j'ai fait**
 <!-- les gestes, dans l'ordre -->

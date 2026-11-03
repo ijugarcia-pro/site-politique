@@ -4,7 +4,7 @@
 
 ## Éditeur du site
 
-- **Le 578e siège** : https://le578esiege.pages.dev
+- **Le 578e siège** : https://vote-assemblee.pages.dev
 - Éditeur et directeur de la publication : **Julien Garcia**. Le site est un projet personnel, édité à titre non professionnel, sans publicité et sans compte utilisateur.
 - Contact : le site n'a pas encore d'adresse électronique de contact. Pour signaler une erreur ou poser une question, on peut ouvrir un ticket sur le dépôt GitHub du projet (https://github.com/ijugarcia-pro/site-politique/issues). Ces messages sont publics : ne rien y écrire de personnel.
 

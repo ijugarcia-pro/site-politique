@@ -31,7 +31,7 @@ const L = 1080;
 const H = 1920;
 const TITRE = '"Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif';
 const TEXTE = '"Figtree Variable", "Figtree", system-ui, sans-serif';
-const SITE = 'le578esiege.pages.dev';
+const SITE = 'vote-assemblee.pages.dev';
 const ENCRE = '#121212', FEUILLE = '#FFFFFF', TEXTE_2 = '#5E5E5E';
 const FOND = '/salle3d/fond-salle.webp';
 

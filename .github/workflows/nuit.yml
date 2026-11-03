@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PROJET_PAGES: le578esiege
+  PROJET_PAGES: vote-assemblee
   WRANGLER: wrangler@4.148.0
 
 jobs:

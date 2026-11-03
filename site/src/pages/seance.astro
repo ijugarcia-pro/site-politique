@@ -35,7 +35,7 @@ const donnees = JSON.stringify({
   lundi: sem.lundi, cles: votes.map((v) => v.cle),
   premier: attendus[0] ? { quand: jourHeure(attendus[0]) } : null,
   verdict: lendemainIso ? { date: lendemainIso, jour: JOURS[new Date(`${lendemainIso}T12:00:00Z`).getUTCDay()] } : null,
-  site: Astro.site?.href ?? 'https://le578esiege.pages.dev/',
+  site: Astro.site?.href ?? 'https://vote-assemblee.pages.dev/',
   horsMatrice: scrutins().filter((s) => s.motion_censure).map((s) => s.uid),
   parcours: lotsDuParcours(),
 }).replace(/</g, '\\u003c');
@@ -100,7 +100,7 @@ const donnees = JSON.stringify({
     const suivant = new Date(Date.parse(`${date}T12:00:00Z`) + 86400000).toISOString().slice(0, 10).replaceAll('-', '');
     const maintenant = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
     return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Vote//Verdict//FR', 'CALSCALE:GREGORIAN',
-      'BEGIN:VEVENT', `UID:verdict-${jour}@le578esiege`, `DTSTAMP:${maintenant}`,
+      'BEGIN:VEVENT', `UID:verdict-${jour}@vote-assemblee`, `DTSTAMP:${maintenant}`,
       `DTSTART;VALUE=DATE:${jour}`, `DTEND;VALUE=DATE:${suivant}`,
       'SUMMARY:Le verdict de la séance · Vote',
       `DESCRIPTION:Les députés ont voté : découvre le verdict et compare-le à tes réponses. ${site}verdict/`,

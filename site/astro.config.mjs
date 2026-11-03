@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://le578esiege.pages.dev',
+  site: 'https://vote-assemblee.pages.dev',
   trailingSlash: 'always',
   build: { format: 'directory' },
 });

@@ -1,0 +1,21 @@
+# L'ancienne adresse du site (le578esiege.pages.dev) renvoie vers la nouvelle (docs/decisions.md,
+# 3 nov. 2026). Le projet Cloudflare garde son nom ; il ne sert plus que ces redirections. À lancer à
+# la main, une fois : il n'y a rien à refaire tant que la nouvelle adresse ne change pas.
+name: Redirection de l'ancienne adresse
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Déploiement des redirections sur l'ancien projet
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4.148.0 pages deploy redirection-ancienne-adresse --project-name le578esiege \
+            --branch main --commit-hash "$GITHUB_SHA" --commit-message "Redirection $GITHUB_RUN_ID" \
+            --commit-dirty=true

@@ -9,13 +9,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
-  "dernier_echec": "2026-11-02T19:00:21+00:00 · ReadTimeout: The read operation timed out",
-  "derniere_modification": "Sun, 01 Nov 2026 13:22:39 GMT",
-  "echecs_consecutifs": 3,
+  "derniere_modification": "Mon, 02 Nov 2026 21:23:06 GMT",
+  "echecs_consecutifs": 0,
   "fichier": "Amendements.json.zip",
-  "recupere_le": "2026-11-01T15:23:19+00:00",
-  "sha256": "3062acc323f8bd695cf9bfd8bb88a3afa4d08ea382d4b3cf9e638b960add7a41",
-  "taille": 350784087,
+  "recupere_le": "2026-11-03T00:03:01+00:00",
+  "sha256": "1343bc0510afe63d0e52d098d327aee84081ca276d987f49b2d1b4c24914f3eb",
+  "taille": 351900073,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip"
  },
  "codes_postaux": {
@@ -55,12 +54,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
  },
  "dossiers_legislatifs": {
-  "derniere_modification": "Mon, 02 Nov 2026 17:16:35 GMT",
+  "derniere_modification": "Mon, 02 Nov 2026 21:16:26 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-11-02T18:36:36+00:00",
-  "sha256": "234c8c79439ad511ea7967510ec2d9b5385cbcf689ecb863f914a1154e1b20af",
-  "taille": 11121723,
+  "recupere_le": "2026-11-02T23:59:04+00:00",
+  "sha256": "ca91940b4c2fe702a0a55a36e77861de66f9f2cde9cf27e55d15095e740444aa",
+  "taille": 11133965,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
  },
  "historique_mandats": {

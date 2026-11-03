@@ -46,7 +46,7 @@ const { titre, description, gabarit = 'salle', vue, fond = gabarit === 'lecture'
 const bas = Astro.props.bas ?? vue;
 const vueSalle = Astro.props.vueSalle ?? vue ?? fond;
 const canonique = new URL(Astro.url.pathname, Astro.site).href;
-const titreComplet = titre === 'Le 578e siège' ? titre : `${titre} · Le 578e siège`;
+const titreComplet = titre === 'Vote' ? titre : `${titre} · Vote`;
 // Les votes tranchés comptent les réponses aux votes de la matrice : tous les votes à page, sauf
 // les motions de censure (lib/profil.ts).
 const horsMatrice = JSON.stringify(scrutins().filter((s) => s.motion_censure).map((s) => s.uid));
@@ -70,7 +70,7 @@ const ALT = { tribune: 'La tribune de l’Assemblée nationale en 3D, vue depuis
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonique} />}
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Le 578e siège" />
+    <meta property="og:site_name" content="Vote" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:title" content={titreComplet} />
     <meta property="og:description" content={description} />

@@ -131,7 +131,7 @@ function carte(ctx: CanvasRenderingContext2D, etiquette: string, titre: string, 
   ctx.fillStyle = ENCRE;
   ctx.fill();
   ctx.font = `800 40px ${TITRE}`;
-  ctx.fillText('Le 578e siège', x + marge + 76, 110 + 96);
+  ctx.fillText('Vote', x + marge + 76, 110 + 96);
   ctx.font = `600 34px ${TEXTE}`;
   ctx.fillStyle = TEXTE_2;
   const we = ctx.measureText(etiquette).width;
@@ -187,7 +187,7 @@ export async function dessiner(type: TypeStory, d: DonneesStories): Promise<HTML
   };
   if (type === 'place') {
     const j = d.jumeau;
-    carte(ctx, 'Ma place', j ? `Je siège à la place de ${j.nom}.` : 'J’ai pris le 578e siège.',
+    carte(ctx, 'Ma place', j ? `Je siège à la place de ${j.nom}.` : 'Je cherche encore ma place.',
       j ? `${j.nom} a voté comme moi sur ${j.identiques} de mes ${pluriel(j.sur, 'vote')}. Et toi, tu siégerais où ?`
         : `Après ${pluriel(d.votes, 'vrai vote')} de l’Assemblée. Et toi, tu siégerais où ?`);
     poser('Moi');

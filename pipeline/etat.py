@@ -147,7 +147,7 @@ def page(etat: dict) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>État des données · Le 578e siège</title>
+<title>État des données · Vote</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="{POLICES}" rel="stylesheet">
 <style>{STYLE}</style>

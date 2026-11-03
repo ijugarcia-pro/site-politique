@@ -205,9 +205,9 @@ const cadenas = 'M8 11V8a4 4 0 0 1 8 0v3';
           b.type = 'button';
           b.textContent = 'Partager';
           b.addEventListener('click', async () => {
-            const fichier = new File([blob], `578e-siege-bilan-${i + 1}.png`, { type: 'image/png' });
+            const fichier = new File([blob], `vote-bilan-${i + 1}.png`, { type: 'image/png' });
             if (navigator.canShare?.({ files: [fichier] })) {
-              try { await navigator.share({ files: [fichier], title: 'Le 578e siège' }); return; } catch { /* annulé */ }
+              try { await navigator.share({ files: [fichier], title: 'Vote' }); return; } catch { /* annulé */ }
             }
             const a = document.createElement('a');
             a.href = img.src;

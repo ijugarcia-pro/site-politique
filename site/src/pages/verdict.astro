@@ -3,7 +3,7 @@
 // du vote, sur l'image fixe de la vue haute, sans 3D (lib/revelation.ts ; cadrage MVP, lot 3), le
 // repère « Toi » sur ta place ; la feuille
 // de droite : l'issue en grand, « il aurait suffi que N députés changent d'avis », la barre et
-// les pastilles, toi / ton jumeau / ton député, ton pronostic et ta voix de 578e, « Comprendre ce
+// les pastilles, toi / ton jumeau / ton député, ton pronostic et ta voix en plus, « Comprendre ce
 // vote » et « Verdict suivant ». La logique ne change pas : le verdict du matin (décision de t10),
 // le verdict partiel tant que la séance n'est tranchée qu'en partie (retour de Julien du 12 oct.
 // 2026), un verdict pas encore découvert qui attend le toucher (D1, `578e.verdicts-vus.v1`).
@@ -201,7 +201,7 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       remplir(k);
     };
 
-    /** Les lignes du verdict k : toi, ton jumeau, ton député ; ton pronostic ; ta voix de 578e. */
+    /** Les lignes du verdict k : toi, ton jumeau, ton député ; ton pronostic ; ta voix en plus. */
     const remplir = (k: number) => {
       const v = verdicts[k];
       const a = mes[v.uid] ?? seance.reponses[v.cle] ?? null;
@@ -224,13 +224,13 @@ const pl = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
       }
       if (depute) lignes.push(ligne(`Ton député, ${depute.n}`, lettre(depute.s), '', `/deputes/${depute.u}/`));
       document.querySelector(`[data-lignes="${k}"]`)!.replaceChildren(...lignes);
-      // Ton pronostic et ta voix de 578e (lib/votes.ts) : la majorité requise est recalculée.
+      // Ton pronostic et ta voix en plus (lib/votes.ts) : la majorité requise est recalculée.
       const textes: string[] = [];
       const pr = seance.pronostics[v.cle];
       if (pr) textes.push(`Ton pronostic était « ${pr === 'adopte' ? 'adopté' : 'rejeté'} » : ${(pr === 'adopte') === v.adopte ? 'juste' : 'raté'}.`);
       if (a) {
         const x = voix578(v.decompte, v.requis, a);
-        textes.push(`Ta voix de 578e : ${(a === 'pour' ? v.decompte.pour : v.decompte.contre) + 1} ${a}. `
+        textes.push(`Ta voix en plus : ${(a === 'pour' ? v.decompte.pour : v.decompte.contre) + 1} ${a}. `
           + (x && x.adopte !== v.adopte ? `Ta voix aurait changé le résultat : le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
             : 'Le résultat ne change pas.'));
       }

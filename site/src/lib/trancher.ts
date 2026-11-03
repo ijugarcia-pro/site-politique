@@ -227,7 +227,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
       s.append(pt, texte);
       return s;
     }));
-    // L'encart noir : avec la majorité ou à contre-courant, puis ta voix de 578e (lib/votes.ts).
+    // L'encart noir : avec la majorité ou à contre-courant, puis ta voix en plus (lib/votes.ts).
     const gagnant = q.adopte ? 'pour' : 'contre';
     const comme = v === 'pour' ? d.pour : v === 'contre' ? d.contre : 0;
     $('[data-rv-titre]').textContent = !v ? 'Voici ce qu’a voté l’Assemblée.'
@@ -237,7 +237,7 @@ export function trancher({ rang, mot = 'Vote', libelleSuivant }: Options) {
     const inverser = (n: number) => `Il aurait suffi que ${pluriel(n, 'député')} change${n > 1 ? 'nt' : ''} d’avis.`;
     $('[data-rv-voix]').textContent = !v
       ? `Tu n’as pas tranché : ce vote ne compte pas dans ton résultat.${q.marge ? ` ${inverser(q.marge)}` : ''}`
-      : `Ta voix de 578e : ${(v === 'pour' ? d.pour : d.contre) + 1} ${v}. `
+      : `Ta voix en plus : ${(v === 'pour' ? d.pour : d.contre) + 1} ${v}. `
         + (x && x.adopte !== q.adopte
           ? `Ta voix aurait changé le résultat : le texte aurait été ${x.adopte ? 'adopté' : 'rejeté'}.`
           : `Le résultat ne change pas. ${x ? inverser(x.inverser) : ''}`);

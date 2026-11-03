@@ -504,3 +504,7 @@
 ## 2026-11-03 · Le MVP est validé et publié
 - Décision (Julien, 3 nov.) : le MVP est bon, on publie. Une seule PR de `mvp-lot-8` vers `main`, qui contient toute la pile (lots 1 à 8, t92) ; les PR par lot prévues à la reprise auraient publié autant d'états intermédiaires.
 - Conséquence : le dernier point ouvert de la recette (docs/recette-mvp.md) reste la mesure sur un vrai téléphone. Le chantier suivant est le responsive (t93).
+
+## 2026-11-03 · Le site s'appelle « Vote »
+- Décision (Julien, 3 nov.) : le site s'appelle « Vote », un nom simple et parlant ; l'idée du 578e siège ne correspond plus à son fonctionnement. Le titre de l'accueil devient « Vote comme un député » ; « Ta voix de 578e » devient « Ta voix en plus » ; la plaque du fauteuil dans la salle dit « Vote ».
+- Conséquence : restent en l'état, pour ne pas casser l'existant : l'adresse le578esiege.pages.dev (changer de projet Cloudflare changerait les liens), les clés du stockage local `578e.*` (les réponses des visiteurs s'y trouvent), les noms internes du code (`voix578`, `FAUTEUIL_578`) et les documents passés.

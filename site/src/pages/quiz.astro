@@ -26,7 +26,7 @@ const donnees = JSON.stringify({
 ---
 <Base titre="Le quiz d'entrée" fond="tribune" vueSalle="tribune"
   focus={{ quitter: '/', total: cartes.length, libelle: `Question 1 sur ${cartes.length}` }}
-  description="Prends le 578e siège : 10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
+  description="10 vrais votes de l'Assemblée, puis le groupe et le député qui votent le plus comme toi.">
   <Trancher cartes={cartes}>
     <div class="ecran fin" slot="fin" data-ecran="resultat" hidden>
       <span class="annonce-palier" data-annonce-fin hidden></span>
@@ -213,9 +213,9 @@ const donnees = JSON.stringify({
         const type = b.dataset.envoyer as TypeStory;
         const blob = images.get(type);
         if (!blob) return;
-        const fichier = new File([blob], `578e-siege-${type}.png`, { type: 'image/png' });
+        const fichier = new File([blob], `vote-${type}.png`, { type: 'image/png' });
         if (navigator.canShare?.({ files: [fichier] })) {
-          try { await navigator.share({ files: [fichier], title: 'Le 578e siège' }); return; } catch { /* annulé */ }
+          try { await navigator.share({ files: [fichier], title: 'Vote' }); return; } catch { /* annulé */ }
         }
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);

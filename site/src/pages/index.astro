@@ -56,7 +56,7 @@ const donnees = JSON.stringify({
 }).replace(/</g, '\\u003c');
 const decompte = dernier.decompte;
 ---
-<Base titre="Le 578e siège" vue="tribune" fond="tribune"
+<Base titre="Vote" vue="tribune" fond="tribune"
   description="Les votes de l'Assemblée nationale rendus accessibles : tranche de vrais votes, compare-toi aux 577 députés, retrouve ce qu'a voté le tien.">
   <Repere libelle={lieu} forme="lieu" x={50} y={33} class="lieu-tribune" />
 
@@ -64,7 +64,7 @@ const decompte = dernier.decompte;
     <!-- 1. Première visite (maquette 01) : la grande carte noire, ou cette semaine (maquette 05). -->
     <Carte variante="noire" class="entree" data-bloc-premiere>
       <span class="t-etiquette sur-noir">Première visite · 2 minutes</span>
-      <h1 class="titre-entree">Prends le 578<sup>e</sup> siège de l’Assemblée</h1>
+      <h1 class="titre-entree">Vote comme un député</h1>
       <p class="texte-entree">Réponds à {questionsQuiz().length} vrais votes déjà passés. Tu découvres comment les 577 députés ont voté, puis où tu siégerais et qui vote comme toi.</p>
       <div class="pied-entree">
         <Bouton href="/quiz/" variante="contour" data-bouton-quiz>Commencer</Bouton>

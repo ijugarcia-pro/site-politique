@@ -99,10 +99,10 @@ const donnees = JSON.stringify({
     const jour = date.replaceAll('-', '');
     const suivant = new Date(Date.parse(`${date}T12:00:00Z`) + 86400000).toISOString().slice(0, 10).replaceAll('-', '');
     const maintenant = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Le 578e siège//Verdict//FR', 'CALSCALE:GREGORIAN',
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Vote//Verdict//FR', 'CALSCALE:GREGORIAN',
       'BEGIN:VEVENT', `UID:verdict-${jour}@le578esiege`, `DTSTAMP:${maintenant}`,
       `DTSTART;VALUE=DATE:${jour}`, `DTEND;VALUE=DATE:${suivant}`,
-      'SUMMARY:Le verdict de la séance · Le 578e siège',
+      'SUMMARY:Le verdict de la séance · Vote',
       `DESCRIPTION:Les députés ont voté : découvre le verdict et compare-le à tes réponses. ${site}verdict/`,
       `URL:${site}verdict/`, 'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n');
   };

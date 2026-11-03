@@ -21,7 +21,7 @@ const SORTIE = join(SITE, 'public', 'salle3d');
 const navigateur = await chromium.launch();
 const page = await navigateur.newPage();
 await page.setContent('<!doctype html><html><body></body></html>');
-await page.addScriptTag({ content: `${readFileSync(SOURCE, 'utf8')};window.MAT = MAT;${DECOR};window.DECOR = DECOR;` });
+await page.addScriptTag({ content: `${readFileSync(SOURCE, 'utf8').replaceAll("'578'", "'Vote'")};window.MAT = MAT;${DECOR};window.DECOR = DECOR;` });
 const images = await page.evaluate(() => {
   const M = window.MAT;
   const bois = M.noyer(7);

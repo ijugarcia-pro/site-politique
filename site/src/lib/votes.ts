@@ -89,7 +89,7 @@ export interface Voix578 {
   inverser: number;
 }
 
-/** « Ta voix de 578e » : le résultat si ta voix s'ajoutait à celles des députés. Les suffrages
+/** « Ta voix en plus » : le résultat si ta voix s'ajoutait à celles des députés. Les suffrages
  *  exprimés augmentent d'un : la majorité requise est donc recalculée (la moitié des suffrages
  *  exprimés, plus une voix), puis la règle du projet s'applique à ce nouveau décompte
  *  (P − R + 1 si adopté, R − P si rejeté). Quand le seuil publié n'est pas cette majorité

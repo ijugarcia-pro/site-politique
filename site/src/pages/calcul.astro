@@ -35,7 +35,7 @@ const TEXTES_PALIERS: Record<string, string> = {
 };
 ---
 <PageService titre="Comment c’est calculé" actif="calcul"
-  description="Les définitions exactes du 578e siège : ton jumeau, ta place, les paliers, « à N voix près », les votes contre son groupe, la précision."
+  description="Les définitions exactes du site : ton jumeau, ta place, les paliers, « à N voix près », les votes contre son groupe, la précision."
   chapeau="Tout est calculé dans ton navigateur, à partir de vrais votes de l’Assemblée nationale. Aucun axe gauche-droite : seulement des votes comparés un par un.">
   <section id="jumeau">
     <h2>Ton jumeau</h2>
@@ -83,7 +83,7 @@ const TEXTES_PALIERS: Record<string, string> = {
       <p class="exemple-titre">Exemple réel</p>
       <p>Le <a href={lienVote(exemple)}>scrutin n° {exemple.numero}</a> du {dateLisible(exemple.date)} : {P} voix pour, {R} suffrages requis. {P} − {R} + 1 = <strong>{P - R + 1}</strong>. {bascule(exemple)}</p>
     </div>
-    <p>« Ta voix de 578<sup>e</sup> » refait ce calcul en ajoutant ta voix : les suffrages exprimés augmentent d’un, et la majorité requise est recalculée (la moitié des suffrages exprimés, plus une voix).</p>
+    <p>« Ta voix en plus » refait ce calcul en ajoutant ta voix : les suffrages exprimés augmentent d’un, et la majorité requise est recalculée (la moitié des suffrages exprimés, plus une voix).</p>
   </section>
 
   <section id="cases">
@@ -151,7 +151,7 @@ const TEXTES_PALIERS: Record<string, string> = {
       const url = URL.createObjectURL(new Blob([JSON.stringify(tout, null, 2)], { type: 'application/json' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = '578e-siege-mes-reponses.json';
+      a.download = 'vote-mes-reponses.json';
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });

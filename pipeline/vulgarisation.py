@@ -157,7 +157,7 @@ SCHEMA_FICHE = {
     "additionalProperties": False,
 }
 
-CONSIGNES = f"""Tu rédiges, pour le site « Le 578e siège », la fiche qui présente un texte de loi \
+CONSIGNES = f"""Tu rédiges, pour le site « Vote », la fiche qui présente un texte de loi \
 voté à l'Assemblée nationale à des personnes qui ne suivent pas la politique. Le site ne prend \
 jamais parti : il décrit ce que le texte change, pour que chacun se fasse son avis.
 
@@ -196,7 +196,7 @@ figure pas.
 qu'un article, les trois cartes peuvent toutes le citer.
 """
 
-CONSIGNES_RELECTURE = """Tu relis, pour le site « Le 578e siège », une fiche qui vulgarise un \
+CONSIGNES_RELECTURE = """Tu relis, pour le site « Vote », une fiche qui vulgarise un \
 texte de loi. Tu reçois la fiche, les articles qu'elle cite et l'exposé des motifs. Pour chaque \
 élément (la question, la phrase « Concrètement », chacune des trois cartes), dis s'il est fidèle \
 au texte : il ne dit rien que les articles ne prévoient pas, ne déforme pas leur portée, et ne \

@@ -16,6 +16,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          npx --yes wrangler@4.148.0 pages project list
           npx --yes wrangler@4.148.0 pages deploy redirection-ancienne-adresse --project-name le578esiege \
             --branch main --commit-hash "$GITHUB_SHA" --commit-message "Redirection $GITHUB_RUN_ID" \
             --commit-dirty=true

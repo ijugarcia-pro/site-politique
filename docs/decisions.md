@@ -508,3 +508,7 @@
 ## 2026-11-03 · Le site s'appelle « Vote »
 - Décision (Julien, 3 nov.) : le site s'appelle « Vote », un nom simple et parlant ; l'idée du 578e siège ne correspond plus à son fonctionnement. Le titre de l'accueil devient « Vote comme un député » ; « Ta voix de 578e » devient « Ta voix en plus » ; la plaque du fauteuil dans la salle dit « Vote ».
 - Conséquence : restent en l'état, pour ne pas casser l'existant : l'adresse le578esiege.pages.dev (changer de projet Cloudflare changerait les liens), les clés du stockage local `578e.*` (les réponses des visiteurs s'y trouvent), les noms internes du code (`voix578`, `FAUTEUIL_578`) et les documents passés.
+
+## 2026-11-03 · La nouvelle adresse : vote-assemblee.pages.dev
+- Décision (Julien, 3 nov.) : le site change d'adresse pour suivre son nom : https://vote-assemblee.pages.dev, nouveau projet Cloudflare Pages, gratuit. `vote` seul n'a pas été essayé : `vote-assemblee` dit ce qu'est le site.
+- Conséquence : remplace, sur l'adresse, l'entrée précédente. L'ancien projet `le578esiege` reste en place et ne sert plus qu'à renvoyer vers la nouvelle adresse, page par page (`redirection-ancienne-adresse/`, workflow du même nom, lancé à la main). Le navigateur des visiteurs repart de zéro à la nouvelle adresse : les réponses gardées sur l'ancienne n'y suivent pas (stockage local lié à l'adresse).

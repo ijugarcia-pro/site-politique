@@ -60,4 +60,4 @@ Le parcours « première visite → quiz de 10 votes → ta place → salle → 
 
 ## La mise en ligne (avec l'accord de Julien)
 
-Une seule PR de `mvp-lot-8` vers `main` : elle contient toute la pile, garde un commit par lot et ferme la PR #64, sans publier d'états intermédiaires. Le pipeline publie à la fusion. Vérifier ensuite https://le578esiege.pages.dev.
+Une seule PR de `mvp-lot-8` vers `main` : elle contient toute la pile, garde un commit par lot et ferme la PR #64, sans publier d'états intermédiaires. Le pipeline publie à la fusion. Vérifier ensuite https://vote-assemblee.pages.dev.

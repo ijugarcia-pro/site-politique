@@ -88,7 +88,7 @@ Montrer à Julien `scripts/planche-dessus.mjs` (Perspective et Dessus) et `scrip
 - Profil mémoïsé du lot 1 écarté (décision du 30 oct.) ; `perf-navigation.mjs` garde des marques `?perf=` inactives par défaut.
 
 **La mise en ligne** (accord de Julien du 3 nov. : une seule PR de `mvp-lot-8` vers `main`, qui contient toute la pile et ferme la PR #64, pour ne pas publier d'états intermédiaires)
-Autrefois prévu : fusionner la PR #64, pousser la suite de la pile et ouvrir les PR dans l'ordre. Le pipeline publie le site à chaque fusion sur `main`. Vérifier ensuite https://le578esiege.pages.dev.
+Autrefois prévu : fusionner la PR #64, pousser la suite de la pile et ouvrir les PR dans l'ordre. Le pipeline publie le site à chaque fusion sur `main`. Vérifier ensuite https://vote-assemblee.pages.dev.
 
 ## Hors périmètre
 

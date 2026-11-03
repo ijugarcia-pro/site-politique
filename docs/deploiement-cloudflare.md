@@ -19,7 +19,7 @@ Conséquence pour Julien : **rien à relier, rien à construire chez Cloudflare.
 
 ### 2. Choisir le nom du site (2 min)
 Le site sera servi sur `https://<nom>.pages.dev`. Le nom est unique sur tout Cloudflare, en minuscules, chiffres et tirets.
-- Suggestions : `le578esiege`, `le-578e-siege`, `578e-siege`.
+- Suggestions : `vote-assemblee`, `le-578e-siege`, `578e-siege`.
 - Pour vérifier qu'un nom est libre : ouvrir `https://<nom>.pages.dev` dans le navigateur. Si une page s'affiche, le nom est pris.
 - **Donner le nom retenu à Claude en début de session t17** (ce n'est pas un secret).
 
@@ -55,8 +55,8 @@ En début de t17, Claude Code vérifie que les deux secrets existent (`gh secret
 
 - **Site** : Astro, sortie statique dans `site/dist/`. Commande de build : `npm ci && npm test && npm run build`, lancée dans `site/`, avec Node 24.
 - **Données** : le pipeline écrit ses JSON dans `export/` ; le site les lit au build et échoue s'ils manquent.
-- **Création du projet**, au premier passage seulement : `wrangler pages project create le578esiege --production-branch main`.
-- **Déploiement** : une étape de `.github/workflows/nuit.yml`, après les contrôles et la construction du site : `wrangler pages deploy site/dist --project-name le578esiege --branch main` (wrangler 4.148.0, lancé par `npx`).
+- **Création du projet**, au premier passage seulement : `wrangler pages project create vote-assemblee --production-branch main`.
+- **Déploiement** : une étape de `.github/workflows/nuit.yml`, après les contrôles et la construction du site : `wrangler pages deploy site/dist --project-name vote-assemblee --branch main` (wrangler 4.148.0, lancé par `npx`).
 
 ## Limites de l'offre gratuite (doc Cloudflare, 8 oct. 2026)
 

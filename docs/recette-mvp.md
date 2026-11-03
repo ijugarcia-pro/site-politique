@@ -49,8 +49,9 @@ Le parcours « première visite → quiz de 10 votes → ta place → salle → 
 5. **Responsive** : le cadrage tient sur la matrice, mais des écrans restent à soigner, notamment le téléphone en paysage (844 × 390), où la salle du dévoilement est petite. C'est le chantier suivant, demandé par Julien (t93).
 6. **La glisse de 1,4 s** vers la vue des députés : le cadrage demandait 600 ms ou moins, Julien jugera après ses tests.
 7. **Clavier** : dans la vue des députés, les flèches déplacent la salle, pas la sélection (P2 du cadrage, non fait). « Trouver un député » reste le chemin principal au clavier.
-8. **La porte t82** n'a jamais été cochée : c'est à Julien de le faire.
-9. **Le kit de captures du portfolio** peut se préparer : la recette est validée.
+8. **L'ancienne adresse** reste en ligne sans redirection et n'est plus mise à jour par le pipeline ; la redirection est prête, à déployer si Julien le souhaite (docs/decisions.md).
+9. **La porte t82** n'a jamais été cochée : c'est à Julien de le faire.
+10. **Le kit de captures du portfolio** peut se préparer : la recette est validée.
 
 ## Les questions et les portes
 

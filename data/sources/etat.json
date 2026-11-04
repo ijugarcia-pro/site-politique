@@ -1,11 +1,11 @@
 {
  "agenda": {
-  "derniere_modification": "Tue, 03 Nov 2026 11:40:45 GMT",
+  "derniere_modification": "Wed, 04 Nov 2026 11:41:06 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Agenda.json.zip",
-  "recupere_le": "2026-11-03T14:06:38+00:00",
-  "sha256": "67def56412c03e10c92d7f867daae0191698a652acf3eae9f4ca49a48720f1bc",
-  "taille": 8606005,
+  "recupere_le": "2026-11-04T14:27:22+00:00",
+  "sha256": "e16f09ad81dbafa86f95feb27eff5b0ea0fb7912bd1f03530319c372be8a0a2b",
+  "taille": 8623160,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
@@ -45,9 +45,8 @@
   "url": "https://static.data.gouv.fr/resources/contours-geographiques-des-circonscriptions-legislatives/20240613-191520/circonscriptions-legislatives-p10.geojson"
  },
  "deputes_actifs": {
-  "dernier_echec": "2026-11-03T16:36:25+00:00 · HTTPStatusError: Server error '504 Gateway Time-out' for url 'https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip?t=7337b681d1864e3c98b905b00d585ce8'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504",
   "derniere_modification": "Tue, 03 Nov 2026 02:50:37 GMT",
-  "echecs_consecutifs": 1,
+  "echecs_consecutifs": 0,
   "fichier": "AMO10_deputes_actifs_mandats_actifs_organes.json.zip",
   "recupere_le": "2026-11-03T14:06:37+00:00",
   "sha256": "f94a9091d921d9080a54dbdaf8cf7da51a68e10877b8bbe90be1411d89022ece",
@@ -73,9 +72,8 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "dernier_echec": "2026-11-03T16:29:43+00:00 · HTTPStatusError: Server error '504 Gateway Time-out' for url 'https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip?t=775f11d27ec04ea9b225f1a01e5cac4b'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504",
   "derniere_modification": "Tue, 03 Nov 2026 11:26:44 GMT",
-  "echecs_consecutifs": 1,
+  "echecs_consecutifs": 0,
   "fichier": "Scrutins.json.zip",
   "recupere_le": "2026-11-03T14:06:36+00:00",
   "sha256": "929db614c5fde306af7177fe14642a4011d84e55f3cc08a40ccde1530dfa773d",

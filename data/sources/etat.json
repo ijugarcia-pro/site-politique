@@ -9,11 +9,11 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
-  "derniere_modification": "Sat, 07 Nov 2026 09:23:05 GMT",
+  "derniere_modification": "Sat, 07 Nov 2026 13:23:09 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Amendements.json.zip",
-  "recupere_le": "2026-11-07T12:56:00+00:00",
-  "sha256": "e57cd24e9b80c7c933a9f8bb52f422dff368bab03776da219571ad4956746b43",
+  "recupere_le": "2026-11-07T14:59:18+00:00",
+  "sha256": "5ee1c97e57f5dcd0d10c277ca6d179ae734606121664710d81a6b61b453b5bc7",
   "taille": 354489481,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip"
  },

@@ -1,0 +1,42 @@
+{
+ "lundi": "2026-11-09",
+ "vacances": false,
+ "votes": [
+  {
+   "cle": "scrutin:VTANR5L17V7380",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V7380",
+   "numero": 7380,
+   "date": "2026-06-11",
+   "objet": "l'ensemble de la proposition de loi visant à la nationalisation d'ArcelorMittal France afin de préserver la souveraineté industrielle de la France (deuxième lecture).",
+   "dossier_uid": "DLR5L17N52977",
+   "dossier": "Nationalisation d'ArcelorMittal France",
+   "reserve": false,
+   "lot": 7
+  },
+  {
+   "cle": "scrutin:VTANR5L17V6045",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V6045",
+   "numero": 6045,
+   "date": "2026-04-08",
+   "objet": "l'ensemble de la proposition de loi visant à simplifier le millefeuille territorial par la collectivité unique (première lecture).",
+   "dossier_uid": "DLR5L17N52750",
+   "dossier": "Simplifier le millefeuille territorial par la collectivité unique",
+   "reserve": false,
+   "lot": 7
+  },
+  {
+   "cle": "scrutin:VTANR5L17V7408",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V7408",
+   "numero": 7408,
+   "date": "2026-06-17",
+   "objet": "l'ensemble de la proposition de loi visant à améliorer l'accès au logement des travailleurs des services publics (texte de la commission mixte paritaire).",
+   "dossier_uid": "DLR5L17N51968",
+   "dossier": "Améliorer l'accès au logement des travailleurs des services publics",
+   "reserve": false,
+   "lot": 6
+  }
+ ]
+}

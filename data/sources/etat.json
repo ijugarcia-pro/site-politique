@@ -54,13 +54,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
  },
  "dossiers_legislatifs": {
-  "dernier_echec": "2026-11-10T14:53:11+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 6935665)",
-  "derniere_modification": "Mon, 09 Nov 2026 17:16:25 GMT",
-  "echecs_consecutifs": 1,
+  "derniere_modification": "Tue, 10 Nov 2026 14:16:39 GMT",
+  "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-11-09T18:59:16+00:00",
-  "sha256": "eb7269ae813ee71d1fcaa993428f2fff561f3d61827ca405120b9a1e1c2d4fd1",
-  "taille": 11192397,
+  "recupere_le": "2026-11-10T15:15:46+00:00",
+  "sha256": "7a7df264ea91f6b3ed2ddbd73dd9aa774b70a3c26903b4993e5308d3b2ba3118",
+  "taille": 11197459,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
  },
  "historique_mandats": {

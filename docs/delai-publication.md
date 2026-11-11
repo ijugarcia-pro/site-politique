@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-11-10T23:33:51+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-11-11T06:48:57+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,18 +12,18 @@ Généré le 2026-11-10T23:33:51+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 114
+- Versions observées après la référence : 115
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 30,0 h
-- Heure (UTC) des versions : 04 h : 16 · 05 h : 15 · 10 h : 13 · 11 h : 13 · 16 h : 17 · 17 h : 16 · 22 h : 16 · 23 h : 8
+- Heure (UTC) des versions : 04 h : 16 · 05 h : 16 · 10 h : 13 · 11 h : 13 · 16 h : 17 · 17 h : 16 · 22 h : 16 · 23 h : 8
 
 ## Délais
 
-**Tous les scrutins** : 1241 scrutins
+**Tous les scrutins** : 1246 scrutins
 
 - Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 6,4 h · 90 % ≤ 18,4 h · max 22,4 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 4,4 h · 90 % ≤ 16,4 h · max 27,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 1169 sur 1241
-- Répartition depuis la fin prévue : moins de 1 h : 27 · 3 à 6 h : 109 · 6 à 12 h : 251 · 12 à 24 h : 72
+- Publiés au plus tard le lendemain du vote à 8 h : 1174 sur 1246
+- Répartition depuis la fin prévue : moins de 1 h : 27 · 3 à 6 h : 109 · 6 à 12 h : 256 · 12 à 24 h : 72
 
 **Scrutins solennels** : 3 scrutins
 
@@ -151,3 +151,4 @@ Généré le 2026-11-10T23:33:51+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-11-10T05:26:17+00:00 | 2026-11-10T10:04:23+00:00 | 9793 | 9793 | 0 |
 | 2026-11-10T11:26:25+00:00 | 2026-11-10T17:58:33+00:00 | 9793 | 9793 | 0 |
 | 2026-11-10T17:26:07+00:00 | 2026-11-10T23:33:50+00:00 | 9801 | 9801 | 8 |
+| 2026-11-11T05:25:32+00:00 | 2026-11-11T06:48:48+00:00 | 9806 | 9806 | 5 |

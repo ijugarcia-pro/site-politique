@@ -72,9 +72,9 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "dernier_echec": "2026-11-11T14:17:13+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 24639329)",
+  "dernier_echec": "2026-11-11T14:49:40+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 21956185)",
   "derniere_modification": "Tue, 10 Nov 2026 11:26:25 GMT",
-  "echecs_consecutifs": 1,
+  "echecs_consecutifs": 2,
   "fichier": "Scrutins.json.zip",
   "recupere_le": "2026-11-10T14:49:04+00:00",
   "sha256": "5f3df1b8b11b6d7a7ef86c63fe03c290fd823e7936216e857cbe11d3dd2b15d9",

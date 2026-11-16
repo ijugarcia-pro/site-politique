@@ -1,0 +1,41 @@
+{
+ "lundi": "2026-11-16",
+ "vacances": false,
+ "votes": [
+  {
+   "cle": "RUANR5L17S2027IDS31004PT53670",
+   "type": "annonce",
+   "date": "2026-11-17",
+   "debut": "2026-11-17 15:00:00+01",
+   "objet": "Vote solennel : Pt Sénat résilience des infrastructures critiques et renforcement de la cybersécurité",
+   "nature": "ensemble",
+   "dossier_uid": "DLR5L17N50731",
+   "dossier": "Projet de loi relatif à la résilience des infrastructures critiques et au renforcement de la cybersécurité",
+   "groupe": "DR"
+  },
+  {
+   "cle": "scrutin:VTANR5L17V7905",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V7905",
+   "numero": 7905,
+   "date": "2026-07-01",
+   "objet": "l'ensemble du projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense (texte de la commission mixte paritaire).",
+   "dossier_uid": "DLR5L17N54083",
+   "dossier": "Projet de loi actualisant la programmation militaire pour les années 2024 à 2030 et portant diverses dispositions intéressant la défense",
+   "reserve": false,
+   "lot": 6
+  },
+  {
+   "cle": "scrutin:VTANR5L17V881",
+   "type": "passe",
+   "scrutin_uid": "VTANR5L17V881",
+   "numero": 881,
+   "date": "2025-02-20",
+   "objet": "l'ensemble de la proposition de loi instaurant un impôt plancher de 2 % sur le patrimoine des ultra riches (première lecture).",
+   "dossier_uid": "DLR5L17N51215",
+   "dossier": "Impôt plancher de 2 % sur le patrimoine des ultra riches",
+   "reserve": false,
+   "lot": 6
+  }
+ ]
+}

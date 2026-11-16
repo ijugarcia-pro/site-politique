@@ -1,21 +1,20 @@
 {
  "agenda": {
-  "dernier_echec": "2026-11-16T18:45:07+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 4574377)",
-  "derniere_modification": "Mon, 16 Nov 2026 11:40:55 GMT",
-  "echecs_consecutifs": 1,
+  "derniere_modification": "Mon, 16 Nov 2026 17:40:56 GMT",
+  "echecs_consecutifs": 0,
   "fichier": "Agenda.json.zip",
-  "recupere_le": "2026-11-16T15:38:33+00:00",
-  "sha256": "278a765a4f4f89b34020c2c432e259563d60b6cbbfbb7d196a9336586bc282ba",
-  "taille": 8763716,
+  "recupere_le": "2026-11-16T23:26:03+00:00",
+  "sha256": "7ad900cc420a8f78bbd964047160e36a45bd76d5b5b47d378e7a6e1fb5aa3ea8",
+  "taille": 8767495,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
-  "derniere_modification": "Mon, 16 Nov 2026 17:24:11 GMT",
+  "derniere_modification": "Mon, 16 Nov 2026 21:26:18 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Amendements.json.zip",
-  "recupere_le": "2026-11-16T18:50:26+00:00",
-  "sha256": "fc8d78e6217109718cd4e389ac813eac71c142db4144db7917a4c3c6accc66e9",
-  "taille": 364954205,
+  "recupere_le": "2026-11-16T23:28:55+00:00",
+  "sha256": "61c3419a5241020266df69cb59f02b02b12110d432e0fee68f6d4f5178062c0f",
+  "taille": 364721288,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip"
  },
  "codes_postaux": {
@@ -55,12 +54,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
  },
  "dossiers_legislatifs": {
-  "derniere_modification": "Mon, 16 Nov 2026 17:16:44 GMT",
+  "derniere_modification": "Mon, 16 Nov 2026 21:16:42 GMT",
   "echecs_consecutifs": 0,
   "fichier": "Dossiers_Legislatifs.json.zip",
-  "recupere_le": "2026-11-16T18:45:41+00:00",
-  "sha256": "208d09503d926e89eaeae447db7420f8033b5b72ad783f2d1962491c8667975a",
-  "taille": 11260932,
+  "recupere_le": "2026-11-16T23:26:03+00:00",
+  "sha256": "29a56995a8b55d5d8f5302f86e9f9743909c1e7e67e50662457018dd19d2624b",
+  "taille": 11262796,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
  },
  "historique_mandats": {

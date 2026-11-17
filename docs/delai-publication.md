@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-11-17T14:41:26+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-11-17T23:00:02+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,24 +12,24 @@ Généré le 2026-11-17T14:41:26+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 135
+- Versions observées après la référence : 136
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 30,0 h
-- Heure (UTC) des versions : 04 h : 16 · 05 h : 20 · 10 h : 13 · 11 h : 18 · 16 h : 17 · 17 h : 22 · 22 h : 16 · 23 h : 13
+- Heure (UTC) des versions : 04 h : 16 · 05 h : 20 · 10 h : 13 · 11 h : 18 · 16 h : 17 · 17 h : 23 · 22 h : 16 · 23 h : 13
 
 ## Délais
 
-**Tous les scrutins** : 1355 scrutins
+**Tous les scrutins** : 1361 scrutins
 
 - Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 6,4 h · 90 % ≤ 18,4 h · max 22,4 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,5 h · 90 % ≤ 15,4 h · max 27,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 1283 sur 1355
+- Publiés au plus tard le lendemain du vote à 8 h : 1289 sur 1361
 - Répartition depuis la fin prévue : moins de 1 h : 27 · 3 à 6 h : 140 · 6 à 12 h : 256 · 12 à 24 h : 72
 
-**Scrutins solennels** : 4 scrutins
+**Scrutins solennels** : 5 scrutins
 
 - Depuis la fin prévue de la séance (borne basse) : min 4,0 h · médiane 4,5 h · 90 % ≤ 7,1 h · max 7,1 h
-- Depuis le début de la séance (borne haute) : min 8,9 h · médiane 9,4 h · 90 % ≤ 9,5 h · max 9,5 h
-- Publiés au plus tard le lendemain du vote à 8 h : 4 sur 4
+- Depuis le début de la séance (borne haute) : min 3,5 h · médiane 9,4 h · 90 % ≤ 9,5 h · max 9,5 h
+- Publiés au plus tard le lendemain du vote à 8 h : 5 sur 5
 - Répartition depuis la fin prévue : 3 à 6 h : 3 · 6 à 12 h : 1
 
 ## Versions observées
@@ -172,3 +172,4 @@ Généré le 2026-11-17T14:41:26+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-11-16T17:27:24+00:00 | 2026-11-16T22:21:29+00:00 | 9896 | 9896 | 1 |
 | 2026-11-16T23:27:46+00:00 | 2026-11-17T04:39:56+00:00 | 9915 | 9915 | 19 |
 | 2026-11-17T11:27:53+00:00 | 2026-11-17T14:41:26+00:00 | 9915 | 9915 | 0 |
+| 2026-11-17T17:27:26+00:00 | 2026-11-17T23:00:00+00:00 | 9921 | 9921 | 6 |

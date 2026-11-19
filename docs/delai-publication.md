@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-11-18T14:19:53+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-11-19T03:41:19+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,17 +12,17 @@ Généré le 2026-11-18T14:19:53+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 138
+- Versions observées après la référence : 139
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 30,0 h
-- Heure (UTC) des versions : 04 h : 16 · 05 h : 20 · 10 h : 13 · 11 h : 19 · 16 h : 17 · 17 h : 23 · 22 h : 16 · 23 h : 14
+- Heure (UTC) des versions : 04 h : 16 · 05 h : 20 · 10 h : 13 · 11 h : 19 · 16 h : 17 · 17 h : 23 · 22 h : 16 · 23 h : 15
 
 ## Délais
 
-**Tous les scrutins** : 1409 scrutins
+**Tous les scrutins** : 1472 scrutins
 
 - Depuis la fin prévue de la séance (borne basse) : min 0,4 h · médiane 6,4 h · 90 % ≤ 18,4 h · max 22,4 h
-- Depuis le début de la séance (borne haute) : min 2,4 h · médiane 3,5 h · 90 % ≤ 15,4 h · max 27,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 1337 sur 1409
+- Depuis le début de la séance (borne haute) : min 2,4 h · médiane 4,4 h · 90 % ≤ 15,4 h · max 27,4 h
+- Publiés au plus tard le lendemain du vote à 8 h : 1400 sur 1472
 - Répartition depuis la fin prévue : moins de 1 h : 27 · 3 à 6 h : 140 · 6 à 12 h : 256 · 12 à 24 h : 72
 
 **Scrutins solennels** : 5 scrutins
@@ -175,3 +175,4 @@ Généré le 2026-11-18T14:19:53+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-11-17T17:27:26+00:00 | 2026-11-17T23:00:00+00:00 | 9921 | 9921 | 6 |
 | 2026-11-17T23:27:39+00:00 | 2026-11-18T04:34:52+00:00 | 9969 | 9969 | 48 |
 | 2026-11-18T11:27:42+00:00 | 2026-11-18T14:19:52+00:00 | 9969 | 9969 | 0 |
+| 2026-11-18T23:27:37+00:00 | 2026-11-19T03:41:11+00:00 | 10032 | 10032 | 63 |

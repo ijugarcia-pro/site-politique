@@ -1,6 +1,6 @@
 {
- "controle_le": "2026-11-20T17:08:58+00:00",
- "build_arrete": false,
+ "controle_le": "2026-11-21T16:18:55+00:00",
+ "build_arrete": true,
  "controles": [
   {
    "numero": 1,
@@ -28,9 +28,28 @@
   {
    "numero": 4,
    "nom": "non-régression",
-   "reussi": true,
+   "reussi": false,
    "bloquant": true,
-   "details": []
+   "details": [
+    "VTANR5L17V10081 : le résultat publié a changé",
+    "VTANR5L17V10082 : le résultat publié a changé",
+    "VTANR5L17V10083 : le résultat publié a changé",
+    "VTANR5L17V10084 : le résultat publié a changé",
+    "VTANR5L17V10085 : le résultat publié a changé",
+    "VTANR5L17V10086 : le résultat publié a changé",
+    "VTANR5L17V10087 : le résultat publié a changé",
+    "VTANR5L17V10088 : le résultat publié a changé",
+    "VTANR5L17V10089 : le résultat publié a changé",
+    "VTANR5L17V10090 : le résultat publié a changé",
+    "VTANR5L17V10091 : le résultat publié a changé",
+    "VTANR5L17V10092 : le résultat publié a changé",
+    "VTANR5L17V10093 : le résultat publié a changé",
+    "VTANR5L17V10094 : le résultat publié a changé",
+    "VTANR5L17V10095 : le résultat publié a changé",
+    "VTANR5L17V10096 : le résultat publié a changé",
+    "VTANR5L17V10097 : le résultat publié a changé",
+    "VTANR5L17V10098 : le résultat publié a changé"
+   ]
   },
   {
    "numero": 5,

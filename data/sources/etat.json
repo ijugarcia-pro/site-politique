@@ -72,13 +72,12 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
  },
  "scrutins": {
-  "dernier_echec": "2026-11-24T18:28:01+00:00 · RemoteProtocolError: peer closed connection without sending complete message body (received 0 bytes, expected 23640711)",
-  "derniere_modification": "Tue, 24 Nov 2026 11:27:51 GMT",
-  "echecs_consecutifs": 1,
+  "derniere_modification": "Tue, 24 Nov 2026 17:27:25 GMT",
+  "echecs_consecutifs": 0,
   "fichier": "Scrutins.json.zip",
-  "recupere_le": "2026-11-24T17:37:37+00:00",
-  "sha256": "076a49b680aad04b68bce67c7ba40d5152d5fe3a22b50275ff63c532ff8b19bf",
-  "taille": 31188897,
+  "recupere_le": "2026-11-24T19:35:49+00:00",
+  "sha256": "f4e9c3bedd0a3a13ac117780456f00bd726b048f043a864eeabe449be519416b",
+  "taille": 31196248,
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip"
  }
 }

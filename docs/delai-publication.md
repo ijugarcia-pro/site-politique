@@ -1,6 +1,6 @@
 # Délai de publication des scrutins
 
-Généré le 2026-11-25T17:26:41+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
+Généré le 2026-11-26T11:08:02+00:00 par `uv run python -m scripts.mesurer_delai_publication`. Données : `data/mesures/delai_publication/`.
 
 ## Méthode
 
@@ -12,18 +12,18 @@ Généré le 2026-11-25T17:26:41+00:00 par `uv run python -m scripts.mesurer_del
 ## Suivi
 
 - Début du suivi : 2026-10-07T11:31:14+00:00. La référence, c'est-à-dire l'archive du 2026-10-07T10:26:12+00:00, contenait les scrutins 1 à 8560. Ils ne sont pas mesurés.
-- Versions observées après la référence : 156
+- Versions observées après la référence : 157
 - Écart entre deux versions : min 6,0 h · médiane 6,0 h · 90 % ≤ 12,0 h · max 30,0 h
-- Heure (UTC) des versions : 04 h : 16 · 05 h : 22 · 10 h : 13 · 11 h : 24 · 16 h : 17 · 17 h : 27 · 22 h : 16 · 23 h : 21
+- Heure (UTC) des versions : 04 h : 16 · 05 h : 23 · 10 h : 13 · 11 h : 24 · 16 h : 17 · 17 h : 27 · 22 h : 16 · 23 h : 21
 
 ## Délais
 
-**Tous les scrutins** : 1546 scrutins
+**Tous les scrutins** : 1556 scrutins
 
 - Depuis la fin prévue de la séance (borne basse) : min 0,1 h · médiane 6,4 h · 90 % ≤ 18,4 h · max 22,4 h
 - Depuis le début de la séance (borne haute) : min 2,4 h · médiane 4,4 h · 90 % ≤ 15,4 h · max 27,4 h
-- Publiés au plus tard le lendemain du vote à 8 h : 1474 sur 1546
-- Répartition depuis la fin prévue : moins de 1 h : 63 · 3 à 6 h : 174 · 6 à 12 h : 256 · 12 à 24 h : 75
+- Publiés au plus tard le lendemain du vote à 8 h : 1484 sur 1556
+- Répartition depuis la fin prévue : moins de 1 h : 63 · 3 à 6 h : 174 · 6 à 12 h : 266 · 12 à 24 h : 75
 
 **Scrutins solennels** : 6 scrutins
 
@@ -193,3 +193,4 @@ Généré le 2026-11-25T17:26:41+00:00 par `uv run python -m scripts.mesurer_del
 | 2026-11-24T17:27:25+00:00 | 2026-11-24T23:07:37+00:00 | 10102 | 10102 | 1 |
 | 2026-11-24T23:27:54+00:00 | 2026-11-25T05:31:29+00:00 | 10106 | 10106 | 4 |
 | 2026-11-25T11:27:08+00:00 | 2026-11-25T17:26:40+00:00 | 10106 | 10106 | 0 |
+| 2026-11-26T05:27:04+00:00 | 2026-11-26T11:08:00+00:00 | 10116 | 10116 | 10 |

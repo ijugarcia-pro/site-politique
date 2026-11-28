@@ -9,8 +9,9 @@
   "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/reunions/Agenda.json.zip"
  },
  "amendements": {
+  "dernier_echec": "2026-11-28T17:06:45+00:00 · HTTPStatusError: Server error '503 Service Unavailable' for url 'https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip?t=86126cc2a90c4555abfcf8bf89fd361b'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
   "derniere_modification": "Sat, 28 Nov 2026 13:21:01 GMT",
-  "echecs_consecutifs": 0,
+  "echecs_consecutifs": 1,
   "fichier": "Amendements.json.zip",
   "recupere_le": "2026-11-28T15:28:57+00:00",
   "sha256": "b81c43076e64161e53d96c04c1ca01724a94b963c47fc50a4c4736910d03c3fd",
